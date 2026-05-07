@@ -28,6 +28,36 @@ export const hasSupabaseConfig = !!supabaseUrl &&
   !supabaseUrl.includes('TODO_') && 
   !supabaseAnonKey.includes('TODO_');
 
+const createDummySupabase = () => {
+  const chainable: any = new Proxy(
+    function() {},
+    {
+      get: (target, prop) => {
+        if (prop === 'then') {
+          return (resolve: any) => resolve({ data: null, error: { message: "Supabase not configured" } });
+        }
+        return chainable;
+      },
+      apply: () => chainable
+    }
+  );
+
+  return {
+    from: () => chainable,
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: null }),
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+    },
+    channel: () => ({
+      on: () => ({ subscribe: () => {} }),
+      subscribe: () => {},
+      unsubscribe: () => {}
+    }),
+    removeChannel: () => {},
+  } as any;
+};
+
 export const supabase = hasSupabaseConfig 
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
@@ -38,11 +68,11 @@ export const supabase = hasSupabaseConfig
         headers: { 'x-application-name': 'ears-performance-app' },
       },
     }) 
-  : null;
+  : createDummySupabase();
 
 // Function to test connection and provide specific feedback
 export const testSupabaseConnection = async () => {
-  if (!supabase) {
+  if (!hasSupabaseConfig) {
     let reason = "Configuração ausente";
     if (supabaseUrl.includes('TODO_') || supabaseAnonKey.includes('TODO_')) {
       reason = "Variáveis de ambiente ainda são placeholders (TODO_)";
