@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+@theme {
+  --text-xxs: clamp(0.5rem, 1.5vw, 0.625rem);
+  --text-xs: clamp(0.625rem, 2vw, 0.75rem);   
+  --text-sm: clamp(0.75rem, 2vw, 0.875rem);   
+  --text-base: clamp(0.875rem, 2.5vw, 1rem); 
+  --text-lg: clamp(1rem, 3vw, 1.125rem);
+  --text-xl: clamp(1.125rem, 3vw, 1.25rem);
+  --text-2xl: clamp(1.25rem, 4vw, 1.5rem);
+  --text-3xl: clamp(1.5rem, 4vw, 1.875rem);
+  --text-4xl: clamp(1.75rem, 5vw, 2.25rem);
+  --text-5xl: clamp(2rem, 6vw, 3rem);
+
+  --spacing-1: clamp(0.125rem, 0.4vw, 0.25rem);
+  --spacing-1-5: clamp(0.1875rem, 0.6vw, 0.375rem);
+  --spacing-2: clamp(0.25rem, 0.8vw, 0.5rem);
+  --spacing-3: clamp(0.5rem, 1.2vw, 0.75rem);
+  --spacing-4: clamp(0.75rem, 1.6vw, 1rem);
+  --spacing-5: clamp(0.875rem, 2vw, 1.25rem);
+  --spacing-6: clamp(1rem, 2.4vw, 1.5rem);
+  --spacing-8: clamp(1.25rem, 3.2vw, 2rem);
+  --spacing-10: clamp(1.5rem, 4vw, 2.5rem);
+  --spacing-12: clamp(1.75rem, 4.8vw, 3rem);
+  --spacing-16: clamp(2.25rem, 6.4vw, 4rem);
+  --spacing-20: clamp(3rem, 8vw, 5rem);
+}
+
+@layer base {
+  html, body {
+    @apply bg-[#050B14] text-slate-50;
+    /* Prevent overscroll bounce on mobile */
+    overscroll-behavior-y: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+@layer utilities {
+  .pt-safe {
+    padding-top: var(--safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: var(--safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: var(--safe-area-inset-right);
+  }
+  
+  .mt-safe {
+    margin-top: var(--safe-area-inset-top);
+  }
+  .mb-safe {
+    margin-bottom: var(--safe-area-inset-bottom);
+  }
+
+  /* Dynamic viewport height */
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+  .h-dvh {
+    height: 100dvh;
+  }
+}
+
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body, html {
+    background: #050B14 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: #050B14 !important;
+  }
+
+  /* Ensure all cinematic elements are visible in dark mode */
+  .bg-slate-900\/50, 
+  .bg-slate-800\/50,
+  .bg-slate-800\/40,
+  .bg-slate-900\/40,
+  .bg-slate-800,
+  .bg-slate-900,
+  .bg-cyan-500\/10,
+  .bg-rose-500\/10,
+  .bg-amber-500\/10 {
+    background-color: rgba(15, 23, 42, 0.5) !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  .border-slate-800,
+  .border-slate-700,
+  .border-cyan-500\/30 {
+    border-color: rgba(30, 41, 59, 1) !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /* Force text colors */
+  .text-white, .text-slate-50, .text-slate-200, .text-slate-300 { color: white !important; }
+  .text-slate-400 { color: #94a3b8 !important; }
+  .text-cyan-400 { color: #22d3ee !important; }
+  .text-rose-400 { color: #fb7185 !important; }
+  .text-amber-400 { color: #fbbf24 !important; }
+
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Force background colors to print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
