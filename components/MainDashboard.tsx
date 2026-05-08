@@ -95,6 +95,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   const [branding, setBranding] = useState<{logo_url: string | null, company_name: string}>({ logo_url: null, company_name: 'ELLEVEN' });
   const [userProfile, setUserProfile] = useState<{avatar_url: string | null, name: string}>({ avatar_url: null, name: 'Usuário' });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [sessionRequested, setSessionRequested] = useState(false);
 
   const fetchBranding = useCallback(async () => {
     if (!supabase) return;
@@ -358,8 +359,9 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               return (
                 <TodayDashboard 
                   onNavigate={handleNavigation}
-                  onViewAthlete={(id) => {
+                  onViewAthlete={(id, startSession) => {
                     setEditingAthlete({ id });
+                    setSessionRequested(!!startSession);
                     handleNavigation('athlete-profile');
                   }}
                 />
@@ -368,16 +370,18 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               return (
                 <DailyOperationsDashboard 
                   onNavigate={handleNavigation}
-                  onViewAthlete={(id) => {
+                  onViewAthlete={(id, startSession) => {
                     setEditingAthlete({ id });
+                    setSessionRequested(!!startSession);
                     handleNavigation('athlete-profile');
                   }} 
                 />
               );
             case 'clinical':
               return (
-                <ClinicalDashboard onViewAthlete={(id) => {
+                <ClinicalDashboard onViewAthlete={(id, startSession) => {
                   setEditingAthlete({ id });
+                  setSessionRequested(!!startSession);
                   handleNavigation('athlete-profile');
                 }} />
               );
@@ -432,8 +436,12 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                 return (
                   <AthleteHealthProfile 
                     athlete={editingAthlete}
-                    onBack={() => handleNavigation('athletes')}
+                    onBack={() => {
+                      setSessionRequested(false);
+                      handleNavigation('athletes');
+                    }}
                     onSave={(updatedAthlete) => setEditingAthlete(updatedAthlete)}
+                    initialSessionMode={sessionRequested}
                   />
                 );
               }

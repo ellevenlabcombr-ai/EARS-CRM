@@ -190,6 +190,7 @@ interface AthleteHealthProfileProps {
   athlete: Athlete;
   onBack: () => void;
   onSave?: (athlete: Athlete) => void;
+  initialSessionMode?: boolean;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -240,10 +241,17 @@ const renderDataNode = (key: string, value: any, lang: string, depth = 0): React
   );
 };
 
-export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave }: AthleteHealthProfileProps) {
+export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, initialSessionMode = false }: AthleteHealthProfileProps) {
   const { t, language } = useLanguage();
   const [athlete, setAthlete] = useState<any>(initialAthlete);
   const [branding, setBranding] = useState<{logo_url: string | null, company_name: string}>({ logo_url: null, company_name: 'ELLEVENLAB' });
+
+  useEffect(() => {
+    setAthlete(initialAthlete);
+    if (initialSessionMode) {
+      setIsSessionMode(true);
+    }
+  }, [initialAthlete, initialSessionMode]);
 
   useEffect(() => {
     async function loadBranding() {
@@ -326,7 +334,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave }
     };
   }, [wellnessHistory, painReports, clinicalAssessments, loadData, clinicalTags]);
 
-  const [isSessionMode, setIsSessionMode] = useState(false);
+  const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const clinicalSessionData = useMemo(() => {
     if (!clinicalInputs.wellnessHistory.length) return null;
     
