@@ -9,6 +9,9 @@ import { translateKey, translateValue } from "@/lib/translations";
 import { 
   ChevronLeft, 
   Activity, 
+  ArrowUp,
+  ArrowDown,
+  FastForward,
   Calendar, 
   Phone, 
   ShieldCheck, 
@@ -41,6 +44,8 @@ import {
   Check,
   PenTool,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Moon,
   Trophy,
   Key,
