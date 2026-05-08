@@ -2080,27 +2080,67 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave }
 
             {isSessionMode ? (
               <SessionModePanel 
-                 visibleBlocks={clinicalSessionData?.priorityOutput.visibleBlocks || []}
-                 decision={clinicalSessionData?.priorityOutput.adjustedDecision || 'full_train'}
-                 content={(() => {
-                   const content = clinicalSessionData?.priorityOutput.content || { factors: [], actions: [], tags: [] };
-                   // Inject AI Condutas from recent postural assessment
-                   const recentPosturalActions = clinicalAssessments?.find(a => a.assessment_type === 'postural')?.raw_data?.ai_actions;
-                   if (recentPosturalActions) {
-                     return {
-                       ...content,
-                       actions: [...content.actions, { title: "Condutas Específicas (IA - Postural)", desc: recentPosturalActions }]
-                     };
+                 athlete={athlete}
+                 clinicalSessionData={clinicalSessionData}
+                 wellnessHistory={wellnessHistory}
+                 clinicalAssessments={clinicalAssessments}
+                 prontuarioNotes={prontuarioNotes}
+                 onClose={() => setIsSessionMode(false)}
+                 onSaveSession={async (data) => {
+                   // Create a clinical note from the session data accurately mapped to DB schema
+                   const noteContent = `SESSÃO INTELIGENTE:
+Conduta: ${data.evolution.conduta}
+Resposta: ${data.evolution.resposta}
+Próxima Ação: ${data.evolution.proximaAcao}
+
+EXAME EXPRESSO:
+ADM: ${data.expresso_exam.adm} | Força: ${data.expresso_exam.forca} | Mobilidade: ${data.expresso_exam.mobilidade} | Confiança: ${data.expresso_exam.confianca}
+Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}`;
+
+                   // Map string pain to numeric if possible, or just default to 0
+                   const painMap: Record<string, number> = { 'Normal': 0, 'Aumento': 5, 'Diminuição': 2, 'Aguda': 8 };
+                   const numericPain = painMap[data.expresso_exam.dor] || 0;
+
+                   try {
+                     const { data: savedNote, error } = await supabase
+                       .from('clinical_notes')
+                       .insert([{
+                         athlete_id: athlete.id,
+                         generated_text: noteContent,
+                         observations: data.expresso_exam.observacoes,
+                         pain_level: numericPain,
+                         feeling: data.evolution.resposta,
+                         treatments: [data.evolution.conduta],
+                         is_signed: true,
+                         professional_name: "Atendimento EAR/S Intelligence",
+                         note_date: new Date().toISOString()
+                       }])
+                       .select();
+                     
+                     if (error) throw error;
+                     
+                     // Refresh notes locally
+                     if (savedNote && savedNote.length > 0) {
+                        const newNote = {
+                          id: savedNote[0].id,
+                          date: new Date(savedNote[0].note_date || savedNote[0].created_at).toLocaleString('pt-BR'),
+                          text: savedNote[0].generated_text || savedNote[0].observations || '',
+                          signed: savedNote[0].is_signed,
+                          professional: savedNote[0].professional_name,
+                          pain_level: savedNote[0].pain_level,
+                          feeling: savedNote[0].feeling,
+                          regions: savedNote[0].regions,
+                          treatments: savedNote[0].treatments,
+                          observations: savedNote[0].observations
+                        };
+                        setProntuarioNotes(prev => [newNote, ...prev]);
+                     }
+                     
+                     setNotification({ message: 'Sessão registrada com sucesso!', type: 'success' });
+                   } catch (err) {
+                     console.error('Error saving clinical note from session:', err);
+                     setNotification({ message: 'Erro ao salvar sessão.', type: 'error' });
                    }
-                   return content;
-                 })()}
-                 metrics={{
-                    readiness: clinicalSessionData?.readiness.score || 0,
-                    trend: clinicalSessionData?.trends.trendScore || 0
-                 }}
-                 confidence={{
-                    level: clinicalSessionData?.confidence.confidenceLevel || 'low',
-                    score: clinicalSessionData?.confidence.confidenceScore || 0
                  }}
               />
             ) : (

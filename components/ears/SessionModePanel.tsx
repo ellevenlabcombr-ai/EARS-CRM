@@ -1,8 +1,7 @@
-
 "use client";
 
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Zap, 
   ShieldAlert, 
@@ -14,227 +13,393 @@ import {
   Target,
   Tag,
   Activity,
-  Info
+  Info,
+  ChevronLeft,
+  X,
+  Check,
+  Moon,
+  Clock,
+  Thermometer,
+  Brain,
+  Stethoscope,
+  Move,
+  Dumbbell,
+  Users,
+  Save,
+  Sparkles,
+  History,
+  MessageSquare,
+  BrainCircuit
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { SessionDecision, ExecutionStep } from '../../lib/priority-engine';
+import { Button } from '../ui/button';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface SessionModePanelProps {
-  visibleBlocks: string[];
-  decision: SessionDecision;
-  content: {
-    factors: string[];
-    actions: string[];
-    tags: string[];
-    executionPlan: ExecutionStep[];
-  };
-  metrics?: {
-    readiness: number;
-    trend: number;
-  };
-  confidence: {
-    level: string;
-    score: number;
-  };
+  athlete: any;
+  clinicalSessionData: any;
+  wellnessHistory: any[];
+  clinicalAssessments: any[];
+  prontuarioNotes: any[];
+  onSaveSession: (data: any) => Promise<void>;
+  onClose: () => void;
 }
 
 export const SessionModePanel: React.FC<SessionModePanelProps> = ({ 
-  visibleBlocks, 
-  decision, 
-  content, 
-  metrics,
-  confidence 
+  athlete,
+  clinicalSessionData, 
+  wellnessHistory,
+  clinicalAssessments,
+  prontuarioNotes,
+  onSaveSession,
+  onClose
 }) => {
-  const isBlockVisible = (id: string) => visibleBlocks.includes(id);
+  const [loading, setLoading] = useState(false);
+  const [showNextSuggestion, setShowNextSuggestion] = useState(false);
+  
+  // Interactive State for "Exame Expresso"
+  const [expressoExam, setExpressoExam] = useState({
+    dor: 'Normal',
+    adm: 'Normal',
+    forca: 'Normal',
+    mobilidade: 'Normal',
+    confianca: 'Alta',
+    observacoes: ''
+  });
 
-  const getDecisionTheme = () => {
-    switch(decision) {
-      case 'hold': return { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', label: 'Interrupção (HOLD)', icon: ShieldAlert };
-      case 'recovery': return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', label: 'Recovery Ativo', icon: Info };
-      case 'modified_train': return { color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', label: 'Treino Modificado', icon: Zap };
-      case 'full_train': return { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', label: 'Performance Total', icon: Target };
-      default: return { color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/30', label: 'Aguardando', icon: Info };
+  // Interactive State for "Evolução"
+  const [evolution, setEvolution] = useState({
+    conduta: '',
+    resposta: '',
+    proximaAcao: ''
+  });
+
+  const lastWellness = wellnessHistory?.[0] || {};
+  
+  const metrics = {
+    sleep: lastWellness.sleep_hours || 0,
+    fatigue: lastWellness.fatigue_level || 0,
+    pain: lastWellness.muscle_soreness || 0,
+    wellness: lastWellness.readiness_score || 0
+  };
+
+  const getMetricColor = (val: number, type: 'sleep' | 'fatigue' | 'pain' | 'wellness') => {
+    if (type === 'wellness' || type === 'sleep') {
+      if (val >= 80 || (type === 'sleep' && val >= 7)) return 'text-emerald-400';
+      if (val >= 60 || (type === 'sleep' && val >= 6)) return 'text-amber-400';
+      return 'text-rose-400';
+    } else {
+      if (val <= 3) return 'text-emerald-400';
+      if (val <= 6) return 'text-amber-400';
+      return 'text-rose-400';
     }
   };
 
-  const theme = getDecisionTheme();
+  const stats = [
+    { label: 'Sono', value: `${metrics.sleep}h`, icon: Moon, color: getMetricColor(metrics.sleep, 'sleep') },
+    { label: 'Fadiga', value: metrics.fatigue, icon: Zap, color: getMetricColor(metrics.fatigue, 'fatigue') },
+    { label: 'Dor', value: metrics.pain, icon: Thermometer, color: getMetricColor(metrics.pain, 'pain') },
+    { label: 'Score', value: `${metrics.wellness}%`, icon: Activity, color: getMetricColor(metrics.wellness, 'wellness') },
+  ];
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const sessionData = {
+        athlete_id: athlete.id,
+        expresso_exam: expressoExam,
+        evolution: evolution,
+        decision_applied: clinicalSessionData?.priorityOutput?.adjustedDecision,
+        timestamp: new Date().toISOString()
+      };
+      await onSaveSession(sessionData);
+      setShowNextSuggestion(true);
+    } catch (err) {
+      console.error('Error saving session:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      {/* 1. Decision Header */}
-      {isBlockVisible('DecisionHeader') && (
-        <Card className={`border-2 shadow-2xl relative overflow-hidden transition-all duration-500 ${theme.bg} ${theme.border}`}>
-          <div className="absolute top-0 right-0 p-6 opacity-10">
-            <theme.icon className="w-32 h-32" />
+    <div className="fixed inset-0 z-50 bg-[#020617] overflow-y-auto pb-20">
+      {/* 1. TOPO FIXO E PREMIUM */}
+      <div className="sticky top-0 z-10 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6">
+        <div className="max-w-4xl mx-auto flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-full">
+                <ChevronLeft className="w-6 h-6" />
+              </Button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase">{athlete.name}</h1>
+                <p className="text-[10px] md:text-xs font-bold text-cyan-500 uppercase tracking-[0.2em]">{athlete.category} • {athlete.modalidade || athlete.sport}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${getMetricColor(metrics.wellness, 'wellness')}`}>
+                {metrics.wellness}%
+              </div>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score Wellness</p>
+            </div>
           </div>
-          <CardHeader className="border-b border-white/5">
-            <CardTitle className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-              <Target className="w-4 h-4 text-cyan-500" />
-              Decisão Clínica da Sessão
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <motion.h3 
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              className={`text-5xl font-black uppercase tracking-tighter ${theme.color} mb-2`}
-            >
-              {theme.label}
-            </motion.h3>
-            <p className="text-lg font-bold text-slate-300 max-w-xl leading-snug">
-              {decision === 'hold' ? 'Risco agudo identificado pelo sistema. Prioridade total para recuperação e diagnóstico.' : 
-               decision === 'modified_train' ? 'Adaptação necessária por sinais de fadiga. Modulação de volume e foco em segurança.' :
-               decision === 'recovery' ? 'Foco em regeneração sistêmica e mobilidade. Evitar picos de impacto.' :
-               'Atleta apto para carga máxima planejada. Estabilidade sistêmica validada.'}
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
-      {/* 1.1 Warning Banner */}
-      {isBlockVisible('WarningBanner') && (
-        <div className="p-4 bg-amber-500/20 border border-amber-500/40 rounded-2xl flex items-center gap-4">
-          <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0" />
-          <p className="text-sm font-bold text-amber-200 uppercase tracking-tight">
-            ALERTA: Baixa confiança na análise. Decisão conservadora aplicada.
-          </p>
-        </div>
-      )}
-
-      {/* 1.2 Session Rules (Specific for HOLD) */}
-      {isBlockVisible('SessionRules') && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
-            <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Impacto</h4>
-            <p className="text-sm font-bold text-white uppercase">ZERO</p>
-          </div>
-          <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
-            <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Carga</h4>
-            <p className="text-sm font-bold text-white uppercase">Sessão Suspensa</p>
-          </div>
-          <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl">
-            <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Foco</h4>
-            <p className="text-sm font-bold text-white uppercase">Clínico</p>
+          <div className="grid grid-cols-4 gap-2 md:gap-4">
+            {stats.map((s, i) => (
+              <div key={i} className="bg-slate-900/50 border border-white/5 rounded-2xl p-2 md:p-3 flex flex-col items-center">
+                <s.icon className={`w-4 h-4 md:w-5 md:h-5 ${s.color} mb-1`} />
+                <span className="text-[14px] md:text-18px font-black text-white">{s.value}</span>
+                <span className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</span>
+              </div>
+            ))}
           </div>
         </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 3. Key Factors */}
-        {isBlockVisible('KeyFactors') && (
-          <Card className="bg-slate-900/60 border-slate-800 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Info className="w-4 h-4 text-cyan-500" /> Fatores Críticos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {content.factors.map((f, i) => (
-                <div key={i} className="px-5 py-4 bg-slate-950/50 border border-white/5 rounded-2xl text-[13px] font-black text-white uppercase tracking-tight flex items-center gap-4 transition-all hover:bg-slate-950/80">
-                  <div className="w-2 h-2 rounded-full bg-rose-500" />
-                  {f}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 4. Focus Tags */}
-        {isBlockVisible('FocusTags') && (
-          <Card className="bg-slate-900/60 border-slate-800 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Tag className="w-4 h-4 text-purple-500" /> Tags de Foco Clínico
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-4">
-              {content.tags.map((t, i) => (
-                <div key={i} className="px-5 py-2.5 bg-purple-500/10 border border-purple-500/20 rounded-2xl text-[11px] font-black text-purple-400 uppercase tracking-widest">
-                  {t}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
       </div>
 
-      {/* 5. Execution Plan */}
-      {isBlockVisible('ExecutionPlan') && (
-        <Card className="bg-slate-900/40 border-slate-800 shadow-2xl overflow-hidden">
-          <CardHeader className="border-b border-white/5 bg-slate-900/60">
-            <CardTitle className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-cyan-500" /> Plano de Execução Imediata
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="space-y-8">
-              {content.executionPlan.map((step, sIdx) => (
-                <div key={sIdx} className="space-y-4">
-                   <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                      <div className="h-[1px] w-4 bg-slate-800" />
-                      {step.title}
-                   </h4>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {step.items.map((item, i) => (
-                      <div key={i} className="flex items-center gap-4 p-5 bg-slate-950/40 border border-white/5 rounded-3xl group transition-all hover:border-cyan-500/30">
-                        <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                          <CheckCircle className="w-4 h-4 opacity-50 group-hover:opacity-100" />
-                        </div>
-                        <span className="text-[13px] font-black text-slate-100 uppercase tracking-tight">{item}</span>
-                      </div>
-                    ))}
+      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-8">
+        
+        {/* 2. BLOCO: O QUE MUDOU / TENDÊNCIAS */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Dinâmica de Tendência</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="bg-indigo-500/5 border-indigo-500/10 shadow-xl overflow-hidden">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Prontidão Curta (7d)</p>
+                  <div className={`flex items-center gap-2 text-2xl font-black ${clinicalSessionData?.trends.trendScore >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {clinicalSessionData?.trends.trendScore >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+                    {clinicalSessionData?.trends.trendScore > 0 ? '+' : ''}{clinicalSessionData?.trends.trendScore.toFixed(0)}%
                   </div>
                 </div>
-              ))}
+                <div className="w-16 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center">
+                  <Activity className="w-8 h-8 text-indigo-500/20" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-slate-900/40 border-white/5 shadow-xl">
+              <CardContent className="p-4">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Padrão de Sono Atual</p>
+                <div className="flex items-center gap-4">
+                  <div className="h-1 flex-1 bg-slate-800 rounded-full overflow-hidden">
+                     <div className="h-full bg-cyan-500" style={{ width: `${(metrics.sleep / 10) * 100}%` }} />
+                  </div>
+                  <span className="text-xs font-black text-white italic">{metrics.sleep >= 7 ? 'Protegido' : 'Déficit'}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* 3. BLOCO: FOCO SUGERIDO HOJE */}
+        <section className="space-y-4">
+          <Card className="bg-cyan-500/10 border-cyan-500/20 border-2 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+              <BrainCircuit className="w-24 h-24 text-cyan-400" />
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-black text-cyan-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> Inteligência Clínica EAR/S
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="text-lg font-bold text-white leading-tight mb-6">
+                {clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'} 
+                <span className="text-cyan-400 ml-1">
+                  Recomenda-se {clinicalSessionData?.priorityOutput?.adjustedDecision === 'hold' ? 'suspensão imediata' : clinicalSessionData?.priorityOutput?.adjustedDecision === 'recovery' ? 'protocolo de recovery' : 'treino com adaptação'}.
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6">
+                  Confirmar Plano
+                </Button>
+                <Button variant="ghost" className="text-slate-400 hover:text-white text-xs font-black uppercase tracking-widest">
+                  Ajustar Manulamente
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* 6. Metrics Panel */}
-        {isBlockVisible('MetricsPanel') && metrics && (
-           <Card className="bg-slate-900 border-slate-800">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                 <p className="text-xxs font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Prontidão (Decayed)</p>
-                 <div className="text-4xl font-black text-white">{metrics.readiness}%</div>
-              </CardContent>
-           </Card>
-        )}
+        {/* 4. BLOCO: EXAME EXPRESSO */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Stethoscope className="w-5 h-5 text-purple-400" />
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Exame Expresso (Checklist)</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[
+              { id: 'dor', label: 'Dor', icon: Thermometer, options: ['Normal', 'Aumento', 'Diminuição', 'Aguda'] },
+              { id: 'adm', label: 'ADM', icon: Move, options: ['Normal', 'Restrita', 'Aumentada'] },
+              { id: 'forca', label: 'Força', icon: Dumbbell, options: ['Normal', 'Reduzida', 'Déficit'] },
+              { id: 'mobilidade', label: 'Mobilidade', icon: PersonStanding, options: ['Ok', 'Rígido', 'Hipermóvel'] },
+              { id: 'confianca', label: 'Confiança', icon: Brain, options: ['Alta', 'Moderada', 'Baixa'] },
+            ].map((field) => (
+              <div key={field.id} className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                   <field.icon className="w-3 h-3 text-slate-500" />
+                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{field.label}</span>
+                </div>
+                <select 
+                  className="bg-slate-950 border border-white/10 rounded-xl w-full p-2 text-xs font-bold text-white focus:border-purple-500/50 outline-none"
+                  value={(expressoExam as any)[field.id]}
+                  onChange={(e) => setExpressoExam({ ...expressoExam, [field.id]: e.target.value })}
+                >
+                  {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+            ))}
+            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 space-y-3 col-span-2 md:col-span-1">
+               <div className="flex items-center gap-2">
+                   <MessageSquare className="w-3 h-3 text-slate-500" />
+                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Obs</span>
+                </div>
+                <input 
+                  type="text"
+                  placeholder="Rápida..."
+                  className="bg-slate-950 border border-white/10 rounded-xl w-full p-2 text-xs font-bold text-white focus:border-purple-500/50 outline-none"
+                  value={expressoExam.observacoes}
+                  onChange={(e) => setExpressoExam({ ...expressoExam, observacoes: e.target.value })}
+                />
+            </div>
+          </div>
+        </section>
 
-        {/* 7. Trend Panel */}
-        {isBlockVisible('TrendPanel') && metrics && (
-           <Card className="bg-slate-900 border-slate-800">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                 <p className="text-xxs font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Tendência (7d)</p>
-                 <div className={`flex items-center gap-2 text-xl font-black ${metrics.trend >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {metrics.trend >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                    {metrics.trend > 0 ? '+' : ''}{metrics.trend.toFixed(1)}
-                 </div>
-              </CardContent>
-           </Card>
-        )}
+        {/* 5. BLOCO: HISTÓRICO RECENTE */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <History className="w-5 h-5 text-slate-400" />
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Histórico Sessões (Últimas 3)</h2>
+          </div>
+          <div className="space-y-3">
+            {prontuarioNotes.slice(0, 3).map((note, i) => (
+              <div key={i} className="bg-slate-900/30 border border-white/5 rounded-2xl p-4 flex gap-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
+                  <span className="text-[10px] font-black text-white">{format(new Date(note.created_at), 'dd')}</span>
+                  <span className="text-[8px] font-bold text-slate-500 uppercase">{format(new Date(note.created_at), 'MMM')}</span>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-300 line-clamp-2 italic">"{note.content}"</p>
+                  <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mt-1">
+                    {note.title || 'Atendimento Clínico'}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {prontuarioNotes.length === 0 && (
+              <p className="text-xs text-slate-500 text-center py-4 uppercase font-bold">Nenhum histórico anterior disponível</p>
+            )}
+          </div>
+        </section>
 
-        {/* 8. Confidence Badge */}
-        {isBlockVisible('ConfidenceBadge') && (
-           <Card className="bg-slate-900 border-slate-800">
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                 <p className="text-xxs font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Confiança da Análise</p>
-                 <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                    confidence.level === 'high' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' :
-                    confidence.level === 'moderate' ? 'bg-amber-500 text-white' :
-                    'bg-rose-500 text-white'
-                 }`}>
-                    {confidence.level} Analysis
-                 </div>
-              </CardContent>
-           </Card>
-        )}
+        {/* 6. BLOCO: REGISTRAR EVOLUÇÃO */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <ClipboardList className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registrar Evolução</h2>
+          </div>
+          <Card className="bg-slate-900 border-white/5 shadow-2xl">
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Conduta Aplicada</label>
+                <textarea 
+                  className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white min-h-[80px] focus:border-emerald-500/50 outline-none transition-all"
+                  placeholder="Descreva o que foi feito..."
+                  value={evolution.conduta}
+                  onChange={(e) => setEvolution({ ...evolution, conduta: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Resposta Imediata</label>
+                  <input 
+                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:border-emerald-500/50 outline-none transition-all"
+                    placeholder="Ex: Alívio total, dor persistente..."
+                    value={evolution.resposta}
+                    onChange={(e) => setEvolution({ ...evolution, resposta: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Próxima Ação</label>
+                  <input 
+                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:border-emerald-500/50 outline-none transition-all"
+                    placeholder="Ex: Reavaliar em 24h, carga total amanhã..."
+                    value={evolution.proximaAcao}
+                    onChange={(e) => setEvolution({ ...evolution, proximaAcao: e.target.value })}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* 7. BOTÃO SALVAR */}
+        <div className="pt-10">
+          <Button 
+            className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-[#020617] font-black text-lg uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_50px_rgba(6,182,212,0.3)] group transition-all active:scale-95"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <RefreshCcw className="w-6 h-6 animate-spin" />
+            ) : (
+              <>
+                <Save className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+                Salvar Sessão Inteligente
+              </>
+            )}
+          </Button>
+        </div>
+
       </div>
-    </motion.div>
+
+      {/* 8. OVERLAY DE SUGESTÃO PÓS-SALVAR */}
+      <AnimatePresence>
+        {showNextSuggestion && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-55 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full bg-slate-900 border border-cyan-500/30 rounded-[2.5rem] p-8 shadow-[0_0_100px_rgba(6,182,212,0.2)] text-center space-y-6"
+            >
+              <div className="w-20 h-20 bg-cyan-500 rounded-full mx-auto flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.5)]">
+                <Check className="w-10 h-10 text-[#020617]" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Sessão Finalizada</h3>
+                <p className="text-slate-400 font-bold mb-8">Evolução registrada com sucesso. A IA gerou a próxima diretriz para este atleta.</p>
+                
+                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-3xl p-6 text-left space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-cyan-500" />
+                    <span className="text-[10px] font-black text-cyan-500 uppercase tracking-widest">Sugestão Automática</span>
+                  </div>
+                  <p className="text-sm font-bold text-white italic">
+                    "Manter monitoramento de dor nas próximas 12h. Se score mantiver estável, liberar para treinamento de força excêntrico amanhã com 70% da carga."
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full h-14 border-white/10 text-white font-black uppercase tracking-widest rounded-2xl"
+                onClick={() => {
+                  setShowNextSuggestion(false);
+                  onClose();
+                }}
+              >
+                Concluído
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
