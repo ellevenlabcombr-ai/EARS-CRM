@@ -577,6 +577,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
   const [showPosturalModal, setShowPosturalModal] = useState(false);
   const [showClinicalNoteModal, setShowClinicalNoteModal] = useState(false);
+  const [formStep, setFormStep] = useState(1);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [isDeletingNote, setIsDeletingNote] = useState<string | null>(null);
   const [confirmDeleteNote, setConfirmDeleteNote] = useState<string | null>(null);
@@ -1353,6 +1354,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
   const handleOpenNewEvolution = () => {
     setShowSignatureStep(false); 
+    setFormStep(1);
     setNoteForm({
       pain: 2,
       feeling: 'Igual',
@@ -1367,6 +1369,14 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   };
   
   const [isListening, setIsListening] = useState(false);
+  const [expandedTreatmentCategory, setExpandedTreatmentCategory] = useState<string | null>(null);
+
+  const TREATMENT_CATEGORIES = [
+    { category: 'Terapia Manual', items: ['Mobilização Articular', 'Liberação Miofascial', 'Manipulação (HVT)', 'Dry Needling', 'Instrumental (IASTM)'] },
+    { category: 'Recursos Eletrofísicos', items: ['Laserterapia', 'Ultrassom', 'Eletroestimulação (TENS/FES)', 'Tecarterapia', 'Ondas de Choque'] },
+    { category: 'Exercícios Terapêuticos', items: ['Mobilidade Ativa', 'Controle Motor', 'Estabilização Segmentar', 'Fortalecimento Isométrico', 'Fortalecimento Excêntrico', 'Pliometria'] },
+    { category: 'Retorno ao Esporte', items: ['Gesto Esportivo', 'Drills de Agilidade', 'Carga Progressiva', 'Protocolo Running'] }
+  ];
 
   const handleEditNote = (note: any) => {
     setEditingNoteId(note.id);
@@ -1884,7 +1894,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       />
 
             {/* Top App Bar */}
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-24 sm:pt-10 pb-24 sm:pb-4 flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-[auto_auto_1fr] gap-x-8 gap-y-6">
+      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-32 sm:pt-10 pb-24 sm:pb-4 flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-[auto_auto_1fr] gap-x-8 gap-y-6">
         <div className="col-span-full mb-0 lg:mb-2">
           <Button onClick={onBack} variant="ghost" className="text-slate-400 hover:text-white uppercase text-xxs font-black tracking-widest bg-slate-900/80 backdrop-blur-md rounded-full shadow-lg border border-slate-800"><ChevronLeft className="w-4 h-4 mr-2" /> Voltar para Dashboard</Button>
         </div>
@@ -3875,7 +3885,7 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                   });
                   setShowClinicalNoteModal(true); 
                 }} className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase text-xxs tracking-widest">
-                <Plus className="w-4 h-4 mr-2" /> Nova Evolução
+                <Plus className="w-4 h-4 mr-2" /> Nova Evolução Completa
               </Button>
             </div>
             <div className="space-y-4">
@@ -4384,576 +4394,453 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
         language={language}
       />
 
-      {/* Fast Clinical Note Modal */}
-      <AnimatePresence>
+      {/* Fast Clinical Note Modal - High Performance Multi-Step Flow */}
+      <AnimatePresence mode="wait">
         {showClinicalNoteModal && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-slate-950/90 backdrop-blur-sm overflow-y-auto pt-20 md:pt-24">
+          <div className="fixed inset-0 z-[100] flex items-start justify-center p-0 sm:p-4 bg-slate-950/95 backdrop-blur-md overflow-y-auto pt-24 sm:pt-20">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.98, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0A1120] border border-slate-800 w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col shadow-2xl mb-10"
+              exit={{ opacity: 0, scale: 0.98, y: 30 }}
+              className="bg-[#050B18] border-x sm:border border-slate-800/50 w-full max-w-2xl sm:rounded-[2.5rem] overflow-hidden flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.5)] min-h-screen sm:min-h-0 sm:mb-20"
             >
-              <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-                <div className="flex items-center gap-3">
-                  <button onClick={() => {
-                    setShowClinicalNoteModal(false);
-                    setEditingNoteId(null);
-                  }} className="mr-2 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-2 text-xs font-bold uppercase">
-                    <ArrowLeft className="w-4 h-4" /> 
-                    <span className="hidden sm:inline">Voltar</span>
-                  </button>
-                  <div className="p-2 bg-cyan-500/10 rounded-xl">
-                    <Plus className="w-5 h-5 text-cyan-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">{editingNoteId ? 'Editar Evolução' : 'Evolução Rápida'}</h3>
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Registro de sessão simplificado</p>
-                  </div>
-                </div>
-                <button onClick={() => {
-                  setShowClinicalNoteModal(false);
-                  setEditingNoteId(null);
-                }} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
+              {/* Progress Indicator */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-slate-900 overflow-hidden">
+                <motion.div 
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${(formStep / 6) * 100}%` }}
+                  className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                />
               </div>
 
-              <div className="p-6 overflow-y-auto custom-scrollbar space-y-8">
-                {!showSignatureStep ? (
-                  <>
-                    {/* 1. AUTO-CONTEXT: Clinical Summary */}
-                    <div className="p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
-                          <Activity className="w-3.5 h-3.5 text-cyan-500" /> Contexto da Sessão
-                        </h4>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${
-                          riskCfg.color.replace('text-', 'bg-').replace('400', '500/20')
-                        } ${riskCfg.color}`}>
-                          Risco: {athlete.riskLevel || 'Baixo'}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Top Risk Cluster</p>
-                          <p className="text-xs font-bold text-slate-300">
-                            {clinicalSessionData?.clusters?.[0]?.label || 'Estável'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Objetivo IA</p>
-                          <p className="text-xs font-bold text-slate-300">
-                            {clinicalSessionData?.decisionMode === 'Conservative' ? 'Conservador (🛡️ Proteção)' : 'Agressivo (⚡ Performance)'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tags Ativas</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {clinicalTags.length > 0 ? clinicalTags.map((t, i) => (
-                              <span key={i} className="text-[8px] font-black bg-purple-500/10 text-purple-400 border border-purple-500/20 px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                                {t.tag}
-                              </span>
-                            )) : (
-                              <span className="text-[9px] text-slate-600 italic">Sem tags ativas</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="pt-1">
-                          <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Sugestões Aplicadas</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {clinicalSessionData?.interventions && clinicalSessionData.interventions.length > 0 ? clinicalSessionData.interventions.slice(0, 3).map((inv, idx) => (
-                              <span key={idx} className="text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">
-                                {inv}
-                              </span>
-                            )) : (
-                              <span className="text-[9px] text-slate-600 italic">Nenhuma sugestão gerada</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+              {/* Header */}
+              <div className="p-6 pt-8 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {formStep > 1 && !showSignatureStep ? (
+                    <button 
+                      onClick={() => setFormStep(prev => prev - 1)}
+                      className="group flex items-center gap-2 p-3 bg-slate-900 border border-white/5 rounded-2xl text-slate-400 hover:text-white transition-all active:scale-90"
+                    >
+                      <ArrowLeft className="w-5 h-5" />
+                      <span className="text-[10px] font-black uppercase tracking-widest pr-2 hidden sm:inline">Voltar</span>
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        setShowClinicalNoteModal(false);
+                        setEditingNoteId(null);
+                      }}
+                      className="group flex items-center gap-2 p-3 bg-slate-900 border border-white/5 rounded-2xl text-slate-400 hover:text-white transition-all active:scale-90"
+                    >
+                      <X className="w-5 h-5" />
+                      <span className="text-[10px] font-black uppercase tracking-widest pr-2 hidden sm:inline">Cancelar</span>
+                    </button>
+                  )}
+                  <div>
+                    <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-1">
+                      {formStep === 6 ? 'Finalizar Registro' : 'Evolução Clínica'}
+                    </h2>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                      Passo {formStep} de 6 • {
+                        formStep === 1 ? 'Estado Inicial' :
+                        formStep === 2 ? 'Nível de Dor' :
+                        formStep === 3 ? 'Regiões' :
+                        formStep === 4 ? 'Condutas' :
+                        formStep === 5 ? 'Observações' : 'Conclusão'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-                    {/* 2. SYSTEM VALIDATION */}
-                    <div className="space-y-4">
-                      <h4 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Brain className="w-3 h-3 text-purple-500" /> Validação da Sugestão
-                      </h4>
-                      <div className="bg-slate-900/50 p-1 rounded-xl border border-slate-800/50 flex">
+              {/* Content Area */}
+              <div className="flex-1 p-6 pt-2">
+                <AnimatePresence mode="wait">
+                  {/* STEP 1: FEELING */}
+                  {formStep === 1 && (
+                    <motion.div 
+                      key="step1"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <h3 className="text-xl font-bold text-white mb-8">Como o atleta chegou para a sessão?</h3>
+                      <div className="grid grid-cols-1 gap-4">
                         {[
-                          { val: 'Yes', label: 'Sim', color: 'bg-emerald-500' },
-                          { val: 'Partially', label: 'Parcialmente', color: 'bg-amber-500' },
-                          { val: 'No', label: 'Não', color: 'bg-rose-500' }
+                          { val: 'Melhor', icon: ArrowUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+                          { val: 'Igual', icon: FastForward, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+                          { val: 'Pior', icon: ArrowDown, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' }
                         ].map(opt => (
                           <button
                             key={opt.val}
-                            onClick={() => setNoteForm({...noteForm, suggestionMatch: opt.val as any})}
-                            className={`flex-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                              noteForm.suggestionMatch === opt.val 
-                                ? `${opt.color} text-slate-950 shadow-lg` 
-                                : 'text-slate-500 hover:text-slate-300'
+                            onClick={() => {
+                              setNoteForm({...noteForm, feeling: opt.val});
+                              setFormStep(2);
+                            }}
+                            className={`flex items-center justify-between p-6 rounded-[2rem] border-2 transition-all ${
+                              noteForm.feeling === opt.val 
+                                ? `${opt.border} bg-slate-900 border-opacity-100 ring-2 ring-cyan-500/50` 
+                                : 'border-slate-800/50 bg-slate-900/30'
                             }`}
                           >
-                            {opt.label}
+                            <div className="flex items-center gap-4">
+                              <div className={`p-4 rounded-2xl ${opt.bg} ${opt.color}`}>
+                                <opt.icon className="w-6 h-6" />
+                              </div>
+                              <span className="text-lg font-black text-white">{opt.val}</span>
+                            </div>
+                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              noteForm.feeling === opt.val ? 'border-cyan-500 bg-cyan-500' : 'border-slate-700'
+                            }`}>
+                              {noteForm.feeling === opt.val && <Check className="w-4 h-4 text-slate-950" />}
+                            </div>
                           </button>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
+                  )}
 
-                    {/* 3. RESPONSE BLOCK & Pain */}
-                    <div className="space-y-4">
-                      <h4 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <History className="w-3 h-3 text-cyan-500" /> Resposta Imediata
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Feeling */}
-                        <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800/50">
-                          {[
-                            { val: 'Pior', color: 'bg-rose-500' },
-                            { val: 'Igual', color: 'bg-slate-500' },
-                            { val: 'Melhor', color: 'bg-emerald-500' }
-                          ].map(opt => (
-                            <button
-                              key={opt.val}
-                              onClick={() => setNoteForm({...noteForm, feeling: opt.val})}
-                              className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
-                                noteForm.feeling === opt.val 
-                                  ? `${opt.color} text-[#050B14] shadow-lg` 
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                              }`}
-                            >
-                              {opt.val}
-                            </button>
-                          ))}
+                  {/* STEP 2: PAIN (EVA) */}
+                  {formStep === 2 && (
+                    <motion.div 
+                      key="step2"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-10"
+                    >
+                      <h3 className="text-xl font-bold text-white">Intensidade da dor atual (EVA)</h3>
+                      
+                      <div className="flex flex-col items-center gap-8 py-10">
+                        <div className={`text-8xl font-black transition-all ${
+                          noteForm.pain >= 7 ? 'text-rose-500' : 
+                          noteForm.pain >= 4 ? 'text-amber-500' : 'text-emerald-500'
+                        }`}>
+                          {noteForm.pain}
                         </div>
-                        {/* Pain Slider */}
-                        <div className="flex flex-col justify-center px-2">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-xxs font-bold text-slate-500 uppercase">Nível de Dor (EVA)</span>
-                            <span className={`text-lg font-black ${noteForm.pain > 6 ? 'text-rose-400' : noteForm.pain > 3 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                              {noteForm.pain}
-                            </span>
-                          </div>
+                        
+                        <div className="w-full px-4">
                           <input 
-                            type="range" 
-                            min="0" max="10" 
+                            type="range"
+                            min="0"
+                            max="10"
+                            step="1"
                             value={noteForm.pain}
                             onChange={(e) => setNoteForm({...noteForm, pain: parseInt(e.target.value)})}
-                            className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                            className="w-full h-4 bg-slate-900 rounded-full appearance-none cursor-pointer accent-cyan-500"
                           />
-                          <div className="flex justify-between text-xxs font-bold text-slate-600 mt-1">
-                            <span>0 (Sem Dor)</span>
-                            <span>10 (Máxima)</span>
+                          <div className="flex justify-between mt-4 text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">
+                            <span>Sem Dor</span>
+                            <span>Moderada</span>
+                            <span>Máxima</span>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* 4. TAG ADJUSTMENT Section */}
-                    <div className="space-y-3">
-                      <h4 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Tag className="w-3 h-3 text-purple-400" /> Ajuste de Tags Clínicas
-                      </h4>
-                      <div className="bg-slate-950/40 border border-slate-800/50 rounded-xl p-4 space-y-4">
-                        <div className="flex flex-wrap gap-2">
-                          {clinicalTags.map(tag => {
-                            const adj = noteForm.tagAdjustments.find(a => a.id === tag.id);
-                            const action = adj?.action || 'keep';
-                            return (
-                              <div key={tag.id} className="flex items-center gap-1">
-                                <span className={`px-2.5 py-1.5 rounded-l-lg text-[10px] font-black uppercase tracking-widest border-y border-l transition-all ${
-                                  action === 'remove' 
-                                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 opacity-50 line-through' 
-                                    : action === 'reinforce'
-                                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.2)]'
-                                      : 'bg-slate-800/50 border-slate-700 text-slate-400'
-                                }`}>
-                                  {tag.tag}
-                                </span>
-                                <div className="flex border-y border-r border-slate-700 rounded-r-lg overflow-hidden h-full">
-                                  <button
-                                    onClick={() => setNoteForm(prev => ({
-                                      ...prev,
-                                      tagAdjustments: prev.tagAdjustments.map(a => 
-                                        a.id === tag.id ? { ...a, action: a.action === 'reinforce' ? 'keep' : 'reinforce' } : a
-                                      )
-                                    }))}
-                                    className={`p-1.5 hover:bg-purple-500/20 transition-all ${action === 'reinforce' ? 'bg-purple-500 text-white' : 'text-slate-500'}`}
-                                    title="Reforçar"
-                                  >
-                                    <TrendingUp className="w-3 h-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => setNoteForm(prev => ({
-                                      ...prev,
-                                      tagAdjustments: prev.tagAdjustments.map(a => 
-                                        a.id === tag.id ? { ...a, action: a.action === 'remove' ? 'keep' : 'remove' } : a
-                                      )
-                                    }))}
-                                    className={`p-1.5 hover:bg-rose-500/20 transition-all ${action === 'remove' ? 'bg-rose-500 text-white' : 'text-slate-500'}`}
-                                    title="Remover"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div className="flex gap-2">
-                          <input 
-                            type="text" 
-                            placeholder="Adicionar nova tag..."
-                            className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/30 transition-all"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                const val = e.currentTarget.value.trim();
-                                if (val && !noteForm.newTags.includes(val)) {
-                                  setNoteForm(prev => ({ ...prev, newTags: [...prev.newTags, val] }));
-                                  e.currentTarget.value = '';
-                                }
-                              }
-                            }}
-                          />
-                        </div>
-                        {noteForm.newTags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 pt-1">
-                            {noteForm.newTags.map(tag => (
-                              <span key={tag} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
-                                {tag}
-                                <button onClick={() => setNoteForm(prev => ({ ...prev, newTags: prev.newTags.filter(t => t !== tag) }))}>
-                                  <X className="w-3 h-3 hover:text-white" />
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        <p className="text-slate-400 text-sm font-medium text-center px-10">
+                          {noteForm.pain === 0 ? "Nenhum sinal de desconforto ou dor relatado." :
+                           noteForm.pain <= 3 ? "Dor leve, não interfere nas atividades." :
+                           noteForm.pain <= 6 ? "Dor moderada, começa a exigir ajustes." :
+                           "Dor intensa, limitação funcional significativa."}
+                        </p>
                       </div>
-                    </div>
 
-                    {/* Regions Section */}
-                    <div className="space-y-3">
-                      <h4 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <MapPin className="w-3 h-3" /> Regiões Tratadas
-                      </h4>
-                      <div className="space-y-4">
-                        {REGIONS_GROUPS.map(group => (
-                          <div key={group.name}>
-                            <h5 className="text-xxs font-bold text-slate-500 uppercase tracking-widest mb-2">{group.name}</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {group.items.map(region => {
-                                const isSelected = noteForm.regions.includes(region);
-                                return (
-                                  <button
-                                    key={region}
-                                    onClick={() => {
-                                      setNoteForm(prev => ({
-                                        ...prev,
-                                        regions: isSelected 
-                                          ? prev.regions.filter(r => r !== region)
-                                          : [...prev.regions, region]
-                                      }))
-                                    }}
-                                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
-                                      isSelected 
-                                        ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400' 
-                                        : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                                    }`}
-                                  >
-                                    {region}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                      <Button 
+                        onClick={() => setFormStep(3)}
+                        className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-lg rounded-[1.5rem] mt-4 shadow-2xl"
+                      >
+                        Próximo Passo
+                      </Button>
+                    </motion.div>
+                  )}
 
-                    {/* Treatments Section */}
-                    <div className="space-y-3">
-                      <h4 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Stethoscope className="w-3 h-3" /> Condutas Realizadas
-                      </h4>
-                      <div className="space-y-4">
-                        {TREATMENTS_GROUPS.map(group => (
-                          <div key={group.name}>
-                            <h5 className="text-xxs font-bold text-slate-500 uppercase tracking-widest mb-2">{group.name}</h5>
-                            <div className="flex flex-wrap gap-2">
-                              {group.items.map(treatment => {
-                                const isSelected = noteForm.treatments.includes(treatment);
-                                return (
-                                  <button
-                                    key={treatment}
-                                    onClick={() => {
-                                      setNoteForm(prev => ({
-                                        ...prev,
-                                        treatments: isSelected 
-                                          ? prev.treatments.filter(t => t !== treatment)
-                                          : [...prev.treatments, treatment]
-                                      }))
-                                    }}
-                                    className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 ${
-                                      isSelected 
-                                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' 
-                                        : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                                    }`}
-                                  >
-                                    {isSelected && <Check className="w-3 h-3" />}
-                                    {treatment}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Observations Section */}
-                    <div className="space-y-3">
+                  {/* STEP 3: REGIONS */}
+                  {formStep === 3 && (
+                    <motion.div 
+                      key="step3"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
                       <div className="flex items-center justify-between">
-                        <h4 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                          <FileText className="w-3 h-3" /> Observações Adicionais (Opcional)
-                        </h4>
+                        <h3 className="text-xl font-bold text-white">Regiões Tratadas</h3>
+                        <span className="text-[10px] font-black text-cyan-400 uppercase bg-cyan-400/10 px-3 py-1 rounded-full">
+                          {noteForm.regions.length} Selecionadas
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {[
+                          'Tornozelo (D)', 'Tornozelo (E)', 'Joelho (D)', 'Joelho (E)', 
+                          'Quadril (D)', 'Quadril (E)', 'Pé (D)', 'Pé (E)',
+                          'Lombar', 'Torácica', 'Cervical', 'Core', 'Coxa Posterior (D)', 'Coxa Posterior (E)',
+                          'Coxa Anterior (D)', 'Coxa Anterior (E)', 'Ombro (D)', 'Ombro (E)', 
+                          'Cotovelo (D)', 'Cotovelo (E)', 'Punho (D)', 'Punho (E)'
+                        ].map(region => {
+                          const isSelected = noteForm.regions.includes(region);
+                          return (
+                            <button
+                              key={region}
+                              onClick={() => {
+                                setNoteForm(prev => ({
+                                  ...prev,
+                                  regions: isSelected 
+                                    ? prev.regions.filter(r => r !== region)
+                                    : [...prev.regions, region]
+                                }));
+                              }}
+                              className={`p-4 rounded-2xl border transition-all text-xs font-bold text-left flex flex-col gap-2 ${
+                                isSelected 
+                                  ? 'bg-cyan-500 border-cyan-400 text-slate-950' 
+                                  : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'
+                              }`}
+                            >
+                              <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                                isSelected ? 'border-slate-900 bg-slate-950/20' : 'border-slate-700'
+                              }`}>
+                                {isSelected && <Check className="w-3 h-3" />}
+                              </div>
+                              {region}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <Button 
+                        onClick={() => setFormStep(4)}
+                        disabled={noteForm.regions.length === 0}
+                        className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-lg rounded-[1.5rem] mt-4 disabled:opacity-50"
+                      >
+                        Próximo Passo
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {/* STEP 4: TREATMENTS */}
+                  {formStep === 4 && (
+                    <motion.div 
+                      key="step4"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-white">Condutas Realizadas</h3>
+                        <span className="text-[10px] font-black text-emerald-400 uppercase bg-emerald-400/10 px-3 py-1 rounded-full">
+                          {noteForm.treatments.length} Atividades
+                        </span>
+                      </div>
+
+                      <div className="space-y-4 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
+                        {TREATMENT_CATEGORIES.map((cat, idx) => {
+                          const isExpanded = expandedTreatmentCategory === cat.category;
+                          const selectedCount = cat.items.filter(item => noteForm.treatments.includes(item)).length;
+                          
+                          return (
+                            <div key={idx} className={`rounded-3xl border transition-all duration-300 ${isExpanded ? 'bg-slate-900 border-white/10 p-4' : 'bg-slate-900/30 border-white/5 p-2'}`}>
+                              <button 
+                                onClick={() => setExpandedTreatmentCategory(isExpanded ? null : cat.category)}
+                                className="w-full flex items-center justify-between group p-2"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`p-2 rounded-xl transition-all ${isExpanded ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-500'}`}>
+                                    <Zap size={14} />
+                                  </div>
+                                  <div className="text-left">
+                                    <h4 className={`text-xs font-black uppercase tracking-widest transition-colors ${isExpanded ? 'text-white' : 'text-slate-500'}`}>
+                                      {cat.category}
+                                    </h4>
+                                    {selectedCount > 0 && !isExpanded && (
+                                      <p className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">
+                                        {selectedCount} selecionados
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                              </button>
+                              
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.div 
+                                    initial={{ height: 0, opacity: 0 }} 
+                                    animate={{ height: 'auto', opacity: 1 }} 
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="grid grid-cols-1 gap-2 pt-4">
+                                      {cat.items.map(item => {
+                                        const isSelected = noteForm.treatments.includes(item);
+                                        return (
+                                          <button
+                                            key={item}
+                                            onClick={() => {
+                                              setNoteForm(prev => ({
+                                                ...prev,
+                                                treatments: isSelected 
+                                                  ? prev.treatments.filter(t => t !== item)
+                                                  : [...prev.treatments, item]
+                                              }));
+                                            }}
+                                            className={`p-4 rounded-2xl border transition-all text-xs font-black text-left flex items-center justify-between ${
+                                              isSelected 
+                                                ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20' 
+                                                : 'bg-slate-950/50 border-white/5 text-slate-400 hover:border-white/10'
+                                            }`}
+                                          >
+                                            <span>{item}</span>
+                                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                              isSelected ? 'border-slate-900 bg-slate-950/20' : 'border-slate-800'
+                                            }`}>
+                                              {isSelected && <Check className="w-2.5 h-2.5" />}
+                                            </div>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <Button 
+                        onClick={() => setFormStep(5)}
+                        disabled={noteForm.treatments.length === 0}
+                        className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-lg rounded-[1.5rem] mt-4 disabled:opacity-50"
+                      >
+                        Próximo Passo
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {/* STEP 5: NOTES */}
+                  {formStep === 5 && (
+                    <motion.div 
+                      key="step5"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <h3 className="text-xl font-bold text-white">Observações Técnicas</h3>
+
+                      <div className="relative group">
+                        <textarea 
+                          className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-8 text-white font-medium text-lg min-h-[250px] outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
+                          placeholder="Digite observações clínicas específicas (opcional)..."
+                          value={noteForm.obs}
+                          onChange={(e) => setNoteForm({...noteForm, obs: e.target.value})}
+                        />
                         <button 
-                          onClick={toggleListening}
-                          className={`text-xxs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all ${
-                            isListening 
-                              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse' 
-                              : 'bg-cyan-500/10 text-cyan-400 border border-transparent hover:bg-cyan-500/20'
+                          onClick={() => {
+                            if (isListening) stopListening(); else startListening();
+                          }}
+                          className={`absolute bottom-6 right-6 p-6 rounded-full transition-all active:scale-90 flex items-center gap-3 ${
+                            isListening ? 'bg-rose-500 animate-pulse text-white' : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-xl'
                           }`}
                         >
                           {isListening ? (
                             <>
-                              <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                              Ouvindo... (Clique p/ parar)
+                              <div className="flex gap-1 h-4 items-center">
+                                <div className="w-1 h-2 bg-white animate-bounce" />
+                                <div className="w-1 h-3 bg-white animate-bounce delay-75" />
+                                <div className="w-1 h-4 bg-white animate-bounce delay-150" />
+                              </div>
+                              <span className="text-xs font-black uppercase tracking-widest">Ouvindo...</span>
                             </>
                           ) : (
-                            <>
-                              <Mic className="w-3 h-3" /> Ditar por Voz
-                            </>
+                            <Mic className="w-6 h-6" />
                           )}
                         </button>
                       </div>
-                      <textarea 
-                        value={noteForm.obs}
-                        onChange={(e) => setNoteForm({...noteForm, obs: e.target.value})}
-                        placeholder="Detalhes específicos da sessão, evolução de carga, etc..."
-                        className="w-full h-24 bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors resize-none"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-start gap-3">
-                      <FileText className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="text-xs font-black text-cyan-400 uppercase tracking-widest mb-1">Texto Técnico Gerado</h4>
-                        <p className="text-xxs font-bold text-cyan-500/70 uppercase tracking-widest">Revise o documento antes de assinar digitalmente. Você pode editar o texto livremente.</p>
+
+                      <Button 
+                        onClick={() => setFormStep(6)}
+                        className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-lg rounded-[1.5rem] mt-4"
+                      >
+                        Gerar Evolução Técnica
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {/* STEP 6: TECHNICAL TEXT / SIGNATURE */}
+                  {formStep === 6 && (
+                    <motion.div 
+                      key="step6"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="bg-slate-900/50 border border-white/5 rounded-[2.5rem] p-8 space-y-6">
+                        <div className="flex items-center gap-3 text-cyan-400">
+                          <Sparkles className="w-5 h-5" />
+                          <h3 className="text-xs font-black uppercase tracking-[0.2em]">Resumo da Evolução</h3>
+                        </div>
+
+                        <div className="text-slate-300 font-mono text-sm leading-relaxed max-h-[350px] overflow-y-auto pr-2 whitespace-pre-wrap custom-scrollbar">
+                          {(() => {
+                            const regionsText = noteForm.regions.length > 0 ? noteForm.regions.join(', ') : 'regiões não especificadas';
+                            const treatmentsText = noteForm.treatments.length > 0 ? noteForm.treatments.join(', ') : 'condutas não especificadas';
+                            const timestamp = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                            const date = new Date().toLocaleDateString('pt-BR');
+                            
+                            return `EVOLUÇÃO CLÍNICA - ATHLETE PERFORMANCE
+DATA: ${date} ÀS ${timestamp}
+
+O atleta compareceu relatando estar se sentindo ${noteForm.feeling.toLowerCase()}, com nível de dor ${noteForm.pain}/10 na EVA.
+
+CONDUTA:
+Segmentos: ${regionsText}
+Atividades: ${treatmentsText}
+
+${noteForm.obs ? `OBSERVAÇÕES:
+${noteForm.obs}
+
+` : ''}PLANO:
+Continuidade do protocolo de reabilitação/performance conforme evolução biológica individualizada.`;
+                          })()}
+                        </div>
+
+                        <div className="pt-6 border-t border-white/5 flex flex-col gap-4">
+                          <div className="flex items-center gap-3 p-4 bg-slate-950 rounded-2xl border border-white/5">
+                            <PenTool className="w-5 h-5 text-slate-500" />
+                            <div className="flex-1">
+                              <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Assinatura Certificada</p>
+                              <p className="text-xs font-bold text-white">DR. {auth.currentUser?.displayName?.toUpperCase() || 'FISIOTERAPEUTA'}</p>
+                            </div>
+                            <Check className="w-5 h-5 text-emerald-400" />
+                          </div>
+                          
+                          <Button 
+                            onClick={async () => {
+                              const regionsText = noteForm.regions.length > 0 ? noteForm.regions.join(', ') : 'regiões não especificadas';
+                              const treatmentsText = noteForm.treatments.length > 0 ? noteForm.treatments.join(', ') : 'condutas não especificadas';
+                              const date = new Date().toLocaleDateString('pt-BR');
+                              const noteText = `EVOLUÇÃO CLÍNICA - ATHLETE PERFORMANCE\nDATA: ${date}\nSubjetivo: ${noteForm.feeling}, Dor ${noteForm.pain}/10.\nConduta: ${regionsText}.\nAtividades: ${treatmentsText}.\n${noteForm.obs ? `Obs: ${noteForm.obs}` : ''}`;
+                              await handleSaveNote(noteText);
+                              setShowClinicalNoteModal(false);
+                            }}
+                            className="w-full h-16 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-lg rounded-[1.5rem] shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                          >
+                            Assinar e Salvar
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <textarea 
-                      value={generatedNote}
-                      onChange={(e) => setGeneratedNote(e.target.value)}
-                      className="w-full h-64 bg-slate-900/50 border border-slate-800 rounded-xl p-4 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/50 transition-colors resize-none leading-relaxed"
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="p-5 bg-slate-900/80 border-t border-slate-800 flex justify-end gap-3">
-                <Button variant="ghost" onClick={() => {
-                  if (showSignatureStep && !editingNoteId) setShowSignatureStep(false);
-                  else {
-                    setShowClinicalNoteModal(false);
-                    setEditingNoteId(null);
-                  }
-                }} className="text-slate-400 hover:text-white font-bold uppercase text-xxs tracking-widest">
-                  {showSignatureStep && !editingNoteId ? 'Voltar' : 'Cancelar'}
-                </Button>
-                
-                {!showSignatureStep ? (
-                  <Button 
-                    onClick={() => {
-                      const regionsText = noteForm.regions.length > 0 ? noteForm.regions.join(', ') : 'regiões não especificadas';
-                      const treatmentsText = noteForm.treatments.length > 0 ? noteForm.treatments.join(', ') : 'condutas não especificadas';
-                      
-                      const riskContext = clinicalSessionData?.insight?.riskLabel ? `inserido em um contexto de risco clínico [${clinicalSessionData.insight.riskLabel.toUpperCase()}]` : 'com estabilidade clínica';
-                      const objectiveContext = clinicalSessionData?.decisionMode === 'Conservative' ? 'Cuidado Moderado (foco em recuperação e prevenção)' : 'Performance Total (foco em manutenção de carga e progressão)';
-                      const validationContext = noteForm.suggestionMatch === 'Yes' ? 'total adesão à realidade clínica' : noteForm.suggestionMatch === 'Partially' ? 'ajustes pontuais necessários' : 'divergência observada na prática';
-
-                      const clustersContext = clinicalSessionData?.clusters && clinicalSessionData.clusters.length > 0 
-                        ? `
-Os principais clusters de risco identificados no momento: ${clinicalSessionData.clusters.map(c => c.label).join(', ')}.` 
-                        : '';
-
-                      let treatmentsReasoning = '';
-                      if (noteForm.treatments.length > 0) {
-                        treatmentsReasoning = `Estas intervenções foram escolhidas com o objetivo de ${clinicalSessionData?.decisionMode === 'Conservative' ? 'mitigar os riscos agudos, controlar o quadro álgico e promover recuperação tecidual' : 'manter a prontidão muscular, tolerância à carga e otimização biomecânica'}, alinhando-se diretamente ao objetivo principal da sessão de ${objectiveContext}.`;
-                      }
-
-                      const adjustments = noteForm.tagAdjustments.filter(a => a.action !== 'keep');
-                      const tagContext = adjustments.length > 0 || noteForm.newTags.length > 0
-                        ? `
-📍 ATUALIZAÇÃO DE TAGS:
-${adjustments.map(a => `${a.action === 'remove' ? '[-] Remover' : '[+] Reforçar'} "${clinicalTags.find(t => t.id === a.id)?.tag}"`).join('; ')}${noteForm.newTags.length > 0 ? `; [+] Adicionar: ${noteForm.newTags.join(', ')}` : ''}`
-                        : '';
-
-                      const text = `🎯 CONTEXTO CLÍNICO & OBJETIVO:
-Paciente ${riskContext}. O objetivo da sessão é ${objectiveContext}.${clustersContext}
-✅ VALIDAÇÃO DO SISTEMA: Sugestão da IA apresentou ${validationContext}.
-
-📊 SUBJETIVO / RESPOSTA DO PACIENTE:
-Paciente compareceu à sessão fisioterapêutica relatando estar se sentindo ${noteForm.feeling.toLowerCase()}, apresentando quadro álgico de intensidade ${noteForm.pain}/10 na Escala Visual Analógica (EVA).
-
-🛠️ CONDUTAS & RACIOCÍNIO CLÍNICO:
-- Regiões Alvo: ${regionsText}.
-- Intervenções Aplicadas: ${treatmentsText}.
-${treatmentsReasoning}${tagContext}
-
-${noteForm.obs ? `📝 OBSERVAÇÕES ADICIONAIS:
-${noteForm.obs}` : ''}`;
-                      
-                      setGeneratedNote(text);
-                      setShowSignatureStep(true);
-                    }}
-                    className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase text-xxs tracking-widest px-8"
-                  >
-                    Gerar Texto Técnico <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={async () => {
-                      const professionalName = "Dra. Cristina Jorge - CREFITO 3/252531-F";
-                      
-                      if (supabase) {
-                        try {
-                          if (editingNoteId) {
-                            const { error } = await supabase
-                              .from('clinical_notes')
-                              .update({
-                                generated_text: generatedNote,
-                                pain_level: noteForm.pain,
-                                feeling: noteForm.feeling,
-                                regions: noteForm.regions,
-                                treatments: noteForm.treatments,
-                                observations: noteForm.obs,
-                                is_signed: true
-                              })
-                              .eq('id', editingNoteId);
-                              
-                            if (error) throw error;
-                            
-                            setProntuarioNotes(prev => prev.map(n => 
-                              n.id === editingNoteId 
-                                ? { ...n, text: generatedNote, signed: true, pain_level: noteForm.pain, feeling: noteForm.feeling, regions: noteForm.regions, treatments: noteForm.treatments, observations: noteForm.obs }
-                                : n
-                            ));
-                          } else {
-                            const { data, error } = await supabase
-                              .from('clinical_notes')
-                              .insert([
-                                {
-                                  athlete_id: athlete.id,
-                                  note_date: new Date().toISOString(),
-                                  pain_level: noteForm.pain,
-                                  feeling: noteForm.feeling,
-                                  regions: noteForm.regions,
-                                  treatments: noteForm.treatments,
-                                  observations: noteForm.obs,
-                                  generated_text: generatedNote,
-                                  is_signed: !!data.signature,
-                                  professional_name: professionalName
-                                }
-                              ])
-                              .select();
-                              
-                            if (error) throw error;
-
-                            // Update clinicalTags based on adjustments
-                            const updatedTags = [...clinicalTags];
-                            noteForm.tagAdjustments.forEach(adj => {
-                              if (adj.action === 'remove') {
-                                const idx = updatedTags.findIndex(t => t.id === adj.id);
-                                if (idx !== -1) updatedTags.splice(idx, 1);
-                              } else if (adj.action === 'reinforce') {
-                                const tag = updatedTags.find(t => t.id === adj.id);
-                                if (tag) tag.weight = (tag.weight || 1) + 0.2;
-                              }
-                            });
-                            noteForm.newTags.forEach(tagName => {
-                              updatedTags.push({
-                                id: Math.random().toString(36).substr(2, 9),
-                                tag: tagName,
-                                created_at: new Date().toISOString(),
-                                weight: 1.0,
-                                source: 'clinical'
-                              });
-                            });
-                            setClinicalTags(updatedTags);
-                            
-                            if (data && data.length > 0) {
-                              const newNote = {
-                                id: data[0].id,
-                                date: new Date(data[0].note_date || data[0].created_at).toLocaleString('pt-BR'),
-                                text: data[0].generated_text || data[0].observations || '',
-                                signed: data[0].is_signed,
-                                professional: data[0].professional_name,
-                                pain_level: data[0].pain_level,
-                                feeling: data[0].feeling,
-                                regions: data[0].regions,
-                                treatments: data[0].treatments,
-                                observations: data[0].observations
-                              };
-                              setProntuarioNotes([newNote, ...prontuarioNotes]);
-                              setNotification({ message: 'Evolução salva com sucesso!', type: 'success' });
-                            }
-                          }
-                        } catch (error) {
-                          console.error('Error saving clinical note:', error);
-                          setNotification({ message: "Erro ao salvar evolução.", type: 'error' });
-                        }
-                      } else {
-                        // Fallback for no-db mode
-                        const newNote = {
-                          id: editingNoteId || Date.now().toString(),
-                          date: new Date().toLocaleString('pt-BR'),
-                          text: generatedNote,
-                          signed: true,
-                          professional: professionalName,
-                          pain_level: noteForm.pain,
-                          feeling: noteForm.feeling,
-                          regions: noteForm.regions,
-                          treatments: noteForm.treatments,
-                          observations: noteForm.obs
-                        };
-                        if (editingNoteId) {
-                          setProntuarioNotes(prev => prev.map(n => n.id === editingNoteId ? newNote : n));
-                        } else {
-                          setProntuarioNotes([newNote, ...prontuarioNotes]);
-                        }
-                      }
-                      
-                      setShowClinicalNoteModal(false);
-                      setEditingNoteId(null);
-                      setShowSignatureStep(false);
-                      setActiveTab('prontuario');
-                      setNoteForm({ pain: 2, feeling: 'Melhor', regions: [], treatments: [], obs: '' });
-                      setGeneratedNote('');
-                    }}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-[#050B14] font-black uppercase text-xxs tracking-widest px-8"
-                  >
-                    <PenTool className="w-4 h-4 mr-2" /> Assinar e Salvar
-                  </Button>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
 
       {/* QR Code Modal */}
       <AnimatePresence>

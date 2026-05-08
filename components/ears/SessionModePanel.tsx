@@ -153,7 +153,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#020617] overflow-y-auto pb-20 pt-16 md:pt-0">
+    <div className="fixed inset-0 z-50 bg-[#020617] overflow-y-auto pb-20 pt-28 md:pt-0">
       {/* 1. TOPO FIXO E PREMIUM */}
       <div className="sticky top-0 z-10 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
