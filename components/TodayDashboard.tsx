@@ -37,8 +37,125 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   const [exceptions, setExceptions] = useState<any[]>([]);
   const [pendencies, setPendencies] = useState<any[]>([]);
   const [financialAlerts, setFinancialAlerts] = useState<any[]>([]);
-  const [radar, setRadar] = useState<any>({});
+  const [radar, setRadar] = useState<any>({
+    highRisk: 0,
+    mediumRisk: 0,
+    assessmentsDone: 0,
+    generalWellness: 0
+  });
   const [intelligenceText, setIntelligenceText] = useState('');
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const today = new Date().toISOString().split('T')[0];
+      const startOfDay = `${today}T00:00:00.000Z`;
+      const endOfDay = `${today}T23:59:59.999Z`;
+
+      // 1. Fetch Agenda Events
+      const { data: agendaData, error: agendaError } = await supabase
+        .from('agenda_events')
+        .select('*, athletes(id, name, risk_level)')
+        .gte('start_time', startOfDay)
+        .lte('start_time', endOfDay)
+        .order('start_time');
+
+      // 2. Fetch Wellness Records for today
+      const { data: wellnessData, error: wellnessError } = await supabase
+        .from('wellness_records')
+        .select('*')
+        .eq('record_date', today);
+
+      // 3. Fetch All Athletes for stats and exceptions
+      const { data: athletesData, error: athletesError } = await supabase
+        .from('athletes')
+        .select('id, name, risk_level, status, updated_at');
+
+      // 4. Fetch Clinical Alerts
+      const { data: alertsData, error: alertsError } = await supabase
+        .from('clinical_alerts')
+        .select('*')
+        .eq('status', 'active');
+
+      // 5. Fetch Monthly assessments count (using the view)
+      const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+      const { count: assessmentsCount } = await supabase
+        .from('all_assessments')
+        .select('*', { count: 'exact', head: true })
+        .gte('assessment_date', firstDayOfMonth);
+
+      // Process Agenda
+      if (agendaData) {
+        const mappedAgenda = agendaData.map(event => {
+          const athlete = event.athletes;
+          const wellness = wellnessData?.find(w => w.athlete_id === event.athlete_id);
+          const athleteAlerts = alertsData?.filter(a => a.athlete_id === event.athlete_id && a.severity === 'high');
+          
+          return {
+            id: event.id,
+            time: format(new Date(event.start_time), 'HH:mm'),
+            athlete_id: event.athlete_id,
+            athlete_name: athlete?.name || 'Evento Geral',
+            wellness_status: wellness ? (wellness.readiness_score >= 70 ? 'ok' : 'alert') : 'pending',
+            risk: athlete?.risk_level === 'Crítico' || athlete?.risk_level === 'Alto' ? 'high' : (athlete?.risk_level === 'Médio' ? 'medium' : 'low'),
+            alert: athleteAlerts?.[0]?.description || (wellness && wellness.readiness_score < 70 ? `Baixa prontidão detectada: ${wellness.readiness_score}%` : null),
+            suggestion: event.description || (wellness ? 'Acompanhar conforme respostas de wellness.' : 'Aguardando respostas de prontidão.')
+          };
+        });
+        setAgenda(mappedAgenda);
+      }
+
+      // Process Exceptions (High Risk athletes not in agenda)
+      if (athletesData) {
+        const agendaAthleteIds = new Set(agendaData?.map(e => e.athlete_id).filter(Boolean));
+        const highRiskExceptions = athletesData
+          .filter(a => (a.risk_level === 'Crítico' || a.risk_level === 'Alto') && !agendaAthleteIds.has(a.id))
+          .map(a => ({
+            id: a.id,
+            name: a.name,
+            reason: `Risco ${a.risk_level} sem atendimento agendado hoje.`,
+            last_seen: a.updated_at ? format(new Date(a.updated_at), "d 'de' MMM", { locale: ptBR }) : 'N/A'
+          }));
+        setExceptions(highRiskExceptions);
+
+        // Process Radar
+        const highRiskCount = athletesData.filter(a => a.risk_level === 'Crítico' || a.risk_level === 'Alto').length;
+        const mediumRiskCount = athletesData.filter(a => a.risk_level === 'Médio').length;
+        const avgWellness = wellnessData && wellnessData.length > 0
+          ? Math.round(wellnessData.reduce((acc, w) => acc + (Number(w.readiness_score) || 0), 0) / wellnessData.length)
+          : 0;
+
+        setRadar({
+          highRisk: highRiskCount,
+          mediumRisk: mediumRiskCount,
+          assessmentsDone: assessmentsCount || 0,
+          generalWellness: avgWellness
+        });
+      }
+
+      // Financial Mocks (still mocked as no table exists)
+      setFinancialAlerts([
+        { id: 1, description: 'Mensalidades pendentes', urgency: 'medium' }
+      ]);
+
+      // Intelligence Text
+      if (wellnessData && wellnessData.length > 0) {
+        const lowReadiness = wellnessData.filter(w => w.readiness_score < 60);
+        if (lowReadiness.length > 0) {
+          setIntelligenceText(`${lowReadiness.length} atleta(s) com baixa prontidão detectada hoje. Recomenda-se ajuste de carga para preservar a integridade física do grupo.`);
+        } else {
+          setIntelligenceText('A prontidão média do grupo está saudável hoje. Protocolos de treinamento podem seguir conforme planejado.');
+        }
+      } else {
+        setIntelligenceText('Aguardando coleta de dados de wellness para gerar insights de performance hoje.');
+      }
+
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -48,42 +165,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
 
     setCurrentDate(format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR }));
 
-    // TODO: fetch actual data from database
-    // Mocking data for now as a premium mobile-first UI
-    setTimeout(() => {
-      setAgenda([
-        { id: 1, time: '08:00', athlete_id: '1', athlete_name: 'Marcos Silva', wellness_status: 'ok', risk: 'low', alert: null, suggestion: 'Treino regenerativo sugerido.' },
-        { id: 2, time: '09:30', athlete_id: '2', athlete_name: 'Ana Souza', wellness_status: 'pending', risk: 'medium', alert: 'Fadiga muscular relatada ontem.', suggestion: 'Focar em liberação miofascial.' },
-        { id: 3, time: '14:00', athlete_id: '3', athlete_name: 'João Pedro', wellness_status: 'alert', risk: 'high', alert: 'Queda brusca na qualidade do sono (-30%).', suggestion: 'Adaptar carga do treino de hoje, avaliar repouso.' }
-      ]);
-
-      setExceptions([
-        { id: '4', name: 'Carlos Dias', reason: 'Risco de lesão alto detectado pelas avaliações recentes.', last_seen: 'Há 2 dias' },
-        { id: '5', name: 'Juliana Costa', reason: 'Stress subindo consecutivamente (+20% em 3 dias).', last_seen: 'Ontem' }
-      ]);
-
-      setPendencies([
-        { id: 1, task: 'Revisar protocolo pós-operatório do Lucas', done: false },
-        { id: 2, task: 'Atualizar planilhas de carga semanal', done: true },
-        { id: 3, task: 'Enviar relatório mensal de wellness', done: false }
-      ]);
-
-      setFinancialAlerts([
-        { id: 1, description: '2 atletas com mensalidade atrasada', urgency: 'medium' }
-      ]);
-
-      setRadar({
-        highRisk: 2,
-        mediumRisk: 5,
-        assessmentsDone: 12,
-        generalWellness: 78
-      });
-
-      setIntelligenceText('O grupo apresenta sinais de fadiga residual pós-jogo. Priorizar estratégias regenerativas no período da tarde. João Pedro requer atenção especial pela queda abrupta na qualidade do sono.');
-      
-      setLoading(false);
-    }, 1500);
-
+    fetchData();
   }, []);
 
   if (loading) {
