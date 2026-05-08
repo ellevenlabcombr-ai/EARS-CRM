@@ -765,6 +765,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave }
       .limit(100);
 
     if (error) {
+      if (error.message?.includes('invalid input syntax for type uuid')) {
+        console.log(`Skipping assessments fetch for mock/invalid UUID: ${athleteId}`);
+        return [];
+      }
       console.error("SUPABASE FULL ERROR:", {
         message: error.message,
         code: error.code,
@@ -878,6 +882,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave }
             // Only log as error if it's not a "table not found" error
             if (errorMessage.includes("Could not find the table") || errorMessage.includes("relation \"athlete_attachments\" does not exist")) {
               console.log("Athlete attachments table not found, falling back to storage listing. Please run the migrations.");
+            } else if (errorMessage.includes("invalid input syntax for type uuid")) {
+              console.log(`Skipping DB attachment fetch for mock/invalid UUID: ${athlete.id}`);
             } else {
               console.error("ATTACHMENTS DB FETCH ERROR:", errorMessage);
             }
@@ -1535,14 +1541,18 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave }
       // Refresh attachments list
       const { data: dbCheck } = await supabase.from('athlete_attachments').select('id').limit(1);
       if (dbCheck) {
-        const { data: allAttachments } = await supabase
+        const { data: allAttachments, error } = await supabase
           .from('athlete_attachments')
           .select('*')
           .eq('athlete_id', athlete.id)
           .eq('is_current_version', true)
           .order('created_at', { ascending: false });
           
-        if (allAttachments) setAttachments(allAttachments);
+        if (error && error.message?.includes('invalid input syntax for type uuid')) {
+          console.log(`Skipping DB attachment refresh for mock/invalid UUID: ${athlete.id}`);
+        } else if (allAttachments) {
+          setAttachments(allAttachments);
+        }
       } else {
         // Trigger storage fallback fetch manually here
         const { data: storageFiles } = await supabase.storage
