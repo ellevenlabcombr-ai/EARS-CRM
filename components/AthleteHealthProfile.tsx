@@ -36,6 +36,7 @@ import {
   Maximize2,
   Grid3X3,
   X,
+  ArrowLeft,
   Mic,
   Check,
   PenTool,
@@ -4386,15 +4387,22 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
       {/* Fast Clinical Note Modal */}
       <AnimatePresence>
         {showClinicalNoteModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-slate-950/90 backdrop-blur-sm overflow-y-auto pt-20 md:pt-24">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0A1120] border border-slate-800 w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col shadow-2xl max-h-[90vh]"
+              className="bg-[#0A1120] border border-slate-800 w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col shadow-2xl mb-10"
             >
               <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                 <div className="flex items-center gap-3">
+                  <button onClick={() => {
+                    setShowClinicalNoteModal(false);
+                    setEditingNoteId(null);
+                  }} className="mr-2 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors flex items-center gap-2 text-xs font-bold uppercase">
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden sm:inline">Voltar</span>
+                  </button>
                   <div className="p-2 bg-cyan-500/10 rounded-xl">
                     <Plus className="w-5 h-5 text-cyan-400" />
                   </div>
