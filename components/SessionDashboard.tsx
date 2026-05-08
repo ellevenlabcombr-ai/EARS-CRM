@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   ArrowLeft, 
   Activity, 
@@ -6,14 +6,44 @@ import {
   Stethoscope, 
   History, 
   PencilLine, 
-  Save 
+  Save,
+  ActivitySquare
 } from 'lucide-react';
+import { useAthleteStore } from '@/store/useAthleteStore';
 
 interface SessionDashboardProps {
+  athlete?: any;
   onBack?: () => void;
 }
 
-export function SessionDashboard({ onBack }: SessionDashboardProps) {
+export function SessionDashboard({ athlete, onBack }: SessionDashboardProps) {
+  const { checkins, fetchCheckins } = useAthleteStore();
+
+  useEffect(() => {
+    if (athlete?.id) {
+      fetchCheckins(athlete.id);
+    }
+  }, [athlete?.id, fetchCheckins]);
+
+  const latestCheckin = checkins && checkins.length > 0 ? checkins[0] : null;
+
+  // Initials
+  const initials = athlete?.name 
+    ? athlete.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'JP';
+
+  // Modalidade / Categoria
+  const modalidade = athlete?.sport || athlete?.modalidade || 'Futebol';
+  const categoria = athlete?.category || athlete?.categoria || 'Sub-20';
+  const subtitle = `${modalidade} • ${categoria}`;
+
+  // Metrics
+  const score = athlete?.readiness ?? latestCheckin?.readiness_score ?? '-';
+  const wellness = latestCheckin?.readiness_score ?? '-'; // using readiness_score for wellness if score is athlete's readiness
+  const pain = latestCheckin?.muscle_soreness ?? '-';
+  const fatigue = latestCheckin?.fatigue_level ?? '-';
+  const sleep = latestCheckin?.sleep_hours ?? '-';
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col font-sans selection:bg-indigo-500/30">
       {/* 1. Header atleta */}
@@ -31,13 +61,53 @@ export function SessionDashboard({ onBack }: SessionDashboardProps) {
           <div className="w-10" /> {/* Spacer para centralizar badge */}
         </div>
         
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-center shadow-inner shrink-0">
-            <span className="text-xl font-black text-slate-300">JP</span>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-center shadow-inner shrink-0 overflow-hidden relative">
+            {athlete?.photo ? (
+              <img src={athlete.photo} alt={athlete.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-xl font-black text-slate-300">{initials}</span>
+            )}
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tight">João Pedro</h1>
-            <p className="text-sm font-medium text-slate-400">Atacante • Sub-20</p>
+            <h1 className="text-xl font-black text-white tracking-tight">{athlete?.name || 'João Pedro'}</h1>
+            <p className="text-sm font-medium text-slate-400">{subtitle}</p>
+          </div>
+        </div>
+
+        {/* Dashboard Cards in Header */}
+        <div className="grid grid-cols-5 gap-2">
+          {/* Score Atual */}
+          <div className="bg-slate-900/50 rounded-xl p-2 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-1 opacity-20">
+                <ActivitySquare size={16} />
+             </div>
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Score</span>
+             <span className="text-sm font-black text-white">{score}</span>
+          </div>
+
+          {/* Wellness */}
+          <div className="bg-slate-900/50 rounded-xl p-2 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden">
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Wellness</span>
+             <span className="text-sm font-black text-cyan-400">{wellness}</span>
+          </div>
+
+          {/* Dor */}
+          <div className="bg-slate-900/50 rounded-xl p-2 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden">
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Dor</span>
+             <span className="text-sm font-black text-rose-400">{pain}</span>
+          </div>
+
+          {/* Fadiga */}
+          <div className="bg-slate-900/50 rounded-xl p-2 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden">
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Fadiga</span>
+             <span className="text-sm font-black text-amber-400">{fatigue}</span>
+          </div>
+
+          {/* Sono */}
+          <div className="bg-slate-900/50 rounded-xl p-2 border border-slate-800/80 flex flex-col items-center justify-center relative overflow-hidden">
+             <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1">Sono</span>
+             <span className="text-sm font-black text-emerald-400">{sleep}</span>
           </div>
         </div>
       </header>
