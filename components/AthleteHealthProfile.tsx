@@ -1378,6 +1378,151 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     { category: 'Retorno ao Esporte', items: ['Gesto Esportivo', 'Drills de Agilidade', 'Carga Progressiva', 'Protocolo Running'] }
   ];
 
+  const handleSaveNote = async (generatedText: string) => {
+    const professionalName = "Dra. Cristina Jorge - CREFITO 3/252531-F";
+    const notificationId = Math.random().toString();
+    
+    try {
+      if (supabase) {
+        if (editingNoteId) {
+          const { error } = await supabase
+            .from('clinical_notes')
+            .update({
+              generated_text: generatedText,
+              pain_level: noteForm.pain,
+              feeling: noteForm.feeling,
+              regions: noteForm.regions,
+              treatments: noteForm.treatments,
+              observations: noteForm.obs,
+              is_signed: true
+            })
+            .eq('id', editingNoteId);
+            
+          if (error) throw error;
+          
+          setProntuarioNotes(prev => prev.map(n => 
+            n.id === editingNoteId 
+              ? { 
+                  ...n, 
+                  text: generatedText, 
+                  signed: true, 
+                  pain_level: noteForm.pain, 
+                  feeling: noteForm.feeling, 
+                  regions: noteForm.regions, 
+                  treatments: noteForm.treatments, 
+                  observations: noteForm.obs 
+                }
+              : n
+          ));
+          setNotification({ message: 'Evolução atualizada com sucesso!', type: 'success' });
+        } else {
+          const { data, error } = await supabase
+            .from('clinical_notes')
+            .insert([
+              {
+                athlete_id: athlete.id,
+                note_date: new Date().toISOString(),
+                pain_level: noteForm.pain,
+                feeling: noteForm.feeling,
+                regions: noteForm.regions,
+                treatments: noteForm.treatments,
+                observations: noteForm.obs,
+                generated_text: generatedText,
+                is_signed: true,
+                professional_name: professionalName
+              }
+            ])
+            .select();
+            
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            const newNote = {
+              id: data[0].id,
+              date: new Date(data[0].note_date || data[0].created_at).toLocaleString('pt-BR'),
+              text: data[0].generated_text || data[0].observations || '',
+              signed: data[0].is_signed,
+              professional: data[0].professional_name,
+              pain_level: data[0].pain_level,
+              feeling: data[0].feeling,
+              regions: data[0].regions,
+              treatments: data[0].treatments,
+              observations: data[0].observations
+            };
+            setProntuarioNotes([newNote, ...prontuarioNotes]);
+            
+            // Handle tag adjustments if any
+            if (noteForm.tagAdjustments.some(a => a.action !== 'keep') || noteForm.newTags.length > 0) {
+              const updatedTags = [...clinicalTags];
+              noteForm.tagAdjustments.forEach(adj => {
+                if (adj.action === 'remove') {
+                  const idx = updatedTags.findIndex(t => t.id === adj.id);
+                  if (idx !== -1) updatedTags.splice(idx, 1);
+                } else if (adj.action === 'reinforce') {
+                  const tag = updatedTags.find(t => t.id === adj.id);
+                  if (tag) tag.weight = (tag.weight || 1) + 0.2;
+                }
+              });
+              noteForm.newTags.forEach(tagName => {
+                updatedTags.push({
+                  id: Math.random().toString(36).substr(2, 9),
+                  tag: tagName,
+                  created_at: new Date().toISOString(),
+                  weight: 1.0,
+                  source: 'clinical'
+                });
+              });
+              setClinicalTags(updatedTags);
+            }
+
+            setNotification({ message: 'Evolução registrada e assinada!', type: 'success' });
+          }
+        }
+      } else {
+        // Fallback for no-db mode
+        const newNote = {
+          id: editingNoteId || Math.random().toString(36).substr(2, 9),
+          date: new Date().toLocaleString('pt-BR'),
+          text: generatedText,
+          signed: true,
+          professional: professionalName,
+          pain_level: noteForm.pain,
+          feeling: noteForm.feeling,
+          regions: noteForm.regions,
+          treatments: noteForm.treatments,
+          observations: noteForm.obs
+        };
+        if (editingNoteId) {
+          setProntuarioNotes(prev => prev.map(n => n.id === editingNoteId ? newNote : n));
+        } else {
+          setProntuarioNotes([newNote, ...prontuarioNotes]);
+        }
+        setNotification({ message: 'Evolução salva localmente (Modo Demo)', type: 'success' });
+      }
+
+      // Reset form and UI states
+      setShowClinicalNoteModal(false);
+      setEditingNoteId(null);
+      setShowSignatureStep(false);
+      setFormStep(1);
+      setNoteForm({ 
+        pain: 0, 
+        feeling: 'Igual', 
+        regions: [], 
+        treatments: [], 
+        obs: '',
+        suggestionMatch: 'Yes',
+        tagAdjustments: [],
+        newTags: [] 
+      });
+      setGeneratedNote('');
+      setActiveTab('prontuario');
+    } catch (error) {
+      console.error('Error saving clinical note:', error);
+      setNotification({ message: "Ocorreu um erro ao processar o registro comercial.", type: 'error' });
+    }
+  };
+
   const handleEditNote = (note: any) => {
     setEditingNoteId(note.id);
     setNoteForm({
@@ -1385,9 +1530,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       pain: note.pain_level || 0,
       regions: note.regions || [],
       treatments: note.treatments || [],
-      obs: note.observations || ''
+      obs: note.observations || '',
+      suggestionMatch: 'Yes',
+      tagAdjustments: [],
+      newTags: []
     });
     setGeneratedNote(note.text);
+    setFormStep(6);
     setShowSignatureStep(true);
     setShowClinicalNoteModal(true);
   };
@@ -4408,7 +4557,7 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
               <div className="absolute top-0 left-0 w-full h-1 bg-slate-900 overflow-hidden">
                 <motion.div 
                   initial={{ width: "0%" }}
-                  animate={{ width: `${(formStep / 6) * 100}%` }}
+                  animate={{ width: `${(formStep / 7) * 100}%` }}
                   className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
                 />
               </div>
@@ -4438,15 +4587,16 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                   )}
                   <div>
                     <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-1">
-                      {formStep === 6 ? 'Finalizar Registro' : 'Evolução Clínica'}
+                      {formStep === 7 ? 'Finalizar Registro' : 'Evolução Clínica'}
                     </h2>
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                      Passo {formStep} de 6 • {
+                      Passo {formStep} de 7 • {
                         formStep === 1 ? 'Estado Inicial' :
                         formStep === 2 ? 'Nível de Dor' :
                         formStep === 3 ? 'Regiões' :
                         formStep === 4 ? 'Condutas' :
-                        formStep === 5 ? 'Observações' : 'Conclusão'
+                        formStep === 5 ? 'Tags Clínicas' :
+                        formStep === 6 ? 'Observações' : 'Conclusão'
                       }
                     </p>
                   </div>
@@ -4718,10 +4868,113 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                     </motion.div>
                   )}
 
-                  {/* STEP 5: NOTES */}
+                  {/* STEP 5: TAGS */}
                   {formStep === 5 && (
                     <motion.div 
                       key="step5"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-6"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-white uppercase tracking-tighter">Ajuste de Tags</h3>
+                        <div className="p-3 bg-purple-500/10 rounded-2xl">
+                          <Tag className="w-5 h-5 text-purple-400" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 space-y-4">
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Tags Ativas no Atleta</p>
+                          <div className="flex flex-wrap gap-2">
+                            {clinicalTags.map(tag => {
+                              const adj = noteForm.tagAdjustments.find(a => a.id === tag.id);
+                              const action = adj?.action || 'keep';
+                              return (
+                                <div key={tag.id} className="flex items-center gap-px">
+                                  <span className={`px-4 py-2 rounded-l-2xl text-[10px] font-black uppercase tracking-widest border border-r-0 transition-all ${
+                                    action === 'remove' 
+                                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-500 opacity-50 line-through' 
+                                      : action === 'reinforce'
+                                        ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                                        : 'bg-slate-800/50 border-slate-700 text-slate-400'
+                                  }`}>
+                                    {tag.tag}
+                                  </span>
+                                  <div className="flex border border-slate-700 rounded-r-2xl overflow-hidden h-[34px]">
+                                    <button
+                                      onClick={() => setNoteForm(prev => ({
+                                        ...prev,
+                                        tagAdjustments: prev.tagAdjustments.map(a => 
+                                          a.id === tag.id ? { ...a, action: a.action === 'reinforce' ? 'keep' : 'reinforce' } : a
+                                        )
+                                      }))}
+                                      className={`px-3 hover:bg-purple-500/20 transition-all ${action === 'reinforce' ? 'bg-purple-500 text-white shadow-lg' : 'bg-slate-800/30 text-slate-500'}`}
+                                      title="Reforçar"
+                                    >
+                                      <RefreshCcw className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => setNoteForm(prev => ({
+                                        ...prev,
+                                        tagAdjustments: prev.tagAdjustments.map(a => 
+                                          a.id === tag.id ? { ...a, action: a.action === 'remove' ? 'keep' : 'remove' } : a
+                                        )
+                                      }))}
+                                      className={`px-3 hover:bg-rose-500/20 transition-all ${action === 'remove' ? 'bg-rose-500 text-white shadow-lg' : 'bg-slate-800/30 text-slate-500'}`}
+                                      title="Remover"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="pt-4 flex gap-2">
+                            <input 
+                              type="text" 
+                              placeholder="Adicionar nova tag..."
+                              className="flex-1 bg-slate-950 border border-white/10 rounded-2xl px-5 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-all"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const val = e.currentTarget.value.trim();
+                                  if (val && !noteForm.newTags.includes(val)) {
+                                    setNoteForm(prev => ({ ...prev, newTags: [...prev.newTags, val] }));
+                                    e.currentTarget.value = '';
+                                  }
+                                }
+                              }}
+                            />
+                          </div>
+                          {noteForm.newTags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {noteForm.newTags.map(tag => (
+                                <span key={tag} className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] font-black uppercase tracking-widest group">
+                                  {tag}
+                                  <X className="w-3 h-3 cursor-pointer hover:text-white transition-colors" onClick={() => setNoteForm(prev => ({ ...prev, newTags: prev.newTags.filter(t => t !== tag) }))} />
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Button 
+                        onClick={() => setFormStep(6)}
+                        className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-lg rounded-[1.5rem] mt-4"
+                      >
+                        Próximo Passo
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {/* STEP 6: NOTES */}
+                  {formStep === 6 && (
+                    <motion.div 
+                      key="step6"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
@@ -4731,14 +4984,14 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
 
                       <div className="relative group">
                         <textarea 
-                          className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-8 text-white font-medium text-lg min-h-[250px] outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
+                          className="w-full bg-slate-900/50 border-2 border-slate-800 rounded-[2rem] p-8 text-white font-medium text-lg min-h-[180px] outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
                           placeholder="Digite observações clínicas específicas (opcional)..."
                           value={noteForm.obs}
                           onChange={(e) => setNoteForm({...noteForm, obs: e.target.value})}
                         />
                         <button 
                           onClick={() => {
-                            if (isListening) stopListening(); else startListening();
+                            if (isListening) recognitionRef.current?.stop(); else recognitionRef.current?.start();
                           }}
                           className={`absolute bottom-6 right-6 p-6 rounded-full transition-all active:scale-90 flex items-center gap-3 ${
                             isListening ? 'bg-rose-500 animate-pulse text-white' : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-xl'
@@ -4760,7 +5013,7 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                       </div>
 
                       <Button 
-                        onClick={() => setFormStep(6)}
+                        onClick={() => setFormStep(7)}
                         className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-lg rounded-[1.5rem] mt-4"
                       >
                         Gerar Evolução Técnica
@@ -4768,10 +5021,10 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                     </motion.div>
                   )}
 
-                  {/* STEP 6: TECHNICAL TEXT / SIGNATURE */}
-                  {formStep === 6 && (
+                  {/* STEP 7: TECHNICAL TEXT / SIGNATURE */}
+                  {formStep === 7 && (
                     <motion.div 
-                      key="step6"
+                      key="step7"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
@@ -4783,7 +5036,7 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                           <h3 className="text-xs font-black uppercase tracking-[0.2em]">Resumo da Evolução</h3>
                         </div>
 
-                        <div className="text-slate-300 font-mono text-sm leading-relaxed max-h-[350px] overflow-y-auto pr-2 whitespace-pre-wrap custom-scrollbar">
+                        <div className="text-slate-300 font-mono text-sm leading-relaxed max-h-[250px] overflow-y-auto pr-2 whitespace-pre-wrap custom-scrollbar">
                           {(() => {
                             const regionsText = noteForm.regions.length > 0 ? noteForm.regions.join(', ') : 'regiões não especificadas';
                             const treatmentsText = noteForm.treatments.length > 0 ? noteForm.treatments.join(', ') : 'condutas não especificadas';
@@ -4812,7 +5065,7 @@ Continuidade do protocolo de reabilitação/performance conforme evolução biol
                             <PenTool className="w-5 h-5 text-slate-500" />
                             <div className="flex-1">
                               <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Assinatura Certificada</p>
-                              <p className="text-xs font-bold text-white">DR. {auth.currentUser?.displayName?.toUpperCase() || 'FISIOTERAPEUTA'}</p>
+                              <p className="text-xs font-bold text-white">DR. CRISTINA JORGE</p>
                             </div>
                             <Check className="w-5 h-5 text-emerald-400" />
                           </div>
@@ -4822,7 +5075,7 @@ Continuidade do protocolo de reabilitação/performance conforme evolução biol
                               const regionsText = noteForm.regions.length > 0 ? noteForm.regions.join(', ') : 'regiões não especificadas';
                               const treatmentsText = noteForm.treatments.length > 0 ? noteForm.treatments.join(', ') : 'condutas não especificadas';
                               const date = new Date().toLocaleDateString('pt-BR');
-                              const noteText = `EVOLUÇÃO CLÍNICA - ATHLETE PERFORMANCE\nDATA: ${date}\nSubjetivo: ${noteForm.feeling}, Dor ${noteForm.pain}/10.\nConduta: ${regionsText}.\nAtividades: ${treatmentsText}.\n${noteForm.obs ? `Obs: ${noteForm.obs}` : ''}`;
+                              const noteText = `EVOLUÇÃO CLÍNICA - ATHLETE PERFORMANCE\nDATA: ${date}\nSubjetivo: ${noteForm.feeling}, Dor ${noteForm.pain}/10.\nConduta: ${regionsText}.\nAtividades: ${treatmentsText}.\n${noteForm.tagAdjustments.filter(a => a.action !== 'keep').map(a => `${a.action === 'remove' ? '[-] Remover' : '[+] Reforçar'} "${clinicalTags.find(t => t.id === a.id)?.tag}"`).join(', ')}\n${noteForm.obs ? `Obs: ${noteForm.obs}` : ''}`;
                               await handleSaveNote(noteText);
                               setShowClinicalNoteModal(false);
                             }}
