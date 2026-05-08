@@ -21,15 +21,17 @@ import {
   Clock,
   Thermometer,
   Brain,
+  BrainCircuit,
   Stethoscope,
   Move,
   Dumbbell,
+  PersonStanding,
   Users,
   Save,
+  RefreshCcw,
   Sparkles,
   History,
-  MessageSquare,
-  BrainCircuit
+  MessageSquare
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -170,9 +172,9 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Prontidão Curta (7d)</p>
-                  <div className={`flex items-center gap-2 text-2xl font-black ${clinicalSessionData?.trends.trendScore >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {clinicalSessionData?.trends.trendScore >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-                    {clinicalSessionData?.trends.trendScore > 0 ? '+' : ''}{clinicalSessionData?.trends.trendScore.toFixed(0)}%
+                  <div className={`flex items-center gap-2 text-2xl font-black ${(clinicalSessionData?.trends?.trendScore || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {(clinicalSessionData?.trends?.trendScore || 0) >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+                    {(clinicalSessionData?.trends?.trendScore || 0) > 0 ? '+' : ''}{(clinicalSessionData?.trends?.trendScore || 0).toFixed(0)}%
                   </div>
                 </div>
                 <div className="w-16 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center">

@@ -243,68 +243,10 @@ const renderDataNode = (key: string, value: any, lang: string, depth = 0): React
 
 export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, initialSessionMode = false }: AthleteHealthProfileProps) {
   const { t, language } = useLanguage();
+  
+  // 1. STATE DECLARATIONS
   const [athlete, setAthlete] = useState<any>(initialAthlete);
   const [branding, setBranding] = useState<{logo_url: string | null, company_name: string}>({ logo_url: null, company_name: 'ELLEVENLAB' });
-
-  useEffect(() => {
-    setAthlete(initialAthlete);
-    if (initialSessionMode) {
-      setIsSessionMode(true);
-    }
-  }, [initialAthlete, initialSessionMode]);
-
-  useEffect(() => {
-    async function loadBranding() {
-      try {
-         const { data } = await supabase.from('branding_settings').select('logo_url, company_name').single();
-         if (data) {
-           setBranding({ logo_url: data.logo_url, company_name: data.company_name || 'ELLEVENLAB' });
-         }
-      } catch (err) {
-         console.error('Error fetching branding:', err);
-      }
-    }
-    loadBranding();
-  }, []);
-
-  const calculateAge = (birthDate?: string) => {
-    if (!birthDate) return 0;
-    const birth = new Date(birthDate);
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
-  const calculateDetailedAge = (birthDate?: string) => {
-    const dateToUse = birthDate || athlete.birth_date || athlete.birthDate;
-    if (!dateToUse) return null;
-    const birth = new Date(dateToUse);
-    const today = new Date();
-    
-    let years = today.getFullYear() - birth.getFullYear();
-    let months = today.getMonth() - birth.getMonth();
-    let days = today.getDate() - birth.getDate();
-    
-    if (days < 0) {
-      months--;
-      const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-      days += lastMonth.getDate();
-    }
-    
-    if (months < 0) {
-      years--;
-      months += 12;
-    }
-    
-    return { years, months, days };
-  };
-
-  const athleteAge = calculateAge(athlete.birth_date || athlete.birthDate);
-
   const [wellnessHistory, setWellnessHistory] = useState<any[]>([]);
   const [prontuarioNotes, setProntuarioNotes] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<any[]>([]);
@@ -318,12 +260,16 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [painReports, setPainReports] = useState<any[]>([]);
   const [athleteAlerts, setAthleteAlerts] = useState<ClinicalAlert[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
+  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments'>('overview');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
     { id: '1', tag: 'Posterior chain vulnerability', created_at: new Date().toISOString(), weight: 1.5, source: 'clinical' },
     { id: '2', tag: 'Load intolerance', created_at: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(), weight: 2.0, source: 'field_observation' }
-  ]); // Simulated default state from DB
+  ]);
 
-  // Grouped Inputs for stability and single truth consistency
+  // 2. MEMOIZED VALUES
   const clinicalInputs = useMemo(() => {
     return {
       wellnessHistory,
@@ -334,7 +280,6 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     };
   }, [wellnessHistory, painReports, clinicalAssessments, loadData, clinicalTags]);
 
-  const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const clinicalSessionData = useMemo(() => {
     if (!clinicalInputs.wellnessHistory.length) return null;
     
@@ -343,7 +288,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       ...w,
       id: w.id || '',
       athlete_id: athlete.id,
-      readiness_score: w.readiness_score || w.readiness || 0, // Handle different keys
+      readiness_score: w.readiness_score || w.readiness || 0,
       fatigue_level: w.fatigue_level || 0,
       muscle_soreness: w.muscle_soreness || 0,
       sleep_hours: w.sleep_hours || 0,
@@ -363,7 +308,6 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     const confidence = ConfidenceEngine.calculate(normalizedWellness, {});
     const decayed = DecayEngine.processHistory(normalizedWellness);
     
-    // Calculate final predictive readiness
     const readiness = EARSEngine.calculateFinalReadiness(
       normalizedWellness[normalizedWellness.length-1] as any,
       athlete.age || 25,
@@ -411,9 +355,68 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     };
   }, [clinicalInputs, athleteAlerts, athlete.id, athlete.age]);
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments'>('overview');
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
+  const calculateAge = (birthDate?: string) => {
+    if (!birthDate) return 0;
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const calculateDetailedAge = (birthDate?: string) => {
+    const dateToUse = birthDate || athlete.birth_date || athlete.birthDate;
+    if (!dateToUse) return null;
+    const birth = new Date(dateToUse);
+    const today = new Date();
+    
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+    let days = today.getDate() - birth.getDate();
+    
+    if (days < 0) {
+      months--;
+      const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+      days += lastMonth.getDate();
+    }
+    
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+    
+    return { years, months, days };
+  };
+
+  const athleteAge = calculateAge(athlete.birth_date || athlete.birthDate);
+
+  const initialSessionHandled = useRef(false);
+
+  // 3. EFFECTS
+  useEffect(() => {
+    setAthlete(initialAthlete);
+    if (initialSessionMode && !initialSessionHandled.current) {
+      setIsSessionMode(true);
+      initialSessionHandled.current = true;
+    }
+  }, [initialAthlete, initialSessionMode]);
+
+  useEffect(() => {
+    async function loadBranding() {
+      try {
+         const { data } = await supabase.from('branding_settings').select('logo_url, company_name').single();
+         if (data) {
+           setBranding({ logo_url: data.logo_url, company_name: data.company_name || 'ELLEVENLAB' });
+         }
+      } catch (err) {
+         console.error('Error fetching branding:', err);
+      }
+    }
+    loadBranding();
+  }, []);
 
   useEffect(() => {
     const fetchFullData = async () => {
