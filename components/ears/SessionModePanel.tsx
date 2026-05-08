@@ -90,13 +90,6 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     observacoes: ''
   });
 
-  // Interactive State for "Evolução"
-  const [evolution, setEvolution] = useState({
-    conduta: '',
-    resposta: '',
-    proximaAcao: ''
-  });
-
   const lastWellness = wellnessHistory?.[0] || {};
   
   const metrics = {
@@ -146,7 +139,6 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
       const sessionData = {
         athlete_id: athlete.id,
         expresso_exam: expressoExam,
-        evolution: evolution,
         decision_applied: clinicalSessionData?.priorityOutput?.adjustedDecision,
         signature: signature,
         timestamp: new Date().toISOString()
@@ -442,51 +434,21 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
 
         {/* 6. BLOCO: REGISTRAR EVOLUÇÃO */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registrar Evolução</h2>
+          <div className="flex items-center justify-between p-6 bg-slate-900 border border-white/5 rounded-[2rem] shadow-2xl">
+            <div className="flex items-center gap-3">
+              <ClipboardList className="w-6 h-6 text-emerald-400" />
+              <div>
+                <h2 className="text-sm font-black text-white uppercase tracking-widest">Evolução Clínica</h2>
+                <p className="text-[10px] font-bold text-slate-500 uppercase">Registre condutas e observações completas</p>
+              </div>
             </div>
             <Button 
                 onClick={onOpenNewEvolution}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] uppercase tracking-widest px-4 py-2 h-auto rounded-xl flex items-center gap-2"
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest px-6 h-12 rounded-2xl flex items-center gap-2 transition-all active:scale-95"
             >
-                <Plus className="w-3 h-3" /> Nova Evolução Completa
+                <Plus className="w-4 h-4" /> Nova Evolução Completa
             </Button>
           </div>
-          <Card className="bg-slate-900 border-white/5 shadow-2xl">
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Conduta Aplicada</label>
-                <textarea 
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white min-h-[80px] focus:border-emerald-500/50 outline-none transition-all"
-                  placeholder="Descreva o que foi feito..."
-                  value={evolution.conduta}
-                  onChange={(e) => setEvolution({ ...evolution, conduta: e.target.value })}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Resposta Imediata</label>
-                  <input 
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:border-emerald-500/50 outline-none transition-all"
-                    placeholder="Ex: Alívio total, dor persistente..."
-                    value={evolution.resposta}
-                    onChange={(e) => setEvolution({ ...evolution, resposta: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Próxima Ação</label>
-                  <input 
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-sm font-bold text-white focus:border-emerald-500/50 outline-none transition-all"
-                    placeholder="Ex: Reavaliar em 24h, carga total amanhã..."
-                    value={evolution.proximaAcao}
-                    onChange={(e) => setEvolution({ ...evolution, proximaAcao: e.target.value })}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </section>
 
         {/* 7. BOTÃO SALVAR */}
