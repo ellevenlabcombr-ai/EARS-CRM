@@ -24,7 +24,6 @@ import { ptBR } from 'date-fns/locale';
 
 interface TodayDashboardProps {
   onViewAthlete: (id: string) => void;
-  onStartSession?: (id: string) => void;
   onNavigate?: (view: any) => void;
 }
 
@@ -207,7 +206,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
               )}
 
               <button 
-                onClick={() => onStartSession ? onStartSession(item.athlete_id) : onViewAthlete(item.athlete_id)}
+                onClick={() => onViewAthlete(item.athlete_id)}
                 className="mt-auto w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.15)] hover:shadow-[0_0_25px_rgba(79,70,229,0.3)] active:scale-[0.98] flex items-center justify-center gap-2 border border-indigo-500/50"
               >
                 Iniciar Sessão <ChevronRight size={14} className="opacity-80" />

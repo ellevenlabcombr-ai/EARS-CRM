@@ -65,12 +65,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { FileText } from "lucide-react";
 import { UserProfileModal } from "./UserProfileModal";
 import { ReportsDashboard } from "./ReportsDashboard";
-import { SmartSession } from "./SmartSession";
 
 import { DataSafety } from "@/lib/dataSafety";
 import { SafeRender } from "./SafeRender";
 
-type View = 'today' | 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance' | 'smart-session';
+type View = 'today' | 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance';
 
 interface MainDashboardProps {
   onLogout?: () => void;
@@ -363,18 +362,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                     setEditingAthlete({ id });
                     handleNavigation('athlete-profile');
                   }}
-                  onStartSession={(id) => {
-                    setEditingAthlete({ id });
-                    handleNavigation('smart-session');
-                  }}
-                />
-              );
-            case 'smart-session':
-              return (
-                <SmartSession
-                  athleteId={editingAthlete?.id || ''}
-                  onBack={() => handleNavigation('today')}
-                  onSave={() => handleNavigation('today')}
                 />
               );
             case 'home':
