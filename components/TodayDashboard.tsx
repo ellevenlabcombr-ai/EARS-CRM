@@ -79,7 +79,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         generalWellness: 78
       });
 
-      setIntelligenceText('O cenário de hoje exige atenção na recuperação. 3 atletas apresentam alto risco de fadiga excessiva devido à carga da última partida. O alerta principal é para João Pedro, que teve uma quebra significativa no padrão de sono. Recomenda-se sessões focadas em recovery para o turno da tarde.');
+      setIntelligenceText('O grupo apresenta sinais de fadiga residual pós-jogo. Priorizar estratégias regenerativas no período da tarde. João Pedro requer atenção especial pela queda abrupta na qualidade do sono.');
       
       setLoading(false);
     }, 1500);
@@ -111,33 +111,45 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         </header>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-          <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center gap-2 text-cyan-400 mb-2">
+          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
+            <div className="flex items-center gap-2 text-cyan-400 mb-3">
               <CalendarIcon size={16} />
               <span className="text-xs uppercase tracking-widest font-bold">Agenda</span>
             </div>
-            <p className="text-2xl font-black text-white">{agenda.length} <span className="text-sm font-medium text-slate-500">atend.</span></p>
+            <div>
+              <p className="text-3xl font-black text-white leading-none">{agenda.length}</p>
+              <p className="text-sm font-medium text-slate-400 mt-1">atendimentos hoje</p>
+            </div>
           </div>
-          <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center gap-2 text-amber-500 mb-2">
+          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
+            <div className="flex items-center gap-2 text-amber-500 mb-3">
               <Activity size={16} />
               <span className="text-xs uppercase tracking-widest font-bold">Wellness</span>
             </div>
-            <p className="text-2xl font-black text-white">{agenda.filter(a => a.wellness_status === 'pending').length} <span className="text-sm font-medium text-slate-500">pendentes</span></p>
+            <div>
+              <p className="text-3xl font-black text-white leading-none">{agenda.filter(a => a.wellness_status === 'pending').length}</p>
+              <p className="text-sm font-medium text-slate-400 mt-1">resposta{agenda.filter(a => a.wellness_status === 'pending').length !== 1 ? 's' : ''} pendente{agenda.filter(a => a.wellness_status === 'pending').length !== 1 ? 's' : ''}</p>
+            </div>
           </div>
-          <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center gap-2 text-rose-500 mb-2">
+          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
+            <div className="flex items-center gap-2 text-rose-500 mb-3">
               <AlertTriangle size={16} />
               <span className="text-xs uppercase tracking-widest font-bold">Alertas</span>
             </div>
-            <p className="text-2xl font-black text-white">{radar.highRisk} <span className="text-sm font-medium text-slate-500">críticos</span></p>
+            <div>
+              <p className="text-3xl font-black text-white leading-none">{radar.highRisk}</p>
+              <p className="text-sm font-medium text-slate-400 mt-1">exigem ação hoje</p>
+            </div>
           </div>
-          <div className="bg-slate-950/50 p-4 rounded-2xl border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center gap-2 text-emerald-500 mb-2">
+          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
+            <div className="flex items-center gap-2 text-emerald-500 mb-3">
               <CreditCard size={16} />
               <span className="text-xs uppercase tracking-widest font-bold">Financeiro</span>
             </div>
-            <p className="text-2xl font-black text-white">{financialAlerts.length} <span className="text-sm font-medium text-slate-500">avisos</span></p>
+            <div>
+              <p className="text-3xl font-black text-white leading-none">{financialAlerts.length}</p>
+              <p className="text-sm font-medium text-slate-400 mt-1">item pendente</p>
+            </div>
           </div>
         </div>
       </section>
@@ -163,41 +175,41 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center font-black text-white text-sm shrink-0">
-                    {item.time}
+                  <div className="w-12 h-12 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col items-center justify-center shrink-0 shadow-inner">
+                    <span className="text-white font-black text-sm">{item.time}</span>
                   </div>
                   <div>
-                    <h3 className="text-white font-bold">{item.athlete_name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      {item.wellness_status === 'ok' && <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-1"><CheckCircle2 size={12}/> Wellness OK</span>}
-                      {item.wellness_status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1"><Clock size={12}/> S/ Wellness</span>}
-                      {item.wellness_status === 'alert' && <span className="text-[10px] font-bold uppercase tracking-widest text-rose-500 flex items-center gap-1"><AlertTriangle size={12}/> Alerta WL</span>}
+                    <h3 className="text-white font-bold text-base tracking-tight">{item.athlete_name}</h3>
+                    <div className="flex items-center gap-2 mt-1 line-clamp-1">
+                      {item.risk === 'low' && <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Estável</span>}
+                      {item.risk === 'medium' && <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Atenção</span>}
+                      {item.risk === 'high' && <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Prioridade</span>}
                       
-                      <span className={`w-1.5 h-1.5 rounded-full ${item.risk === 'low' ? 'bg-emerald-500' : item.risk === 'medium' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                      {item.wellness_status === 'pending' && <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 border border-slate-800 px-1.5 py-0.5 rounded-md flex items-center gap-1"><Clock size={10}/> s/ wellness</span>}
                     </div>
                   </div>
                 </div>
               </div>
 
               {item.alert && (
-                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl text-xs font-medium mb-3 flex items-start gap-2">
-                  <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                <div className="bg-rose-500/5 border border-rose-500/10 text-rose-300 p-3 rounded-xl text-xs font-medium mb-3 flex items-start gap-2">
+                  <AlertCircle size={14} className="mt-0.5 shrink-0 text-rose-500" />
                   <p>{item.alert}</p>
                 </div>
               )}
 
               {item.suggestion && (
-                <div className="bg-cyan-500/5 border border-cyan-500/10 text-cyan-300 p-3 rounded-xl text-xs flex-1 mb-4 flex items-start gap-2">
-                  <Zap size={14} className="mt-0.5 shrink-0 text-cyan-500" />
-                  <p>{item.suggestion}</p>
+                <div className="bg-cyan-500/5 border border-cyan-500/10 text-cyan-300 p-3 rounded-xl text-xs flex-1 mb-4 flex items-start gap-2 shadow-inner">
+                  <Zap size={14} className="mt-0.5 shrink-0 text-cyan-500 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
+                  <p className="leading-relaxed">{item.suggestion}</p>
                 </div>
               )}
 
               <button 
                 onClick={() => onViewAthlete(item.athlete_id)}
-                className="mt-auto w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2"
+                className="mt-auto w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.15)] hover:shadow-[0_0_25px_rgba(79,70,229,0.3)] active:scale-[0.98] flex items-center justify-center gap-2 border border-indigo-500/50"
               >
-                Abrir Atleta <ChevronRight size={14} />
+                Iniciar Sessão <ChevronRight size={14} className="opacity-80" />
               </button>
             </motion.div>
           ))}
@@ -254,22 +266,35 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
           </section>
 
           {/* 5. Radar Clínico */}
-          <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl text-center">
-              <div className="text-2xl font-black text-rose-500 mb-1">{radar.highRisk}</div>
-              <div className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Risco Alto</div>
-            </div>
-            <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl text-center">
-              <div className="text-2xl font-black text-amber-500 mb-1">{radar.mediumRisk}</div>
-              <div className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Risco Médio</div>
-            </div>
-            <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl text-center">
-              <div className="text-2xl font-black text-cyan-500 mb-1">{radar.generalWellness}%</div>
-              <div className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Wellness Geral</div>
-            </div>
-            <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl text-center">
-              <div className="text-2xl font-black text-emerald-500 mb-1">{radar.assessmentsDone}</div>
-              <div className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Avals. no Mês</div>
+          <section className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
+            <h2 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
+              <Activity size={16} className="text-cyan-500" /> Radar da Equipe
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+                </div>
+                <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.highRisk} atletas</span> preocupam hoje</p>
+              </div>
+              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                </div>
+                <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.mediumRisk} atletas</span> em monitoramento</p>
+              </div>
+              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                </div>
+                <p className="text-sm font-medium text-slate-300">Adesão wellness <span className="text-white font-bold">{radar.generalWellness}%</span></p>
+              </div>
+              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 text-cyan-500">
+                  <TrendingUp size={14} />
+                </div>
+                <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.assessmentsDone} avaliações</span> este mês</p>
+              </div>
             </div>
           </section>
         </div>
@@ -304,20 +329,31 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
           </section>
 
           {/* 7. Financeiro Discreto */}
-          <section className="bg-slate-900/40 border border-slate-800 rounded-3xl p-5">
-            <h2 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
-              <CreditCard size={16} className="text-amber-500" /> Financeiro
-            </h2>
-            <div className="space-y-3">
-              {financialAlerts.map((fin) => (
-                <div key={fin.id} className="flex items-center gap-3 bg-slate-950/50 border border-slate-800 p-3 rounded-xl cursor-pointer hover:bg-slate-800/50 transition-colors" onClick={() => onNavigate?.('finance')}>
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${fin.urgency === 'high' ? 'bg-rose-500' : 'bg-amber-500'}`} />
-                  <p className="text-sm text-slate-400 flex-1">{fin.description}</p>
-                  <ChevronRight size={14} className="text-slate-600 shrink-0" />
+          <section className="bg-slate-900/20 border border-slate-800/50 rounded-3xl p-5 hover:border-slate-700/50 transition-colors group">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <CreditCard size={16} className="text-slate-500" /> Financeiro
+              </h2>
+              {financialAlerts.length > 0 && (
+                <button 
+                  onClick={() => onNavigate?.('finance')}
+                  className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors flex items-center gap-1 bg-slate-800/50 hover:bg-slate-700/50 px-2.5 py-1 rounded-full"
+                >
+                  Ver Detalhes <ChevronRight size={12} />
+                </button>
+              )}
+            </div>
+            
+            <div className="pt-2">
+              {financialAlerts.length > 0 ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_5px_rgba(245,158,11,0.5)]"></div>
+                  <p className="text-sm text-slate-300 font-medium">
+                    {financialAlerts.length} mensalidade{financialAlerts.length !== 1 ? 's' : ''} em aberto
+                  </p>
                 </div>
-              ))}
-              {financialAlerts.length === 0 && (
-                <p className="text-xs text-slate-500">Tudo em dia com o financeiro.</p>
+              ) : (
+                <p className="text-sm text-slate-500">Tudo em dia com o financeiro.</p>
               )}
             </div>
           </section>
