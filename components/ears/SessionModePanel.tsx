@@ -50,6 +50,7 @@ interface SessionModePanelProps {
   onSaveSession: (data: any) => Promise<void>;
   onClose: () => void;
   onViewFullProntuario?: () => void;
+  onOpenNewEvolution?: () => void;
 }
 
 export const SessionModePanel: React.FC<SessionModePanelProps> = ({ 
@@ -61,7 +62,8 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   isLoading = false,
   onSaveSession,
   onClose,
-  onViewFullProntuario
+  onViewFullProntuario,
+  onOpenNewEvolution
 }) => {
   const [loading, setLoading] = useState(false);
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
@@ -439,9 +441,17 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
 
         {/* 6. BLOCO: REGISTRAR EVOLUÇÃO */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <ClipboardList className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registrar Evolução</h2>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <ClipboardList className="w-5 h-5 text-emerald-400" />
+              <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registrar Evolução</h2>
+            </div>
+            <Button 
+                onClick={onOpenNewEvolution}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] uppercase tracking-widest px-4 py-2 h-auto rounded-xl flex items-center gap-2"
+            >
+                <Plus className="w-3 h-3" /> Nova Evolução Completa
+            </Button>
           </div>
           <Card className="bg-slate-900 border-white/5 shadow-2xl">
             <CardContent className="p-6 space-y-6">

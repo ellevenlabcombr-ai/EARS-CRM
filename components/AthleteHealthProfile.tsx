@@ -262,6 +262,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments'>('overview');
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
@@ -1325,6 +1326,21 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     tagAdjustments: [] as { id: string, action: 'reinforce' | 'remove' | 'keep' }[],
     newTags: [] as string[]
   });
+
+  const handleOpenNewEvolution = () => {
+    setShowSignatureStep(false); 
+    setNoteForm({
+      pain: 2,
+      feeling: 'Igual',
+      regions: [] as string[],
+      treatments: [] as string[],
+      obs: '',
+      suggestionMatch: 'Yes',
+      tagAdjustments: clinicalTags.map(t => ({ id: t.id, action: 'keep' as const })),
+      newTags: []
+    });
+    setShowClinicalNoteModal(true);
+  };
   
   const [isListening, setIsListening] = useState(false);
 
@@ -2129,6 +2145,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    setIsSessionMode(false);
                    setActiveTab('prontuario');
                  }}
+                 onOpenNewEvolution={handleOpenNewEvolution}
                  onSaveSession={async (data) => {
                    // Create a clinical note from the session data accurately mapped to DB schema
                    const noteContent = `SESSÃO INTELIGENTE:
