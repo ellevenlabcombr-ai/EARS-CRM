@@ -286,14 +286,14 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       ...w,
       id: w.id || '',
       athlete_id: athlete.id,
-      readiness_score: Number(w.readiness_score || w.readiness || 0),
-      fatigue_level: Number(w.fatigue_level || 0),
-      muscle_soreness: Number(w.muscle_soreness || 0),
-      sleep_hours: Number(w.sleep_hours || 0),
+      readiness_score: Number(w.readiness_score || w.readiness || w.readiness_score || 0),
+      fatigue_level: Number(w.fatigue_level || w.fatigue || 0),
+      muscle_soreness: Number(w.muscle_soreness || w.soreness || w.pain || 0),
+      sleep_hours: Number(w.sleep_hours || w.sleep || 0),
       sleep_quality: Number(w.sleep_quality || 0),
-      stress_level: Number(w.stress_level || 0),
-      record_date: w.record_date,
-      created_at: w.record_date, 
+      stress_level: Number(w.stress_level || w.stress || 0),
+      record_date: w.record_date || w.date,
+      created_at: w.record_date || w.date, 
       symptoms: w.symptoms || []
     }));
 
@@ -2123,6 +2123,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  wellnessHistory={wellnessHistory}
                  clinicalAssessments={clinicalAssessments}
                  prontuarioNotes={prontuarioNotes}
+                 isLoading={isLoadingData}
                  onClose={() => setIsSessionMode(false)}
                  onViewFullProntuario={() => {
                    setIsSessionMode(false);
@@ -2137,7 +2138,7 @@ Próxima Ação: ${data.evolution.proximaAcao}
 
 EXAME EXPRESSO:
 ADM: ${data.expresso_exam.adm} | Força: ${data.expresso_exam.forca} | Mobilidade: ${data.expresso_exam.mobilidade} | Confiança: ${data.expresso_exam.confianca}
-Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}`;
+Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA ASSINADA DIGITALMENTE' : ''}`;
 
                    // Map string pain to numeric if possible, or just default to 0
                    const painMap: Record<string, number> = { 'Normal': 0, 'Aumento': 5, 'Diminuição': 2, 'Aguda': 8 };
@@ -4816,7 +4817,7 @@ ${noteForm.obs}` : ''}`;
                                   treatments: noteForm.treatments,
                                   observations: noteForm.obs,
                                   generated_text: generatedNote,
-                                  is_signed: true,
+                                  is_signed: !!data.signature,
                                   professional_name: professionalName
                                 }
                               ])

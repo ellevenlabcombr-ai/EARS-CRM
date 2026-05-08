@@ -38,6 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { SignaturePad } from '../ui/SignaturePad';
 
 interface SessionModePanelProps {
   athlete: any;
@@ -45,6 +46,7 @@ interface SessionModePanelProps {
   wellnessHistory: any[];
   clinicalAssessments: any[];
   prontuarioNotes: any[];
+  isLoading?: boolean;
   onSaveSession: (data: any) => Promise<void>;
   onClose: () => void;
   onViewFullProntuario?: () => void;
@@ -56,12 +58,15 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   wellnessHistory,
   clinicalAssessments,
   prontuarioNotes,
+  isLoading = false,
   onSaveSession,
   onClose,
   onViewFullProntuario
 }) => {
   const [loading, setLoading] = useState(false);
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const [signature, setSignature] = useState<string | null>(null);
 
   // Safety guard for athlete
   if (!athlete || !athlete.id) {
@@ -89,14 +94,29 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     proximaAcao: ''
   });
 
-  const lastWellness = wellnessHistory?.[0] || {};
+  const lastWellness = wellnessHistory?.[wellnessHistory.length - 1] || {};
   
   const metrics = {
-    sleep: lastWellness.sleep_hours || 0,
-    fatigue: lastWellness.fatigue_level || 0,
-    pain: lastWellness.muscle_soreness || 0,
-    wellness: lastWellness.readiness_score || 0
+    sleep: lastWellness.sleep || lastWellness.sleep_hours || 0,
+    fatigue: lastWellness.fatigue || lastWellness.fatigue_level || 0,
+    pain: lastWellness.soreness || lastWellness.muscle_soreness || 0,
+    wellness: lastWellness.readiness || lastWellness.readiness_score || 0
   };
+
+  if (isLoading && metrics.wellness === 0) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#020617] flex flex-col items-center justify-center gap-6">
+        <div className="relative">
+          <div className="w-20 h-20 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+          <BrainCircuit className="w-10 h-10 text-cyan-500 absolute inset-0 m-auto animate-pulse" />
+        </div>
+        <div className="text-center">
+          <h2 className="text-xl font-black text-white uppercase tracking-widest mb-2">Processando EAR/S Care</h2>
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Sincronizando Wellness, Avaliações e Histórico Clínico...</p>
+        </div>
+      </div>
+    );
+  }
 
   const getMetricColor = (val: number, type: 'sleep' | 'fatigue' | 'pain' | 'wellness') => {
     if (type === 'wellness' || type === 'sleep') {
@@ -125,6 +145,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
         expresso_exam: expressoExam,
         evolution: evolution,
         decision_applied: clinicalSessionData?.priorityOutput?.adjustedDecision,
+        signature: signature,
         timestamp: new Date().toISOString()
       };
       await onSaveSession(sessionData);
@@ -236,6 +257,76 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </div>
             </CardContent>
           </Card>
+        </section>
+
+        {/* 4. BLOCO: VISÃO 360 DO ATLETA */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Contexto 360° (Histórico & Alertas)</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card className="bg-slate-900 border-white/5 p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Alertas Clínicos & Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {clinicalSessionData?.priorityOutput?.content?.tags?.map((tag: string, i: number) => (
+                    <div key={i} className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-full text-[10px] font-black text-rose-400 uppercase tracking-widest">
+                      {tag}
+                    </div>
+                  ))}
+                  {clinicalSessionData?.priorityOutput?.content?.tags?.length === 0 && (
+                    <span className="text-[10px] font-bold text-slate-600 uppercase italic">Nenhum alerta crítico ativo</span>
+                  )}
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-slate-900 border-white/5 p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Última Avaliação Estrutural</p>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-emerald-500/10 rounded-xl">
+                    <ClipboardList className="w-4 h-4 text-emerald-500" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-300">
+                      {clinicalAssessments?.[0]?.source_table ? 
+                        `Avaliação de ${clinicalAssessments[0].source_table.replace('_assessments', '').toUpperCase()}` : 
+                        'Sem avaliações recentes'}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase">
+                      Data: {clinicalAssessments?.[0]?.date || '---'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-slate-900 border-white/5 p-4 flex flex-col justify-between">
+              <div>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Dados Biométricos</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-slate-800/50 rounded-lg p-2">
+                    <p className="text-[8px] font-black text-slate-500 uppercase">Peso</p>
+                    <p className="text-xs font-bold text-white">{athlete.weight || '--'} kg</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-2">
+                    <p className="text-[8px] font-black text-slate-500 uppercase">Altura</p>
+                    <p className="text-xs font-bold text-white">{athlete.height || '--'} cm</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-2">
+                    <p className="text-[8px] font-black text-slate-500 uppercase">Idade</p>
+                    <p className="text-xs font-bold text-white">{athlete.age || athlete.birthDate ? `${new Date().getFullYear() - new Date(athlete.birthDate || athlete.birth_date).getFullYear()} anos` : '--'}</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-2">
+                    <p className="text-[8px] font-black text-slate-500 uppercase">Dom.</p>
+                    <p className="text-xs font-bold text-white uppercase">{athlete.dominance || '--'}</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </section>
 
         {/* 4. BLOCO: EXAME EXPRESSO */}
@@ -389,20 +480,42 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
 
         {/* 7. BOTÃO SALVAR */}
         <div className="pt-10">
-          <Button 
-            className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-[#020617] font-black text-lg uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_50px_rgba(6,182,212,0.3)] group transition-all active:scale-95"
-            onClick={handleSave}
-            disabled={loading}
-          >
-            {loading ? (
-              <RefreshCcw className="w-6 h-6 animate-spin" />
-            ) : (
-              <>
-                <Save className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
-                Salvar Sessão Inteligente
-              </>
-            )}
-          </Button>
+          {!isFinalizing ? (
+            <Button 
+              className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-[#020617] font-black text-lg uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_50px_rgba(6,182,212,0.3)] group transition-all active:scale-95"
+              onClick={() => setIsFinalizing(true)}
+              disabled={loading || isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <RefreshCcw className="w-6 h-6 animate-spin mr-3" />
+                  Carregando dados...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+                  Finalizar Atendimento
+                </>
+              )}
+            </Button>
+          ) : (
+            <Card className="bg-slate-900 border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.1)] p-6 rounded-[2rem]">
+              <SignaturePad 
+                onSave={(dataUrl) => {
+                  setSignature(dataUrl);
+                  handleSave();
+                }}
+                onClear={() => setSignature(null)}
+              />
+              <Button 
+                variant="ghost" 
+                onClick={() => setIsFinalizing(false)}
+                className="w-full mt-4 text-[10px] font-black text-slate-500 uppercase tracking-widest"
+              >
+                Voltar para edição
+              </Button>
+            </Card>
+          )}
         </div>
 
       </div>
