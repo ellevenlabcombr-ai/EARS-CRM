@@ -15,6 +15,7 @@ import {
   Activity,
   Info,
   ChevronLeft,
+  ChevronRight,
   X,
   Check,
   Moon,
@@ -46,6 +47,7 @@ interface SessionModePanelProps {
   prontuarioNotes: any[];
   onSaveSession: (data: any) => Promise<void>;
   onClose: () => void;
+  onViewFullProntuario?: () => void;
 }
 
 export const SessionModePanel: React.FC<SessionModePanelProps> = ({ 
@@ -55,10 +57,20 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   clinicalAssessments,
   prontuarioNotes,
   onSaveSession,
-  onClose
+  onClose,
+  onViewFullProntuario
 }) => {
   const [loading, setLoading] = useState(false);
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
+
+  // Safety guard for athlete
+  if (!athlete || !athlete.id) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#020617] flex items-center justify-center">
+        <RefreshCcw className="w-10 h-10 text-cyan-500 animate-spin" />
+      </div>
+    );
+  }
   
   // Interactive State for "Exame Expresso"
   const [expressoExam, setExpressoExam] = useState({
@@ -277,23 +289,60 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Histórico Sessões (Últimas 3)</h2>
           </div>
           <div className="space-y-3">
-            {prontuarioNotes.slice(0, 3).map((note, i) => (
-              <div key={i} className="bg-slate-900/30 border border-white/5 rounded-2xl p-4 flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
-                  <span className="text-[10px] font-black text-white">{format(new Date(note.created_at), 'dd')}</span>
-                  <span className="text-[8px] font-bold text-slate-500 uppercase">{format(new Date(note.created_at), 'MMM')}</span>
+            {prontuarioNotes.slice(0, 3).map((note, i) => {
+              // Safe date parsing for the circular badge
+              let dateObj = new Date();
+              let isDateValid = false;
+              
+              try {
+                // If note.date is already formatted like "dd/mm/yyyy hh:mm", we need to handle it
+                // In HealthProfile it's .toLocaleString('pt-BR')
+                if (note.date) {
+                  // Try parsing directly. If it fails, we might need a regex
+                  const parts = note.date.split(',')[0].split('/');
+                  if (parts.length === 3) {
+                    dateObj = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                    isDateValid = !isNaN(dateObj.getTime());
+                  } else {
+                    dateObj = new Date(note.date);
+                    isDateValid = !isNaN(dateObj.getTime());
+                  }
+                }
+              } catch (e) {
+                console.error("Error parsing note date:", e);
+              }
+
+              return (
+                <div key={i} className="bg-slate-900/30 border border-white/5 rounded-2xl p-4 flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[10px] font-black text-white">
+                      {isDateValid ? format(dateObj, 'dd', { locale: ptBR }) : '--'}
+                    </span>
+                    <span className="text-[8px] font-bold text-slate-500 uppercase">
+                      {isDateValid ? format(dateObj, 'MMM', { locale: ptBR }) : '---'}
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-xs font-bold text-slate-300 line-clamp-2 italic">
+                      "{note.text || note.observations || 'Sem descrição'}"
+                    </p>
+                    <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mt-1">
+                      {note.professional || 'Atendimento Clínico'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-300 line-clamp-2 italic">"{note.content}"</p>
-                  <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mt-1">
-                    {note.title || 'Atendimento Clínico'}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {prontuarioNotes.length === 0 && (
               <p className="text-xs text-slate-500 text-center py-4 uppercase font-bold">Nenhum histórico anterior disponível</p>
             )}
+            <Button 
+                variant="ghost" 
+                onClick={onViewFullProntuario}
+                className="w-full text-[10px] font-black text-cyan-500 hover:text-cyan-400 uppercase tracking-widest gap-2 bg-cyan-500/5 py-6 rounded-2xl border border-cyan-500/10"
+            >
+                Ver Prontuário Completo <ChevronRight className="w-3 h-3" />
+            </Button>
           </div>
         </section>
 

@@ -281,25 +281,40 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   }, [wellnessHistory, painReports, clinicalAssessments, loadData, clinicalTags]);
 
   const clinicalSessionData = useMemo(() => {
-    if (!clinicalInputs.wellnessHistory.length) return null;
-    
-    // Normalize format for engine
+    // Basic normalized wellness for safety
     const normalizedWellness = clinicalInputs.wellnessHistory.map(w => ({
       ...w,
       id: w.id || '',
       athlete_id: athlete.id,
-      readiness_score: w.readiness_score || w.readiness || 0,
-      fatigue_level: w.fatigue_level || 0,
-      muscle_soreness: w.muscle_soreness || 0,
-      sleep_hours: w.sleep_hours || 0,
-      sleep_quality: w.sleep_quality || 0,
-      stress_level: w.stress_level || 0,
+      readiness_score: Number(w.readiness_score || w.readiness || 0),
+      fatigue_level: Number(w.fatigue_level || 0),
+      muscle_soreness: Number(w.muscle_soreness || 0),
+      sleep_hours: Number(w.sleep_hours || 0),
+      sleep_quality: Number(w.sleep_quality || 0),
+      stress_level: Number(w.stress_level || 0),
       record_date: w.record_date,
       created_at: w.record_date, 
       symptoms: w.symptoms || []
     }));
 
-    const normalizedLoad = clinicalInputs.loadData.map(l => ({
+    if (!normalizedWellness.length) {
+      return {
+        readiness: { score: 70, classification: 'stable' },
+        trends: { trendScore: 0, direction: 'stable' },
+        confidence: { confidenceLevel: 'low', confidenceScore: 40 },
+        priorityOutput: {
+          adjustedDecision: 'recovery',
+          visibleBlocks: ['metrics', 'actions'],
+          content: { 
+            factors: ['Sem dados de wellness recentes'], 
+            actions: ['Check-in clínico presencial'], 
+            tags: ['Incompleto'] 
+          }
+        }
+      };
+    }
+
+    const normalizedLoad = (clinicalInputs.loadData || []).map(l => ({
       intensity: l.intensity || (l.raw_data && l.raw_data.rpe) || l.rpe || 5,
       duration_minutes: l.duration || (l.raw_data && l.raw_data.duration) || 60,
     }));
@@ -308,13 +323,20 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     const confidence = ConfidenceEngine.calculate(normalizedWellness, {});
     const decayed = DecayEngine.processHistory(normalizedWellness);
     
-    const readiness = EARSEngine.calculateFinalReadiness(
-      normalizedWellness[normalizedWellness.length-1] as any,
-      athlete.age || 25,
-      normalizedWellness.slice(-3).map(w => w.sleep_hours),
-      decayed,
-      trends
-    );
+    // Safety check for engine call
+    let readiness;
+    try {
+      readiness = EARSEngine.calculateFinalReadiness(
+        normalizedWellness[normalizedWellness.length-1] as any,
+        athlete.age || 25,
+        normalizedWellness.slice(-3).map(w => w.sleep_hours),
+        decayed,
+        trends
+      );
+    } catch (e) {
+      console.error("EARSEngine Crash:", e);
+      readiness = { score: 70, classification: 'stable' };
+    }
 
     const riskClustersResult = calculateRiskClusters({
       wellnessRecords: normalizedWellness,
@@ -398,11 +420,16 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   // 3. EFFECTS
   useEffect(() => {
     setAthlete(initialAthlete);
+    // Reset session handled ref when internal athlete changes
+    initialSessionHandled.current = false;
+  }, [initialAthlete]);
+
+  useEffect(() => {
     if (initialSessionMode && !initialSessionHandled.current) {
       setIsSessionMode(true);
       initialSessionHandled.current = true;
     }
-  }, [initialAthlete, initialSessionMode]);
+  }, [initialSessionMode]);
 
   useEffect(() => {
     async function loadBranding() {
@@ -2097,6 +2124,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  clinicalAssessments={clinicalAssessments}
                  prontuarioNotes={prontuarioNotes}
                  onClose={() => setIsSessionMode(false)}
+                 onViewFullProntuario={() => {
+                   setIsSessionMode(false);
+                   setActiveTab('prontuario');
+                 }}
                  onSaveSession={async (data) => {
                    // Create a clinical note from the session data accurately mapped to DB schema
                    const noteContent = `SESSÃO INTELIGENTE:
