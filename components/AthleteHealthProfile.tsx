@@ -282,101 +282,124 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   }, [wellnessHistory, painReports, clinicalAssessments, loadData, clinicalTags]);
 
   const clinicalSessionData = useMemo(() => {
-    // Basic normalized wellness for safety
-    const normalizedWellness = clinicalInputs.wellnessHistory.map(w => ({
-      ...w,
-      id: w.id || '',
-      athlete_id: athlete.id,
-      readiness_score: Number(w.readiness_score || w.readiness || w.readiness_score || 0),
-      fatigue_level: Number(w.fatigue_level || w.fatigue || 0),
-      muscle_soreness: Number(w.muscle_soreness || w.soreness || w.pain || 0),
-      sleep_hours: Number(w.sleep_hours || w.sleep || 0),
-      sleep_quality: Number(w.sleep_quality || 0),
-      stress_level: Number(w.stress_level || w.stress || 0),
-      record_date: w.record_date || w.date,
-      created_at: w.record_date || w.date, 
-      symptoms: w.symptoms || []
-    }));
+    try {
+      // Basic normalized wellness for safety
+      const normalizedWellness = (clinicalInputs.wellnessHistory || []).map(w => ({
+        ...w,
+        id: w.id || '',
+        athlete_id: athlete?.id,
+        readiness_score: Number(w.readiness_score || w.readiness || w.readiness_score || 0),
+        fatigue_level: Number(w.fatigue_level || w.fatigue || 0),
+        muscle_soreness: Number(w.muscle_soreness || w.soreness || w.pain || 0),
+        sleep_hours: Number(w.sleep_hours || w.sleep || 0),
+        sleep_quality: Number(w.sleep_quality || 0),
+        stress_level: Number(w.stress_level || w.stress || 0),
+        record_date: w.record_date || w.date,
+        created_at: w.record_date || w.date, 
+        symptoms: w.symptoms || []
+      }));
 
-    if (!normalizedWellness.length) {
+      if (!normalizedWellness.length) {
+        return {
+          readiness: { score: 70, classification: 'stable' },
+          trends: { trendScore: 0, direction: 'stable' },
+          confidence: { confidenceLevel: 'low', confidenceScore: 40 },
+          priorityOutput: {
+            adjustedDecision: 'recovery',
+            visibleBlocks: ['metrics', 'actions'],
+            content: { 
+              factors: ['Sem dados de wellness recentes'], 
+              actions: ['Check-in clínico presencial'], 
+              tags: ['Incompleto'] 
+            }
+          }
+        };
+      }
+
+      // Sort ascending for engine processing (oldest to newest)
+      const sortedWellnessForEngine = [...normalizedWellness].sort((a, b) => 
+        new Date(a.record_date).getTime() - new Date(b.record_date).getTime()
+      );
+
+      const normalizedLoad = (clinicalInputs.loadData || []).map(l => ({
+        intensity: l.intensity || (l.raw_data && l.raw_data.rpe) || l.rpe || 5,
+        duration_minutes: l.duration || (l.raw_data && l.raw_data.duration) || 60,
+      }));
+
+      const trends = TrendEngine.analyze(sortedWellnessForEngine);
+      const confidence = ConfidenceEngine.calculate(sortedWellnessForEngine, {});
+      const decayed = DecayEngine.processHistory(sortedWellnessForEngine);
+      
+      // Safety check for engine call
+      let readiness;
+      try {
+        readiness = EARSEngine.calculateFinalReadiness(
+          sortedWellnessForEngine[sortedWellnessForEngine.length-1] as any,
+          athlete?.age || 25,
+          sortedWellnessForEngine.slice(-3).map(w => w.sleep_hours),
+          decayed,
+          trends
+        );
+      } catch (e) {
+        console.error("EARSEngine Crash:", e);
+        readiness = { score: 70, classification: 'stable' };
+      }
+
+      const riskClustersResult = calculateRiskClusters({
+        wellnessRecords: sortedWellnessForEngine,
+        painReports: clinicalInputs.painReports || [],
+        assessments: clinicalInputs.clinicalAssessments || [],
+        checkIns: normalizedLoad,
+        alerts: athleteAlerts || [],
+        clinicalTags: clinicalInputs.tags || [],
+        trendScore: trends.trendScore,
+        confidenceScore: confidence.confidenceScore
+      });
+
+      const recommendation = DecisionLayer.analyze(
+        readiness.score,
+        riskClustersResult.clusters,
+        trends,
+        confidence
+      );
+
+      const priorityOutput = PriorityEngine.process({
+        decision: recommendation.recommendation,
+        confidence: confidence.confidenceLevel,
+        riskScore: riskClustersResult.clusters[0]?.score || 0,
+        trendScore: trends.trendScore,
+        factors: riskClustersResult.clusters.flatMap(c => c.factors),
+        actions: (recommendation.focusAreas || []).concat(recommendation.alerts || []),
+        tags: (clinicalInputs.tags || []).map(t => t.tag)
+      });
+
+      return {
+        readiness,
+        riskClustersResult,
+        recommendation,
+        priorityOutput,
+        trends,
+        confidence,
+        decayed
+      };
+    } catch (error) {
+      console.error("Clinical Intelligence Crash:", error);
       return {
         readiness: { score: 70, classification: 'stable' },
         trends: { trendScore: 0, direction: 'stable' },
-        confidence: { confidenceLevel: 'low', confidenceScore: 40 },
+        confidence: { confidenceLevel: 'low', confidenceScore: 30 },
         priorityOutput: {
           adjustedDecision: 'recovery',
           visibleBlocks: ['metrics', 'actions'],
           content: { 
-            factors: ['Sem dados de wellness recentes'], 
-            actions: ['Check-in clínico presencial'], 
-            tags: ['Incompleto'] 
+            factors: ['Erro no processamento de inteligência'], 
+            actions: ['Revisão clínica manual'], 
+            tags: ['Erro'] 
           }
         }
       };
     }
-
-    const normalizedLoad = (clinicalInputs.loadData || []).map(l => ({
-      intensity: l.intensity || (l.raw_data && l.raw_data.rpe) || l.rpe || 5,
-      duration_minutes: l.duration || (l.raw_data && l.raw_data.duration) || 60,
-    }));
-
-    const trends = TrendEngine.analyze(normalizedWellness);
-    const confidence = ConfidenceEngine.calculate(normalizedWellness, {});
-    const decayed = DecayEngine.processHistory(normalizedWellness);
-    
-    // Safety check for engine call
-    let readiness;
-    try {
-      readiness = EARSEngine.calculateFinalReadiness(
-        normalizedWellness[normalizedWellness.length-1] as any,
-        athlete.age || 25,
-        normalizedWellness.slice(-3).map(w => w.sleep_hours),
-        decayed,
-        trends
-      );
-    } catch (e) {
-      console.error("EARSEngine Crash:", e);
-      readiness = { score: 70, classification: 'stable' };
-    }
-
-    const riskClustersResult = calculateRiskClusters({
-      wellnessRecords: normalizedWellness,
-      painReports: clinicalInputs.painReports,
-      assessments: clinicalInputs.clinicalAssessments,
-      checkIns: normalizedLoad,
-      alerts: athleteAlerts,
-      clinicalTags: clinicalInputs.tags,
-      trendScore: trends.trendScore,
-      confidenceScore: confidence.confidenceScore
-    });
-
-    const recommendation = DecisionLayer.analyze(
-      readiness.score,
-      riskClustersResult.clusters,
-      trends,
-      confidence
-    );
-
-    const priorityOutput = PriorityEngine.process({
-      decision: recommendation.recommendation,
-      confidence: confidence.confidenceLevel,
-      riskScore: riskClustersResult.clusters[0]?.score || 0,
-      trendScore: trends.trendScore,
-      factors: riskClustersResult.clusters.flatMap(c => c.factors),
-      actions: recommendation.focusAreas.concat(recommendation.alerts),
-      tags: clinicalInputs.tags.map(t => t.tag)
-    });
-
-    return {
-      readiness,
-      riskClustersResult,
-      recommendation,
-      priorityOutput,
-      trends,
-      confidence,
-      decayed
-    };
-  }, [clinicalInputs, athleteAlerts, athlete.id, athlete.age]);
+  }, [clinicalInputs, athleteAlerts, athlete?.id, athlete?.age]);
 
   const calculateAge = (birthDate?: string) => {
     if (!birthDate) return 0;

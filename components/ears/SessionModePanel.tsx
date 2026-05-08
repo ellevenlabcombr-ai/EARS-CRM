@@ -32,7 +32,8 @@ import {
   RefreshCcw,
   Sparkles,
   History,
-  MessageSquare
+  MessageSquare,
+  Plus
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -96,7 +97,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     proximaAcao: ''
   });
 
-  const lastWellness = wellnessHistory?.[wellnessHistory.length - 1] || {};
+  const lastWellness = wellnessHistory?.[0] || {};
   
   const metrics = {
     sleep: lastWellness.sleep || lastWellness.sleep_hours || 0,
@@ -319,7 +320,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                   </div>
                   <div className="bg-slate-800/50 rounded-lg p-2">
                     <p className="text-[8px] font-black text-slate-500 uppercase">Idade</p>
-                    <p className="text-xs font-bold text-white">{athlete.age || athlete.birthDate ? `${new Date().getFullYear() - new Date(athlete.birthDate || athlete.birth_date).getFullYear()} anos` : '--'}</p>
+                    <p className="text-xs font-bold text-white">{athlete.age ? `${athlete.age} anos` : (athlete.birthDate || athlete.birth_date) ? `${new Date().getFullYear() - new Date(athlete.birthDate || athlete.birth_date).getFullYear()} anos` : '--'}</p>
                   </div>
                   <div className="bg-slate-800/50 rounded-lg p-2">
                     <p className="text-[8px] font-black text-slate-500 uppercase">Dom.</p>
