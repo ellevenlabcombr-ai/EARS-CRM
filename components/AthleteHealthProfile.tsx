@@ -339,17 +339,26 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       
       // Safety check for engine call
       let readiness;
+      const latestWellness = sortedWellnessForEngine[sortedWellnessForEngine.length-1];
       try {
         readiness = EARSEngine.calculateFinalReadiness(
-          sortedWellnessForEngine[sortedWellnessForEngine.length-1] as any,
+          latestWellness as any,
           athlete?.age || 25,
           sortedWellnessForEngine.slice(-3).map(w => w.sleep_hours),
           decayed,
           trends
         );
+        // Sync with dashboard explicitly to match user's submission
+        if (latestWellness && latestWellness.readiness_score !== undefined) {
+          readiness.score = Number(latestWellness.readiness_score);
+          readiness.level = readiness.score >= 80 ? 'ready' : readiness.score >= 60 ? 'attention' : 'risk';
+        }
       } catch (e) {
         console.error("EARSEngine Crash:", e);
-        readiness = { score: 70, classification: 'stable' };
+        readiness = { 
+          score: latestWellness && latestWellness.readiness_score !== undefined ? Number(latestWellness.readiness_score) : 70, 
+          classification: 'stable' 
+        };
       }
 
       const riskClustersResult = calculateRiskClusters({
