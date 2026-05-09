@@ -31,7 +31,7 @@ export const MasterScoreEngine = {
       { id: 'structural_risk', label: 'Risco Estrutural', score: sr.score, weight: weights.structural_risk, confidence: sr.confidence, factors: sr.factors },
       { id: 'internal_health', label: 'Saúde Interna', score: ih.score, weight: weights.internal_health, confidence: ih.confidence, factors: ih.factors },
       { id: 'mental_readiness', label: 'Prontidão Mental', score: mr.score, weight: weights.mental_readiness, confidence: mr.confidence, factors: mr.factors },
-      { id: 'performance_capacity', label: 'Capacidade de Performance', score: pc.score, weight: pc.weight || pc.score, confidence: pc.confidence, factors: pc.factors }
+      { id: 'performance_capacity', label: 'Capacidade de Performance', score: pc.score, weight: weights.performance_capacity, confidence: pc.confidence, factors: pc.factors }
     ];
 
     // Redistribution if domain has 0 confidence (no data)

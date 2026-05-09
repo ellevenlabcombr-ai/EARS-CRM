@@ -2535,9 +2535,9 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                          <div className={`h-full ${domain.score >= 80 ? 'bg-emerald-500' : domain.score >= 60 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${domain.score}%` }} />
                       </div>
                       <p className="text-[9px] font-bold text-slate-600 uppercase">Peso: {(domain.weight * 100).toFixed(0)}%</p>
-                      {domain.factors.length > 0 && (
+                      {domain?.factors?.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
-                          {domain.factors.map((f, i) => (
+                          {(domain.factors || []).map((f, i) => (
                             <span key={i} className="text-[8px] font-black px-1.5 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-sm line-clamp-1">{f}</span>
                           ))}
                         </div>
