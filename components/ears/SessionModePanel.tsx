@@ -310,7 +310,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                         'Sem avaliações recentes'}
                     </p>
                     <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase">
-                      Data: {clinicalAssessments?.[0]?.date || '---'}
+                      Data: {clinicalAssessments?.[0]?.assessment_date ? new Date(clinicalAssessments[0].assessment_date).toLocaleDateString('pt-BR') : '---'}
                     </p>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                   </div>
                   <div className="bg-slate-800/50 rounded-lg p-2">
                     <p className="text-[8px] font-black text-slate-500 uppercase">Altura</p>
-                    <p className="text-xs font-bold text-white">{athlete.height || '--'} cm</p>
+                    <p className="text-xs font-bold text-white">{athlete.height || '--'} {athlete.height && athlete.height < 3 ? 'm' : 'cm'}</p>
                   </div>
                   <div className="bg-slate-800/50 rounded-lg p-2">
                     <p className="text-[8px] font-black text-slate-500 uppercase">Idade</p>
