@@ -2528,7 +2528,7 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                 <Card key={domain.id} className="bg-slate-900/60 border-slate-800/50 p-4 shadow-xl">
                    <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
-                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{domain.name}</span>
+                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{domain.label}</span>
                          <span className={`text-xs font-black ${domain.score >= 80 ? 'text-emerald-400' : domain.score >= 60 ? 'text-amber-400' : 'text-rose-400'}`}>{domain.score}%</span>
                       </div>
                       <div className="h-1 bg-slate-800 rounded-full overflow-hidden">

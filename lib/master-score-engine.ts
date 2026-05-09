@@ -111,41 +111,47 @@ export const MasterScoreEngine = {
   },
 
   calcStructuralRisk: (assessments: any[], painHistory: any[], tags: any[]) => {
-    const ortho = assessments.find(a => a.type?.includes('ortho'))?.score || 100;
-    const biomech = assessments.find(a => a.type?.includes('biomech'))?.score || 100;
-    const dynamometry = assessments.find(a => a.type?.includes('dynamo'))?.score || 100;
+    const safeAssessments = assessments || [];
+    const safePainHistory = painHistory || [];
+    const safeTags = tags || [];
+
+    const ortho = safeAssessments.find((a: any) => a?.type?.includes('ortho'))?.score || 100;
+    const biomech = safeAssessments.find((a: any) => a?.type?.includes('biomech'))?.score || 100;
+    const dynamometry = safeAssessments.find((a: any) => a?.type?.includes('dynamo'))?.score || 100;
     
     const factors = [];
     if (ortho < 70) factors.push('Fração Ortopédica crítica');
-    if (painHistory.length > 3) factors.push('Histórico de dor recorrente');
-    if (tags.some(t => t.tag.toLowerCase().includes('risk'))) factors.push('Tags de risco estrutural');
+    if (safePainHistory.length > 3) factors.push('Histórico de dor recorrente');
+    if (safeTags.some((t: any) => t?.tag?.toLowerCase().includes('risk'))) factors.push('Tags de risco estrutural');
 
     const score = (ortho * 0.4) + (biomech * 0.3) + (dynamometry * 0.3);
     
     return {
       score,
-      confidence: assessments.some(a => ['ortho', 'biomech', 'dynamo'].some(t => a.type?.includes(t))) ? 90 : 30,
+      confidence: safeAssessments.some((a: any) => ['ortho', 'biomech', 'dynamo'].some(t => a?.type?.includes(t))) ? 90 : 30,
       factors
     };
   },
 
   calcInternalHealth: (assessments: any[], wellnessRecords: any[]) => {
-    const nutrition = assessments.find(a => a.type?.includes('nutri'))?.score || 80;
-    const reds = assessments.find(a => a.type?.includes('reds'))?.score || 100;
-    const hydration = assessments.find(a => a.type?.includes('hydra'))?.score || 80;
+    const safeAssessments = assessments || [];
+    const nutrition = safeAssessments.find((a: any) => a?.type?.includes('nutri'))?.score || 80;
+    const reds = safeAssessments.find((a: any) => a?.type?.includes('reds'))?.score || 100;
+    const hydration = safeAssessments.find((a: any) => a?.type?.includes('hydra'))?.score || 80;
     
     const factors = [];
     if (hydration < 50) factors.push('Déficit de hidratação detectado');
 
     return {
       score: (nutrition * 0.4) + (reds * 0.4) + (hydration * 0.2),
-      confidence: assessments.some(a => ['nutri', 'reds', 'hydra'].some(t => a.type?.includes(t))) ? 85 : 10,
+      confidence: safeAssessments.some((a: any) => ['nutri', 'reds', 'hydra'].some(t => a?.type?.includes(t))) ? 85 : 10,
       factors
     };
   },
 
   calcMentalReadiness: (assessments: any[], wellness: any) => {
-    const psycho = assessments.find(a => a.type?.includes('psycho'))?.score || 80;
+    const safeAssessments = assessments || [];
+    const psycho = safeAssessments.find((a: any) => a?.type?.includes('psycho'))?.score || 80;
     const stress = wellness?.stress_level ? (6 - wellness.stress_level) * 20 : 70;
     const motivation = wellness?.mood ? wellness.mood * 20 : 70;
 
@@ -157,12 +163,13 @@ export const MasterScoreEngine = {
   },
 
   calcPerformanceCapacity: (assessments: any[]) => {
-    const physical = assessments.find(a => a.type?.includes('physic'))?.score || 70;
-    const strength = assessments.find(a => a.type?.includes('strength'))?.score || 70;
+    const safeAssessments = assessments || [];
+    const physical = safeAssessments.find((a: any) => a?.type?.includes('physic'))?.score || 70;
+    const strength = safeAssessments.find((a: any) => a?.type?.includes('strength'))?.score || 70;
 
     return {
       score: (physical * 0.6) + (strength * 0.4),
-      confidence: assessments.some(a => ['physic', 'strength'].some(t => a.type?.includes(t))) ? 80 : 20,
+      confidence: safeAssessments.some((a: any) => ['physic', 'strength'].some(t => a?.type?.includes(t))) ? 80 : 20,
       factors: []
     };
   },
