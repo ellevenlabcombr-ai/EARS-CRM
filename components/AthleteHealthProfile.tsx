@@ -120,6 +120,7 @@ import { PriorityEngine } from "@/lib/priority-engine";
 import { EARSEngine } from "@/lib/ears-engine";
 import { DecayEngine } from "@/lib/decay-engine";
 import { SessionModePanel } from "./ears/SessionModePanel";
+import { MasterScoreEngine } from "@/lib/master-score-engine";
 import { 
   LineChart, 
   Line, 
@@ -379,6 +380,24 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         tags: (clinicalInputs.tags || []).map(t => t.tag)
       });
 
+      const masterScore = MasterScoreEngine.calculate(
+        {
+          wellness: sortedWellnessForEngine[sortedWellnessForEngine.length - 1],
+          lastCheckIn: normalizedLoad[normalizedLoad.length - 1],
+          ears: readiness,
+          assessments: clinicalInputs.clinicalAssessments,
+          wellnessRecords: sortedWellnessForEngine,
+          painHistory: clinicalInputs.painReports,
+          tags: clinicalInputs.tags
+        },
+        {
+          sport: athlete?.sport || athlete?.modalidade,
+          age: athlete?.age || athleteAge,
+          sex: athlete?.gender === 'F' || athlete?.sexo === 'F' ? 'F' : 'M',
+          seasonPhase: (athlete?.seasonPhase || 'inseason') as any
+        }
+      );
+
       return {
         readiness,
         riskClustersResult,
@@ -386,7 +405,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         priorityOutput,
         trends,
         confidence,
-        decayed
+        decayed,
+        masterScore
       };
     } catch (error) {
       console.error("Clinical Intelligence Crash:", error);
@@ -2394,8 +2414,17 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
             ) : (
               <>
                 {/* 2. Decision cards row */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
           {[
+            { 
+              label: 'Master Score', 
+              value: clinicalSessionData?.masterScore ? `${clinicalSessionData.masterScore.finalScore}%` : '---',
+              icon: Trophy, 
+              color: (clinicalSessionData?.masterScore?.finalScore || 100) < 60 ? 'text-rose-400' : (clinicalSessionData?.masterScore?.finalScore || 100) < 80 ? 'text-amber-400' : 'text-emerald-400', 
+              bg: (clinicalSessionData?.masterScore?.finalScore || 100) < 60 ? 'bg-rose-500/10' : (clinicalSessionData?.masterScore?.finalScore || 100) < 80 ? 'bg-amber-500/10' : 'bg-emerald-500/10', 
+              trend: 'stable',
+              alert: clinicalSessionData?.masterScore?.confidence === 'low' ? 'Confiança Baixa' : null 
+            },
             { 
               label: 'Prontidão', 
               value: clinicalSessionData?.readiness.score != null ? `${clinicalSessionData.readiness.score}%` : (wellnessHistory.length > 0 && wellnessHistory[wellnessHistory.length - 1].readiness != null ? `${wellnessHistory[wellnessHistory.length - 1].readiness}%` : (athlete.readiness != null ? `${athlete.readiness}%` : 'Não informado')), 
@@ -2486,6 +2515,49 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
             </Card>
           ))}
         </div>
+
+        {/* Master Score Breakdown */}
+        {clinicalSessionData?.masterScore && (
+          <div className="space-y-4">
+            <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              Análise Master Score (Dynamic)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              {clinicalSessionData.masterScore.domains.map(domain => (
+                <Card key={domain.id} className="bg-slate-900/60 border-slate-800/50 p-4 shadow-xl">
+                   <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{domain.name}</span>
+                         <span className={`text-xs font-black ${domain.score >= 80 ? 'text-emerald-400' : domain.score >= 60 ? 'text-amber-400' : 'text-rose-400'}`}>{domain.score}%</span>
+                      </div>
+                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                         <div className={`h-full ${domain.score >= 80 ? 'bg-emerald-500' : domain.score >= 60 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${domain.score}%` }} />
+                      </div>
+                      <p className="text-[9px] font-bold text-slate-600 uppercase">Peso: {(domain.weight * 100).toFixed(0)}%</p>
+                      {domain.factors.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {domain.factors.map((f, i) => (
+                            <span key={i} className="text-[8px] font-black px-1.5 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-sm line-clamp-1">{f}</span>
+                          ))}
+                        </div>
+                      )}
+                   </div>
+                </Card>
+              ))}
+            </div>
+            {clinicalSessionData.masterScore.insights.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                 {clinicalSessionData.masterScore.insights.map((insight, i) => (
+                   <div key={i} className="flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-1.5">
+                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                      <span className="text-[10px] font-bold text-emerald-200/80 uppercase tracking-widest">{insight}</span>
+                   </div>
+                 ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 2. Painel Clínico & Diagnóstico */}
         <div className="space-y-6">

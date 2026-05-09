@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { MasterScoreEngine } from '@/lib/master-score-engine';
 
 interface TodayDashboardProps {
   onViewAthlete: (id: string) => void;
@@ -84,13 +85,36 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         .select('*', { count: 'exact', head: true })
         .gte('assessment_date', firstDayOfMonth);
 
+      // Fetch assessments for all athletes in agenda to calculate Master Score
+      const agendaIds = agendaData?.map(e => e.athlete_id).filter(Boolean) || [];
+      const { data: agendaAssessments } = agendaIds.length > 0 ? await supabase
+        .from('all_assessments')
+        .select('*')
+        .in('athlete_id', agendaIds)
+        .order('assessment_date', { ascending: false }) : { data: [] };
+
       // Process Agenda
       if (agendaData) {
         const mappedAgenda = agendaData.map(event => {
           const athlete = event.athletes;
           const wellness = wellnessData?.find(w => w.athlete_id === event.athlete_id);
           const athleteAlerts = alertsData?.filter(a => a.athlete_id === event.athlete_id && a.severity === 'high');
+          const relevantAssessments = agendaAssessments?.filter(a => a.athlete_id === event.athlete_id) || [];
           
+          const masterScore = MasterScoreEngine.calculate(
+            {
+              wellness: wellness,
+              ears: { score: wellness?.readiness_score || 70 },
+              assessments: relevantAssessments,
+              wellnessRecords: wellness ? [wellness] : [],
+              painHistory: [],
+              tags: []
+            },
+            {
+              sport: athlete?.sport || 'geral'
+            }
+          );
+
           return {
             id: event.id,
             time: format(new Date(event.start_time), 'HH:mm'),
@@ -99,7 +123,8 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             wellness_status: wellness ? (wellness.readiness_score >= 70 ? 'ok' : 'alert') : 'pending',
             risk: athlete?.risk_level === 'Crítico' || athlete?.risk_level === 'Alto' ? 'high' : (athlete?.risk_level === 'Médio' ? 'medium' : 'low'),
             alert: athleteAlerts?.[0]?.description || (wellness && wellness.readiness_score < 70 ? `Baixa prontidão detectada: ${wellness.readiness_score}%` : null),
-            suggestion: event.description || (wellness ? 'Acompanhar conforme respostas de wellness.' : 'Aguardando respostas de prontidão.')
+            suggestion: event.description || (wellness ? 'Acompanhar conforme respostas de wellness.' : 'Aguardando respostas de prontidão.'),
+            masterScore
           };
         });
         setAgenda(mappedAgenda);
@@ -263,6 +288,12 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
                   <div>
                     <h3 className="text-white font-bold text-base tracking-tight">{item.athlete_name}</h3>
                     <div className="flex items-center gap-2 mt-1 line-clamp-1">
+                      {item.masterScore && (
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${item.masterScore.finalScore >= 80 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : item.masterScore.finalScore >= 60 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`}>
+                          MS: {item.masterScore.finalScore}%
+                        </span>
+                      )}
+                      
                       {item.risk === 'low' && <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Estável</span>}
                       {item.risk === 'medium' && <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Atenção</span>}
                       {item.risk === 'high' && <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Prioridade</span>}

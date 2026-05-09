@@ -92,6 +92,7 @@ import { CYCLE_PHASES } from "@/lib/menstrual-content";
 import { SupabaseStatus } from "./SupabaseStatus";
 import { supabase, hasSupabaseConfig, supabaseDebugInfo } from "@/lib/supabase";
 import { t, Language } from "@/lib/i18n";
+import { MasterScoreEngine } from "@/lib/master-score-engine";
 import { Athlete, WellnessRecord } from "@/types/database";
 import { parseDateString, getLocalDateString, getLocalDateTimeString } from "@/lib/utils";
 import { PageContainer } from "./layout/AppLayout";
@@ -553,6 +554,7 @@ export function AthleteDashboard({
   const [reminderTime, setReminderTime] = useState("08:00");
   const [isOffline, setIsOffline] = useState(false);
   const [hasPushPermission, setHasPushPermission] = useState<NotificationPermission>("default");
+  const [assessments, setAssessments] = useState<any[]>([]);
 
   useEffect(() => {
     const syncOfflineData = async () => {
@@ -696,6 +698,25 @@ export function AthleteDashboard({
 
   const finalPainMap = Object.keys(latestPainMapData).length > 0 ? latestPainMapData : latestPainMap;
 
+  const masterScore = useMemo(() => {
+    if (!athleteData) return null;
+    return MasterScoreEngine.calculate(
+      {
+        wellness: latestCheckIn,
+        ears: { score: currentReadiness },
+        assessments: assessments,
+        wellnessRecords: checkins,
+        painHistory: [],
+        tags: []
+      },
+      {
+        sport: athleteData.sport,
+        age: athleteData.age,
+        sex: athleteData.gender
+      }
+    );
+  }, [athleteData, latestCheckIn, currentReadiness, assessments, checkins]);
+
   const isMounted = useRef(false);
   useEffect(() => {
     if (!isMounted.current) {
@@ -821,6 +842,17 @@ export function AthleteDashboard({
       
       if (loadData) {
         setWorkloadData(loadData);
+      }
+
+      // 3. Fetch all assessments for Master Score
+      const { data: assessmentsData } = await supabase
+        .from('all_assessments')
+        .select('*')
+        .eq('athlete_id', athleteId)
+        .order('assessment_date', { ascending: false });
+      
+      if (assessmentsData) {
+        setAssessments(assessmentsData);
       }
 
       clearTimeout(timeoutId);
@@ -1895,6 +1927,12 @@ export function AthleteDashboard({
               
               {/* Top Tech Indicators */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-6">
+                {masterScore && (
+                  <div className={`px-4 py-1.5 rounded-full border backdrop-blur-md font-black uppercase tracking-widest text-[9px] flex items-center gap-2 shadow-xl ${masterScore.finalScore >= 80 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : masterScore.finalScore >= 60 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`}>
+                    <Trophy className={`w-3 h-3 ${masterScore.finalScore >= 80 ? 'text-emerald-400' : masterScore.finalScore >= 60 ? 'text-amber-400' : 'text-rose-400'}`} />
+                    MASTER SCORE: {masterScore.finalScore}%
+                  </div>
+                )}
                 <div className={`px-4 py-1.5 rounded-full border backdrop-blur-md font-black uppercase tracking-widest text-[9px] flex items-center gap-2 shadow-lg ${currentReadiness >= 80 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : currentReadiness >= 50 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`}>
                   <div className={`w-1.5 h-1.5 rounded-full ${currentReadiness >= 80 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : currentReadiness >= 50 ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]' : 'bg-rose-400 shadow-[0_0_8px_rgba(248,113,113,0.8)]'} animate-pulse`} />
                   SYS: {currentReadiness >= 80 ? "OPTIMIZED" : currentReadiness >= 50 ? "MONITORING" : "ATTENTION"}

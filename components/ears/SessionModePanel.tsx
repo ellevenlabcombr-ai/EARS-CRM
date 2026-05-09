@@ -126,11 +126,13 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     }
   };
 
+  const masterScore = clinicalSessionData?.masterScore;
+  
   const stats = [
     { label: 'Sono', value: `${metrics.sleep}h`, icon: Moon, color: getMetricColor(metrics.sleep, 'sleep') },
     { label: 'Fadiga', value: metrics.fatigue, icon: Zap, color: getMetricColor(metrics.fatigue, 'fatigue') },
     { label: 'Dor', value: metrics.pain, icon: Thermometer, color: getMetricColor(metrics.pain, 'pain') },
-    { label: 'Score', value: `${metrics.wellness}%`, icon: Activity, color: getMetricColor(metrics.wellness, 'wellness') },
+    { label: 'Master Score', value: masterScore ? `${masterScore.finalScore}%` : `${metrics.wellness}%`, icon: Trophy, color: masterScore ? (masterScore.finalScore >= 80 ? 'text-emerald-400' : masterScore.finalScore >= 60 ? 'text-amber-400' : 'text-rose-400') : getMetricColor(metrics.wellness, 'wellness') },
   ];
 
   const handleSave = async () => {
@@ -168,10 +170,15 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </div>
             </div>
             <div className="text-right">
-              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${getMetricColor(metrics.wellness, 'wellness')}`}>
-                {metrics.wellness}%
+              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${masterScore ? (masterScore.finalScore >= 80 ? 'text-emerald-400' : masterScore.finalScore >= 60 ? 'text-amber-400' : 'text-rose-400') : getMetricColor(metrics.wellness, 'wellness')}`}>
+                {masterScore ? masterScore.finalScore : metrics.wellness}%
               </div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score Wellness</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">MASTER SCORE</p>
+              {masterScore && (
+                <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${masterScore.confidence === 'high' ? 'text-emerald-500' : masterScore.confidence === 'medium' ? 'text-amber-500' : 'text-rose-500'}`}>
+                  Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
+                </p>
+              )}
             </div>
           </div>
 
@@ -236,12 +243,23 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <p className="text-lg font-bold text-white leading-tight mb-6">
-                {clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'} 
-                <span className="text-cyan-400 ml-1">
+              <div className="text-lg font-bold text-white leading-tight mb-6">
+                {masterScore && masterScore.domains.find(d => d.factors.length > 0) ? (
+                  <div className="space-y-2">
+                    <p>Motivo principal:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {masterScore.domains.flatMap(d => d.factors).slice(0, 2).map((factor, i) => (
+                        <span key={i} className="text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg text-sm">{factor}</span>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p>{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
+                )}
+                <p className="text-cyan-400 mt-3">
                   Recomenda-se {clinicalSessionData?.priorityOutput?.adjustedDecision === 'hold' ? 'suspensão imediata' : clinicalSessionData?.priorityOutput?.adjustedDecision === 'recovery' ? 'protocolo de recovery' : 'treino com adaptação'}.
-                </span>
-              </p>
+                </p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6">
                   Confirmar Plano
