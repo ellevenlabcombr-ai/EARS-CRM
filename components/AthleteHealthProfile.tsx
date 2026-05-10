@@ -351,6 +351,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           decayed,
           trends
         );
+        
+        if (!readiness) readiness = { score: 70, level: 'stable' };
+
         // Sync with dashboard explicitly to match user's submission
         if (latestWellness && latestWellness.readiness_score !== undefined) {
           readiness.score = Number(latestWellness.readiness_score);
@@ -367,25 +370,25 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         checkIns: normalizedLoad,
         alerts: athleteAlerts || [],
         clinicalTags: clinicalInputs.tags || [],
-        trendScore: trends.trendScore,
-        confidenceScore: confidence.confidenceScore
+        trendScore: trends?.trendScore || 0,
+        confidenceScore: confidence?.confidenceScore || 0
       }); } catch (e: any) { throw new Error("ClinicalEngine Crash: " + e.message); }
 
       let recommendation; try { recommendation = DecisionLayer.analyze(
-        readiness.score,
-        riskClustersResult.clusters,
-        trends,
-        confidence
+        readiness?.score ?? 70,
+        riskClustersResult?.clusters || [],
+        trends || { trendScore: 0, painTrend: 'stable', sleepTrend: 'stable', readinessTrend: 'stable', loadTrend: 'stable' },
+        confidence || { confidenceLevel: 'low', confidenceScore: 30, reasons: [] }
       ); } catch (e: any) { throw new Error("DecisionLayer Crash: " + e.message); }
 
       let priorityOutput; try { priorityOutput = PriorityEngine.process({
-        decision: recommendation.recommendation,
-        confidence: confidence.confidenceLevel,
-        riskScore: riskClustersResult.clusters[0]?.score || 0,
-        trendScore: trends.trendScore,
-        factors: riskClustersResult.clusters.flatMap(c => c.factors),
-        actions: (recommendation.focusAreas || []).concat(recommendation.alerts || []),
-        tags: (clinicalInputs.tags || []).map(t => t.tag)
+        decision: recommendation?.recommendation || 'full_train',
+        confidence: confidence?.confidenceLevel || 'low',
+        riskScore: riskClustersResult?.clusters?.[0]?.score || 0,
+        trendScore: trends?.trendScore || 0,
+        factors: riskClustersResult?.clusters?.flatMap((c: any) => c.factors) || [],
+        actions: (recommendation?.focusAreas || []).concat(recommendation?.alerts || []),
+        tags: (clinicalInputs.tags || []).map((t: any) => t.tag)
       }); } catch (e: any) { throw new Error("PriorityEngine Crash: " + e.message); }
 
       let masterScoreValue = readiness?.score ?? 70;
@@ -413,8 +416,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         riskClustersResult: riskClustersResult || { clusters: [] },
         recommendation: recommendation || { recommendation: 'full_train', focusAreas: [], alerts: [] },
         priorityOutput: priorityOutput || { adjustedDecision: 'full_train', visibleBlocks: ['metrics', 'actions'], content: { factors: [], actions: [], tags: [] } },
-        trends: trends || { trendScore: 0, direction: 'stable' },
-        confidence: confidence || { confidenceLevel: 'low', confidenceScore: 30 },
+        trends: trends || { trendScore: 0, painTrend: 'stable', sleepTrend: 'stable', readinessTrend: 'stable', loadTrend: 'stable' },
+        confidence: confidence || { confidenceLevel: 'low', confidenceScore: 30, reasons: [] },
         decayed: decayed || {},
         masterScore: masterScoreValue,
         safeMode: safeModeResult
@@ -2427,12 +2430,12 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           {[
             { 
               label: 'Master Score', 
-              value: clinicalSessionData?.masterScore ? `${clinicalSessionData.masterScore.finalScore}%` : '---',
+              value: clinicalSessionData?.masterScore != null ? `${typeof clinicalSessionData.masterScore === 'number' ? clinicalSessionData.masterScore : clinicalSessionData.masterScore.finalScore}%` : '---',
               icon: Trophy, 
-              color: (clinicalSessionData?.masterScore?.finalScore || 100) < 60 ? 'text-rose-400' : (clinicalSessionData?.masterScore?.finalScore || 100) < 80 ? 'text-amber-400' : 'text-emerald-400', 
-              bg: (clinicalSessionData?.masterScore?.finalScore || 100) < 60 ? 'bg-rose-500/10' : (clinicalSessionData?.masterScore?.finalScore || 100) < 80 ? 'bg-amber-500/10' : 'bg-emerald-500/10', 
+              color: ((typeof clinicalSessionData?.masterScore === 'number' ? clinicalSessionData?.masterScore : clinicalSessionData?.masterScore?.finalScore) || 100) < 60 ? 'text-rose-400' : ((typeof clinicalSessionData?.masterScore === 'number' ? clinicalSessionData?.masterScore : clinicalSessionData?.masterScore?.finalScore) || 100) < 80 ? 'text-amber-400' : 'text-emerald-400', 
+              bg: ((typeof clinicalSessionData?.masterScore === 'number' ? clinicalSessionData?.masterScore : clinicalSessionData?.masterScore?.finalScore) || 100) < 60 ? 'bg-rose-500/10' : ((typeof clinicalSessionData?.masterScore === 'number' ? clinicalSessionData?.masterScore : clinicalSessionData?.masterScore?.finalScore) || 100) < 80 ? 'bg-amber-500/10' : 'bg-emerald-500/10', 
               trend: 'stable',
-              alert: clinicalSessionData?.masterScore?.confidence === 'low' ? 'Confiança Baixa' : null 
+              alert: typeof clinicalSessionData?.masterScore === 'object' && clinicalSessionData?.masterScore?.confidence === 'low' ? 'Confiança Baixa' : null 
             },
             { 
               label: 'Prontidão', 
@@ -2526,38 +2529,40 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         </div>
 
         {/* Master Score Breakdown */}
-        {clinicalSessionData?.masterScore && (
+        {typeof clinicalSessionData?.masterScore === 'object' && clinicalSessionData.masterScore && (
           <div className="space-y-4">
             <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-500" />
               Análise Master Score (Dynamic)
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-              {clinicalSessionData.masterScore.domains.map(domain => (
-                <Card key={domain.id} className="bg-slate-900/60 border-slate-800/50 p-4 shadow-xl">
-                   <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{domain.label}</span>
-                         <span className={`text-xs font-black ${domain.score >= 80 ? 'text-emerald-400' : domain.score >= 60 ? 'text-amber-400' : 'text-rose-400'}`}>{domain.score}%</span>
-                      </div>
-                      <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                         <div className={`h-full ${domain.score >= 80 ? 'bg-emerald-500' : domain.score >= 60 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${domain.score}%` }} />
-                      </div>
-                      <p className="text-[9px] font-bold text-slate-600 uppercase">Peso: {(domain.weight * 100).toFixed(0)}%</p>
-                      {domain?.factors?.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {(domain.factors || []).map((f, i) => (
-                            <span key={i} className="text-[8px] font-black px-1.5 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-sm line-clamp-1">{f}</span>
-                          ))}
+            {clinicalSessionData.masterScore.domains && (
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                {clinicalSessionData.masterScore.domains.map((domain: any) => (
+                  <Card key={domain.id} className="bg-slate-900/60 border-slate-800/50 p-4 shadow-xl">
+                     <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{domain.label}</span>
+                           <span className={`text-xs font-black ${domain.score >= 80 ? 'text-emerald-400' : domain.score >= 60 ? 'text-amber-400' : 'text-rose-400'}`}>{domain.score}%</span>
                         </div>
-                      )}
-                   </div>
-                </Card>
-              ))}
-            </div>
-            {clinicalSessionData.masterScore.insights.length > 0 && (
+                        <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+                           <div className={`h-full ${domain.score >= 80 ? 'bg-emerald-500' : domain.score >= 60 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${domain.score}%` }} />
+                        </div>
+                        <p className="text-[9px] font-bold text-slate-600 uppercase">Peso: {(domain.weight * 100).toFixed(0)}%</p>
+                        {domain?.factors?.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {(domain.factors || []).map((f: string, i: number) => (
+                              <span key={i} className="text-[8px] font-black px-1.5 py-0.5 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-sm line-clamp-1">{f}</span>
+                            ))}
+                          </div>
+                        )}
+                     </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+            {clinicalSessionData.masterScore.insights?.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                 {clinicalSessionData.masterScore.insights.map((insight, i) => (
+                 {clinicalSessionData.masterScore.insights.map((insight: string, i: number) => (
                    <div key={i} className="flex items-center gap-2 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-1.5">
                       <Sparkles className="w-3 h-3 text-emerald-400" />
                       <span className="text-[10px] font-bold text-emerald-200/80 uppercase tracking-widest">{insight}</span>
