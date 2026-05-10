@@ -427,7 +427,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           adjustedDecision: 'recovery',
           visibleBlocks: ['metrics', 'actions'],
           content: { 
-            factors: ['Erro no processamento de inteligência', (error as any)?.message || 'Erro desconhecido'], 
+            factors: ['Erro no processamento de inteligência', (error as any)?.stack || (error as any)?.message || 'Erro desconhecido'], 
             actions: ['Revisão clínica manual'], 
             tags: ['Erro'] 
           }

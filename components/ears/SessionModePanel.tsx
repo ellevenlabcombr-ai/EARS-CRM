@@ -173,10 +173,15 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </div>
             </div>
             <div className="text-right">
-              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${getMetricColor(metrics.wellness, 'wellness')}`}>
-                {metrics.wellness}%
+              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${masterScore ? (masterScore.finalScore >= 80 ? 'text-emerald-400' : masterScore.finalScore >= 60 ? 'text-amber-400' : 'text-rose-400') : getMetricColor(metrics.wellness, 'wellness')}`}>
+                {masterScore ? masterScore.finalScore : metrics.wellness}%
               </div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">PRONTIDÃO</p>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">MASTER SCORE</p>
+              {masterScore && (
+                <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${masterScore.confidence === 'high' ? 'text-emerald-500' : masterScore.confidence === 'medium' ? 'text-amber-500' : 'text-rose-500'}`}>
+                  Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
+                </p>
+              )}
             </div>
           </div>
 
