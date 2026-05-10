@@ -333,9 +333,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         duration_minutes: l.duration || (l.raw_data && l.raw_data.duration) || 60,
       }));
 
-      const trends = TrendEngine.analyze(sortedWellnessForEngine);
-      const confidence = ConfidenceEngine.calculate(sortedWellnessForEngine, {});
-      const decayed = DecayEngine.processHistory(sortedWellnessForEngine);
+      let trends; try { trends = TrendEngine.analyze(sortedWellnessForEngine); } catch (e: any) { throw new Error("TrendEngine Crash: " + e.message); }
+      let confidence; try { confidence = ConfidenceEngine.calculate(sortedWellnessForEngine, {}); } catch (e: any) { throw new Error("ConfidenceEngine Crash: " + e.message); }
+      let decayed; try { decayed = DecayEngine.processHistory(sortedWellnessForEngine); } catch (e: any) { throw new Error("DecayEngine Crash: " + e.message); }
       
       // Safety check for engine call
       let readiness;
@@ -353,15 +353,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           readiness.score = Number(latestWellness.readiness_score);
           readiness.level = readiness.score >= 80 ? 'ready' : readiness.score >= 60 ? 'attention' : 'risk';
         }
-      } catch (e) {
-        console.error("EARSEngine Crash:", e);
-        readiness = { 
-          score: latestWellness && latestWellness.readiness_score !== undefined ? Number(latestWellness.readiness_score) : 70, 
-          classification: 'stable' 
-        };
+      } catch (e: any) {
+        throw new Error("EARSEngine Crash: " + e.message);
       }
 
-      const riskClustersResult = calculateRiskClusters({
+      let riskClustersResult; try { riskClustersResult = calculateRiskClusters({
         wellnessRecords: sortedWellnessForEngine,
         painReports: clinicalInputs.painReports || [],
         assessments: clinicalInputs.clinicalAssessments || [],
@@ -370,16 +366,16 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         clinicalTags: clinicalInputs.tags || [],
         trendScore: trends.trendScore,
         confidenceScore: confidence.confidenceScore
-      });
+      }); } catch (e: any) { throw new Error("ClinicalEngine Crash: " + e.message); }
 
-      const recommendation = DecisionLayer.analyze(
+      let recommendation; try { recommendation = DecisionLayer.analyze(
         readiness.score,
         riskClustersResult.clusters,
         trends,
         confidence
-      );
+      ); } catch (e: any) { throw new Error("DecisionLayer Crash: " + e.message); }
 
-      const priorityOutput = PriorityEngine.process({
+      let priorityOutput; try { priorityOutput = PriorityEngine.process({
         decision: recommendation.recommendation,
         confidence: confidence.confidenceLevel,
         riskScore: riskClustersResult.clusters[0]?.score || 0,
@@ -387,9 +383,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         factors: riskClustersResult.clusters.flatMap(c => c.factors),
         actions: (recommendation.focusAreas || []).concat(recommendation.alerts || []),
         tags: (clinicalInputs.tags || []).map(t => t.tag)
-      });
+      }); } catch (e: any) { throw new Error("PriorityEngine Crash: " + e.message); }
 
-      const masterScore = MasterScoreEngine.calculate(
+      let masterScore; try { masterScore = MasterScoreEngine.calculate(
         {
           wellness: sortedWellnessForEngine[sortedWellnessForEngine.length - 1],
           lastCheckIn: normalizedLoad[normalizedLoad.length - 1],
@@ -405,7 +401,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           sex: athlete?.gender === 'F' || athlete?.sexo === 'F' ? 'F' : 'M',
           seasonPhase: (athlete?.seasonPhase || 'inseason') as any
         }
-      );
+      ); } catch (e: any) { throw new Error("MasterScoreEngine Crash: " + e.message); }
+
 
       return {
         readiness,

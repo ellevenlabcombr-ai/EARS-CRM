@@ -198,7 +198,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
+      <div id="session-panel-scroll" className="flex-1 overflow-y-auto w-full custom-scrollbar">
         <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 space-y-8">
         
         {/* 2. BLOCO: O QUE MUDOU / TENDÊNCIAS */}
@@ -259,7 +259,14 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <p>{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
+                  <div>
+                    <p>{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
+                    {clinicalSessionData?.priorityOutput?.content?.factors?.[1] && (
+                      <p className="text-xs text-rose-400 mt-2 whitespace-pre-wrap font-mono">
+                        {clinicalSessionData?.priorityOutput?.content?.factors[1]}
+                      </p>
+                    )}
+                  </div>
                 )}
                 <p className="text-cyan-400 mt-3">
                   Recomenda-se {(manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'hold' ? 'suspensão imediata' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'recovery' ? 'protocolo de recovery' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'modified_train' ? 'treino modificado' : 'treino livre'}.
@@ -272,7 +279,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                   <Button 
                     onClick={() => {
                         setIsFinalizing(true);
-                        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+                        setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100);
                     }}
                     variant="outline" 
                     className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6">
@@ -286,11 +293,11 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                   </Button>
                   </>
                 ) : (
-                  <div className="w-full flex gap-2">
-                    <Button onClick={() => { setManualDecision('full_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 rounded-xl h-10">Livre</Button>
-                    <Button onClick={() => { setManualDecision('modified_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-indigo-500/20 text-indigo-400 border-indigo-500/30 rounded-xl h-10">Modificado</Button>
-                    <Button onClick={() => { setManualDecision('recovery'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-xl h-10">Recovery</Button>
-                    <Button onClick={() => { setManualDecision('hold'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-rose-500/20 text-rose-400 border-rose-500/30 rounded-xl h-10">Hold</Button>
+                  <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <Button onClick={() => { setManualDecision('full_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 rounded-xl h-10">Livre</Button>
+                    <Button onClick={() => { setManualDecision('modified_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-indigo-500/20 text-indigo-400 border-indigo-500/30 rounded-xl h-10">Modificado</Button>
+                    <Button onClick={() => { setManualDecision('recovery'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-xl h-10">Recovery</Button>
+                    <Button onClick={() => { setManualDecision('hold'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-rose-500/20 text-rose-400 border-rose-500/30 rounded-xl h-10">Hold</Button>
                   </div>
                 )}
               </div>
