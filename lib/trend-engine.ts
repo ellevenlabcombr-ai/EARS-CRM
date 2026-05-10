@@ -9,12 +9,7 @@ export interface TrendAnalysis {
   trendScore: number; // -1 (very bad) to +1 (very good)
 }
 
-export const TrendEngine = {
-  /**
-   * Calculates the slope of a series using basic linear regression (least squares).
-   * Positive slope = Increasing.
-   */
-  calculateSlope: (values: number[]): number => {
+const calculateSlope = (values: number[]): number => {
     const n = values.length;
     if (n < 2) return 0;
 
@@ -36,14 +31,23 @@ export const TrendEngine = {
     if (denom === 0) return 0;
 
     return (n * sumXY - sumX * sumY) / denom;
-  },
+};
 
-  classifyTrend: (slope: number, threshold: number = 0.1, inverted: boolean = false): TrendStatus => {
+const classifyTrend = (slope: number, threshold: number = 0.1, inverted: boolean = false): TrendStatus => {
     const effectiveSlope = inverted ? -slope : slope;
     if (effectiveSlope > threshold) return "improving";
     if (effectiveSlope < -threshold) return "worsening";
     return "stable";
-  },
+};
+
+export const TrendEngine = {
+  /**
+   * Calculates the slope of a series using basic linear regression (least squares).
+   * Positive slope = Increasing.
+   */
+  calculateSlope,
+
+  classifyTrend,
 
   analyze: (history: any[]): TrendAnalysis => {
     const painValues = history.map(h => {
@@ -54,16 +58,16 @@ export const TrendEngine = {
     const loadValues = history.map(h => h.session_load || 0);
     const readinessValues = history.map(h => h.readiness_score || 0);
 
-    const painSlope = TrendEngine.calculateSlope(painValues);
-    const sleepSlope = TrendEngine.calculateSlope(sleepValues);
-    const loadSlope = TrendEngine.calculateSlope(loadValues);
-    const readinessSlope = TrendEngine.calculateSlope(readinessValues);
+    const painSlope = calculateSlope(painValues);
+    const sleepSlope = calculateSlope(sleepValues);
+    const loadSlope = calculateSlope(loadValues);
+    const readinessSlope = calculateSlope(readinessValues);
 
     // Classification (Note: Higher pain is worsening, so inverted=true)
-    const painStatus = TrendEngine.classifyTrend(painSlope, 0.2, true); 
-    const sleepStatus = TrendEngine.classifyTrend(sleepSlope, 0.2, false);
-    const loadStatus = TrendEngine.classifyTrend(loadSlope, 50, false); // Load usually has larger numbers
-    const readinessStatus = TrendEngine.classifyTrend(readinessSlope, 1, false);
+    const painStatus = classifyTrend(painSlope, 0.2, true); 
+    const sleepStatus = classifyTrend(sleepSlope, 0.2, false);
+    const loadStatus = classifyTrend(loadSlope, 50, false); // Load usually has larger numbers
+    const readinessStatus = classifyTrend(readinessSlope, 1, false);
 
     // Calculate aggregated trend score (-1 to 1)
     let totalScore = 0;

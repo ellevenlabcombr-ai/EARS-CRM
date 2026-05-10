@@ -3,17 +3,7 @@ import { WellnessCheckIn, BodyPain, ReadinessLevel } from '../types/ears';
 import { TrendAnalysis } from './trend-engine';
 import { DecayedMetrics } from './decay-engine';
 
-export const EARSEngine = {
-  /**
-   * Weights: 
-   * Sleep quality = 25%
-   * Energy = 20%
-   * Soreness/Fatigue = 20% (inverted leg_heaviness)
-   * Stress = 15% (inverted stress)
-   * Mood = 10%
-   * Nutrition/Hydration = 10%
-   */
-  calculateBaseScore: (checkin: Partial<WellnessCheckIn>, decayed?: DecayedMetrics): number => {
+const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: DecayedMetrics): number => {
     const weights = {
       sleep: 0.25,
       energy: 0.20,
@@ -63,9 +53,9 @@ export const EARSEngine = {
     }
 
     return Math.round(baseScore);
-  },
+  };
 
-  calculatePainDeduction: (painMap: BodyPain[], decayedPain?: number): number => {
+  const calculatePainDeduction = (painMap: BodyPain[], decayedPain?: number): number => {
     const validMap = Array.isArray(painMap) ? painMap : [];
     const rawPain = validMap.length > 0 ? Math.max(...validMap.map(p => p.level), 0) : 0;
     
@@ -78,9 +68,9 @@ export const EARSEngine = {
     
     const criticalMap: Record<number, number> = { 7: 30, 8: 45, 9: 65, 10: 90 };
     return criticalMap[Math.floor(maxPain)] || 90;
-  },
+  };
 
-  calculateSleepDeficit: (currentSleep: number, history: number[] = [], decayedSleep?: number): number => {
+  const calculateSleepDeficit = (currentSleep: number, history: number[] = [], decayedSleep?: number): number => {
     let deduction = 0;
     const effectiveSleep = decayedSleep ? (currentSleep * 0.7 + decayedSleep * 0.3) : currentSleep;
 
@@ -95,9 +85,9 @@ export const EARSEngine = {
     }
 
     return deduction;
-  },
+  };
 
-  calculateSymptomsDeduction: (symptoms: string[]): number => {
+  const calculateSymptomsDeduction = (symptoms: string[]): number => {
     let deduction = 0;
     
     const severity: Record<string, 'light' | 'moderate' | 'severe'> = {
@@ -121,9 +111,9 @@ export const EARSEngine = {
     }
 
     return deduction;
-  },
+  };
 
-  calculateMultipliers: (checkin: Partial<WellnessCheckIn>): number => {
+  const calculateMultipliers = (checkin: Partial<WellnessCheckIn>): number => {
     let multiplierDeduction = 0;
 
     // Sleep <= 2 AND stress >= 4: -10%
@@ -151,13 +141,35 @@ export const EARSEngine = {
     }
 
     return multiplierDeduction;
-  },
+  };
 
-  calculateMenstrualDeduction: (phase?: string): number => {
+  const calculateMenstrualDeduction = (phase?: string): number => {
     if (phase === 'menstrual') return 5;
     if (phase === 'luteal') return 2;
     return 0;
-  },
+  };
+
+export const EARSEngine = {
+  /**
+   * Weights: 
+   * Sleep quality = 25%
+   * Energy = 20%
+   * Soreness/Fatigue = 20% (inverted leg_heaviness)
+   * Stress = 15% (inverted stress)
+   * Mood = 10%
+   * Nutrition/Hydration = 10%
+   */
+  calculateBaseScore,
+
+  calculatePainDeduction,
+
+  calculateSleepDeficit,
+
+  calculateSymptomsDeduction,
+
+  calculateMultipliers,
+
+  calculateMenstrualDeduction,
 
   calculateFinalReadiness: (
     checkin: Partial<WellnessCheckIn>, 
@@ -166,12 +178,12 @@ export const EARSEngine = {
     decayed?: DecayedMetrics,
     trends?: TrendAnalysis
   ): { score: number, level: ReadinessLevel, breakdown: any } => {
-    const baseScore = EARSEngine.calculateBaseScore(checkin, decayed);
-    const painDeduction = EARSEngine.calculatePainDeduction(checkin.pain_map || [], decayed?.weightedPain);
-    const symptomDeduction = EARSEngine.calculateSymptomsDeduction(checkin.clinical_symptoms || []);
-    const sleepDeduction = EARSEngine.calculateSleepDeficit(checkin.sleep_hours || 8, sleepHistory, decayed?.weightedSleep);
-    const menstrualDeduction = EARSEngine.calculateMenstrualDeduction(checkin.menstrual_cycle);
-    const multipliers = EARSEngine.calculateMultipliers(checkin);
+    const baseScore = calculateBaseScore(checkin, decayed);
+    const painDeduction = calculatePainDeduction(checkin.pain_map || [], decayed?.weightedPain);
+    const symptomDeduction = calculateSymptomsDeduction(checkin.clinical_symptoms || []);
+    const sleepDeduction = calculateSleepDeficit(checkin.sleep_hours || 8, sleepHistory, decayed?.weightedSleep);
+    const menstrualDeduction = calculateMenstrualDeduction(checkin.menstrual_cycle);
+    const multipliers = calculateMultipliers(checkin);
 
     // Trend Modifier: Worsening trend adds 5-10% extra penalty, Improving smoothes it out
     let trendFactor = 1.0;
