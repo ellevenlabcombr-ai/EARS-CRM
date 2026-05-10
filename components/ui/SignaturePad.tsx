@@ -32,6 +32,16 @@ export function SignaturePad({ onSave, onClear, title = "Assinatura Digital" }: 
     ctx.lineCap = 'round';
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = '#22d3ee'; // cyan-400
+
+    // Native touchmove to prevent scroll on iOS Safari
+    const preventScroll = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    canvas.addEventListener('touchmove', preventScroll, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('touchmove', preventScroll);
+    };
   }, []);
 
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
@@ -133,8 +143,9 @@ export function SignaturePad({ onSave, onClear, title = "Assinatura Digital" }: 
           className="w-full h-full touch-none"
         />
         {!hasSignature && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Assine aqui</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-50">
+            <PenTool className="w-8 h-8 text-slate-500 mb-2" />
+            <p className="text-sm font-black uppercase tracking-widest text-slate-400">Desenhe sua assinatura aqui</p>
           </div>
         )}
       </div>

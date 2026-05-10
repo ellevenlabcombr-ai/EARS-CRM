@@ -122,7 +122,7 @@ export const MasterScoreEngine = {
     const factors = [];
     if (ortho < 70) factors.push('Fração Ortopédica crítica');
     if (safePainHistory.length > 3) factors.push('Histórico de dor recorrente');
-    if (safeTags.some((t: any) => t?.tag?.toLowerCase().includes('risk'))) factors.push('Tags de risco estrutural');
+    if (safeTags.some((t: any) => t && (t?.tag || t?.tag_name || typeof t === 'string' ? t : '')?.toString().toLowerCase().includes('risk'))) factors.push('Tags de risco estrutural');
 
     const score = (ortho * 0.4) + (biomech * 0.3) + (dynamometry * 0.3);
     
