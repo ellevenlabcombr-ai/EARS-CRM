@@ -341,10 +341,37 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                 <div className="flex gap-4 items-center">
                   <div className="w-12 h-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
                     <span className="text-sm font-black text-white">
-                      {prontuarioNotes?.[0]?.date ? new Date(prontuarioNotes[0].date).getDate() : '28'}
+                      {prontuarioNotes?.[0]?.date ? (
+                        (() => {
+                           const d = prontuarioNotes[0].date;
+                           if (d.includes('/')) {
+                             const parts = d.split(',')[0].split('/');
+                             if (parts.length >= 3) return parts[0];
+                           }
+                           const parsed = new Date(d);
+                           return !isNaN(parsed.getTime()) ? parsed.getDate() : '28';
+                        })()
+                      ) : '28'}
                     </span>
                     <span className="text-[8px] font-bold text-slate-500 uppercase">
-                      {prontuarioNotes?.[0]?.date ? format(new Date(prontuarioNotes[0].date), 'MMM', { locale: ptBR }) : 'ABR'}
+                      {prontuarioNotes?.[0]?.date ? (
+                        (() => {
+                           const d = prontuarioNotes[0].date;
+                           let parsed = new Date();
+                           let valid = false;
+                           if (d.includes('/')) {
+                             const parts = d.split(',')[0].split('/');
+                             if (parts.length >= 3) {
+                               parsed = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+                               valid = !isNaN(parsed.getTime());
+                             }
+                           } else {
+                             parsed = new Date(d);
+                             valid = !isNaN(parsed.getTime());
+                           }
+                           return valid ? format(parsed, 'MMM', { locale: ptBR }) : 'ABR';
+                        })()
+                      ) : 'ABR'}
                     </span>
                   </div>
                   <div className="flex-1">
@@ -361,66 +388,22 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
           </div>
         </section>
 
-        {/* 5. BLOCO: HISTÓRICO RECENTE */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <History className="w-5 h-5 text-slate-400" />
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Histórico Sessões (Últimas 3)</h2>
-          </div>
-          <div className="space-y-3">
-            {prontuarioNotes.slice(0, 3).map((note, i) => {
-              // Safe date parsing for the circular badge
-              let dateObj = new Date();
-              let isDateValid = false;
-              
-              try {
-                // If note.date is already formatted like "dd/mm/yyyy hh:mm", we need to handle it
-                // In HealthProfile it's .toLocaleString('pt-BR')
-                if (note.date) {
-                  // Try parsing directly. If it fails, we might need a regex
-                  const parts = note.date.split(',')[0].split('/');
-                  if (parts.length === 3) {
-                    dateObj = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                    isDateValid = !isNaN(dateObj.getTime());
-                  } else {
-                    dateObj = new Date(note.date);
-                    isDateValid = !isNaN(dateObj.getTime());
-                  }
-                }
-              } catch (e) {
-                console.error("Error parsing note date:", e);
-              }
-
-              return (
-                <div key={i} className="bg-slate-900/30 border border-white/5 rounded-2xl p-4 flex gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-[10px] font-black text-white">
-                      {isDateValid ? format(dateObj, 'dd', { locale: ptBR }) : '--'}
-                    </span>
-                    <span className="text-[8px] font-bold text-slate-500 uppercase">
-                      {isDateValid ? format(dateObj, 'MMM', { locale: ptBR }) : '---'}
-                    </span>
-                  </div>
-                  <div className="flex-1 overflow-hidden">
-                    <p className="text-xs font-bold text-slate-300 line-clamp-2 italic">
-                      "{note.text || note.observations || 'Sem descrição'}"
-                    </p>
-                    <p className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mt-1">
-                      {note.professional || 'Atendimento Clínico'}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-            {prontuarioNotes.length === 0 && (
-              <p className="text-xs text-slate-500 text-center py-4 uppercase font-bold">Nenhum histórico anterior disponível</p>
-            )}
+        {/* 5. BLOCO: PRONTUÁRIO */}
+        <section className="space-y-4 pt-2">
+          <div className="flex gap-3">
             <Button 
                 variant="ghost" 
                 onClick={onViewFullProntuario}
-                className="w-full text-[10px] font-black text-cyan-500 hover:text-cyan-400 uppercase tracking-widest gap-2 bg-cyan-500/5 py-6 rounded-2xl border border-cyan-500/10"
+                className="flex-1 text-[10px] font-black text-cyan-500 hover:text-cyan-400 bg-cyan-500/5 hover:bg-cyan-500/10 uppercase tracking-widest gap-2 py-6 rounded-2xl border border-cyan-500/10 transition-colors"
             >
                 Ver Prontuário Completo <ChevronRight className="w-3 h-3" />
+            </Button>
+            <Button 
+                variant="ghost"
+                onClick={onOpenNewEvolution}
+                className="flex-1 text-[10px] font-black text-emerald-500 hover:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 uppercase tracking-widest gap-2 py-6 rounded-2xl border border-emerald-500/10 transition-colors"
+            >
+                <Plus className="w-3 h-3" /> Nova Evolução
             </Button>
           </div>
         </section>

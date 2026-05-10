@@ -2344,56 +2344,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  }}
                  onOpenNewEvolution={handleOpenNewEvolution}
                  onSaveSession={async (data) => {
-                   // Create a clinical note from the session data accurately mapped to DB schema
-                   const noteContent = `SESSÃO INTELIGENTE:
-Decisão Aplicada: ${data.decision_applied || 'N/A'}
-Conduta: ${data.evolution?.conduta || 'Rotina padrão mantida de acordo com a decisão do EAR/S'}
-Resposta: ${data.evolution?.resposta || 'Adequada ao estresse aplicado'}
-Próxima Ação: ${data.evolution?.proximaAcao || 'Acompanhamento do Master Score no próximo check-in'}`;
-
-                   // Use default or derived pain level since expresso is removed
-                   const numericPain = 0;
-
-                   try {
-                     const { data: savedNote, error } = await supabase
-                       .from('clinical_notes')
-                       .insert([{
-                         athlete_id: athlete.id,
-                         generated_text: noteContent,
-                         observations: noteContent,
-                         pain_level: numericPain,
-                         feeling: data.evolution?.resposta,
-                         treatments: [data.evolution?.conduta || data.decision_applied],
-                         is_signed: true,
-                         professional_name: "Atendimento EAR/S Intelligence",
-                         note_date: new Date().toISOString()
-                       }])
-                       .select();
-                     
-                     if (error) throw error;
-                     
-                     // Refresh notes locally
-                     if (savedNote && savedNote.length > 0) {
-                        const newNote = {
-                          id: savedNote[0].id,
-                          date: new Date(savedNote[0].note_date || savedNote[0].created_at).toLocaleString('pt-BR'),
-                          text: savedNote[0].generated_text || savedNote[0].observations || '',
-                          signed: savedNote[0].is_signed,
-                          professional: savedNote[0].professional_name,
-                          pain_level: savedNote[0].pain_level,
-                          feeling: savedNote[0].feeling,
-                          regions: savedNote[0].regions,
-                          treatments: savedNote[0].treatments,
-                          observations: savedNote[0].observations
-                        };
-                        setProntuarioNotes(prev => [newNote, ...prev]);
-                     }
-                     
-                     setNotification({ message: 'Sessão registrada com sucesso!', type: 'success' });
-                   } catch (err) {
-                     console.error('Error saving clinical note from session:', err);
-                     setNotification({ message: 'Erro ao salvar sessão.', type: 'error' });
-                   }
+                   setIsSessionMode(false);
+                   setNotification({ message: 'Atendimento finalizado.', type: 'success' });
                  }}
               />
             ) : (
