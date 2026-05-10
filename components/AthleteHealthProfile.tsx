@@ -2363,17 +2363,18 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  onSaveSession={async (data) => {
                    // Create a clinical note from the session data accurately mapped to DB schema
                    const noteContent = `SESSÃO INTELIGENTE:
-Conduta: ${data.evolution.conduta}
-Resposta: ${data.evolution.resposta}
-Próxima Ação: ${data.evolution.proximaAcao}
+Decisão Aplicada: ${data.decision_applied || 'N/A'}
+Conduta: ${data.evolution?.conduta || 'Rotina padrão mantida de acordo com a decisão do EAR/S'}
+Resposta: ${data.evolution?.resposta || 'Adequada ao estresse aplicado'}
+Próxima Ação: ${data.evolution?.proximaAcao || 'Acompanhamento do Master Score no próximo check-in'}
 
 EXAME EXPRESSO:
-ADM: ${data.expresso_exam.adm} | Força: ${data.expresso_exam.forca} | Mobilidade: ${data.expresso_exam.mobilidade} | Confiança: ${data.expresso_exam.confianca}
-Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA ASSINADA DIGITALMENTE' : ''}`;
+ADM: ${data.expresso_exam?.adm || '-'} | Força: ${data.expresso_exam?.forca || '-'} | Mobilidade: ${data.expresso_exam?.mobilidade || '-'} | Confiança: ${data.expresso_exam?.confianca || '-'}
+Obs: ${data.expresso_exam?.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA ASSINADA DIGITALMENTE' : ''}`;
 
                    // Map string pain to numeric if possible, or just default to 0
                    const painMap: Record<string, number> = { 'Normal': 0, 'Aumento': 5, 'Diminuição': 2, 'Aguda': 8 };
-                   const numericPain = painMap[data.expresso_exam.dor] || 0;
+                   const numericPain = data.expresso_exam?.dor ? painMap[data.expresso_exam.dor] || 0 : 0;
 
                    try {
                      const { data: savedNote, error } = await supabase
@@ -2381,10 +2382,10 @@ Obs: ${data.expresso_exam.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA 
                        .insert([{
                          athlete_id: athlete.id,
                          generated_text: noteContent,
-                         observations: data.expresso_exam.observacoes,
+                         observations: data.expresso_exam?.observacoes,
                          pain_level: numericPain,
-                         feeling: data.evolution.resposta,
-                         treatments: [data.evolution.conduta],
+                         feeling: data.evolution?.resposta,
+                         treatments: [data.evolution?.conduta || data.decision_applied],
                          is_signed: true,
                          professional_name: "Atendimento EAR/S Intelligence",
                          note_date: new Date().toISOString()

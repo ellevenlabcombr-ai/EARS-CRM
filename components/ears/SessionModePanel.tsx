@@ -138,14 +138,14 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     { label: 'Prontidão', value: `${metrics.wellness}%`, icon: Trophy, color: getMetricColor(metrics.wellness, 'wellness') },
   ];
 
-  const handleSave = async () => {
+  const handleSave = async (optionalSignature?: string) => {
     setLoading(true);
     try {
       const sessionData = {
         athlete_id: athlete.id,
         expresso_exam: expressoExam,
         decision_applied: manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision,
-        signature: signature,
+        signature: optionalSignature || signature,
         timestamp: new Date().toISOString()
       };
       await onSaveSession(sessionData);
@@ -527,7 +527,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               <SignaturePad 
                 onSave={(dataUrl) => {
                   setSignature(dataUrl);
-                  handleSave();
+                  handleSave(dataUrl);
                 }}
                 onClear={() => setSignature(null)}
               />

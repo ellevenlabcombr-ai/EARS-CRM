@@ -134,8 +134,7 @@ function getAdjustmentLog(profile: MasterScoreProfile) {
     return logs;
 }
 
-export const MasterScoreEngine = {
-  calculate: (data: any, profile: MasterScoreProfile): MasterScoreResult => {
+export function calculateMasterScore(data: any, profile: MasterScoreProfile): MasterScoreResult {
     const weights = getDynamicWeights(profile);
     
     // 1. Daily Readiness (0-100)
@@ -192,8 +191,10 @@ export const MasterScoreEngine = {
       insights,
       dynamicAdjustments: getAdjustmentLog(profile)
     };
-  },
+}
 
+export const MasterScoreEngine = {
+  calculate: calculateMasterScore,
   getDynamicWeights,
   calcDailyReadiness,
   calcStructuralRisk,
