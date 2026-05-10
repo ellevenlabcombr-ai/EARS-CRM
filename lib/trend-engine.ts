@@ -47,7 +47,7 @@ export const TrendEngine = {
 
   analyze: (history: any[]): TrendAnalysis => {
     const painValues = history.map(h => {
-        if (h.pain_map) return Math.max(...h.pain_map.map((p: any) => p.level), 0);
+        if (h.pain_map && Array.isArray(h.pain_map)) return Math.max(...h.pain_map.map((p: any) => p.level), 0);
         return h.muscle_soreness || 0;
     });
     const sleepValues = history.map(h => h.sleep_hours || 8);

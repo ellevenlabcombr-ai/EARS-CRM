@@ -71,6 +71,8 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [signature, setSignature] = useState<string | null>(null);
+  const [manualDecision, setManualDecision] = useState<"full_train" | "modified_train" | "recovery" | "hold" | null>(null);
+  const [isEditingDecision, setIsEditingDecision] = useState(false);
 
   // Safety guard for athlete
   if (!athlete || !athlete.id) {
@@ -133,7 +135,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     { label: 'Sono', value: `${metrics.sleep}h`, icon: Moon, color: getMetricColor(metrics.sleep, 'sleep') },
     { label: 'Fadiga', value: metrics.fatigue, icon: Zap, color: getMetricColor(metrics.fatigue, 'fatigue') },
     { label: 'Dor', value: metrics.pain, icon: Thermometer, color: getMetricColor(metrics.pain, 'pain') },
-    { label: 'Master Score', value: masterScore ? `${masterScore.finalScore}%` : `${metrics.wellness}%`, icon: Trophy, color: masterScore ? (masterScore.finalScore >= 80 ? 'text-emerald-400' : masterScore.finalScore >= 60 ? 'text-amber-400' : 'text-rose-400') : getMetricColor(metrics.wellness, 'wellness') },
+    { label: 'Prontidão', value: `${metrics.wellness}%`, icon: Trophy, color: getMetricColor(metrics.wellness, 'wellness') },
   ];
 
   const handleSave = async () => {
@@ -142,7 +144,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
       const sessionData = {
         athlete_id: athlete.id,
         expresso_exam: expressoExam,
-        decision_applied: clinicalSessionData?.priorityOutput?.adjustedDecision,
+        decision_applied: manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision,
         signature: signature,
         timestamp: new Date().toISOString()
       };
@@ -171,15 +173,10 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </div>
             </div>
             <div className="text-right">
-              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${masterScore ? (masterScore.finalScore >= 80 ? 'text-emerald-400' : masterScore.finalScore >= 60 ? 'text-amber-400' : 'text-rose-400') : getMetricColor(metrics.wellness, 'wellness')}`}>
-                {masterScore ? masterScore.finalScore : metrics.wellness}%
+              <div className={`text-3xl md:text-4xl font-black tracking-tighter ${getMetricColor(metrics.wellness, 'wellness')}`}>
+                {metrics.wellness}%
               </div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">MASTER SCORE</p>
-              {masterScore && (
-                <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${masterScore.confidence === 'high' ? 'text-emerald-500' : masterScore.confidence === 'medium' ? 'text-amber-500' : 'text-rose-500'}`}>
-                  Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
-                </p>
-              )}
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">PRONTIDÃO</p>
             </div>
           </div>
 
@@ -258,16 +255,37 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                   <p>{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
                 )}
                 <p className="text-cyan-400 mt-3">
-                  Recomenda-se {clinicalSessionData?.priorityOutput?.adjustedDecision === 'hold' ? 'suspensão imediata' : clinicalSessionData?.priorityOutput?.adjustedDecision === 'recovery' ? 'protocolo de recovery' : 'treino com adaptação'}.
+                  Recomenda-se {(manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'hold' ? 'suspensão imediata' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'recovery' ? 'protocolo de recovery' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'modified_train' ? 'treino modificado' : 'treino livre'}.
+                  {manualDecision && <span className="ml-2 text-xs text-amber-400">(Ajustado Manualmente)</span>}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6">
-                  Confirmar Plano
-                </Button>
-                <Button variant="ghost" className="text-slate-400 hover:text-white text-xs font-black uppercase tracking-widest">
-                  Ajustar Manulamente
-                </Button>
+                {!isEditingDecision ? (
+                  <>
+                  <Button 
+                    onClick={() => {
+                        setIsFinalizing(true);
+                        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+                    }}
+                    variant="outline" 
+                    className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6">
+                    Confirmar Plano
+                  </Button>
+                  <Button 
+                    onClick={() => setIsEditingDecision(true)}
+                    variant="ghost" 
+                    className="text-slate-400 hover:text-white text-xs font-black uppercase tracking-widest">
+                    Ajustar Manualmente
+                  </Button>
+                  </>
+                ) : (
+                  <div className="w-full flex gap-2">
+                    <Button onClick={() => { setManualDecision('full_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 rounded-xl h-10">Livre</Button>
+                    <Button onClick={() => { setManualDecision('modified_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-indigo-500/20 text-indigo-400 border-indigo-500/30 rounded-xl h-10">Modificado</Button>
+                    <Button onClick={() => { setManualDecision('recovery'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-xl h-10">Recovery</Button>
+                    <Button onClick={() => { setManualDecision('hold'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-rose-500/20 text-rose-400 border-rose-500/30 rounded-xl h-10">Hold</Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

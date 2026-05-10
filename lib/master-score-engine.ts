@@ -115,9 +115,9 @@ export const MasterScoreEngine = {
     const safePainHistory = painHistory || [];
     const safeTags = tags || [];
 
-    const ortho = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('ortho'))?.score || 100;
-    const biomech = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('biomech'))?.score || 100;
-    const dynamometry = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('dynamo'))?.score || 100;
+    const ortho = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('ortho'))?.score || 100;
+    const biomech = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('biomech'))?.score || 100;
+    const dynamometry = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('dynamo'))?.score || 100;
     
     const factors = [];
     if (ortho < 70) factors.push('Fração Ortopédica crítica');
@@ -128,30 +128,30 @@ export const MasterScoreEngine = {
     
     return {
       score,
-      confidence: safeAssessments.some((a: any) => ['ortho', 'biomech', 'dynamo'].some(t => (a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 90 : 30,
+      confidence: safeAssessments.some((a: any) => ['ortho', 'biomech', 'dynamo'].some(t => String(a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 90 : 30,
       factors
     };
   },
 
   calcInternalHealth: (assessments: any[], wellnessRecords: any[]) => {
     const safeAssessments = assessments || [];
-    const nutrition = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('nutri'))?.score || 80;
-    const reds = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('reds'))?.score || 100;
-    const hydration = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('hydra'))?.score || 80;
+    const nutrition = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('nutri'))?.score || 80;
+    const reds = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('reds'))?.score || 100;
+    const hydration = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('hydra'))?.score || 80;
     
     const factors = [];
     if (hydration < 50) factors.push('Déficit de hidratação detectado');
 
     return {
       score: (nutrition * 0.4) + (reds * 0.4) + (hydration * 0.2),
-      confidence: safeAssessments.some((a: any) => ['nutri', 'reds', 'hydra'].some(t => (a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 85 : 10,
+      confidence: safeAssessments.some((a: any) => ['nutri', 'reds', 'hydra'].some(t => String(a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 85 : 10,
       factors
     };
   },
 
   calcMentalReadiness: (assessments: any[], wellness: any) => {
     const safeAssessments = assessments || [];
-    const psycho = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('psycho'))?.score || 80;
+    const psycho = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('psycho'))?.score || 80;
     const stress = wellness?.stress_level ? (6 - wellness.stress_level) * 20 : 70;
     const motivation = wellness?.mood ? wellness.mood * 20 : 70;
 
@@ -164,12 +164,12 @@ export const MasterScoreEngine = {
 
   calcPerformanceCapacity: (assessments: any[]) => {
     const safeAssessments = assessments || [];
-    const physical = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('physic'))?.score || 70;
-    const strength = safeAssessments.find((a: any) => (a?.type || a?.assessment_type || '').toLowerCase().includes('strength'))?.score || 70;
+    const physical = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('physic'))?.score || 70;
+    const strength = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('strength'))?.score || 70;
 
     return {
       score: (physical * 0.6) + (strength * 0.4),
-      confidence: safeAssessments.some((a: any) => ['physic', 'strength'].some(t => (a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 80 : 20,
+      confidence: safeAssessments.some((a: any) => ['physic', 'strength'].some(t => String(a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 80 : 20,
       factors: []
     };
   },

@@ -66,7 +66,8 @@ export const EARSEngine = {
   },
 
   calculatePainDeduction: (painMap: BodyPain[], decayedPain?: number): number => {
-    const rawPain = painMap.length > 0 ? Math.max(...painMap.map(p => p.level), 0) : 0;
+    const validMap = Array.isArray(painMap) ? painMap : [];
+    const rawPain = validMap.length > 0 ? Math.max(...validMap.map(p => p.level), 0) : 0;
     
     // Blend current pain with decayed pain (60/40 split)
     const maxPain = decayedPain ? (rawPain * 0.6 + decayedPain * 0.4) : rawPain;
@@ -110,12 +111,14 @@ export const EARSEngine = {
       'flu_symptoms': 'severe'
     };
 
-    symptoms.forEach(s => {
-      const type = severity[s] || 'light';
-      if (type === 'light') deduction += 2;
-      else if (type === 'moderate') deduction += 8;
-      else if (type === 'severe') deduction += 15;
-    });
+    if (Array.isArray(symptoms)) {
+      symptoms.forEach(s => {
+        const type = severity[s] || 'light';
+        if (type === 'light') deduction += 2;
+        else if (type === 'moderate') deduction += 8;
+        else if (type === 'severe') deduction += 15;
+      });
+    }
 
     return deduction;
   },
@@ -140,7 +143,8 @@ export const EARSEngine = {
 
     // NEW: If pain >= 5 AND previous training RPE >= 7: -12%
     // Note: We'll check max pain in the checkin.pain_map
-    const maxPain = Math.max(...(checkin.pain_map || []).map(p => p.level), 0);
+    const validPainMap = Array.isArray(checkin.pain_map) ? checkin.pain_map : [];
+    const maxPain = Math.max(...validPainMap.map(p => p.level), 0);
     if (maxPain >= 5) {
       // Assuming 7+ if not provided for safety in high performance context or if it was high yesterday
       multiplierDeduction += 12;
