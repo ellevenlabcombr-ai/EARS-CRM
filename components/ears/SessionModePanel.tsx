@@ -80,16 +80,6 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
       </div>
     );
   }
-  
-  // Interactive State for "Exame Expresso"
-  const [expressoExam, setExpressoExam] = useState({
-    dor: 'Normal',
-    adm: 'Normal',
-    forca: 'Normal',
-    mobilidade: 'Normal',
-    confianca: 'Alta',
-    observacoes: ''
-  });
 
   const lastWellness = wellnessHistory?.[0] || {};
   
@@ -141,7 +131,6 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     try {
       const sessionData = {
         athlete_id: athlete.id,
-        expresso_exam: expressoExam,
         decision_applied: manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision,
         timestamp: new Date().toISOString()
       };
@@ -348,71 +337,27 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
 
             <Card className="bg-slate-900 border-white/5 p-4 flex flex-col justify-between">
               <div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Dados Biométricos</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-slate-800/50 rounded-lg p-2">
-                    <p className="text-[8px] font-black text-slate-500 uppercase">Peso</p>
-                    <p className="text-xs font-bold text-white">{athlete.weight || '--'} kg</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Informativo Última Sessão</p>
+                <div className="flex gap-4 items-center">
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-sm font-black text-white">
+                      {prontuarioNotes?.[0]?.date ? new Date(prontuarioNotes[0].date).getDate() : '28'}
+                    </span>
+                    <span className="text-[8px] font-bold text-slate-500 uppercase">
+                      {prontuarioNotes?.[0]?.date ? format(new Date(prontuarioNotes[0].date), 'MMM', { locale: ptBR }) : 'ABR'}
+                    </span>
                   </div>
-                  <div className="bg-slate-800/50 rounded-lg p-2">
-                    <p className="text-[8px] font-black text-slate-500 uppercase">Altura</p>
-                    <p className="text-xs font-bold text-white">{athlete.height || '--'} {athlete.height && athlete.height < 3 ? 'm' : 'cm'}</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-2">
-                    <p className="text-[8px] font-black text-slate-500 uppercase">Idade</p>
-                    <p className="text-xs font-bold text-white">{athlete.age ? `${athlete.age} anos` : (athlete.birthDate || athlete.birth_date) ? `${new Date().getFullYear() - new Date(athlete.birthDate || athlete.birth_date).getFullYear()} anos` : '--'}</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-2">
-                    <p className="text-[8px] font-black text-slate-500 uppercase">Dom.</p>
-                    <p className="text-xs font-bold text-white uppercase">{athlete.dominance || '--'}</p>
+                  <div className="flex-1">
+                    <p className="text-[10px] font-bold text-slate-300 italic mb-1 line-clamp-3">
+                       "{prontuarioNotes?.[0]?.text || prontuarioNotes?.[0]?.observations || 'Sessão Anterior - Controle de Dor e Recovery devido à alta percepção subjetiva de esforço.'}"
+                    </p>
+                    <p className="text-[9px] font-black text-cyan-500 uppercase tracking-widest">
+                       {prontuarioNotes?.[0]?.professional || 'DRA. CRISTINA JORGE'}
+                    </p>
                   </div>
                 </div>
               </div>
             </Card>
-          </div>
-        </section>
-
-        {/* 4. BLOCO: EXAME EXPRESSO */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Stethoscope className="w-5 h-5 text-purple-400" />
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Exame Expresso (Checklist)</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              { id: 'dor', label: 'Dor', icon: Thermometer, options: ['Normal', 'Aumento', 'Diminuição', 'Aguda'] },
-              { id: 'adm', label: 'ADM', icon: Move, options: ['Normal', 'Restrita', 'Aumentada'] },
-              { id: 'forca', label: 'Força', icon: Dumbbell, options: ['Normal', 'Reduzida', 'Déficit'] },
-              { id: 'mobilidade', label: 'Mobilidade', icon: PersonStanding, options: ['Ok', 'Rígido', 'Hipermóvel'] },
-              { id: 'confianca', label: 'Confiança', icon: Brain, options: ['Alta', 'Moderada', 'Baixa'] },
-            ].map((field) => (
-              <div key={field.id} className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                   <field.icon className="w-3 h-3 text-slate-500" />
-                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{field.label}</span>
-                </div>
-                <select 
-                  className="bg-slate-950 border border-white/10 rounded-xl w-full p-2 text-xs font-bold text-white focus:border-purple-500/50 outline-none"
-                  value={(expressoExam as any)[field.id]}
-                  onChange={(e) => setExpressoExam({ ...expressoExam, [field.id]: e.target.value })}
-                >
-                  {field.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-              </div>
-            ))}
-            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 space-y-3 col-span-2 md:col-span-1">
-               <div className="flex items-center gap-2">
-                   <MessageSquare className="w-3 h-3 text-slate-500" />
-                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Obs</span>
-                </div>
-                <input 
-                  type="text"
-                  placeholder="Rápida..."
-                  className="bg-slate-950 border border-white/10 rounded-xl w-full p-2 text-xs font-bold text-white focus:border-purple-500/50 outline-none"
-                  value={expressoExam.observacoes}
-                  onChange={(e) => setExpressoExam({ ...expressoExam, observacoes: e.target.value })}
-                />
-            </div>
           </div>
         </section>
 

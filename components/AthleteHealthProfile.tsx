@@ -2349,15 +2349,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 Decisão Aplicada: ${data.decision_applied || 'N/A'}
 Conduta: ${data.evolution?.conduta || 'Rotina padrão mantida de acordo com a decisão do EAR/S'}
 Resposta: ${data.evolution?.resposta || 'Adequada ao estresse aplicado'}
-Próxima Ação: ${data.evolution?.proximaAcao || 'Acompanhamento do Master Score no próximo check-in'}
+Próxima Ação: ${data.evolution?.proximaAcao || 'Acompanhamento do Master Score no próximo check-in'}`;
 
-EXAME EXPRESSO:
-ADM: ${data.expresso_exam?.adm || '-'} | Força: ${data.expresso_exam?.forca || '-'} | Mobilidade: ${data.expresso_exam?.mobilidade || '-'} | Confiança: ${data.expresso_exam?.confianca || '-'}
-Obs: ${data.expresso_exam?.observacoes || 'Nenhuma'}`;
-
-                   // Map string pain to numeric if possible, or just default to 0
-                   const painMap: Record<string, number> = { 'Normal': 0, 'Aumento': 5, 'Diminuição': 2, 'Aguda': 8 };
-                   const numericPain = data.expresso_exam?.dor ? painMap[data.expresso_exam.dor] || 0 : 0;
+                   // Use default or derived pain level since expresso is removed
+                   const numericPain = 0;
 
                    try {
                      const { data: savedNote, error } = await supabase
@@ -2365,7 +2360,7 @@ Obs: ${data.expresso_exam?.observacoes || 'Nenhuma'}`;
                        .insert([{
                          athlete_id: athlete.id,
                          generated_text: noteContent,
-                         observations: data.expresso_exam?.observacoes,
+                         observations: noteContent,
                          pain_level: numericPain,
                          feeling: data.evolution?.resposta,
                          treatments: [data.evolution?.conduta || data.decision_applied],
