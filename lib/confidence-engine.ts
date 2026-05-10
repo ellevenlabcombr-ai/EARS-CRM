@@ -5,8 +5,7 @@ export interface ConfidenceResult {
   reasons: string[];
 }
 
-export const ConfidenceEngine = {
-  calculate: (history: any[], currentCheckin: any): ConfidenceResult => {
+function calculate(history: any[], currentCheckin: any): ConfidenceResult {
     let score = 0;
     const reasons: string[] = [];
 
@@ -55,5 +54,8 @@ export const ConfidenceEngine = {
       confidenceLevel: level,
       reasons
     };
-  }
+}
+
+export const ConfidenceEngine = {
+  calculate
 };

@@ -164,9 +164,9 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-full flex items-center gap-1 md:gap-2 pr-4 md:pr-6 pl-2">
+              <Button variant="ghost" onClick={onViewFullProntuario || onClose} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl flex items-center gap-1 md:gap-2 pr-4 md:pr-6 pl-2 bg-slate-800/50">
                 <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest leading-none mt-0.5">Voltar</span>
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest leading-none mt-0.5">Voltar p/ Prontuário</span>
               </Button>
               <div>
                 <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase">{athlete.name}</h1>

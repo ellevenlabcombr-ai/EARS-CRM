@@ -6,7 +6,7 @@ export interface DecayedMetrics {
   weightedReadiness: number;
 }
 
-const calculateWeightedValue = (values: number[], lambda: number = 0.5): number => {
+function calculateWeightedValue(values: number[], lambda: number = 0.5): number {
     if (values.length === 0) return 0;
     if (values.length === 1) return values[0];
 
@@ -23,9 +23,9 @@ const calculateWeightedValue = (values: number[], lambda: number = 0.5): number 
     });
 
     return weightedSum / totalWeight;
-};
+}
 
-const processHistory = (history: any[]): DecayedMetrics => {
+function processHistory(history: any[]): DecayedMetrics {
     const painValues = history.map(h => {
         if (h.pain_map && Array.isArray(h.pain_map)) {
             return Math.max(...h.pain_map.map((p: any) => p.level), 0);
@@ -42,7 +42,7 @@ const processHistory = (history: any[]): DecayedMetrics => {
       weightedLoad: calculateWeightedValue(loadValues),
       weightedReadiness: calculateWeightedValue(readinessValues)
     };
-};
+}
 
 export const DecayEngine = {
   /**

@@ -29,7 +29,7 @@ export interface PriorityOutput {
   adjustedDecision: SessionDecision;
 }
 
-const mapToExecutionPlan = (actions: string[]): ExecutionStep[] => {
+function mapToExecutionPlan(actions: string[]): ExecutionStep[] {
     // Current simple mapping as per prompt
     return [
       {
@@ -37,9 +37,9 @@ const mapToExecutionPlan = (actions: string[]): ExecutionStep[] => {
         items: actions
       }
     ];
-};
+}
 
-const process = (input: PriorityInput): PriorityOutput => {
+function process(input: PriorityInput): PriorityOutput {
     let { decision, confidence, factors, actions, tags } = input;
     let showWarning = confidence === "low";
     let adjustedDecision = decision;
@@ -84,7 +84,7 @@ const process = (input: PriorityInput): PriorityOutput => {
       showWarning,
       adjustedDecision
     };
-};
+}
 
 export const PriorityEngine = {
   process,

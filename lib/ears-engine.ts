@@ -3,7 +3,7 @@ import { WellnessCheckIn, BodyPain, ReadinessLevel } from '../types/ears';
 import { TrendAnalysis } from './trend-engine';
 import { DecayedMetrics } from './decay-engine';
 
-const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: DecayedMetrics): number => {
+function calculateBaseScore(checkin: Partial<WellnessCheckIn>, decayed?: DecayedMetrics): number {
     const weights = {
       sleep: 0.25,
       energy: 0.20,
@@ -53,9 +53,9 @@ const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     }
 
     return Math.round(baseScore);
-  };
+}
 
-  const calculatePainDeduction = (painMap: BodyPain[], decayedPain?: number): number => {
+function calculatePainDeduction(painMap: BodyPain[], decayedPain?: number): number {
     const validMap = Array.isArray(painMap) ? painMap : [];
     const rawPain = validMap.length > 0 ? Math.max(...validMap.map(p => p.level), 0) : 0;
     
@@ -68,9 +68,9 @@ const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     
     const criticalMap: Record<number, number> = { 7: 30, 8: 45, 9: 65, 10: 90 };
     return criticalMap[Math.floor(maxPain)] || 90;
-  };
+}
 
-  const calculateSleepDeficit = (currentSleep: number, history: number[] = [], decayedSleep?: number): number => {
+function calculateSleepDeficit(currentSleep: number, history: number[] = [], decayedSleep?: number): number {
     let deduction = 0;
     const effectiveSleep = decayedSleep ? (currentSleep * 0.7 + decayedSleep * 0.3) : currentSleep;
 
@@ -85,9 +85,9 @@ const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     }
 
     return deduction;
-  };
+}
 
-  const calculateSymptomsDeduction = (symptoms: string[]): number => {
+function calculateSymptomsDeduction(symptoms: string[]): number {
     let deduction = 0;
     
     const severity: Record<string, 'light' | 'moderate' | 'severe'> = {
@@ -97,7 +97,7 @@ const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: Decayed
       'headache': 'moderate',
       'nausea': 'moderate',
       'dizziness': 'moderate',
-      'fever': 'severe',
+      'f fever': 'severe',
       'flu_symptoms': 'severe'
     };
 
@@ -111,9 +111,9 @@ const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     }
 
     return deduction;
-  };
+}
 
-  const calculateMultipliers = (checkin: Partial<WellnessCheckIn>): number => {
+function calculateMultipliers(checkin: Partial<WellnessCheckIn>): number {
     let multiplierDeduction = 0;
 
     // Sleep <= 2 AND stress >= 4: -10%
@@ -134,20 +134,20 @@ const calculateBaseScore = (checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     // NEW: If pain >= 5 AND previous training RPE >= 7: -12%
     // Note: We'll check max pain in the checkin.pain_map
     const validPainMap = Array.isArray(checkin.pain_map) ? checkin.pain_map : [];
-    const maxPain = Math.max(...validPainMap.map(p => p.level), 0);
+    const maxPain = validPainMap.length > 0 ? Math.max(...validPainMap.map(p => p.level), 0) : 0;
     if (maxPain >= 5) {
       // Assuming 7+ if not provided for safety in high performance context or if it was high yesterday
       multiplierDeduction += 12;
     }
 
     return multiplierDeduction;
-  };
+}
 
-  const calculateMenstrualDeduction = (phase?: string): number => {
+function calculateMenstrualDeduction(phase?: string): number {
     if (phase === 'menstrual') return 5;
     if (phase === 'luteal') return 2;
     return 0;
-  };
+}
 
 export const EARSEngine = {
   /**

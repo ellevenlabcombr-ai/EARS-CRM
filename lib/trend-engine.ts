@@ -9,7 +9,7 @@ export interface TrendAnalysis {
   trendScore: number; // -1 (very bad) to +1 (very good)
 }
 
-const calculateSlope = (values: number[]): number => {
+function calculateSlope(values: number[]): number {
     const n = values.length;
     if (n < 2) return 0;
 
@@ -31,25 +31,16 @@ const calculateSlope = (values: number[]): number => {
     if (denom === 0) return 0;
 
     return (n * sumXY - sumX * sumY) / denom;
-};
+}
 
-const classifyTrend = (slope: number, threshold: number = 0.1, inverted: boolean = false): TrendStatus => {
+function classifyTrend(slope: number, threshold: number = 0.1, inverted: boolean = false): TrendStatus {
     const effectiveSlope = inverted ? -slope : slope;
     if (effectiveSlope > threshold) return "improving";
     if (effectiveSlope < -threshold) return "worsening";
     return "stable";
-};
+}
 
-export const TrendEngine = {
-  /**
-   * Calculates the slope of a series using basic linear regression (least squares).
-   * Positive slope = Increasing.
-   */
-  calculateSlope,
-
-  classifyTrend,
-
-  analyze: (history: any[]): TrendAnalysis => {
+function analyze(history: any[]): TrendAnalysis {
     const painValues = history.map(h => {
         if (h.pain_map && Array.isArray(h.pain_map)) return Math.max(...h.pain_map.map((p: any) => p.level), 0);
         return h.muscle_soreness || 0;
@@ -94,5 +85,10 @@ export const TrendEngine = {
       loadTrend: loadSlope > 100 ? "worsening" : (loadSlope < -100 ? "improving" : "stable"),
       trendScore: Math.max(-1, Math.min(1, totalScore))
     };
-  }
+}
+
+export const TrendEngine = {
+  calculateSlope,
+  classifyTrend,
+  analyze
 };

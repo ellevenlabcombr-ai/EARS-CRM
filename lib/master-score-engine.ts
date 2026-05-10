@@ -2,7 +2,7 @@
 import { DomainId, MasterScoreResult, ScoreDomain, MasterScoreProfile } from './master-score-types';
 import { BASE_WEIGHTS, SPORT_WEIGHT_ADJUSTMENTS, SEASON_WEIGHT_ADJUSTMENTS } from './master-score-config';
 
-const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number> => {
+function getDynamicWeights(profile: MasterScoreProfile): Record<DomainId, number> {
     let weights = { ...BASE_WEIGHTS };
     const sport = profile.sport?.toLowerCase() || '';
 
@@ -35,9 +35,9 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
     (Object.keys(weights) as DomainId[]).forEach(k => weights[k] /= sum);
 
     return weights;
-  };
+}
 
-  const calcDailyReadiness = (wellness: any, lastCheckIn: any, ears: any) => {
+function calcDailyReadiness(wellness: any, lastCheckIn: any, ears: any) {
     const score = ears?.score || wellness?.readiness_score || 70;
     const factors = [];
     if (wellness?.fatigue_level > 3) factors.push('Fadiga elevada');
@@ -48,9 +48,9 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
       confidence: wellness ? 100 : 20,
       factors
     };
-  };
+}
 
-  const calcStructuralRisk = (assessments: any[], painHistory: any[], tags: any[]) => {
+function calcStructuralRisk(assessments: any[], painHistory: any[], tags: any[]) {
     const safeAssessments = assessments || [];
     const safePainHistory = painHistory || [];
     const safeTags = tags || [];
@@ -71,9 +71,9 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
       confidence: safeAssessments.some((a: any) => ['ortho', 'biomech', 'dynamo'].some(t => String(a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 90 : 30,
       factors
     };
-  };
+}
 
-  const calcInternalHealth = (assessments: any[], wellnessRecords: any[]) => {
+function calcInternalHealth(assessments: any[], wellnessRecords: any[]) {
     const safeAssessments = assessments || [];
     const nutrition = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('nutri'))?.score || 80;
     const reds = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('reds'))?.score || 100;
@@ -87,9 +87,9 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
       confidence: safeAssessments.some((a: any) => ['nutri', 'reds', 'hydra'].some(t => String(a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 85 : 10,
       factors
     };
-  };
+}
 
-  const calcMentalReadiness = (assessments: any[], wellness: any) => {
+function calcMentalReadiness(assessments: any[], wellness: any) {
     const safeAssessments = assessments || [];
     const psycho = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('psycho'))?.score || 80;
     const stress = wellness?.stress_level ? (6 - wellness.stress_level) * 20 : 70;
@@ -100,9 +100,9 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
       confidence: psycho < 100 ? 90 : 40,
       factors: psycho < 60 ? ['Indicadores psicológicos em atenção'] : []
     };
-  };
+}
 
-  const calcPerformanceCapacity = (assessments: any[]) => {
+function calcPerformanceCapacity(assessments: any[]) {
     const safeAssessments = assessments || [];
     const physical = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('physic'))?.score || 70;
     const strength = safeAssessments.find((a: any) => String(a?.type || a?.assessment_type || '').toLowerCase().includes('strength'))?.score || 70;
@@ -112,9 +112,9 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
       confidence: safeAssessments.some((a: any) => ['physic', 'strength'].some(t => String(a?.type || a?.assessment_type || '').toLowerCase().includes(t))) ? 80 : 20,
       factors: []
     };
-  };
+}
 
-  const generateInsights = (domains: ScoreDomain[], profile: MasterScoreProfile) => {
+function generateInsights(domains: ScoreDomain[], profile: MasterScoreProfile) {
     const insights = [];
     const readiness = domains.find(d => d.id === 'daily_readiness');
     const structural = domains.find(d => d.id === 'structural_risk');
@@ -124,15 +124,15 @@ const getDynamicWeights = (profile: MasterScoreProfile): Record<DomainId, number
     if (readiness && readiness.score > 85) insights.push('Sono adequado elevando prontidão diária');
     
     return insights.slice(0, 3);
-  };
+}
 
-  const getAdjustmentLog = (profile: MasterScoreProfile) => {
+function getAdjustmentLog(profile: MasterScoreProfile) {
     const logs = [];
     if (profile.sport) logs.push(`Ajuste dinâmico para: ${profile.sport}`);
     if (profile.seasonPhase) logs.push(`Fase da temporada: ${profile.seasonPhase}`);
     if (profile.age && profile.age < 18) logs.push('Sensibilidade aumentada p/ desenvolvimento jovem');
     return logs;
-  };
+}
 
 export const MasterScoreEngine = {
   calculate: (data: any, profile: MasterScoreProfile): MasterScoreResult => {

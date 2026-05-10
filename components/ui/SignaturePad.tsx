@@ -120,7 +120,7 @@ export function SignaturePad({ onSave, onClear, title = "Assinatura Digital" }: 
         </button>
       </div>
       
-      <div className="relative aspect-[2/1] bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-2xl overflow-hidden cursor-crosshair">
+      <div className="relative w-full h-[300px] bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-2xl overflow-hidden cursor-crosshair">
         <canvas
           ref={canvasRef}
           onMouseDown={startDrawing}

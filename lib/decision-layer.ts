@@ -12,13 +12,12 @@ export interface DecisionOutput {
   alerts: string[];
 }
 
-export const DecisionLayer = {
-  analyze: (
+function analyze(
     readinessScore: number,
     clusters: RiskCluster[],
     trends: TrendAnalysis,
     confidence: ConfidenceResult
-  ): DecisionOutput => {
+): DecisionOutput {
     let recommendation: ClinicalRecommendation = "full_train";
     let loadAdjustment = 1.0;
     const focusAreas: string[] = [];
@@ -68,5 +67,8 @@ export const DecisionLayer = {
       focusAreas: Array.from(new Set(focusAreas)),
       alerts
     };
-  }
+}
+
+export const DecisionLayer = {
+  analyze
 };
