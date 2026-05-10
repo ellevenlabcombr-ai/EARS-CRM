@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ClinicalAlert } from "@/types/database";
 import { fetchClinicalAlerts } from "@/lib/clinical";
 import { getLocalDateString, parseDateString } from "@/lib/utils";
+import { evaluateSafeMode } from "@/lib/safe-mode-engine";
 import { calculateRiskClusters } from "@/lib/clinical-engine";
 
 interface ClinicalDashboardProps {
@@ -374,6 +375,13 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
             mainReason = insight.riskLabel;
         }
 
+        const safeModeResult = evaluateSafeMode({
+          masterScore: readiness || 70,
+          recentWellness: clinicalInputs.wellnessHistory,
+          clinicalAssessments: clinicalInputs.clinicalAssessments,
+          injuryStatus: athlete.status || "healthy"
+        });
+
         return {
           id: athlete.id,
           name: athlete.name,
@@ -391,6 +399,7 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
           main_reason: mainReason,
           is_missing_checkin: !todayRecord,
           clinical_insight: insight || undefined,
+          safeMode: safeModeResult,
           risk_clusters: clusters,
           decision_mode: decisionMode,
           decision_explanation: decisionExplanation,

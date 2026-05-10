@@ -71,6 +71,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
   const [manualDecision, setManualDecision] = useState<"full_train" | "modified_train" | "recovery" | "hold" | null>(null);
   const [isEditingDecision, setIsEditingDecision] = useState(false);
+  const [overrideSafeMode, setOverrideSafeMode] = useState(false);
 
   // Safety guard for athlete
   if (!athlete || !athlete.id) {
@@ -117,7 +118,11 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     }
   };
 
-  const masterScore = clinicalSessionData?.masterScore;
+  const masterScore = clinicalSessionData ? { 
+     finalScore: typeof clinicalSessionData.masterScore === 'number' ? clinicalSessionData.masterScore : (clinicalSessionData.readiness?.score || 70), 
+     confidence: clinicalSessionData.confidence?.confidenceLevel || 'low' 
+  } : null;
+  const safeMode = clinicalSessionData?.safeMode;
   
   const stats = [
     { label: 'Sono', value: `${metrics.sleep}h`, icon: Moon, color: getMetricColor(metrics.sleep, 'sleep') },
@@ -165,12 +170,65 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </div>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">MASTER SCORE</p>
               {masterScore && (
-                <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${masterScore.confidence === 'high' ? 'text-emerald-500' : masterScore.confidence === 'medium' ? 'text-amber-500' : 'text-rose-500'}`}>
-                  Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
-                </p>
+                <div className="flex flex-col items-end gap-1 mt-1">
+                  <p className={`text-[8px] font-black uppercase tracking-widest ${masterScore.confidence === 'high' ? 'text-emerald-500' : masterScore.confidence === 'medium' ? 'text-amber-500' : 'text-rose-500'}`}>
+                    Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
+                  </p>
+                  {safeMode?.active && !overrideSafeMode && (
+                    <div className={`px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                      safeMode.level === 'high' ? 'bg-red-500/10 border-red-500/30 text-red-500' : 
+                      safeMode.level === 'moderate' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' : 
+                      'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
+                    }`}>
+                      <ShieldAlert className="w-2.5 h-2.5" />
+                      SAFE MODE
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
+
+          {safeMode?.active && !overrideSafeMode && (
+            <Card className={`border ${
+              safeMode.level === 'high' ? 'bg-red-500/5 border-red-500/20' : 
+              safeMode.level === 'moderate' ? 'bg-orange-500/5 border-orange-500/20' : 
+              'bg-yellow-500/5 border-yellow-500/20'
+            }`}>
+              <CardContent className="p-3">
+                 <div className="flex items-start justify-between">
+                   <div className="flex items-start gap-3">
+                     <div className={`p-2 rounded-xl mt-0.5 ${
+                        safeMode.level === 'high' ? 'bg-red-500/10 text-red-500' : 
+                        safeMode.level === 'moderate' ? 'bg-orange-500/10 text-orange-500' : 
+                        'bg-yellow-500/10 text-yellow-400'
+                     }`}>
+                       <ShieldAlert className="w-5 h-5" />
+                     </div>
+                     <div>
+                       <h3 className={`text-xs font-black uppercase tracking-widest ${
+                          safeMode.level === 'high' ? 'text-red-400' : 
+                          safeMode.level === 'moderate' ? 'text-orange-400' : 
+                          'text-yellow-400'
+                       }`}>{safeMode.title}</h3>
+                       <p className="text-xs font-medium text-slate-300 mt-1">{safeMode.summary}</p>
+                       <ul className="mt-2 space-y-1">
+                         {safeMode.reasons.map((reason: string, i: number) => (
+                           <li key={i} className="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1.5">
+                             <span className="w-1 h-1 rounded-full bg-slate-500" />
+                             {reason}
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
+                   </div>
+                   <button onClick={() => setOverrideSafeMode(true)} className="text-[10px] font-black uppercase text-slate-500 hover:text-slate-400 transition-colors tracking-widest bg-slate-800/30 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                     Desativar
+                   </button>
+                 </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid grid-cols-4 gap-2 md:gap-4">
             {stats.map((s, i) => (

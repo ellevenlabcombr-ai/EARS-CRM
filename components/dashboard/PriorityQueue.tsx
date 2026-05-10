@@ -31,6 +31,7 @@ export interface PrioritizedAthlete {
     suggestion: string;
     priority: 'low' | 'medium' | 'high' | 'critical';
   };
+  safeMode?: any;
   risk_clusters?: {
     id: string;
     label: string;
@@ -207,6 +208,32 @@ export function PriorityQueue({ athletes, onViewAthlete, section = 'all' }: Prio
                        </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {athlete.safeMode?.active && (
+                <div className={`mb-4 p-3 rounded-xl border flex items-start gap-3 backdrop-blur-sm ${
+                  athlete.safeMode.level === 'high' ? 'bg-red-500/10 border-red-500/30' : 
+                  athlete.safeMode.level === 'moderate' ? 'bg-orange-500/10 border-orange-500/30' : 
+                  'bg-yellow-500/10 border-yellow-500/30'
+                }`}>
+                  <AlertTriangle className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    athlete.safeMode.level === 'high' ? 'text-red-500' : 
+                    athlete.safeMode.level === 'moderate' ? 'text-orange-500' : 
+                    'text-yellow-500'
+                  }`} />
+                  <div>
+                    <h4 className={`text-[10px] font-black uppercase tracking-widest ${
+                      athlete.safeMode.level === 'high' ? 'text-red-400' : 
+                      athlete.safeMode.level === 'moderate' ? 'text-orange-400' : 
+                      'text-yellow-400'
+                    }`}>
+                      {athlete.safeMode.title}
+                    </h4>
+                    <p className="text-xs text-slate-300 font-medium mt-1">
+                      {athlete.safeMode.summary}
+                    </p>
+                  </div>
                 </div>
               )}
 

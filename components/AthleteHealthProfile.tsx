@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { parseDateString, getLocalDateString, getTagSuggestions } from "@/lib/utils";
+import { evaluateSafeMode } from "@/lib/safe-mode-engine";
+import { SafeModeResult } from "@/lib/safe-mode-types";
 import { translateKey, translateValue } from "@/lib/translations";
 import { 
   ChevronLeft, 
@@ -386,7 +388,23 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         tags: (clinicalInputs.tags || []).map(t => t.tag)
       }); } catch (e: any) { throw new Error("PriorityEngine Crash: " + e.message); }
 
-      let masterScore: any = null;
+      let masterScoreValue = readiness.score;
+
+      let safeModeResult: SafeModeResult;
+      try {
+        const sortedWellnessDesc = [...normalizedWellness].sort((a, b) => 
+          new Date(b.record_date).getTime() - new Date(a.record_date).getTime()
+        );
+        safeModeResult = evaluateSafeMode({
+          masterScore: masterScoreValue,
+          recentWellness: sortedWellnessDesc,
+          clinicalAssessments: clinicalInputs.clinicalAssessments || [],
+          injuryStatus: athlete?.status || "healthy",
+          confidenceScore: confidence.confidenceScore || 0
+        });
+      } catch (e: any) {
+        throw new Error("SafeModeEngine Crash: " + e.message);
+      }
 
       return {
         readiness: readiness || { score: 70, classification: 'stable' },
@@ -396,7 +414,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         trends: trends || { trendScore: 0, direction: 'stable' },
         confidence: confidence || { confidenceLevel: 'low', confidenceScore: 30 },
         decayed: decayed || {},
-        masterScore
+        masterScore: masterScoreValue,
+        safeMode: safeModeResult
       };
     } catch (error) {
       console.error("Clinical Intelligence Crash:", error);
@@ -2283,6 +2302,52 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         <div className="col-span-full lg:row-start-4 order-4 space-y-10 min-w-0 pb-32">
         {activeTab === 'overview' && (
           <div className="space-y-10 pb-32">
+            {/* Safe Mode Premium Alert Banner */}
+            {clinicalSessionData?.safeMode?.active && (
+              <div className={`border rounded-[2rem] p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden backdrop-blur-md ${
+                clinicalSessionData.safeMode.level === 'high' ? 'bg-red-500/10 border-red-500/30' : 
+                clinicalSessionData.safeMode.level === 'moderate' ? 'bg-orange-500/10 border-orange-500/30' : 
+                'bg-yellow-500/10 border-yellow-500/30'
+              }`}>
+                <div className="absolute -right-4 -top-4 opacity-10 pointer-events-none">
+                  <ShieldAlert className={`w-32 h-32 ${
+                    clinicalSessionData.safeMode.level === 'high' ? 'text-red-500' : 
+                    clinicalSessionData.safeMode.level === 'moderate' ? 'text-orange-500' : 
+                    'text-yellow-500'
+                  }`} />
+                </div>
+                <div className="flex items-start gap-4 relative z-10 w-full">
+                  <div className={`p-4 rounded-2xl shrink-0 ${
+                    clinicalSessionData.safeMode.level === 'high' ? 'bg-red-500/20 text-red-500' : 
+                    clinicalSessionData.safeMode.level === 'moderate' ? 'bg-orange-500/20 text-orange-500' : 
+                    'bg-yellow-500/20 text-yellow-500'
+                  }`}>
+                    <ShieldAlert className="w-8 h-8" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <h3 className={`text-lg font-black uppercase tracking-widest ${
+                        clinicalSessionData.safeMode.level === 'high' ? 'text-red-400' : 
+                        clinicalSessionData.safeMode.level === 'moderate' ? 'text-orange-400' : 
+                        'text-yellow-400'
+                      }`}>
+                        {clinicalSessionData.safeMode.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm font-medium text-slate-300 mt-1">{clinicalSessionData.safeMode.summary}</p>
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                       {clinicalSessionData.safeMode.reasons.map((r: string, i: number) => (
+                         <li key={i} className="text-xs font-bold text-slate-400 flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
+                           <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                           {r}
+                         </li>
+                       ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Clinical Alerts Banner */}
             {assessmentAlerts.length > 0 && (
               <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 flex items-center justify-between">
