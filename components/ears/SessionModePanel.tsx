@@ -297,7 +297,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             <Users className="w-5 h-5 text-emerald-400" />
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Contexto 360° (Histórico & Alertas)</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Card className="bg-slate-900 border-white/5 p-4 flex flex-col justify-between">
               <div>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Alertas Clínicos & Tags</p>
@@ -334,62 +334,62 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                 </div>
               </div>
             </Card>
+          </div>
 
-            <Card className="bg-slate-900 border-white/5 p-4 flex flex-col justify-between">
-              <div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Informativo Última Sessão</p>
-                <div className="flex gap-4 items-center">
-                  <div className="w-12 h-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
-                    <span className="text-sm font-black text-white">
-                      {prontuarioNotes?.[0]?.date ? (
-                        (() => {
-                           const d = prontuarioNotes[0].date;
-                           if (d.includes('/')) {
-                             const parts = d.split(',')[0].split('/');
-                             if (parts.length >= 3) return parts[0];
-                           }
-                           const parsed = new Date(d);
-                           return !isNaN(parsed.getTime()) ? parsed.getDate() : '28';
-                        })()
-                      ) : '28'}
-                    </span>
-                    <span className="text-[8px] font-bold text-slate-500 uppercase">
-                      {prontuarioNotes?.[0]?.date ? (
-                        (() => {
-                           const d = prontuarioNotes[0].date;
-                           let parsed = new Date();
-                           let valid = false;
-                           if (d.includes('/')) {
-                             const parts = d.split(',')[0].split('/');
-                             if (parts.length >= 3) {
-                               parsed = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                               valid = !isNaN(parsed.getTime());
-                             }
-                           } else {
-                             parsed = new Date(d);
+          <Card className="bg-slate-900 border-white/5 p-4 w-full">
+            <div>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Informativo Última Sessão</p>
+              <div className="flex gap-4 items-center">
+                <div className="w-12 h-12 rounded-xl bg-slate-800 flex flex-col items-center justify-center shrink-0">
+                  <span className="text-sm font-black text-white">
+                    {prontuarioNotes?.[0]?.date ? (
+                      (() => {
+                         const d = prontuarioNotes[0].date;
+                         if (d.includes('/')) {
+                           const parts = d.split(',')[0].split('/');
+                           if (parts.length >= 3) return parts[0];
+                         }
+                         const parsed = new Date(d);
+                         return !isNaN(parsed.getTime()) ? parsed.getDate() : '28';
+                      })()
+                    ) : '28'}
+                  </span>
+                  <span className="text-[8px] font-bold text-slate-500 uppercase">
+                    {prontuarioNotes?.[0]?.date ? (
+                      (() => {
+                         const d = prontuarioNotes[0].date;
+                         let parsed = new Date();
+                         let valid = false;
+                         if (d.includes('/')) {
+                           const parts = d.split(',')[0].split('/');
+                           if (parts.length >= 3) {
+                             parsed = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
                              valid = !isNaN(parsed.getTime());
                            }
-                           return valid ? format(parsed, 'MMM', { locale: ptBR }) : 'ABR';
-                        })()
-                      ) : 'ABR'}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-bold text-slate-300 italic mb-1 line-clamp-3">
-                       "{prontuarioNotes?.[0]?.text || prontuarioNotes?.[0]?.observations || 'Sessão Anterior - Controle de Dor e Recovery devido à alta percepção subjetiva de esforço.'}"
-                    </p>
-                    <p className="text-[9px] font-black text-cyan-500 uppercase tracking-widest">
-                       {prontuarioNotes?.[0]?.professional || 'DRA. CRISTINA JORGE'}
-                    </p>
-                  </div>
+                         } else {
+                           parsed = new Date(d);
+                           valid = !isNaN(parsed.getTime());
+                         }
+                         return valid ? format(parsed, 'MMM', { locale: ptBR }) : 'ABR';
+                      })()
+                    ) : 'ABR'}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-slate-300 italic mb-1 line-clamp-3">
+                     "{prontuarioNotes?.[0]?.text || prontuarioNotes?.[0]?.observations || 'Sessão Anterior - Controle de Dor e Recovery devido à alta percepção subjetiva de esforço.'}"
+                  </p>
+                  <p className="text-[9px] font-black text-cyan-500 uppercase tracking-widest">
+                     {prontuarioNotes?.[0]?.professional || 'DRA. CRISTINA JORGE'}
+                  </p>
                 </div>
               </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </section>
 
         {/* 5. BLOCO: PRONTUÁRIO */}
-        <section className="space-y-4 pt-2">
+        <section className="space-y-4 pt-4">
           <div className="flex gap-3">
             <Button 
                 variant="ghost" 
@@ -407,27 +407,6 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             </Button>
           </div>
         </section>
-
-        {/* 7. BOTÃO SALVAR */}
-        <div className="pt-10">
-          <Button 
-            className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-[#020617] font-black text-lg uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_50px_rgba(6,182,212,0.3)] group transition-all active:scale-95"
-            onClick={() => handleSave()}
-            disabled={loading || isLoading}
-          >
-            {loading || isLoading ? (
-              <>
-                <RefreshCcw className="w-6 h-6 animate-spin mr-3" />
-                Salvando Atendimento...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
-                Finalizar Atendimento
-              </>
-            )}
-          </Button>
-        </div>
 
       </div>
       </div>

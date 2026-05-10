@@ -268,6 +268,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [athleteAlerts, setAthleteAlerts] = useState<ClinicalAlert[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
+  const [showSessionFinalizedUI, setShowSessionFinalizedUI] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments'>('overview');
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -1530,7 +1531,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         newTags: [] 
       });
       setGeneratedNote('');
-      setActiveTab('prontuario');
+      if (isSessionMode && !editingNoteId) {
+        setShowSessionFinalizedUI(true);
+      } else {
+        setActiveTab('prontuario');
+      }
     } catch (error) {
       console.error('Error saving clinical note:', error);
       setNotification({ message: "Ocorreu um erro ao processar o registro comercial.", type: 'error' });
@@ -4556,6 +4561,55 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         }}
         language={language}
       />
+
+      <AnimatePresence>
+        {showSessionFinalizedUI && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-2xl flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="max-w-md w-full bg-slate-900 border border-emerald-500/30 rounded-[2.5rem] p-8 shadow-[0_0_100px_rgba(16,185,129,0.2)] text-center space-y-6"
+            >
+              <div className="w-20 h-20 bg-emerald-500 rounded-full mx-auto flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.5)]">
+                <Check className="w-10 h-10 text-[#020617]" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-black text-white uppercase tracking-widest">Evolução Registrada!</h2>
+                <p className="text-sm font-medium text-slate-400">Deseja finalizar o atendimento e encerrar a "Sessão Inteligente"?</p>
+              </div>
+              <div className="flex gap-4 pt-6">
+                <Button 
+                  variant="ghost"
+                  onClick={() => {
+                    setShowSessionFinalizedUI(false);
+                    setActiveTab('prontuario');
+                  }}
+                  className="flex-1 text-slate-400 font-bold uppercase hover:bg-slate-800 rounded-2xl h-14"
+                >
+                  Continuar
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowSessionFinalizedUI(false);
+                    setIsSessionMode(false);
+                    setActiveTab('prontuario');
+                    setNotification({ message: 'Sessão Inteligente finalizada.', type: 'success' });
+                  }}
+                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-black uppercase tracking-widest rounded-2xl h-14 shadow-[0_10px_30px_rgba(16,185,129,0.2)] transition-all active:scale-95"
+                >
+                  Finalizar
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Fast Clinical Note Modal - Unified Professional Flow */}
       <AnimatePresence>
