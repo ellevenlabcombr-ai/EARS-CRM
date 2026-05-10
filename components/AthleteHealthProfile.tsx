@@ -2353,7 +2353,7 @@ Próxima Ação: ${data.evolution?.proximaAcao || 'Acompanhamento do Master Scor
 
 EXAME EXPRESSO:
 ADM: ${data.expresso_exam?.adm || '-'} | Força: ${data.expresso_exam?.forca || '-'} | Mobilidade: ${data.expresso_exam?.mobilidade || '-'} | Confiança: ${data.expresso_exam?.confianca || '-'}
-Obs: ${data.expresso_exam?.observacoes || 'Nenhuma'}${data.signature ? '\n\nNOTA ASSINADA DIGITALMENTE' : ''}`;
+Obs: ${data.expresso_exam?.observacoes || 'Nenhuma'}`;
 
                    // Map string pain to numeric if possible, or just default to 0
                    const painMap: Record<string, number> = { 'Normal': 0, 'Aumento': 5, 'Diminuição': 2, 'Aguda': 8 };

@@ -69,8 +69,6 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
-  const [isFinalizing, setIsFinalizing] = useState(false);
-  const [signature, setSignature] = useState<string | null>(null);
   const [manualDecision, setManualDecision] = useState<"full_train" | "modified_train" | "recovery" | "hold" | null>(null);
   const [isEditingDecision, setIsEditingDecision] = useState(false);
 
@@ -138,14 +136,13 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     { label: 'Prontidão', value: `${metrics.wellness}%`, icon: Trophy, color: getMetricColor(metrics.wellness, 'wellness') },
   ];
 
-  const handleSave = async (optionalSignature?: string) => {
+  const handleSave = async () => {
     setLoading(true);
     try {
       const sessionData = {
         athlete_id: athlete.id,
         expresso_exam: expressoExam,
         decision_applied: manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision,
-        signature: optionalSignature || signature,
         timestamp: new Date().toISOString()
       };
       await onSaveSession(sessionData);
@@ -483,63 +480,25 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
           </div>
         </section>
 
-        {/* 6. BLOCO: REGISTRAR EVOLUÇÃO */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between p-6 bg-slate-900 border border-white/5 rounded-[2rem] shadow-2xl">
-            <div className="flex items-center gap-3">
-              <ClipboardList className="w-6 h-6 text-emerald-400" />
-              <div>
-                <h2 className="text-sm font-black text-white uppercase tracking-widest">Evolução Clínica</h2>
-                <p className="text-[10px] font-bold text-slate-500 uppercase">Registre condutas e observações completas</p>
-              </div>
-            </div>
-            <Button 
-                onClick={onOpenNewEvolution}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-widest px-6 h-12 rounded-2xl flex items-center gap-2 transition-all active:scale-95"
-            >
-                <Plus className="w-4 h-4" /> Nova Evolução Completa
-            </Button>
-          </div>
-        </section>
-
         {/* 7. BOTÃO SALVAR */}
         <div className="pt-10">
-          {!isFinalizing ? (
-            <Button 
-              className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-[#020617] font-black text-lg uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_50px_rgba(6,182,212,0.3)] group transition-all active:scale-95"
-              onClick={() => setIsFinalizing(true)}
-              disabled={loading || isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCcw className="w-6 h-6 animate-spin mr-3" />
-                  Carregando dados...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
-                  Finalizar Atendimento
-                </>
-              )}
-            </Button>
-          ) : (
-            <Card className="bg-slate-900 border-cyan-500/30 shadow-[0_0_50px_rgba(6,182,212,0.1)] p-6 rounded-[2rem]">
-              <SignaturePad 
-                onSave={(dataUrl) => {
-                  setSignature(dataUrl);
-                  handleSave(dataUrl);
-                }}
-                onClear={() => setSignature(null)}
-              />
-              <Button 
-                variant="ghost" 
-                onClick={() => setIsFinalizing(false)}
-                className="w-full mt-4 text-[10px] font-black text-slate-500 uppercase tracking-widest"
-              >
-                Voltar para edição
-              </Button>
-            </Card>
-          )}
+          <Button 
+            className="w-full h-16 bg-cyan-500 hover:bg-cyan-400 text-[#020617] font-black text-lg uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_50px_rgba(6,182,212,0.3)] group transition-all active:scale-95"
+            onClick={() => handleSave()}
+            disabled={loading || isLoading}
+          >
+            {loading || isLoading ? (
+              <>
+                <RefreshCcw className="w-6 h-6 animate-spin mr-3" />
+                Salvando Atendimento...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+                Finalizar Atendimento
+              </>
+            )}
+          </Button>
         </div>
 
       </div>
