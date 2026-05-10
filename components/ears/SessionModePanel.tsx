@@ -213,7 +213,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                        }`}>{safeMode.title}</h3>
                        <p className="text-xs font-medium text-slate-300 mt-1">{safeMode.summary}</p>
                        <ul className="mt-2 space-y-1">
-                         {safeMode.reasons.map((reason: string, i: number) => (
+                         {safeMode.reasons?.map((reason: string, i: number) => (
                            <li key={i} className="text-[10px] md:text-xs font-bold text-slate-400 flex items-center gap-1.5">
                              <span className="w-1 h-1 rounded-full bg-slate-500" />
                              {reason}

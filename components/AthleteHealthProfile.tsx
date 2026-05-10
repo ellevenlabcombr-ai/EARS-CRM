@@ -388,13 +388,15 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         tags: (clinicalInputs.tags || []).map(t => t.tag)
       }); } catch (e: any) { throw new Error("PriorityEngine Crash: " + e.message); }
 
-      let masterScoreValue = readiness.score;
+      let masterScoreValue = readiness?.score ?? 70;
 
       let safeModeResult: SafeModeResult;
       try {
-        const sortedWellnessDesc = [...normalizedWellness].sort((a, b) => 
-          new Date(b.record_date).getTime() - new Date(a.record_date).getTime()
-        );
+        const sortedWellnessDesc = [...normalizedWellness].sort((a, b) => {
+          const tA = new Date(a.record_date).getTime();
+          const tB = new Date(b.record_date).getTime();
+          return (isNaN(tB) ? 0 : tB) - (isNaN(tA) ? 0 : tA);
+        });
         safeModeResult = evaluateSafeMode({
           masterScore: masterScoreValue,
           recentWellness: sortedWellnessDesc,
@@ -2336,7 +2338,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                     </div>
                     <p className="text-sm font-medium text-slate-300 mt-1">{clinicalSessionData.safeMode.summary}</p>
                     <ul className="mt-3 flex flex-wrap gap-2">
-                       {clinicalSessionData.safeMode.reasons.map((r: string, i: number) => (
+                       {clinicalSessionData.safeMode.reasons?.map((r: string, i: number) => (
                          <li key={i} className="text-xs font-bold text-slate-400 flex items-center gap-1.5 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-white/5">
                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
                            {r}

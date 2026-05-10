@@ -10,13 +10,18 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
   let triggersCountHigh = 0;
 
   // Ensure we have sorted wellness data by date descending
-  const recent = [...(recentWellness || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const recent = [...(recentWellness || [])].sort((a, b) => {
+    const timeA = new Date(a.record_date || a.date).getTime();
+    const timeB = new Date(b.record_date || b.date).getTime();
+    return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
+  });
   
   // A) Pain Trend
   let painTrendActive = false;
   if (recent.length >= 2) {
-    const latestPain = recent[0]?.pain_level || 0;
-    const prevPain = recent[1]?.pain_level || 0;
+    const getPain = (w: any) => w?.pain_level || w?.muscle_soreness || w?.soreness || w?.pain || 0;
+    const latestPain = getPain(recent[0]);
+    const prevPain = getPain(recent[1]);
     if (latestPain - prevPain >= SAFE_MODE_THRESHOLDS.PAIN_INCREASE) {
       reasons.push(SAFE_MODE_MESSAGES.PAIN_TREND + ` (Aumento de ${latestPain - prevPain} pontos)`);
       triggersCountModerate++;
@@ -50,7 +55,7 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
       triggersCountModerate++;
       recoveryDropActive = true;
     } else {
-      const fatigue = recent[0]?.fatigue || 0;
+      const fatigue = recent[0]?.fatigue_level || recent[0]?.fatigue || 0;
       if (latestSleep >= 5 && fatigue > 7) {
         reasons.push(SAFE_MODE_MESSAGES.RECOVERY_DROP + " (Fadiga alta persistente)");
         triggersCountModerate++;
@@ -81,8 +86,9 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
   if (masterScore > SAFE_MODE_THRESHOLDS.SCORE_WARNING) {
     const latestWellness = recent[0];
     if (latestWellness) {
-      const pain = latestWellness.pain_level || 0;
-      const stress = latestWellness.stress_level || 0;
+      const getPain = (w: any) => w?.pain_level || w?.muscle_soreness || w?.soreness || w?.pain || 0;
+      const pain = getPain(latestWellness);
+      const stress = latestWellness.stress_level || latestWellness.stress || 0;
       const sleep = latestWellness.sleep_quality || 10;
       if (pain >= 5 || stress >= 7 || sleep <= 4) {
         reasons.push(SAFE_MODE_MESSAGES.CONTRADICTORY_SIGNS);
@@ -97,7 +103,7 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
     triggersCountLow++;
   } else {
     // Check if latest wellness is more than 3 days old
-    const latestDate = new Date(recent[0].date);
+    const latestDate = new Date(recent[0].record_date || recent[0].date);
     const now = new Date();
     const daysDiff = (now.getTime() - latestDate.getTime()) / (1000 * 3600 * 24);
     if (daysDiff > 3) {
