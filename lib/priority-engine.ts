@@ -29,8 +29,17 @@ export interface PriorityOutput {
   adjustedDecision: SessionDecision;
 }
 
-export const PriorityEngine = {
-  process: (input: PriorityInput): PriorityOutput => {
+const mapToExecutionPlan = (actions: string[]): ExecutionStep[] => {
+    // Current simple mapping as per prompt
+    return [
+      {
+        title: "Protocolo de Execução",
+        items: actions
+      }
+    ];
+};
+
+const process = (input: PriorityInput): PriorityOutput => {
     let { decision, confidence, factors, actions, tags } = input;
     let showWarning = confidence === "low";
     let adjustedDecision = decision;
@@ -62,7 +71,7 @@ export const PriorityEngine = {
     const uniqueActions = Array.from(new Set(actions)).slice(0, 4);
     const uniqueTags = Array.from(new Set(tags)).slice(0, 2);
 
-    const executionPlan = PriorityEngine.mapToExecutionPlan(uniqueActions);
+    const executionPlan = mapToExecutionPlan(uniqueActions);
 
     return {
       visibleBlocks,
@@ -75,19 +84,14 @@ export const PriorityEngine = {
       showWarning,
       adjustedDecision
     };
-  },
+};
+
+export const PriorityEngine = {
+  process,
 
   /**
    * Maps raw actions into a structured execution plan.
    * Prepared for future division (warmup, main, recovery)
    */
-  mapToExecutionPlan: (actions: string[]): ExecutionStep[] => {
-    // Current simple mapping as per prompt
-    return [
-      {
-        title: "Protocolo de Execução",
-        items: actions
-      }
-    ];
-  }
+  mapToExecutionPlan
 };

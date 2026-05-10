@@ -6,13 +6,7 @@ export interface DecayedMetrics {
   weightedReadiness: number;
 }
 
-export const DecayEngine = {
-  /**
-   * Applies exponential-like decay to a series of values.
-   * Higher index = more recent.
-   * Formula: weight = e^(-lambda * days_ago)
-   */
-  calculateWeightedValue: (values: number[], lambda: number = 0.5): number => {
+const calculateWeightedValue = (values: number[], lambda: number = 0.5): number => {
     if (values.length === 0) return 0;
     if (values.length === 1) return values[0];
 
@@ -29,12 +23,9 @@ export const DecayEngine = {
     });
 
     return weightedSum / totalWeight;
-  },
+};
 
-  /**
-   * Processes a history of records to provide weighted averages for core metrics.
-   */
-  processHistory: (history: any[]): DecayedMetrics => {
+const processHistory = (history: any[]): DecayedMetrics => {
     const painValues = history.map(h => {
         if (h.pain_map && Array.isArray(h.pain_map)) {
             return Math.max(...h.pain_map.map((p: any) => p.level), 0);
@@ -46,10 +37,23 @@ export const DecayEngine = {
     const readinessValues = history.map(h => h.readiness_score || 100);
 
     return {
-      weightedPain: DecayEngine.calculateWeightedValue(painValues),
-      weightedSleep: DecayEngine.calculateWeightedValue(sleepValues),
-      weightedLoad: DecayEngine.calculateWeightedValue(loadValues),
-      weightedReadiness: DecayEngine.calculateWeightedValue(readinessValues)
+      weightedPain: calculateWeightedValue(painValues),
+      weightedSleep: calculateWeightedValue(sleepValues),
+      weightedLoad: calculateWeightedValue(loadValues),
+      weightedReadiness: calculateWeightedValue(readinessValues)
     };
-  }
+};
+
+export const DecayEngine = {
+  /**
+   * Applies exponential-like decay to a series of values.
+   * Higher index = more recent.
+   * Formula: weight = e^(-lambda * days_ago)
+   */
+  calculateWeightedValue,
+
+  /**
+   * Processes a history of records to provide weighted averages for core metrics.
+   */
+  processHistory
 };
