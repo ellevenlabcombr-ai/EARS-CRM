@@ -158,14 +158,15 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#020617] overflow-y-auto pb-20 pt-28 md:pt-0">
+    <div className="fixed inset-0 z-50 bg-[#020617] flex flex-col pt-safe pb-safe">
       {/* 1. TOPO FIXO E PREMIUM */}
-      <div className="sticky top-0 z-10 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6">
+      <div className="shrink-0 z-10 bg-[#020617]/80 backdrop-blur-xl border-b border-white/5 p-4 md:p-6 pb-4 pt-4 md:pt-6">
         <div className="max-w-4xl mx-auto flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-full">
-                <ChevronLeft className="w-6 h-6" />
+              <Button variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white hover:bg-white/5 rounded-full flex items-center gap-1 md:gap-2 pr-4 md:pr-6 pl-2">
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest leading-none mt-0.5">Voltar</span>
               </Button>
               <div>
                 <h1 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase">{athlete.name}</h1>
@@ -189,15 +190,16 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             {stats.map((s, i) => (
               <div key={i} className="bg-slate-900/50 border border-white/5 rounded-2xl p-2 md:p-3 flex flex-col items-center">
                 <s.icon className={`w-4 h-4 md:w-5 md:h-5 ${s.color} mb-1`} />
-                <span className="text-[14px] md:text-18px font-black text-white">{s.value}</span>
-                <span className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</span>
+                <span className="text-[14px] md:text-[18px] font-black text-white">{s.value}</span>
+                <span className="text-[8px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">{s.label}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-8">
+      <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
+        <div className="max-w-4xl mx-auto p-4 md:p-6 pb-24 space-y-8">
         
         {/* 2. BLOCO: O QUE MUDOU / TENDÊNCIAS */}
         <section className="space-y-4">
@@ -533,6 +535,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
           )}
         </div>
 
+      </div>
       </div>
 
       {/* 8. OVERLAY DE SUGESTÃO PÓS-SALVAR */}

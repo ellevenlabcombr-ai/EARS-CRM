@@ -117,10 +117,20 @@ export function SignaturePad({ onSave, onClear, title = "Assinatura Digital" }: 
           onMouseMove={draw}
           onMouseUp={stopDrawing}
           onMouseOut={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
+          onTouchStart={(e) => {
+            // Prevent default touch behavior on canvas itself to avoid scrolling
+            e.stopPropagation();
+            startDrawing(e);
+          }}
+          onTouchMove={(e) => {
+            if (isDrawing) {
+              e.preventDefault(); // crucial to prevent scroll
+              e.stopPropagation();
+            }
+            draw(e);
+          }}
           onTouchEnd={stopDrawing}
-          className="w-full h-full"
+          className="w-full h-full touch-none"
         />
         {!hasSignature && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
