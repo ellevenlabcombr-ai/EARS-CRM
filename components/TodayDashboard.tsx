@@ -22,6 +22,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { MasterScoreEngine } from '@/lib/master-score-engine';
+import { getLocalDateString } from '@/lib/utils';
 
 interface TodayDashboardProps {
   onViewAthlete: (id: string) => void;
@@ -49,16 +50,19 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   const fetchData = async () => {
     try {
       setLoading(true);
-      const today = new Date().toISOString().split('T')[0];
-      const startOfDay = `${today}T00:00:00.000Z`;
-      const endOfDay = `${today}T23:59:59.999Z`;
+      const today = getLocalDateString();
+      
+      const localNow = new Date();
+      // Calculate local start and end of day in ISO string ensuring UTC offset handles it
+      const startOfLocal = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate(), 0, 0, 0, 0).toISOString();
+      const endOfLocal = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate(), 23, 59, 59, 999).toISOString();
 
       // 1. Fetch Agenda Events
       const { data: agendaData, error: agendaError } = await supabase
         .from('agenda_events')
         .select('*, athletes(id, name, risk_level)')
-        .gte('start_time', startOfDay)
-        .lte('start_time', endOfDay)
+        .gte('start_time', startOfLocal)
+        .lte('start_time', endOfLocal)
         .order('start_time');
 
       // 2. Fetch Wellness Records for today

@@ -1358,7 +1358,7 @@ export function AthleteDashboard({
         const finalWellnessData = { 
           id: checkInId,
           athlete_id: athleteId,
-          record_date: new Date().toISOString(),
+          record_date: localDateStr,
           sleep_hours: answers["sleep_hours"],
           sleep_quality: answers["sleep"],
           fatigue_level: answers["energy"],
