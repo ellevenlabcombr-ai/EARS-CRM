@@ -103,6 +103,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
       Number(lastWellness.muscle_soreness || 0),
       Number(lastWellness.pain || 0),
       Number(lastWellness.soreness || 0),
+      Number(lastWellness.pain_level || 0),
       Number(lastWellness.dor || 0)
     ),
     wellness: lastWellness.readiness_score || lastWellness.readiness || 0

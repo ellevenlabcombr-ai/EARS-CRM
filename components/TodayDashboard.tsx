@@ -38,6 +38,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   const [agenda, setAgenda] = useState<any[]>([]);
   const [exceptions, setExceptions] = useState<any[]>([]);
   const [pendencies, setPendencies] = useState<any[]>([]);
+  const [newTaskText, setNewTaskText] = useState('');
   const [financialAlerts, setFinancialAlerts] = useState<any[]>([]);
   const [pendingWellnessCount, setPendingWellnessCount] = useState(0);
   const [radar, setRadar] = useState<any>({
@@ -46,7 +47,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
     assessmentsDone: 0,
     generalWellness: 0
   });
-  const [intelligenceText, setIntelligenceText] = useState('');
+  const [intelligenceText, setIntelligenceText] = useState<React.ReactNode>('');
 
   const [selectedRadar, setSelectedRadar] = useState<'high' | 'medium' | 'wellness' | 'assessments' | null>(null);
   const [radarAthletes, setRadarAthletes] = useState<any[]>([]);
@@ -82,6 +83,16 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
 
       setRadarAthletes(athletesData || []);
 
+      // Fetch Tasks
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('daily_tasks')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (tasksData) {
+        setPendencies(tasksData.map(t => ({ id: t.id, task: t.title, done: t.status === 'completed' })));
+      }
+
       // 4. Fetch Clinical Alerts
       const { data: alertsData, error: alertsError } = await supabase
         .from('clinical_alerts')
@@ -109,6 +120,22 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
           const athlete = event.athletes;
           const wellness = wellnessData?.find(w => w.athlete_id === event.athlete_id);
           const athleteAlerts = alertsData?.filter(a => a.athlete_id === event.athlete_id && (a.severity === 'high' || a.severity === 'critical'));
+          
+          let dynamicAlertMessage = athleteAlerts?.[0]?.description || null;
+          if (!dynamicAlertMessage && wellness) {
+            const pain = Math.max(
+              Number(wellness.muscle_soreness || 0),
+              Number(wellness.pain || 0),
+              Number(wellness.dor || 0),
+              Number(wellness.pain_level || 0)
+            );
+            if (pain >= 7) {
+              dynamicAlertMessage = `Alto nível de dor detectado: Nível ${pain}`;
+            } else if (wellness.readiness_score < 70) {
+              dynamicAlertMessage = `Baixa prontidão detectada: ${wellness.readiness_score}%`;
+            }
+          }
+
           const relevantAssessments = agendaAssessments?.filter(a => a.athlete_id === event.athlete_id) || [];
           
           const masterScore = MasterScoreEngine.calculate(
@@ -132,7 +159,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             athlete_name: athlete?.name || 'Evento Geral',
             wellness_status: wellness ? (wellness.readiness_score >= 70 ? 'ok' : 'alert') : 'pending',
             risk: athlete?.risk_level === 'Crítico' || athlete?.risk_level === 'Alto' ? 'high' : (athlete?.risk_level === 'Médio' ? 'medium' : 'low'),
-            alert: athleteAlerts?.[0]?.description || (wellness && wellness.readiness_score < 70 ? `Baixa prontidão detectada: ${wellness.readiness_score}%` : null),
+            alert: dynamicAlertMessage,
             suggestion: event.description || (wellness ? 'Acompanhar conforme respostas de wellness.' : 'Aguardando respostas de prontidão.'),
             masterScore
           };
@@ -153,10 +180,35 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
           }));
         setExceptions(highRiskExceptions);
 
-        // Process Radar
-        const highRiskCount = athletesData.filter(a => a.risk_level === 'Crítico' || a.risk_level === 'Alto').length;
-        const mediumRiskCount = athletesData.filter(a => a.risk_level === 'Médio').length;
-        const activeAthletes = athletesData.filter(a => a.status === 'Ativo');
+        // Process Radar (Dynamically adjust if wellness implies higher risk)
+        let highRiskCount = athletesData.filter(a => a.risk_level === 'Crítico' || a.risk_level === 'Alto').length;
+        let mediumRiskCount = athletesData.filter(a => a.risk_level === 'Médio').length;
+        
+        // Dynamic patch for athletes who filled wellness before Risk Sync was implemented
+        athletesData.forEach(a => {
+          const w = wellnessData?.find(rec => rec.athlete_id === a.id);
+          if (w && a.risk_level !== 'Crítico' && a.risk_level !== 'Alto') {
+             const pain = Math.max(
+              Number(w.muscle_soreness || 0),
+              Number(w.pain || 0),
+              Number(w.dor || 0),
+              Number(w.pain_level || 0)
+            );
+            if (pain >= 8 || w.readiness_score <= 40) {
+              a.risk_level = 'Crítico';
+            } else if (pain >= 6 || w.readiness_score <= 60) {
+              a.risk_level = 'Alto';
+            } else if (a.risk_level !== 'Médio' && (pain >= 4 || w.readiness_score <= 75)) {
+              a.risk_level = 'Médio';
+            }
+          }
+        });
+        
+        // Recalculate after dynamic patch
+        highRiskCount = athletesData.filter(a => a.risk_level === 'Crítico' || a.risk_level === 'Alto').length;
+        mediumRiskCount = athletesData.filter(a => a.risk_level === 'Médio').length;
+
+        const activeAthletes = athletesData.filter(a => a.status !== 'Inativo' && a.status !== 'Arquivado');
         const activeCount = activeAthletes.length;
         const wellnessAnsweredCount = wellnessData ? wellnessData.length : 0;
         setPendingWellnessCount(Math.max(0, activeCount - wellnessAnsweredCount));
@@ -199,12 +251,27 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
       if (wellnessData && wellnessData.length > 0) {
         const lowReadiness = wellnessData.filter(w => w.readiness_score < 60);
         if (lowReadiness.length > 0) {
-          const athleteNames = lowReadiness.map(w => {
+          const athleteNamesNodes = lowReadiness.map((w, index) => {
             const a = athletesData?.find(ath => ath.id === w.athlete_id);
-            return a ? a.name : 'Atleta Desconhecido';
-          }).join(', ');
+            return (
+              <span key={w.athlete_id}>
+                <button
+                  onClick={() => onViewAthlete(w.athlete_id)}
+                  className="mx-1 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold hover:bg-indigo-500/40 transition-colors inline-flex items-center gap-1 leading-none"
+                >
+                  <User size={12} /> {a ? a.name : 'Atleta Desconhecido'}
+                </button>
+                {index < lowReadiness.length - 1 ? ', ' : ''}
+              </span>
+            );
+          });
 
-          setIntelligenceText(`${lowReadiness.length} atleta(s) com baixa prontidão detectada hoje (${athleteNames}). Recomenda-se ajuste de carga para preservar a integridade física do grupo.`);
+          setIntelligenceText(
+            <span>
+              <span className="font-bold text-white">{lowReadiness.length} atleta(s)</span> com baixa prontidão detectada hoje: 
+              {athleteNamesNodes}. Recomenda-se ajuste de carga para preservar a integridade física do grupo.
+            </span>
+          );
         } else {
           setIntelligenceText('A prontidão média do grupo está saudável hoje. Protocolos de treinamento podem seguir conforme planejado.');
         }
@@ -559,12 +626,14 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             <h2 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
               <ListTodo size={16} className="text-emerald-500" /> Operacional
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               {pendencies.map((pend) => (
                 <div key={pend.id} className="flex items-start gap-3">
                   <button 
-                    onClick={() => {
-                      setPendencies(pendencies.map(p => p.id === pend.id ? {...p, done: !p.done} : p))
+                    onClick={async () => {
+                      const newStatus = !pend.done;
+                      setPendencies(pendencies.map(p => p.id === pend.id ? {...p, done: newStatus} : p));
+                      await supabase.from('daily_tasks').update({ status: newStatus ? 'completed' : 'pending' }).eq('id', pend.id);
                     }}
                     className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${pend.done ? 'bg-emerald-500 border-emerald-500 text-emerald-950' : 'bg-slate-950 border-slate-700 text-transparent hover:border-emerald-500/50'}`}
                   >
@@ -579,6 +648,35 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
                 <p className="text-xs text-slate-500">Nenhuma pendência operacional.</p>
               )}
             </div>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!newTaskText.trim()) return;
+              try {
+                const { data, error } = await supabase.from('daily_tasks').insert([{ title: newTaskText.trim() }]).select().single();
+                if (data) {
+                  setPendencies([{ id: data.id, task: data.title, done: false }, ...pendencies]);
+                  setNewTaskText('');
+                }
+              } catch (err) {
+                console.error("Error creating task:", err);
+              }
+            }} className="mt-4 flex gap-2">
+              <input 
+                type="text" 
+                value={newTaskText}
+                onChange={(e) => setNewTaskText(e.target.value)}
+                placeholder="Nova tarefa..." 
+                className="flex-1 bg-slate-950/50 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+              <button 
+                type="submit" 
+                disabled={!newTaskText.trim()}
+                className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 text-xs font-bold uppercase tracking-widest rounded-xl transition-all"
+              >
+                +
+              </button>
+            </form>
           </section>
 
           {/* 7. Financeiro Discreto */}
