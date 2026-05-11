@@ -312,8 +312,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       if (!normalizedWellness.length) {
         return {
           readiness: { score: 70, classification: 'stable' },
-          trends: { trendScore: 0, direction: 'stable' },
-          confidence: { confidenceLevel: 'low', confidenceScore: 40 },
+          trends: { trendScore: 0, painTrend: 'stable', sleepTrend: 'stable', readinessTrend: 'stable', loadTrend: 'stable' },
+          confidence: { confidenceLevel: 'low', confidenceScore: 40, reasons: [] },
+          masterScore: 70,
+          safeMode: { active: false, level: 'low', title: '', summary: '', reasons: [] },
           priorityOutput: {
             adjustedDecision: 'recovery',
             visibleBlocks: ['metrics', 'actions'],

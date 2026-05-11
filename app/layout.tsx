@@ -2,9 +2,9 @@ import type {Metadata, Viewport} from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { InstallPrompt } from '@/components/InstallPrompt';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AgendaNotifier } from '@/components/AgendaNotifier';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -38,8 +38,10 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
   return (
     <html lang="pt-BR" className={`${inter.variable} dark`} suppressHydrationWarning>
-      <head>
+      <body className="font-sans antialiased bg-[#050B14] text-slate-50" suppressHydrationWarning>
+        {/* Environment script injected before hydration */}
         <script
+          key="env-script"
           dangerouslySetInnerHTML={{
             __html: `
               window.__ENV = {
@@ -55,10 +57,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
             `,
           }}
         />
-      </head>
-      <body className="font-sans antialiased bg-[#050B14] text-slate-50" suppressHydrationWarning>
-        <ErrorBoundary>
-          <LanguageProvider>
+        <ErrorBoundary key="err-boundary">
+          <LanguageProvider key="lang-provider">
             {children}
             <AgendaNotifier />
             <ScrollToTop />

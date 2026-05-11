@@ -293,11 +293,11 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             </CardHeader>
             <CardContent className="p-6">
               <div className="text-lg font-bold text-white leading-tight mb-6">
-                {masterScore && masterScore.domains.find(d => d?.factors?.length > 0) ? (
+                {masterScore && (masterScore as any).domains?.find((d: any) => d?.factors?.length > 0) ? (
                   <div className="space-y-2">
                     <p>Motivo principal:</p>
                     <div className="flex flex-wrap gap-2">
-                      {masterScore.domains.flatMap(d => d?.factors || []).slice(0, 2).map((factor, i) => (
+                      {(masterScore as any).domains.flatMap((d: any) => d?.factors || []).slice(0, 2).map((factor: string, i: number) => (
                         <span key={i} className="text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg text-sm">{factor}</span>
                       ))}
                     </div>
