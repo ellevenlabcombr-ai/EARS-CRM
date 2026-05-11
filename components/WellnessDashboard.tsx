@@ -368,7 +368,12 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
             
           if (wellnessError) throw wellnessError;
           historicalWellnessData = data || [];
-          wellnessData = historicalWellnessData.filter(r => r.record_date === today);
+          wellnessData = historicalWellnessData.filter(r => {
+            if (!r.record_date) return false;
+            // record_date is DATE, so it might come as 'YYYY-MM-DD' or 'YYYY-MM-DDT00:00...' 
+            const dStr = r.record_date.split('T')[0];
+            return dStr === today;
+          });
         }
 
         clearTimeout(timeoutId);
@@ -389,7 +394,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
             const yesterdayRecord = athleteHistory[athleteHistory.length - 2];
             const dayBeforeRecord = athleteHistory[athleteHistory.length - 3];
 
-            if (todayRecord.record_date === today) {
+            if (todayRecord.record_date && todayRecord.record_date.split('T')[0] === today) {
               const painToday = getPainMap(todayRecord);
               const painYesterday = getPainMap(yesterdayRecord);
               const painDayBefore = getPainMap(dayBeforeRecord);
@@ -464,7 +469,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
             isPeriodLate,
             daysLate,
             painAlerts,
-            critical: (readiness !== null && readiness < 70) || isPeriodLate || painAlerts.length > 0,
+            critical: record ? ((readiness !== null && readiness < 70) || isPeriodLate || painAlerts.length > 0) : false,
             trend: readiness !== null ? (readiness > 80 ? 'up' : readiness < 70 ? 'down' : 'stable') : null,
             phone: athlete.phone
           };

@@ -1060,7 +1060,7 @@ export function AthleteDashboard({
 
       await supabase.from("wellness_records").insert([{
         athlete_id: athleteId,
-        record_date: now,
+        record_date: today,
         comments: lang === "pt" ? commentPt : commentEn,
         menstrual_cycle: !isCurrentlyMenstruating ? "Menstrual" : "Follicular"
       }]);

@@ -162,10 +162,29 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         });
       }
 
-      // Financial Mocks (still mocked as no table exists)
-      setFinancialAlerts([
-        { id: 1, description: 'Mensalidades pendentes', urgency: 'medium' }
-      ]);
+      // 5. Fetch Financial Transactions (Pending incomes up to today)
+      let financialAlertsData: any[] = [];
+      try {
+        const { data: finData, error: finError } = await supabase
+          .from('financial_transactions')
+          .select('id, description, amount, date')
+          .eq('type', 'income')
+          .eq('status', 'pending')
+          .lte('date', today);
+          
+        if (finData) {
+          financialAlertsData = finData.map(f => ({
+            id: f.id,
+            description: f.description || 'Mensalidade',
+            amount: f.amount,
+            date: f.date,
+            urgency: 'high'
+          }));
+        }
+      } catch (e) {
+        console.log("No financial table yet");
+      }
+      setFinancialAlerts(financialAlertsData);
 
       // Intelligence Text
       if (wellnessData && wellnessData.length > 0) {
