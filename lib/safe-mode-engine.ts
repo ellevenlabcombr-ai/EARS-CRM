@@ -19,7 +19,13 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
   // A) Pain Trend & Level
   let painTrendActive = false;
   let extremePainActive = false;
-  const getPain = (w: any) => w?.pain_level || w?.muscle_soreness || w?.soreness || w?.pain || 0;
+  const getPain = (w: any) => Math.max(
+    w?.pain_level ? Number(w.pain_level) : 0,
+    w?.muscle_soreness ? Number(w.muscle_soreness) : 0,
+    w?.soreness ? Number(w.soreness) : 0,
+    w?.pain ? Number(w.pain) : 0,
+    w?.dor ? Number(w.dor) : 0
+  );
 
   if (recent.length >= 1) {
     const latestPain = getPain(recent[0]);
@@ -96,8 +102,14 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
   if (masterScore > SAFE_MODE_THRESHOLDS.SCORE_WARNING) {
     const latestWellness = recent[0];
     if (latestWellness) {
-      const getPain = (w: any) => w?.pain_level || w?.muscle_soreness || w?.soreness || w?.pain || 0;
-      const pain = getPain(latestWellness);
+      const getPainInner = (w: any) => Math.max(
+        w?.pain_level ? Number(w.pain_level) : 0,
+        w?.muscle_soreness ? Number(w.muscle_soreness) : 0,
+        w?.soreness ? Number(w.soreness) : 0,
+        w?.pain ? Number(w.pain) : 0,
+        w?.dor ? Number(w.dor) : 0
+      );
+      const pain = getPainInner(latestWellness);
       const stress = latestWellness.stress_level || latestWellness.stress || 0;
       const sleep = latestWellness.sleep_quality || 10;
       if (pain >= 5 || stress >= 7 || sleep <= 4) {

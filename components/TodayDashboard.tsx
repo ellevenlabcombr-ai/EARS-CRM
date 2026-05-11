@@ -39,6 +39,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   const [exceptions, setExceptions] = useState<any[]>([]);
   const [pendencies, setPendencies] = useState<any[]>([]);
   const [financialAlerts, setFinancialAlerts] = useState<any[]>([]);
+  const [pendingWellnessCount, setPendingWellnessCount] = useState(0);
   const [radar, setRadar] = useState<any>({
     highRisk: 0,
     mediumRisk: 0,
@@ -107,7 +108,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         const mappedAgenda = agendaData.map(event => {
           const athlete = event.athletes;
           const wellness = wellnessData?.find(w => w.athlete_id === event.athlete_id);
-          const athleteAlerts = alertsData?.filter(a => a.athlete_id === event.athlete_id && a.severity === 'high');
+          const athleteAlerts = alertsData?.filter(a => a.athlete_id === event.athlete_id && (a.severity === 'high' || a.severity === 'critical'));
           const relevantAssessments = agendaAssessments?.filter(a => a.athlete_id === event.athlete_id) || [];
           
           const masterScore = MasterScoreEngine.calculate(
@@ -155,15 +156,18 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         // Process Radar
         const highRiskCount = athletesData.filter(a => a.risk_level === 'Crítico' || a.risk_level === 'Alto').length;
         const mediumRiskCount = athletesData.filter(a => a.risk_level === 'Médio').length;
-        const avgWellness = wellnessData && wellnessData.length > 0
-          ? Math.round(wellnessData.reduce((acc, w) => acc + (Number(w.readiness_score) || 0), 0) / wellnessData.length)
-          : 0;
+        const activeAthletes = athletesData.filter(a => a.status === 'Ativo');
+        const activeCount = activeAthletes.length;
+        const wellnessAnsweredCount = wellnessData ? wellnessData.length : 0;
+        setPendingWellnessCount(Math.max(0, activeCount - wellnessAnsweredCount));
+        
+        const adherencePct = activeCount > 0 ? Math.round((wellnessAnsweredCount / activeCount) * 100) : 0;
 
         setRadar({
           highRisk: highRiskCount,
           mediumRisk: mediumRiskCount,
           assessmentsDone: assessmentsCount || 0,
-          generalWellness: avgWellness
+          generalWellness: adherencePct
         });
       }
 
@@ -195,7 +199,12 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
       if (wellnessData && wellnessData.length > 0) {
         const lowReadiness = wellnessData.filter(w => w.readiness_score < 60);
         if (lowReadiness.length > 0) {
-          setIntelligenceText(`${lowReadiness.length} atleta(s) com baixa prontidão detectada hoje. Recomenda-se ajuste de carga para preservar a integridade física do grupo.`);
+          const athleteNames = lowReadiness.map(w => {
+            const a = athletesData?.find(ath => ath.id === w.athlete_id);
+            return a ? a.name : 'Atleta Desconhecido';
+          }).join(', ');
+
+          setIntelligenceText(`${lowReadiness.length} atleta(s) com baixa prontidão detectada hoje (${athleteNames}). Recomenda-se ajuste de carga para preservar a integridade física do grupo.`);
         } else {
           setIntelligenceText('A prontidão média do grupo está saudável hoje. Protocolos de treinamento podem seguir conforme planejado.');
         }
@@ -262,8 +271,8 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
               <span className="text-xs uppercase tracking-widest font-bold">Wellness</span>
             </div>
             <div>
-              <p className="text-3xl font-black text-white leading-none">{agenda.filter(a => a.wellness_status === 'pending').length}</p>
-              <p className="text-sm font-medium text-slate-400 mt-1">resposta{agenda.filter(a => a.wellness_status === 'pending').length !== 1 ? 's' : ''} pendente{agenda.filter(a => a.wellness_status === 'pending').length !== 1 ? 's' : ''}</p>
+              <p className="text-3xl font-black text-white leading-none">{pendingWellnessCount}</p>
+              <p className="text-sm font-medium text-slate-400 mt-1">respostas pendentes</p>
             </div>
           </div>
           <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
@@ -296,7 +305,19 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             <Clock size={18} className="text-cyan-500" />
             Agenda Hoje
           </h2>
-          <span className="text-xs font-bold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">{agenda.length} agendamentos</span>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                // To Do: trigger add event modal (you might want to expose it from layout or an agenda wrapper)
+                // For now, let's navigate to the agenda view
+                window.dispatchEvent(new CustomEvent('nav-to-agenda'));
+              }}
+              className="text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors uppercase tracking-widest flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1.5 rounded-full"
+            >
+              + Adicionar
+            </button>
+            <span className="text-xs font-bold text-slate-500 bg-slate-900 px-3 py-1.5 rounded-full border border-slate-800">{agenda.length} agendamentos</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

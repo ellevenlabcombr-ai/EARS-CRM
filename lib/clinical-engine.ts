@@ -41,7 +41,12 @@ export function calculateRiskClusters(input: EngineInput): EngineOutput {
   const totalTagWeight = activeTags.reduce((sum, tag) => sum + tag.currentWeight, 0);
 
   // 1. MECHANICAL OVERLOAD (Fusing Pain + Load + Tags + Trends)
-  const wellnessPain = latestWellness ? (Number(latestWellness.muscle_soreness || latestWellness.pain || latestWellness.dor || 0)) : 0;
+  const wellnessPain = latestWellness ? Math.max(
+    Number(latestWellness.muscle_soreness || 0),
+    Number(latestWellness.pain || 0),
+    Number(latestWellness.dor || 0),
+    Number(latestWellness.pain_level || 0)
+  ) : 0;
   const recentPain = painReports.filter(p => new Date(p.created_at || p.record_date).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000);
   const highPainReports = recentPain.filter(p => p.pain_level >= 5);
   const moderatePainReports = recentPain.filter(p => p.pain_level >= 4);

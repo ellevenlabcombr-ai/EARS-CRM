@@ -142,7 +142,14 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
     // Listen for branding updates
     const handleBrandingUpdate = () => fetchBranding();
     window.addEventListener('branding-updated', handleBrandingUpdate);
-    return () => window.removeEventListener('branding-updated', handleBrandingUpdate);
+
+    const handleNavToAgenda = () => handleNavigation('agenda');
+    window.addEventListener('nav-to-agenda', handleNavToAgenda);
+
+    return () => {
+      window.removeEventListener('branding-updated', handleBrandingUpdate);
+      window.removeEventListener('nav-to-agenda', handleNavToAgenda);
+    };
   }, [fetchBranding, fetchUserProfile]);
 
   useEffect(() => {
