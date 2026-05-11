@@ -633,6 +633,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
   const [selectedAssessments, setSelectedAssessments] = useState<string[]>([]);
   const [actionAthlete, setActionAthlete] = useState<'pause' | 'delete' | 'reactivate' | null>(null);
+  const [showActionMenu, setShowActionMenu] = useState(false);
+  const [confirmBulkDeleteNotes, setConfirmBulkDeleteNotes] = useState(false);
+  const [confirmBulkDeleteHistory, setConfirmBulkDeleteHistory] = useState(false);
   const [showAttachmentUpload, setShowAttachmentUpload] = useState(false);
   const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
   const [showAttachmentHistory, setShowAttachmentHistory] = useState(false);
@@ -2188,17 +2191,21 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         <div className="col-span-full mb-0 lg:mb-2 flex items-center justify-between">
           <Button onClick={onBack} variant="ghost" className="text-slate-400 hover:text-white uppercase text-xxs font-black tracking-widest bg-slate-900/80 backdrop-blur-md rounded-full shadow-lg border border-slate-800"><ChevronLeft className="w-4 h-4 mr-2" /> Voltar para Dashboard</Button>
           
-          <div className="relative group">
-            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900/80 backdrop-blur-md shadow-lg border border-slate-800 text-slate-400 hover:text-white transition-colors">
+          <div className="relative">
+            <button 
+              onClick={() => setShowActionMenu(!showActionMenu)}
+              onBlur={() => setTimeout(() => setShowActionMenu(false), 200)}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900/80 backdrop-blur-md shadow-lg border border-slate-800 text-slate-400 hover:text-white transition-colors"
+            >
               <MoreVertical className="w-5 h-5" />
             </button>
-            <div className="absolute top-12 right-0 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-[100] overflow-hidden flex flex-col">
+            <div className={`absolute top-12 right-0 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl transition-all z-[100] overflow-hidden flex flex-col ${showActionMenu ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
                {athlete.status === 'inactive' || athlete.status === 'Inativo' ? (
-                 <button onClick={() => setActionAthlete('reactivate')} className="w-full px-4 py-3 text-left text-xs font-bold text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2 uppercase tracking-widest transition-colors"><Check className="w-4 h-4"/> Reativar Atleta</button>
+                 <button onClick={() => { setActionAthlete('reactivate'); setShowActionMenu(false); }} className="w-full px-4 py-3 text-left text-xs font-bold text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2 uppercase tracking-widest transition-colors"><Check className="w-4 h-4"/> Reativar Atleta</button>
                ) : (
-                 <button onClick={() => setActionAthlete('pause')} className="w-full px-4 py-3 text-left text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 uppercase tracking-widest transition-colors"><Pause className="w-4 h-4"/> Pausar Atleta</button>
+                 <button onClick={() => { setActionAthlete('pause'); setShowActionMenu(false); }} className="w-full px-4 py-3 text-left text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 uppercase tracking-widest transition-colors"><Pause className="w-4 h-4"/> Pausar Atleta</button>
                )}
-               <button onClick={() => setActionAthlete('delete')} className="w-full px-4 py-3 text-left text-xs font-bold text-rose-500 hover:bg-rose-500/10 border-t border-slate-800 flex items-center gap-2 uppercase tracking-widest transition-colors"><Trash2 className="w-4 h-4"/> Excluir Atleta</button>
+               <button onClick={() => { setActionAthlete('delete'); setShowActionMenu(false); }} className="w-full px-4 py-3 text-left text-xs font-bold text-rose-500 hover:bg-rose-500/10 border-t border-slate-800 flex items-center gap-2 uppercase tracking-widest transition-colors"><Trash2 className="w-4 h-4"/> Excluir Atleta</button>
             </div>
           </div>
         </div>
@@ -4348,7 +4355,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </h2>
               <div className="flex items-center gap-3">
                 {selectedNotes.length > 0 && (
-                  <Button onClick={handleBulkDeleteNotes} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 hover:border-rose-500/40 font-black uppercase text-xxs tracking-widest transition-colors">
+                  <Button onClick={() => setConfirmBulkDeleteNotes(true)} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 hover:border-rose-500/40 font-black uppercase text-xxs tracking-widest transition-colors">
                     <Trash2 className="w-4 h-4 mr-2" /> Excluir {selectedNotes.length} Selecionados
                   </Button>
                 )}
@@ -4457,7 +4464,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 <Clock className="w-5 h-5 text-cyan-500" />{language === "pt" ? "Histórico de Avaliações" : "Assessment History"}</h2>
               <div className="flex items-center gap-3">
                 {selectedAssessments.length > 0 && (
-                  <Button onClick={handleBulkDeleteHistory} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 hover:border-rose-500/40 font-black uppercase text-xxs tracking-widest transition-colors">
+                  <Button onClick={() => setConfirmBulkDeleteHistory(true)} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 hover:border-rose-500/40 font-black uppercase text-xxs tracking-widest transition-colors">
                     <Trash2 className="w-4 h-4 mr-2" /> Excluir {selectedAssessments.length} Selecionados
                   </Button>
                 )}
@@ -5401,6 +5408,26 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         loading={!!isDeletingAttachment}
         onConfirm={() => confirmDeleteAttachment && handleDeleteAttachment(confirmDeleteAttachment)}
         onCancel={() => setConfirmDeleteAttachment(null)}
+      />
+
+      <ConfirmDialog 
+        isOpen={confirmBulkDeleteNotes}
+        title="Excluir Prontuários"
+        description={`Tem certeza que deseja excluir ${selectedNotes.length} prontuários? Esta ação não pode ser desfeita e todas as evoluções serão apagadas.`}
+        confirmText="Excluir Selecionados"
+        loading={isDeletingNote === "bulk"}
+        onConfirm={() => { handleBulkDeleteNotes(); setConfirmBulkDeleteNotes(false); }}
+        onCancel={() => setConfirmBulkDeleteNotes(false)}
+      />
+
+      <ConfirmDialog 
+        isOpen={confirmBulkDeleteHistory}
+        title="Excluir Histórico"
+        description={`Tem certeza que deseja excluir ${selectedAssessments.length} avaliações do histórico? Esta ação apagará permanentemente esses arquivos.`}
+        confirmText="Excluir Selecionadas"
+        loading={!!isDeletingAssessment}
+        onConfirm={() => { handleBulkDeleteHistory(); setConfirmBulkDeleteHistory(false); }}
+        onCancel={() => setConfirmBulkDeleteHistory(false)}
       />
 
       <AttachmentUploadForm 

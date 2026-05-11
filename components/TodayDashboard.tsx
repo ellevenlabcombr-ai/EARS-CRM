@@ -402,7 +402,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             </div>
             <div>
               <p className="text-4xl font-black text-white leading-none tracking-tight">{pendencies.filter(p => !p.done).length}</p>
-              <p className="text-xs font-semibold text-slate-500 mt-2">pendências clínicas</p>
+              <p className="text-xs font-semibold text-slate-500 mt-2">tarefas operacionais</p>
             </div>
           </div>
         </div>
