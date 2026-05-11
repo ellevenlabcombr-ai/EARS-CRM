@@ -41,6 +41,7 @@ export function calculateRiskClusters(input: EngineInput): EngineOutput {
   const totalTagWeight = activeTags.reduce((sum, tag) => sum + tag.currentWeight, 0);
 
   // 1. MECHANICAL OVERLOAD (Fusing Pain + Load + Tags + Trends)
+  const wellnessPain = latestWellness ? (Number(latestWellness.muscle_soreness || latestWellness.pain || latestWellness.dor || 0)) : 0;
   const recentPain = painReports.filter(p => new Date(p.created_at || p.record_date).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000);
   const highPainReports = recentPain.filter(p => p.pain_level >= 5);
   const moderatePainReports = recentPain.filter(p => p.pain_level >= 4);
@@ -49,7 +50,7 @@ export function calculateRiskClusters(input: EngineInput): EngineOutput {
   const chronicLoad = checkIns.length > 0 ? (checkIns.reduce((acc, ci) => acc + ((ci.intensity || ci.mapped_rpe || 5) * (ci.duration_minutes || 60)), 0) / checkIns.length) : (recentLoad || 100);
   const acwr = recentLoad / chronicLoad;
 
-  const hasSignificantPain = highPainReports.length >= 2 || (moderatePainReports.length >= 3);
+  const hasSignificantPain = highPainReports.length >= 2 || (moderatePainReports.length >= 3) || (wellnessPain >= 7);
   const isDangerousSpike = acwr > 1.5;
   
   // Cross-Assessment Junction
@@ -61,16 +62,17 @@ export function calculateRiskClusters(input: EngineInput): EngineOutput {
 
   if (hasSignificantPain || acwr > 1.3 || isDangerousSpike || hasStructuralRisk) {
     const trendImpact = trendScore < -0.3 ? 15 : 0;
+    const extremePainImpact = wellnessPain >= 9 ? 30 : wellnessPain >= 7 ? 15 : 0;
     const baseScore = acwr > 1.5 ? 85 : 60;
-    const finalScore = Math.min(100, baseScore + (totalTagWeight * 6) + trendImpact);
+    const finalScore = Math.min(100, baseScore + (totalTagWeight * 6) + trendImpact + extremePainImpact);
     
     clusters.push({
       id: 'mech-overload',
       label: 'Sobrecarga Mecânica',
       score: finalScore,
-      trend: trendScore < -0.3 ? 'up' : 'stable',
+      trend: trendScore < -0.3 || wellnessPain >= 7 ? 'up' : 'stable',
       factors: [
-        hasSignificantPain ? `Dor recorrente` : null,
+        wellnessPain >= 7 ? `Dor extrema (Nível ${wellnessPain})` : (hasSignificantPain ? `Dor recorrente` : null),
         acwr > 1.3 ? `Alta carga (ACWR: ${acwr.toFixed(2)})` : null,
         hasStructuralRisk ? 'Risco Estrutural' : null
       ].filter(Boolean) as string[],
@@ -80,17 +82,20 @@ export function calculateRiskClusters(input: EngineInput): EngineOutput {
 
   // RECOVERY DEFICIT
   if (latestWellness) {
-    const lowReadiness = (latestWellness.readiness_score || 0) < 65;
-    const recoverySignals = (lowReadiness ? 1 : 0) + (trendScore < -0.2 ? 1.5 : 0) + (totalTagWeight > 2 ? 1 : 0);
+    const readinessScore = Number(latestWellness.readiness_score || latestWellness.readiness || 0);
+    const lowReadiness = readinessScore < 65;
+    const criticalReadiness = readinessScore < 40;
+    const recoverySignals = (lowReadiness ? 1 : 0) + (criticalReadiness ? 2 : 0) + (trendScore < -0.2 ? 1.5 : 0) + (totalTagWeight > 2 ? 1 : 0);
 
-    if (recoverySignals >= 1.5) {
+    if (recoverySignals >= 1.5 || criticalReadiness) {
+      const recovScore = Math.min(100, (criticalReadiness ? 80 : 50) + recoverySignals * 10);
       clusters.push({
         id: 'recov-deficit',
-        label: 'Déficit de Recuperação Comb.',
-        score: Math.min(100, 50 + recoverySignals * 10),
-        trend: trendScore < -0.5 ? 'up' : 'stable',
+        label: criticalReadiness ? 'Déficit Crítico de Recuperação' : 'Déficit de Recuperação Comb.',
+        score: recovScore,
+        trend: trendScore < -0.5 || criticalReadiness ? 'up' : 'stable',
         factors: [
-          lowReadiness ? 'Prontidão sistêmica reduzida' : null,
+          criticalReadiness ? `Prontidão Crítica (${readinessScore}%)` : (lowReadiness ? 'Prontidão sistêmica reduzida' : null),
           trendScore < -0.2 ? 'Tendência de queda na prontidão' : null
         ].filter(Boolean) as string[],
         action: 'Otimizar janelas de recuperação'

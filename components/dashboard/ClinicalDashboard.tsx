@@ -79,8 +79,8 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
           .from('wellness_records')
           .select('athlete_id, readiness_score, muscle_soreness, sleep_hours, urine_color, record_date, symptoms, created_at')
           .gte('record_date', sevenDaysAgoStr)
-          .order('record_date', { ascending: true })
-          .order('created_at', { ascending: true })
+          .order('record_date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(500),
         supabase
           .from('pain_reports')

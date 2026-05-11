@@ -898,9 +898,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes] = await Promise.all([
           supabase
             .from('wellness_records')
-            .select('record_date, readiness_score, fatigue_level, muscle_soreness, sleep_hours, sleep_quality, stress_level, fatigue_level, muscle_soreness, soreness_location, menstrual_cycle, menstrual_symptoms, hydration_perception, hydration_score, urine_color, symptoms, comments')
+            .select('record_date, readiness_score, fatigue_level, muscle_soreness, sleep_hours, sleep_quality, stress_level, fatigue_level, muscle_soreness, soreness_location, menstrual_cycle, menstrual_symptoms, hydration_perception, hydration_score, urine_color, symptoms, comments, created_at')
             .eq('athlete_id', athlete.id)
             .order('record_date', { ascending: false })
+            .order('created_at', { ascending: false })
             .limit(14),
           supabase
             .from('clinical_notes')

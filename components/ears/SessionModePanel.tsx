@@ -82,12 +82,20 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     );
   }
 
-  const lastWellness = wellnessHistory?.[0] || {};
-  
+  const lastWellness = useMemo(() => {
+    if (!wellnessHistory || wellnessHistory.length === 0) return {};
+    // Ensure we pick the one with the most recent date if history is provided
+    return [...wellnessHistory].sort((a, b) => {
+        const dateA = new Date(a.record_date || a.date).getTime();
+        const dateB = new Date(b.record_date || b.date).getTime();
+        return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
+    })[0];
+  }, [wellnessHistory]);
+
   const metrics = {
     sleep: lastWellness.sleep || lastWellness.sleep_hours || 0,
     fatigue: lastWellness.fatigue || lastWellness.fatigue_level || 0,
-    pain: lastWellness.soreness || lastWellness.muscle_soreness || 0,
+    pain: lastWellness.pain || lastWellness.muscle_soreness || lastWellness.soreness || 0,
     wellness: lastWellness.readiness || lastWellness.readiness_score || 0
   };
 

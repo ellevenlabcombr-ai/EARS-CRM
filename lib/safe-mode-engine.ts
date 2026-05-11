@@ -16,16 +16,26 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
     return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
   });
   
-  // A) Pain Trend
+  // A) Pain Trend & Level
   let painTrendActive = false;
-  if (recent.length >= 2) {
-    const getPain = (w: any) => w?.pain_level || w?.muscle_soreness || w?.soreness || w?.pain || 0;
+  let extremePainActive = false;
+  const getPain = (w: any) => w?.pain_level || w?.muscle_soreness || w?.soreness || w?.pain || 0;
+
+  if (recent.length >= 1) {
     const latestPain = getPain(recent[0]);
-    const prevPain = getPain(recent[1]);
-    if (latestPain - prevPain >= SAFE_MODE_THRESHOLDS.PAIN_INCREASE) {
-      reasons.push(SAFE_MODE_MESSAGES.PAIN_TREND + ` (Aumento de ${latestPain - prevPain} pontos)`);
-      triggersCountModerate++;
-      painTrendActive = true;
+    if (latestPain >= SAFE_MODE_THRESHOLDS.PAIN_HIGH) {
+      reasons.push(SAFE_MODE_MESSAGES.PAIN_HIGH + ` (Nível ${latestPain})`);
+      triggersCountHigh++;
+      extremePainActive = true;
+    }
+
+    if (recent.length >= 2) {
+      const prevPain = getPain(recent[1]);
+      if (latestPain - prevPain >= SAFE_MODE_THRESHOLDS.PAIN_INCREASE) {
+        reasons.push(SAFE_MODE_MESSAGES.PAIN_TREND + ` (Aumento de ${latestPain - prevPain} pontos)`);
+        triggersCountModerate++;
+        painTrendActive = true;
+      }
     }
   }
   
@@ -118,6 +128,16 @@ export function evaluateSafeMode(input: SafeModeInput): SafeModeResult {
     reasons.push(SAFE_MODE_MESSAGES.RETURN_PHASE);
     triggersCountModerate++;
     returnPhaseActive = true;
+  }
+
+  // G) Critical Readiness
+  if (recent.length >= 1) {
+    const latestWellness = recent[0];
+    const readiness = Number(latestWellness.readiness_score || latestWellness.readiness || 0);
+    if (readiness <= SAFE_MODE_THRESHOLDS.READINESS_LOW && readiness > 0) {
+      reasons.push(SAFE_MODE_MESSAGES.CRITICAL_READINESS + ` (${readiness}%)`);
+      triggersCountHigh++;
+    }
   }
 
   // Determine Level
