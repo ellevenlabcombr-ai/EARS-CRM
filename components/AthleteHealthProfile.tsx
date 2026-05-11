@@ -80,7 +80,9 @@ import {
   Globe,
   Award,
   AlertTriangle,
-  CalendarDays
+  CalendarDays,
+  Pause,
+  MoreVertical
 } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { Button } from "@/components/ui/button";
@@ -628,6 +630,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [confirmDeleteAssessment, setConfirmDeleteAssessment] = useState<{id: string, source_table: string} | null>(null);
   const [isDeletingAssessment, setIsDeletingAssessment] = useState(false);
   const [showSignatureStep, setShowSignatureStep] = useState(false);
+  const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
+  const [selectedAssessments, setSelectedAssessments] = useState<string[]>([]);
+  const [actionAthlete, setActionAthlete] = useState<'pause' | 'delete' | 'reactivate' | null>(null);
   const [showAttachmentUpload, setShowAttachmentUpload] = useState(false);
   const [showAttachmentPreview, setShowAttachmentPreview] = useState(false);
   const [showAttachmentHistory, setShowAttachmentHistory] = useState(false);
@@ -1613,6 +1618,79 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     }
   };
 
+  const handleBulkDeleteNotes = async () => {
+    if (!supabase || selectedNotes.length === 0) return;
+    setIsDeletingNote("bulk");
+    try {
+        const { error } = await supabase.from('clinical_notes').delete().in('id', selectedNotes);
+        if (error) throw error;
+        setProntuarioNotes(prev => prev.filter(n => !selectedNotes.includes(n.id)));
+        setSelectedNotes([]);
+        setNotification({ message: 'Prontuários excluídos com sucesso.', type: 'success' });
+    } catch(err){
+        setNotification({ message: 'Erro ao excluir registros.', type: 'error' });
+    } finally {
+        setIsDeletingNote(null);
+    }
+  };
+
+  const handleBulkDeleteHistory = async () => {
+    if (!supabase || selectedAssessments.length === 0) return;
+    setIsDeletingAssessment(true);
+    try {
+        const toDelete = clinicalAssessments.filter(a => selectedAssessments.includes(a.id));
+        const grouped = toDelete.reduce((acc, curr) => {
+            if (!acc[curr.source_table]) acc[curr.source_table] = [];
+            acc[curr.source_table].push(curr.id);
+            return acc;
+        }, {} as Record<string, string[]>);
+
+        for (const table in grouped) {
+            const ids = grouped[table];
+            if (ids.length > 0) {
+               await supabase.from(table).delete().in('id', ids);
+            }
+        }
+        
+        setSelectedAssessments([]);
+        const refreshedData = await fetchAllAssessmentsData(athlete.id);
+        setClinicalAssessments(refreshedData);
+        setNotification({ message: 'Avaliações excluídas com sucesso.', type: 'success' });
+    } catch(err){
+        console.error(err);
+        setNotification({ message: 'Erro ao excluir avaliações.', type: 'error' });
+    } finally {
+        setIsDeletingAssessment(false);
+    }
+  };
+
+  const handleExecuteAthleteAction = async () => {
+     if (!supabase || !actionAthlete) return;
+     try {
+       if (actionAthlete === 'delete') {
+          // This will cascade in check_ins, wellness_records, clinical_notes, clinical_assessments, etc. depending on foreign keys (most are ON DELETE CASCADE).
+          const { error } = await supabase.from('athletes').delete().eq('id', athlete.id);
+          if (error) throw error;
+          setNotification({ message: 'Atleta excluído permanentemente.', type: 'success' });
+          onBack(); // go back to list
+       } else if (actionAthlete === 'pause') {
+          const { error } = await supabase.from('athletes').update({ status: 'inactive' }).eq('id', athlete.id);
+          if (error) throw error;
+          setNotification({ message: 'Atleta pausado com sucesso.', type: 'success' });
+          athlete.status = 'inactive';
+          setActionAthlete(null);
+       } else if (actionAthlete === 'reactivate') {
+          const { error } = await supabase.from('athletes').update({ status: 'active' }).eq('id', athlete.id);
+          if (error) throw error;
+          setNotification({ message: 'Atleta ativado com sucesso.', type: 'success' });
+          athlete.status = 'active';
+          setActionAthlete(null);
+       }
+     } catch (err) {
+       setNotification({ message: 'Erro ao executar ação.', type: 'error' });
+     }
+  };
+
   const handleUploadAttachment = async (data: { 
     file: File, 
     documentName: string, 
@@ -2091,10 +2169,38 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         onCancel={() => setConfirmDeleteAttachment(null)}
       />
 
-            {/* Top App Bar */}
+            <ConfirmDialog 
+        isOpen={actionAthlete !== null}
+        title={actionAthlete === 'delete' ? 'Excluir Atleta' : actionAthlete === 'pause' ? 'Pausar Atleta' : 'Reativar Atleta'}
+        description={
+            actionAthlete === 'delete' ? 'Tem certeza? Esta ação apagará TODOS os registros (avaliações, prontuários, check-ins) deste atleta e não pode ser desfeita.' :
+            actionAthlete === 'pause' ? 'Ao pausar, o atleta ficará marcado como Inativo e restrições poderão ser aplicadas. Continuar?' :
+            'Ao reativar, o atleta retornará para o status Apto / Ativo. Continuar?'
+        }
+        confirmText={actionAthlete === 'delete' ? 'Sim, Excluir Totalmente' : 'Confirmar'}
+        cancelText="Cancelar"
+        onConfirm={handleExecuteAthleteAction}
+        onCancel={() => setActionAthlete(null)}
+      />
+
+      {/* Top App Bar */}
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 pt-32 sm:pt-10 pb-24 sm:pb-4 flex flex-col lg:grid lg:grid-cols-4 lg:grid-rows-[auto_auto_1fr] gap-x-8 gap-y-6">
-        <div className="col-span-full mb-0 lg:mb-2">
+        <div className="col-span-full mb-0 lg:mb-2 flex items-center justify-between">
           <Button onClick={onBack} variant="ghost" className="text-slate-400 hover:text-white uppercase text-xxs font-black tracking-widest bg-slate-900/80 backdrop-blur-md rounded-full shadow-lg border border-slate-800"><ChevronLeft className="w-4 h-4 mr-2" /> Voltar para Dashboard</Button>
+          
+          <div className="relative group">
+            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-900/80 backdrop-blur-md shadow-lg border border-slate-800 text-slate-400 hover:text-white transition-colors">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+            <div className="absolute top-12 right-0 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-[100] overflow-hidden flex flex-col">
+               {athlete.status === 'inactive' || athlete.status === 'Inativo' ? (
+                 <button onClick={() => setActionAthlete('reactivate')} className="w-full px-4 py-3 text-left text-xs font-bold text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2 uppercase tracking-widest transition-colors"><Check className="w-4 h-4"/> Reativar Atleta</button>
+               ) : (
+                 <button onClick={() => setActionAthlete('pause')} className="w-full px-4 py-3 text-left text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 uppercase tracking-widest transition-colors"><Pause className="w-4 h-4"/> Pausar Atleta</button>
+               )}
+               <button onClick={() => setActionAthlete('delete')} className="w-full px-4 py-3 text-left text-xs font-bold text-rose-500 hover:bg-rose-500/10 border-t border-slate-800 flex items-center gap-2 uppercase tracking-widest transition-colors"><Trash2 className="w-4 h-4"/> Excluir Atleta</button>
+            </div>
+          </div>
         </div>
 
         {/* Large Profile Header block restored */}
@@ -2425,6 +2531,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  }}
                  onOpenNewEvolution={handleOpenNewEvolution}
                  onSaveSession={async (data) => {
+                   if (supabase) {
+                     await supabase.from('clinical_notes').insert([{
+                        athlete_id: athlete.id,
+                        note_date: new Date().toISOString(),
+                        observations: `Sessão Inteligente Concluída.\nConduta Aplicada: ${data.decision_applied === 'hold' ? 'Suspensão Imediata (Hold)' : data.decision_applied === 'recovery' ? 'Protocolo de Recovery' : data.decision_applied === 'modified_train' ? 'Treino Modificado' : 'Treinamento Livre'}.`
+                     }]);
+                   }
                    setIsSessionMode(false);
                    setNotification({ message: 'Atendimento finalizado.', type: 'success' });
                  }}
@@ -4233,6 +4346,12 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 <FileText className="w-5 h-5 text-cyan-500" />
                 Prontuário Eletrônico
               </h2>
+              <div className="flex items-center gap-3">
+                {selectedNotes.length > 0 && (
+                  <Button onClick={handleBulkDeleteNotes} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 hover:border-rose-500/40 font-black uppercase text-xxs tracking-widest transition-colors">
+                    <Trash2 className="w-4 h-4 mr-2" /> Excluir {selectedNotes.length} Selecionados
+                  </Button>
+                )}
                 <Button onClick={() => { 
                   setShowSignatureStep(false); 
                   setNoteForm({
@@ -4247,16 +4366,43 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   });
                   setShowClinicalNoteModal(true); 
                 }} className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase text-xxs tracking-widest">
-                <Plus className="w-4 h-4 mr-2" /> Nova Evolução Completa
-              </Button>
+                  <Plus className="w-4 h-4 mr-2" /> Nova Evolução Completa
+                </Button>
+              </div>
             </div>
+            
+            <div className="flex items-center gap-2 mb-2">
+               <input 
+                 type="checkbox" 
+                 id="selectAllNotes"
+                 className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/50"
+                 checked={selectedNotes.length === prontuarioNotes.length && prontuarioNotes.length > 0}
+                 onChange={(e) => {
+                   if (e.target.checked) setSelectedNotes(prontuarioNotes.map(n => n.id));
+                   else setSelectedNotes([]);
+                 }}
+               />
+               <label htmlFor="selectAllNotes" className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Selecionar Todos</label>
+            </div>
+
             <div className="space-y-4">
               {prontuarioNotes.map(note => (
-                <Card key={note.id} className="bg-slate-900/40 border-slate-800/50 shadow-xl">
+                <Card key={note.id} className={`bg-slate-900/40 border-slate-800/50 shadow-xl transition-all ${selectedNotes.includes(note.id) ? 'ring-2 ring-cyan-500/50 border-cyan-500/30' : ''}`}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
-                        <Clock className="w-4 h-4" /> {note.date}
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="checkbox"
+                          className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/80 cursor-pointer"
+                          checked={selectedNotes.includes(note.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) setSelectedNotes([...selectedNotes, note.id]);
+                            else setSelectedNotes(selectedNotes.filter(id => id !== note.id));
+                          }}
+                        />
+                        <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
+                          <Clock className="w-4 h-4" /> {note.date}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {note.signed && (
@@ -4309,7 +4455,12 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Clock className="w-5 h-5 text-cyan-500" />{language === "pt" ? "Histórico de Avaliações" : "Assessment History"}</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                {selectedAssessments.length > 0 && (
+                  <Button onClick={handleBulkDeleteHistory} className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 hover:border-rose-500/40 font-black uppercase text-xxs tracking-widest transition-colors">
+                    <Trash2 className="w-4 h-4 mr-2" /> Excluir {selectedAssessments.length} Selecionados
+                  </Button>
+                )}
                 <span className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Total: {clinicalAssessments.length}</span>
               </div>
             </div>
@@ -4318,6 +4469,17 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-900/60 border-b border-slate-800/50">
+                    <th className="px-6 py-4 w-12">
+                       <input 
+                         type="checkbox" 
+                         className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/50 cursor-pointer"
+                         checked={selectedAssessments.length === clinicalAssessments.length && clinicalAssessments.length > 0}
+                         onChange={(e) => {
+                           if (e.target.checked) setSelectedAssessments(clinicalAssessments.map(a => a.id));
+                           else setSelectedAssessments([]);
+                         }}
+                       />
+                    </th>
                     <th className="px-6 py-4 text-xxs font-black text-slate-500 uppercase tracking-widest">Data</th>
                     <th className="px-6 py-4 text-xxs font-black text-slate-500 uppercase tracking-widest">Avaliação</th>
                     <th className="px-6 py-4 text-xxs font-black text-slate-500 uppercase tracking-widest">Score / Resultado</th>
@@ -4329,7 +4491,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 <tbody className="divide-y divide-slate-800/50">
                   {clinicalAssessments.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
+                      <td colSpan={7} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center text-slate-600">
                             <ClipboardList size={24} />
@@ -4342,9 +4504,20 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                     clinicalAssessments.map((assessment) => (
                       <tr 
                         key={assessment.id} 
-                        className="hover:bg-slate-800/30 transition-colors group cursor-pointer"
+                        className={`hover:bg-slate-800/30 transition-colors group cursor-pointer ${selectedAssessments.includes(assessment.id) ? 'bg-cyan-500/5' : ''}`}
                         onClick={() => setSelectedAssessment(assessment)}
                       >
+                        <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                          <input 
+                            type="checkbox"
+                            className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/80 cursor-pointer"
+                            checked={selectedAssessments.includes(assessment.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) setSelectedAssessments([...selectedAssessments, assessment.id]);
+                              else setSelectedAssessments(selectedAssessments.filter(id => id !== assessment.id));
+                            }}
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="text-xs font-bold text-white">

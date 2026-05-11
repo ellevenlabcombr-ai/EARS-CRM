@@ -17,7 +17,12 @@ import {
   User,
   Zap,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  MoreVertical,
+  Check,
+  XSquare,
+  FastForward,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -52,6 +57,32 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
 
   const [selectedRadar, setSelectedRadar] = useState<'high' | 'medium' | 'low' | 'wellness' | 'assessments' | null>(null);
   const [radarAthletes, setRadarAthletes] = useState<any[]>([]);
+
+  const handleQuickAction = async (eventId: string, action: 'encerrar' | 'pular' | 'excluir', athleteId?: string, athleteName?: string) => {
+    try {
+      // Remover o evento da agenda para "limpar" a fila
+      await supabase.from('agenda_events').delete().eq('id', eventId);
+
+      // Se for "encerrar", vamos dar um upsert num prontuário rápido
+      if (action === 'encerrar' && athleteId) {
+        await supabase.from('clinical_notes').insert([{
+           athlete_id: athleteId,
+           note_date: new Date().toISOString(),
+           observations: "Atendimento expresso concluído via Dashboard. (Sem registro de sessão detalhada)"
+        }]);
+      } else if (action === 'pular' && athleteId) {
+        await supabase.from('clinical_notes').insert([{
+           athlete_id: athleteId,
+           note_date: new Date().toISOString(),
+           observations: "Atendimento marcado como 'Falta / Pulado' no Dashboard."
+        }]);
+      }
+
+      setAgenda(prev => prev.filter(e => e.id !== eventId));
+    } catch (err) {
+      console.error("Erro ao modificar agenda:", err);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -406,8 +437,33 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="bg-[#0A1120] border border-slate-800 rounded-2xl p-5 hover:border-slate-600 transition-all group flex flex-col"
+              className="bg-[#0A1120] border border-slate-800 rounded-2xl p-5 hover:border-slate-600 transition-all group flex flex-col relative"
             >
+              {/* Quick Actions (Hover) */}
+              <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                 <button 
+                   onClick={(e) => { e.stopPropagation(); handleQuickAction(item.id, 'encerrar', item.athlete_id, item.athlete_name); }}
+                   title="Encerrar/Concluir Rápido"
+                   className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 flex items-center justify-center transition-colors"
+                 >
+                   <Check size={14} />
+                 </button>
+                 <button 
+                   onClick={(e) => { e.stopPropagation(); handleQuickAction(item.id, 'pular', item.athlete_id, item.athlete_name); }}
+                   title="Falta / Pular"
+                   className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400 flex items-center justify-center transition-colors"
+                 >
+                   <FastForward size={14} />
+                 </button>
+                 <button 
+                   onClick={(e) => { e.stopPropagation(); handleQuickAction(item.id, 'excluir'); }}
+                   title="Excluir Agendamento"
+                   className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 hover:text-rose-400 flex items-center justify-center transition-colors"
+                 >
+                   <Trash2 size={14} />
+                 </button>
+              </div>
+
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col items-center justify-center shrink-0 shadow-inner">
