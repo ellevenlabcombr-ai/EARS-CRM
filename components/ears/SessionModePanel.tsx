@@ -306,14 +306,39 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             </div>
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-black text-cyan-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Sparkles className="w-4 h-4" /> Inteligência Clínica EAR/S
+                <Sparkles className="w-4 h-4" /> Inteligência Clínica EAR/S <span className="text-[10px] bg-cyan-500 text-[#050B14] px-1.5 py-0.5 rounded-sm tracking-widest ml-1">V2</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="text-lg font-bold text-white leading-tight mb-6">
-                {masterScore && (masterScore as any).domains?.find((d: any) => d?.factors?.length > 0) ? (
+              <div className="mb-6 space-y-4">
+                {clinicalSessionData?.riskClustersResult?.clusters?.length > 0 ? (
+                  <div className="space-y-3">
+                    {clinicalSessionData.riskClustersResult.clusters.map((cluster: any, idx: number) => (
+                      <div key={idx} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            {cluster.score > 80 ? '🔴' : cluster.score > 60 ? '🟠' : '🟢'} {cluster.label}
+                          </h4>
+                          <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full ${cluster.score > 80 ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                            Risco: {Math.round(cluster.score)}%
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {cluster.factors.map((factor: string, i: number) => (
+                            <span key={i} className="text-xs font-medium text-slate-300 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700">
+                              {factor}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mt-3 text-xs font-bold text-cyan-400/80 bg-cyan-500/10 px-3 py-2 rounded-lg border border-cyan-500/20 inline-block">
+                          Diretriz: {cluster.action}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : masterScore && (masterScore as any).domains?.find((d: any) => d?.factors?.length > 0) ? (
                   <div className="space-y-2">
-                    <p>Motivo principal:</p>
+                    <p className="text-white font-bold">Motivo principal:</p>
                     <div className="flex flex-wrap gap-2">
                       {(masterScore as any).domains.flatMap((d: any) => d?.factors || []).slice(0, 2).map((factor: string, i: number) => (
                         <span key={i} className="text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg text-sm">{factor}</span>
@@ -322,7 +347,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                   </div>
                 ) : (
                   <div>
-                    <p>{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
+                    <p className="text-lg font-bold text-white leading-tight">{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
                     {clinicalSessionData?.priorityOutput?.content?.factors?.[1] && (
                       <p className="text-xs text-rose-400 mt-2 whitespace-pre-wrap font-mono">
                         {clinicalSessionData?.priorityOutput?.content?.factors[1]}
@@ -330,8 +355,8 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                     )}
                   </div>
                 )}
-                <p className="text-cyan-400 mt-3">
-                  Recomenda-se {(manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'hold' ? 'suspensão imediata' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'recovery' ? 'protocolo de recovery' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'modified_train' ? 'treino modificado' : 'treino livre'}.
+                <p className="text-cyan-400 mt-4 text-lg font-bold leading-tight">
+                  Conduta Final: {(manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'hold' ? 'Suspensão Imediata' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'recovery' ? 'Protocolo de Recovery' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'modified_train' ? 'Treino Modificado' : 'Treino Livre'}.
                   {manualDecision && <span className="ml-2 text-xs text-amber-400">(Ajustado Manualmente)</span>}
                 </p>
               </div>
@@ -344,13 +369,13 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                         setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100);
                     }}
                     variant="outline" 
-                    className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6">
+                    className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all">
                     Confirmar Plano
                   </Button>
                   <Button 
                     onClick={() => setIsEditingDecision(true)}
                     variant="ghost" 
-                    className="text-slate-400 hover:text-white text-xs font-black uppercase tracking-widest">
+                    className="text-slate-400 hover:text-white text-xs font-black uppercase tracking-widest bg-slate-800/50 hover:bg-slate-800 rounded-2xl h-10 px-6 transition-all">
                     Ajustar Manualmente
                   </Button>
                   </>
