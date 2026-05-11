@@ -47,6 +47,9 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   });
   const [intelligenceText, setIntelligenceText] = useState('');
 
+  const [selectedRadar, setSelectedRadar] = useState<'high' | 'medium' | 'wellness' | 'assessments' | null>(null);
+  const [radarAthletes, setRadarAthletes] = useState<any[]>([]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -74,7 +77,9 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
       // 3. Fetch All Athletes for stats and exceptions
       const { data: athletesData, error: athletesError } = await supabase
         .from('athletes')
-        .select('id, name, risk_level, status, updated_at');
+        .select('id, name, risk_level, status, updated_at, modalidade, category');
+
+      setRadarAthletes(athletesData || []);
 
       // 4. Fetch Clinical Alerts
       const { data: alertsData, error: alertsError } = await supabase
@@ -407,33 +412,124 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
               <Activity size={16} className="text-cyan-500" /> Radar da Equipe
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+              <button 
+                onClick={() => setSelectedRadar('high')}
+                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
+              >
                 <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
                 </div>
                 <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.highRisk} atletas</span> preocupam hoje</p>
-              </div>
-              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+              </button>
+              
+              <button 
+                onClick={() => setSelectedRadar('medium')}
+                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
+              >
                 <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                 </div>
                 <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.mediumRisk} atletas</span> em monitoramento</p>
-              </div>
-              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+              </button>
+              
+              <button 
+                onClick={() => setSelectedRadar('wellness')}
+                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
+              >
                 <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 </div>
                 <p className="text-sm font-medium text-slate-300">Adesão wellness <span className="text-white font-bold">{radar.generalWellness}%</span></p>
-              </div>
-              <div className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3">
+              </button>
+              
+              <button 
+                onClick={() => setSelectedRadar('assessments')}
+                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
+              >
                 <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 text-cyan-500">
                   <TrendingUp size={14} />
                 </div>
                 <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.assessmentsDone} avaliações</span> este mês</p>
-              </div>
+              </button>
             </div>
           </section>
         </div>
+
+        {/* Radar Selection Modal (Conditional) */}
+        {selectedRadar && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl"
+            >
+              <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+                <h3 className="text-white font-black uppercase tracking-widest flex items-center gap-2">
+                  <Activity size={18} className="text-cyan-500" />
+                  {selectedRadar === 'high' ? 'Atletas Cruzados (Alto Risco)' : 
+                   selectedRadar === 'medium' ? 'Atletas em Monitoramento' : 
+                   selectedRadar === 'wellness' ? 'Adesão ao Wellness' : 
+                   'Avaliações do Mês'}
+                </h3>
+                <button onClick={() => setSelectedRadar(null)} className="text-slate-500 hover:text-white transition-colors">
+                  <AlertCircle size={24} />
+                </button>
+              </div>
+              <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="space-y-2">
+                  {radarAthletes
+                    .filter(a => {
+                      if (selectedRadar === 'high') return a.risk_level === 'Crítico' || a.risk_level === 'Alto';
+                      if (selectedRadar === 'medium') return a.risk_level === 'Médio';
+                      return true; // Show all for wellness/assessments for now, or could refine
+                    })
+                    .map(athlete => (
+                      <div 
+                        key={athlete.id} 
+                        onClick={() => {
+                          setSelectedRadar(null);
+                          onViewAthlete(athlete.id);
+                        }}
+                        className="p-4 bg-slate-950/50 border border-slate-800 rounded-2xl flex items-center justify-between hover:border-cyan-500/30 transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-slate-500 group-hover:text-cyan-400 transition-colors">
+                            <User size={20} />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-bold">{athlete.name}</h4>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">{athlete.category} • {athlete.modalidade}</p>
+                          </div>
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          athlete.risk_level === 'Crítico' || athlete.risk_level === 'Alto' ? 'bg-rose-500/10 text-rose-500' : 
+                          athlete.risk_level === 'Médio' ? 'bg-amber-500/10 text-amber-500' : 
+                          'bg-emerald-500/10 text-emerald-500'
+                        }`}>
+                          {athlete.risk_level || 'Baixo'}
+                        </div>
+                      </div>
+                    ))}
+                  {radarAthletes.filter(a => {
+                    if (selectedRadar === 'high') return a.risk_level === 'Crítico' || a.risk_level === 'Alto';
+                    if (selectedRadar === 'medium') return a.risk_level === 'Médio';
+                    return true;
+                  }).length === 0 && (
+                    <div className="text-center py-8 text-slate-500 italic">Nenhum atleta encontrado nesta categoria.</div>
+                  )}
+                </div>
+              </div>
+              <div className="p-4 bg-slate-950/50 border-t border-slate-800">
+                 <button 
+                  onClick={() => setSelectedRadar(null)}
+                  className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all"
+                 >
+                   Fechar
+                 </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         {/* Lado Direito (Side column) */}
         <div className="space-y-6">

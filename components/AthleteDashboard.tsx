@@ -1374,6 +1374,36 @@ export function AthleteDashboard({
         const { error: wellnessError } = await supabase.from("wellness_records").insert([finalWellnessData]);
         if (wellnessError) console.error("Could not sync to wellness_records:", wellnessError);
 
+        // Update athlete risk level on athletes table
+        let calculatedRisk: "Baixo" | "Médio" | "Alto" | "Crítico" = "Baixo";
+        if (readiness <= 40 || maxPain >= 8) calculatedRisk = "Crítico";
+        else if (readiness <= 60 || maxPain >= 6) calculatedRisk = "Alto";
+        else if (readiness <= 75 || maxPain >= 4) calculatedRisk = "Médio";
+
+        const { error: updateError } = await supabase
+          .from("athletes")
+          .update({ 
+            risk_level: calculatedRisk,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", athleteId);
+        
+        if (updateError) console.error("Error updating athlete risk level:", updateError);
+
+        // Create clinical alert if pain is high
+        if (maxPain >= 7) {
+          const { error: alertError } = await supabase
+            .from("clinical_alerts")
+            .insert([{
+              athlete_id: athleteId,
+              description: `Alto nível de dor relatado (${maxPain}/10) em: ${compiledSorenessLocation}.`,
+              severity: maxPain >= 9 ? "critical" : "high",
+              status: "active",
+              created_at: new Date().toISOString()
+            }]);
+          if (alertError) console.error("Error creating clinical alert:", alertError);
+        }
+
         if (loadAssessment) {
           await supabase.from("physical_load_assessments").insert([{ ...loadAssessment, check_in_id: checkInId }]);
         }

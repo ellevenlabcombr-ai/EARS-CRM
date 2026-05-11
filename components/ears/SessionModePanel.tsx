@@ -84,19 +84,28 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
 
   const lastWellness = useMemo(() => {
     if (!wellnessHistory || wellnessHistory.length === 0) return {};
-    // Ensure we pick the one with the most recent date if history is provided
+    // Ensure we pick the one with the most recent date
     return [...wellnessHistory].sort((a, b) => {
         const dateA = new Date(a.record_date || a.date).getTime();
         const dateB = new Date(b.record_date || b.date).getTime();
-        return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
+        
+        // Final fallback to checking if one is naturally "today"
+        if (isNaN(dateA) || isNaN(dateB)) return 0;
+        
+        return dateB - dateA;
     })[0];
   }, [wellnessHistory]);
 
   const metrics = {
     sleep: lastWellness.sleep || lastWellness.sleep_hours || 0,
-    fatigue: lastWellness.fatigue || lastWellness.fatigue_level || 0,
-    pain: lastWellness.pain || lastWellness.muscle_soreness || lastWellness.soreness || 0,
-    wellness: lastWellness.readiness || lastWellness.readiness_score || 0
+    fatigue: lastWellness.fatigue_level || lastWellness.fatigue || 0,
+    pain: Math.max(
+      Number(lastWellness.muscle_soreness || 0),
+      Number(lastWellness.pain || 0),
+      Number(lastWellness.soreness || 0),
+      Number(lastWellness.dor || 0)
+    ),
+    wellness: lastWellness.readiness_score || lastWellness.readiness || 0
   };
 
   if (isLoading && metrics.wellness === 0) {

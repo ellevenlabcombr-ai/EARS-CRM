@@ -1065,6 +1065,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
             return {
               date: parseDateString(w.record_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+              record_date: w.record_date,
               readiness: w.readiness_score,
               sleep: w.sleep_hours, // Corrected from sleep_quality
               sleep_quality: w.sleep_quality,
