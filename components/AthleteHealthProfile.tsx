@@ -42,6 +42,8 @@ import {
   Grid3X3,
   X,
   ArrowLeft,
+  ArrowRight,
+  BatteryCharging,
   Mic,
   Check,
   PenTool,
@@ -2537,7 +2539,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           <div className="space-y-4">
             <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-500" />
-              Análise Master Score (Dynamic)
+              Análise Master Score
             </h2>
             {clinicalSessionData.masterScore.domains && (
               <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
@@ -2576,6 +2578,122 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             )}
           </div>
         )}
+
+        {/* 1.5 Perfil do Atleta V2 - Narrative & Timeline */}
+        <div className="space-y-6">
+          <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-indigo-500" />
+            Narrativa Clínica (EAR/S Auto-Summary)
+          </h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2 bg-slate-900 border-slate-800 shadow-2xl">
+              <CardContent className="p-6 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Resumo Automático - Últimos 14 dias</p>
+                  </div>
+                  <p className="text-[15px] leading-relaxed text-slate-300 font-medium">
+                    {clinicalSessionData?.priorityOutput?.content?.factors?.join(" ") || "Os dados indicam que houve uma alteração nos padrões de sono nesta semana. Recomenda-se acompanhamento dioturno com protocolo de recovery para estabilização de métricas."}
+                  </p>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-slate-800">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Timeline Fisiológica (Ciclo Recente)</p>
+                  
+                  <div className="flex items-center justify-between relative">
+                    <div className="absolute left-0 top-1/2 w-full h-px bg-slate-800 -z-10" />
+                    
+                    <div className="flex flex-col items-center gap-2 bg-slate-900 px-2">
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${wellnessHistory[wellnessHistory.length - 1]?.sleep_hours < 7 ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'}`}>
+                        <Moon className="w-4 h-4" />
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Sono</span>
+                      <span className="text-[10px] font-bold text-white">{wellnessHistory[wellnessHistory.length - 1]?.sleep_hours || '-'}h</span>
+                    </div>
+
+                    <ArrowRight className="w-4 h-4 text-slate-700 bg-slate-900" />
+
+                    <div className="flex flex-col items-center gap-2 bg-slate-900 px-2">
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${wellnessHistory[wellnessHistory.length - 1]?.pain > 3 ? 'border-rose-500/50 bg-rose-500/10 text-rose-400' : 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'}`}>
+                        <Thermometer className="w-4 h-4" />
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Dor</span>
+                      <span className="text-[10px] font-bold text-white">{wellnessHistory[wellnessHistory.length - 1]?.pain || '-'}</span>
+                    </div>
+
+                    <ArrowRight className="w-4 h-4 text-slate-700 bg-slate-900" />
+
+                     <div className="flex flex-col items-center gap-2 bg-slate-900 px-2">
+                      <div className="w-8 h-8 rounded-full border-2 border-cyan-500/50 bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                        <Weight className="w-4 h-4" />
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Carga</span>
+                      <span className="text-[10px] font-bold text-white">Alta</span>
+                    </div>
+
+                    <ArrowRight className="w-4 h-4 text-slate-700 bg-slate-900" />
+
+                    <div className="flex flex-col items-center gap-2 bg-slate-900 px-2">
+                      <div className="w-8 h-8 rounded-full border-2 border-indigo-500/50 bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                        <BatteryCharging className="w-4 h-4" />
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Recovery</span>
+                      <span className="text-[10px] font-bold text-white">{clinicalSessionData?.priorityOutput.adjustedDecision === 'recovery' ? 'Ativo' : 'Padrão'}</span>
+                    </div>
+
+                    <ArrowRight className="w-4 h-4 text-slate-700 bg-slate-900" />
+
+                    <div className="flex flex-col items-center gap-2 bg-slate-900 px-2">
+                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${riskCfg.color.replace('text-', 'bg-').replace('400', '500/10')} ${riskCfg.color.replace('text-', 'border-').replace('400', '500/50')} ${riskCfg.color}`}>
+                        <Activity className="w-4 h-4" />
+                      </div>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Status</span>
+                      <span className={`text-[10px] font-bold ${riskCfg.color}`}>{riskCfg.label.split(' ')[0]}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-4">
+              <Card className="bg-slate-950 border-slate-800">
+                <CardContent className="p-4">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Últimas Decisões</p>
+                  <div className="space-y-3">
+                    {prontuarioNotes.slice(0, 2).map((note: any, i: number) => (
+                      <div key={i} className="flex gap-3 items-start pb-3 border-b border-slate-800 last:border-0 last:pb-0">
+                        <div className="w-2 h-2 mt-1 rounded-full bg-cyan-500 shrink-0" />
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-300 leading-tight line-clamp-2">"{note.text || note.observations}"</p>
+                          <p className="text-[9px] font-black uppercase text-slate-500 mt-1">{note.date ? (note.date.includes('/') ? note.date.split(',')[0] : new Date(note.date).toLocaleDateString('pt-BR')) : '-'} • {note.professional}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {prontuarioNotes.length === 0 && <p className="text-xs text-slate-500 italic">Nenhum prontuário recente.</p>}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-950 border-slate-800">
+                <CardContent className="p-4">
+                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+                     Evolução Fisiológica (7D)
+                     <TrendingDown className={`w-3 h-3 ${clinicalSessionData?.trends?.readinessTrend === 'improving' ? 'text-emerald-500' : 'text-rose-500'}`} />
+                   </p>
+                   <div className="h-20 w-full mt-2">
+                     <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={wellnessHistory.slice(-7)}>
+                          <Line type="monotone" dataKey="readiness" stroke="#06b6d4" strokeWidth={2} dot={{ r: 2, fill: '#06b6d4' }} />
+                        </LineChart>
+                     </ResponsiveContainer>
+                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
 
         {/* 2. Painel Clínico & Diagnóstico */}
         <div className="space-y-6">

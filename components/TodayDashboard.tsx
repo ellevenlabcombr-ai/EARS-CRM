@@ -44,12 +44,13 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   const [radar, setRadar] = useState<any>({
     highRisk: 0,
     mediumRisk: 0,
+    lowRisk: 0,
     assessmentsDone: 0,
     generalWellness: 0
   });
   const [intelligenceText, setIntelligenceText] = useState<React.ReactNode>('');
 
-  const [selectedRadar, setSelectedRadar] = useState<'high' | 'medium' | 'wellness' | 'assessments' | null>(null);
+  const [selectedRadar, setSelectedRadar] = useState<'high' | 'medium' | 'low' | 'wellness' | 'assessments' | null>(null);
   const [radarAthletes, setRadarAthletes] = useState<any[]>([]);
 
   const fetchData = async () => {
@@ -207,6 +208,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         // Recalculate after dynamic patch
         highRiskCount = athletesData.filter(a => a.risk_level === 'Crítico' || a.risk_level === 'Alto').length;
         mediumRiskCount = athletesData.filter(a => a.risk_level === 'Médio').length;
+        const lowRiskCount = athletesData.filter(a => a.risk_level === 'Baixo' || !a.risk_level).length;
 
         const activeAthletes = athletesData.filter(a => a.status !== 'Inativo' && a.status !== 'Arquivado');
         const activeCount = activeAthletes.length;
@@ -218,6 +220,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         setRadar({
           highRisk: highRiskCount,
           mediumRisk: mediumRiskCount,
+          lowRisk: lowRiskCount,
           assessmentsDone: assessmentsCount || 0,
           generalWellness: adherencePct
         });
@@ -309,57 +312,66 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
   }
 
   return (
-    <div className="space-y-6 lg:space-y-8 pb-10">
-      {/* 1. Topo */}
-      <section className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 lg:p-8 backdrop-blur-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 blur-[80px] rounded-full pointer-events-none" />
-        
-        <header className="mb-6">
+    <div className="space-y-8 pb-10">
+      {/* 1. Topo Hero Section */}
+      <section className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 relative overflow-hidden">
+        <header className="mb-8">
           <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight">
             {greeting},
           </h1>
-          <p className="text-slate-400 font-medium mt-1 capitalize">{currentDate}</p>
+          <p className="text-slate-400 font-medium mt-1 text-sm"><span className="uppercase">{currentDate}</span> • Visão Operacional do Dia</p>
         </header>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
-            <div className="flex items-center gap-2 text-cyan-400 mb-3">
-              <CalendarIcon size={16} />
-              <span className="text-xs uppercase tracking-widest font-bold">Agenda</span>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <button onClick={() => setSelectedRadar('high')} className="text-left bg-slate-950 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-rose-500">Crítico Hoje</span>
+              <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+              </div>
             </div>
             <div>
-              <p className="text-3xl font-black text-white leading-none">{agenda.length}</p>
-              <p className="text-sm font-medium text-slate-400 mt-1">atendimentos hoje</p>
+              <p className="text-4xl font-black text-white leading-none tracking-tight">{radar.highRisk}</p>
+              <p className="text-xs font-semibold text-slate-500 mt-2">atletas exigem ação</p>
             </div>
-          </div>
-          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
-            <div className="flex items-center gap-2 text-amber-500 mb-3">
-              <Activity size={16} />
-              <span className="text-xs uppercase tracking-widest font-bold">Wellness</span>
-            </div>
-            <div>
-              <p className="text-3xl font-black text-white leading-none">{pendingWellnessCount}</p>
-              <p className="text-sm font-medium text-slate-400 mt-1">respostas pendentes</p>
-            </div>
-          </div>
-          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
-            <div className="flex items-center gap-2 text-rose-500 mb-3">
-              <AlertTriangle size={16} />
-              <span className="text-xs uppercase tracking-widest font-bold">Alertas</span>
+          </button>
+          
+          <button onClick={() => setSelectedRadar('medium')} className="text-left bg-slate-950 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-amber-500">Monitoramento</span>
+              <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              </div>
             </div>
             <div>
-              <p className="text-3xl font-black text-white leading-none">{radar.highRisk}</p>
-              <p className="text-sm font-medium text-slate-400 mt-1">exigem ação hoje</p>
+              <p className="text-4xl font-black text-white leading-none tracking-tight">{radar.mediumRisk}</p>
+              <p className="text-xs font-semibold text-slate-500 mt-2">atenção redobrada</p>
             </div>
-          </div>
-          <div className="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-colors">
-            <div className="flex items-center gap-2 text-emerald-500 mb-3">
-              <CreditCard size={16} />
-              <span className="text-xs uppercase tracking-widest font-bold">Financeiro</span>
+          </button>
+          
+          <button onClick={() => setSelectedRadar('low')} className="text-left bg-slate-950 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-emerald-500">Liberados</span>
+              <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              </div>
             </div>
             <div>
-              <p className="text-3xl font-black text-white leading-none">{financialAlerts.length}</p>
-              <p className="text-sm font-medium text-slate-400 mt-1">item pendente</p>
+              <p className="text-4xl font-black text-white leading-none tracking-tight">{radar.lowRisk}</p>
+              <p className="text-xs font-semibold text-slate-500 mt-2">treinamento normal</p>
+            </div>
+          </button>
+          
+          <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-slate-700 transition-all">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black text-indigo-400">Operacional</span>
+              <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                <ListTodo size={14} />
+              </div>
+            </div>
+            <div>
+              <p className="text-4xl font-black text-white leading-none tracking-tight">{pendencies.filter(p => !p.done).length}</p>
+              <p className="text-xs font-semibold text-slate-500 mt-2">pendências clínicas</p>
             </div>
           </div>
         </div>
@@ -436,9 +448,9 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
 
               <button 
                 onClick={() => onViewAthlete(item.athlete_id, true)}
-                className="mt-auto w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.15)] hover:shadow-[0_0_25px_rgba(79,70,229,0.3)] active:scale-[0.98] flex items-center justify-center gap-2 border border-indigo-500/50"
+                className="mt-auto w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-800 hover:border-slate-700 active:scale-[0.98]"
               >
-                Iniciar Sessão <ChevronRight size={14} className="opacity-80" />
+                Atendimento Rápido <ChevronRight size={14} className="opacity-80" />
               </button>
             </motion.div>
           ))}
@@ -451,24 +463,23 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Lado Esquerdo (2 colunas em desktop) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-8">
           {/* 6. Inteligência EARS */}
-          <section className="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-500/20 rounded-2xl p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[50px] rounded-full pointer-events-none" />
-            <h2 className="text-sm font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2 mb-3">
-              <Brain size={16} /> Insight EARS
+          <section className="bg-slate-950 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+              <Brain size={14} className="text-cyan-500" /> EAR/S Clinic Intelligence
             </h2>
-            <p className="text-slate-300 text-sm leading-relaxed font-medium">
+            <p className="text-slate-200 text-[15px] leading-relaxed font-medium">
               {intelligenceText}
             </p>
           </section>
 
           {/* 3. Exceções Invisíveis */}
-          <section className="space-y-4">
-            <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 px-2">
-              <TrendingDown size={16} /> Exceções Ocultas (Sem Agenda)
+          <section className="space-y-4 pt-2">
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+              <TrendingDown size={14} /> Atletas em Risco (Sem Agendamento)
             </h2>
             <div className="space-y-3">
               {exceptions.map((exc, idx) => (
@@ -494,53 +505,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
             </div>
           </section>
 
-          {/* 5. Radar Clínico */}
-          <section className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
-            <h2 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
-              <Activity size={16} className="text-cyan-500" /> Radar da Equipe
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button 
-                onClick={() => setSelectedRadar('high')}
-                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
-                </div>
-                <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.highRisk} atletas</span> preocupam hoje</p>
-              </button>
-              
-              <button 
-                onClick={() => setSelectedRadar('medium')}
-                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                </div>
-                <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.mediumRisk} atletas</span> em monitoramento</p>
-              </button>
-              
-              <button 
-                onClick={() => setSelectedRadar('wellness')}
-                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                </div>
-                <p className="text-sm font-medium text-slate-300">Adesão wellness <span className="text-white font-bold">{radar.generalWellness}%</span></p>
-              </button>
-              
-              <button 
-                onClick={() => setSelectedRadar('assessments')}
-                className="bg-slate-950/50 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 hover:bg-slate-800/50 transition-colors text-left"
-              >
-                <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 text-cyan-500">
-                  <TrendingUp size={14} />
-                </div>
-                <p className="text-sm font-medium text-slate-300"><span className="text-white font-bold">{radar.assessmentsDone} avaliações</span> este mês</p>
-              </button>
-            </div>
-          </section>
+
         </div>
 
         {/* Radar Selection Modal (Conditional) */}
@@ -554,8 +519,9 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
               <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                 <h3 className="text-white font-black uppercase tracking-widest flex items-center gap-2">
                   <Activity size={18} className="text-cyan-500" />
-                  {selectedRadar === 'high' ? 'Atletas Cruzados (Alto Risco)' : 
+                  {selectedRadar === 'high' ? 'Atletas Críticos (Alto Risco)' : 
                    selectedRadar === 'medium' ? 'Atletas em Monitoramento' : 
+                   selectedRadar === 'low' ? 'Atletas Liberados' : 
                    selectedRadar === 'wellness' ? 'Adesão ao Wellness' : 
                    'Avaliações do Mês'}
                 </h3>
@@ -569,6 +535,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
                     .filter(a => {
                       if (selectedRadar === 'high') return a.risk_level === 'Crítico' || a.risk_level === 'Alto';
                       if (selectedRadar === 'medium') return a.risk_level === 'Médio';
+                      if (selectedRadar === 'low') return a.risk_level === 'Baixo' || !a.risk_level;
                       return true; // Show all for wellness/assessments for now, or could refine
                     })
                     .map(athlete => (
@@ -601,6 +568,7 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
                   {radarAthletes.filter(a => {
                     if (selectedRadar === 'high') return a.risk_level === 'Crítico' || a.risk_level === 'Alto';
                     if (selectedRadar === 'medium') return a.risk_level === 'Médio';
+                    if (selectedRadar === 'low') return a.risk_level === 'Baixo' || !a.risk_level;
                     return true;
                   }).length === 0 && (
                     <div className="text-center py-8 text-slate-500 italic">Nenhum atleta encontrado nesta categoria.</div>
@@ -620,13 +588,13 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
         )}
 
         {/* Lado Direito (Side column) */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* 4. Pendências Rápidas */}
-          <section className="bg-slate-900/40 border border-slate-800 rounded-3xl p-5">
-            <h2 className="text-sm font-black text-slate-300 uppercase tracking-widest flex items-center gap-2 mb-4">
-              <ListTodo size={16} className="text-emerald-500" /> Operacional
+          <section className="bg-slate-950 border border-slate-800 rounded-3xl p-6">
+            <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-5">
+              <ListTodo size={14} className="text-indigo-400" /> Operacional Diário
             </h2>
-            <div className="space-y-3 mb-4">
+            <div className="space-y-3 mb-5">
               {pendencies.map((pend) => (
                 <div key={pend.id} className="flex items-start gap-3">
                   <button 
@@ -635,11 +603,11 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
                       setPendencies(pendencies.map(p => p.id === pend.id ? {...p, done: newStatus} : p));
                       await supabase.from('daily_tasks').update({ status: newStatus ? 'completed' : 'pending' }).eq('id', pend.id);
                     }}
-                    className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-colors ${pend.done ? 'bg-emerald-500 border-emerald-500 text-emerald-950' : 'bg-slate-950 border-slate-700 text-transparent hover:border-emerald-500/50'}`}
+                    className={`mt-0.5 w-4 h-4 rounded-md flex items-center justify-center shrink-0 border transition-colors ${pend.done ? 'bg-indigo-500 border-indigo-500 text-indigo-950' : 'bg-slate-900 border-slate-700 text-transparent hover:border-indigo-500/50'}`}
                   >
-                    <CheckCircle2 size={12} className={pend.done ? 'opacity-100' : 'opacity-0'} />
+                    <CheckCircle2 size={10} className={pend.done ? 'opacity-100' : 'opacity-0'} />
                   </button>
-                  <span className={`text-sm ${pend.done ? 'text-slate-600 line-through' : 'text-slate-300'}`}>
+                  <span className={`text-sm tracking-tight ${pend.done ? 'text-slate-600 line-through' : 'text-slate-200'}`}>
                     {pend.task}
                   </span>
                 </div>
@@ -667,12 +635,12 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
                 value={newTaskText}
                 onChange={(e) => setNewTaskText(e.target.value)}
                 placeholder="Nova tarefa..." 
-                className="flex-1 bg-slate-950/50 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
               />
               <button 
                 type="submit" 
                 disabled={!newTaskText.trim()}
-                className="bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 text-xs font-bold uppercase tracking-widest rounded-xl transition-all"
+                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 text-xs font-bold uppercase tracking-widest rounded-xl transition-all"
               >
                 +
               </button>
@@ -680,10 +648,10 @@ export function TodayDashboard({ onViewAthlete, onNavigate }: TodayDashboardProp
           </section>
 
           {/* 7. Financeiro Discreto */}
-          <section className="bg-slate-900/20 border border-slate-800/50 rounded-3xl p-5 hover:border-slate-700/50 transition-colors group">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <CreditCard size={16} className="text-slate-500" /> Financeiro
+          <section className="bg-slate-950 border border-slate-800 rounded-3xl p-6 hover:border-slate-700 transition-colors group">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <CreditCard size={14} className="text-slate-600" /> Financeiro
               </h2>
               {financialAlerts.length > 0 && (
                 <button 

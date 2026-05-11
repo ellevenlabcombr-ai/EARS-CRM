@@ -68,6 +68,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
   onOpenNewEvolution
 }) => {
   const [loading, setLoading] = useState(false);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const [showNextSuggestion, setShowNextSuggestion] = useState(false);
   const [manualDecision, setManualDecision] = useState<"full_train" | "modified_train" | "recovery" | "hold" | null>(null);
   const [isEditingDecision, setIsEditingDecision] = useState(false);
@@ -149,12 +150,13 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
     { label: 'Prontidão', value: `${metrics.wellness}%`, icon: Trophy, color: getMetricColor(metrics.wellness, 'wellness') },
   ];
 
-  const handleSave = async () => {
+  const handleSave = async (decisionOverride?: "full_train" | "modified_train" | "recovery" | "hold") => {
+    setIsFinalizing(true);
     setLoading(true);
     try {
       const sessionData = {
         athlete_id: athlete.id,
-        decision_applied: manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision,
+        decision_applied: decisionOverride || manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision,
         timestamp: new Date().toISOString()
       };
       await onSaveSession(sessionData);
@@ -163,6 +165,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
       console.error('Error saving session:', err);
     } finally {
       setLoading(false);
+      setIsFinalizing(false);
     }
   };
 
@@ -298,95 +301,130 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
           </div>
         </section>
 
-        {/* 3. BLOCO: FOCO SUGERIDO HOJE */}
+        {/* 3. BLOCO: FOCO SUGERIDO HOJE - SESSÃO INTELIGENTE V3 */}
         <section className="space-y-4">
-          <Card className="bg-cyan-500/10 border-cyan-500/20 border-2 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-5">
-              <BrainCircuit className="w-24 h-24 text-cyan-400" />
+          <Card className="bg-slate-900 border-slate-800 border-2 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
+              <BrainCircuit className="w-48 h-48 text-cyan-400" />
             </div>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-black text-cyan-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Sparkles className="w-4 h-4" /> Inteligência Clínica EAR/S <span className="text-[10px] bg-cyan-500 text-[#050B14] px-1.5 py-0.5 rounded-sm tracking-widest ml-1">V2</span>
-              </CardTitle>
+            <CardHeader className="pb-0 pt-6 px-6 border-b border-slate-800/50">
+              <div className="flex items-center justify-between mb-4">
+                <CardTitle className="text-xs font-black text-cyan-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" /> Inteligência Clínica EAR/S <span className="text-[10px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded-[4px] tracking-widest ml-1 leading-none">V3</span>
+                </CardTitle>
+                <div className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border flex items-center gap-1.5 ${
+                  masterScore?.confidence === 'high' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                  masterScore?.confidence === 'medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
+                  'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                }`}>
+                  <Brain className="w-3 h-3" />
+                  Confiança da IA: {masterScore?.confidence === 'high' ? 'Alta' : masterScore?.confidence === 'medium' ? 'Moderada' : 'BAIXA'}
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="mb-6 space-y-4">
-                {clinicalSessionData?.riskClustersResult?.clusters?.length > 0 ? (
-                  <div className="space-y-3">
-                    {clinicalSessionData.riskClustersResult.clusters.map((cluster: any, idx: number) => (
-                      <div key={idx} className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                            {cluster.score > 80 ? '🔴' : cluster.score > 60 ? '🟠' : '🟢'} {cluster.label}
-                          </h4>
-                          <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-full ${cluster.score > 80 ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                            Risco: {Math.round(cluster.score)}%
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {cluster.factors.map((factor: string, i: number) => (
-                            <span key={i} className="text-xs font-medium text-slate-300 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700">
-                              {factor}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="mt-3 text-xs font-bold text-cyan-400/80 bg-cyan-500/10 px-3 py-2 rounded-lg border border-cyan-500/20 inline-block">
-                          Diretriz: {cluster.action}
-                        </div>
+              <div className="mb-8 relative z-10">
+                {/* STATUS DO DIA HERO */}
+                <div className="mb-6">
+                  {clinicalSessionData?.riskClustersResult?.clusters?.[0]?.score > 80 ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center shrink-0 border border-rose-500/30">
+                        <span className="text-2xl">🔴</span>
                       </div>
-                    ))}
-                  </div>
-                ) : masterScore && (masterScore as any).domains?.find((d: any) => d?.factors?.length > 0) ? (
-                  <div className="space-y-2">
-                    <p className="text-white font-bold">Motivo principal:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {(masterScore as any).domains.flatMap((d: any) => d?.factors || []).slice(0, 2).map((factor: string, i: number) => (
-                        <span key={i} className="text-rose-400 bg-rose-500/10 px-2 py-1 rounded-lg text-sm">{factor}</span>
-                      ))}
+                      <div>
+                        <h3 className="text-xl font-black text-rose-400 uppercase tracking-tight">{clinicalSessionData.riskClustersResult.clusters[0].label}</h3>
+                        <p className="text-xs text-rose-500/80 font-bold uppercase tracking-widest">Risco Crítico Detectado</p>
+                      </div>
                     </div>
+                  ) : clinicalSessionData?.riskClustersResult?.clusters?.[0]?.score > 60 ? (
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center shrink-0 border border-amber-500/30">
+                        <span className="text-2xl">🟠</span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-amber-400 uppercase tracking-tight">{clinicalSessionData.riskClustersResult.clusters[0].label}</h3>
+                        <p className="text-xs text-amber-500/80 font-bold uppercase tracking-widest">Sobrecarga Relevante</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                        <span className="text-2xl">🟢</span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-emerald-400 uppercase tracking-tight">Liberado Total</h3>
+                        <p className="text-xs text-emerald-500/80 font-bold uppercase tracking-widest">Condição Otimizada</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {masterScore?.confidence === 'low' && (
+                  <div className="mb-6 bg-rose-500/5 border border-rose-500/20 p-3 rounded-xl flex gap-3 items-start">
+                    <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <p className="text-[11px] font-medium text-rose-300">
+                      <span className="font-bold text-rose-400">Atenção:</span> Devido a dados incompletos nas últimas 48h, recomenda-se confirmação visual ou intervenção humana direta antes de aplicar condutas restritivas.
+                    </p>
                   </div>
-                ) : (
-                  <div>
-                    <p className="text-lg font-bold text-white leading-tight">{clinicalSessionData?.priorityOutput?.content?.factors?.[0] || 'Atendimento focado em estabilidade funcional.'}</p>
-                    {clinicalSessionData?.priorityOutput?.content?.factors?.[1] && (
-                      <p className="text-xs text-rose-400 mt-2 whitespace-pre-wrap font-mono">
-                        {clinicalSessionData?.priorityOutput?.content?.factors[1]}
-                      </p>
+                )}
+
+                {/* MOTIVOS DA DECISÃO */}
+                <div className="space-y-3 mb-8">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Motivos Principais</p>
+                  <div className="flex flex-wrap gap-2">
+                    {clinicalSessionData?.riskClustersResult?.clusters?.slice(0,2).flatMap((c: any) => c.factors).map((factor: string, i: number) => (
+                      <span key={i} className="text-[11px] font-bold text-slate-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-slate-500" />
+                        {factor}
+                      </span>
+                    )) || (
+                      <span className="text-[11px] font-bold text-slate-500 italic">Sem fatores críticos ou dados insuficientes.</span>
                     )}
                   </div>
-                )}
-                <p className="text-cyan-400 mt-4 text-lg font-bold leading-tight">
-                  Conduta Final: {(manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'hold' ? 'Suspensão Imediata' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'recovery' ? 'Protocolo de Recovery' : (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'modified_train' ? 'Treino Modificado' : 'Treino Livre'}.
-                  {manualDecision && <span className="ml-2 text-xs text-amber-400">(Ajustado Manualmente)</span>}
-                </p>
+                </div>
+
+                {/* CONDUTA RECOMENDADA */}
+                <div className="bg-slate-950/80 border border-slate-800 p-5 rounded-2xl text-center">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Conduta Final Recomendada pelo EAR/S</p>
+                  <p className="text-2xl font-black tracking-tight mt-1 text-cyan-400">
+                    {(manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'hold' ? 'Suspensão Imediata (Hold)' : 
+                     (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'recovery' ? 'Protocolo de Recovery' : 
+                     (manualDecision || clinicalSessionData?.priorityOutput?.adjustedDecision) === 'modified_train' ? 'Treino Modificado' : 
+                     'Treinamento Pleno'}
+                    {manualDecision && <span className="ml-2 text-xs text-amber-500 block mt-1">(Ajustado Manualmente)</span>}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {!isEditingDecision ? (
-                  <>
-                  <Button 
-                    onClick={() => {
-                        setIsFinalizing(true);
-                        setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100);
-                    }}
-                    variant="outline" 
-                    className="bg-cyan-500/20 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/30 text-xs font-black uppercase tracking-widest rounded-2xl h-10 px-6 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all">
-                    Confirmar Plano
-                  </Button>
-                  <Button 
-                    onClick={() => setIsEditingDecision(true)}
-                    variant="ghost" 
-                    className="text-slate-400 hover:text-white text-xs font-black uppercase tracking-widest bg-slate-800/50 hover:bg-slate-800 rounded-2xl h-10 px-6 transition-all">
-                    Ajustar Manualmente
-                  </Button>
-                  </>
-                ) : (
-                  <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <Button onClick={() => { setManualDecision('full_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 rounded-xl h-10">Livre</Button>
-                    <Button onClick={() => { setManualDecision('modified_train'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-indigo-500/20 text-indigo-400 border-indigo-500/30 rounded-xl h-10">Modificado</Button>
-                    <Button onClick={() => { setManualDecision('recovery'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-xl h-10">Recovery</Button>
-                    <Button onClick={() => { setManualDecision('hold'); setIsEditingDecision(false); setIsFinalizing(true); setTimeout(() => { const el = document.getElementById('session-panel-scroll'); if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' }); }, 100); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-rose-500/20 text-rose-400 border-rose-500/30 rounded-xl h-10">Hold</Button>
-                  </div>
-                )}
+              
+              {/* ARBITRAGEM HUMANA */}
+              <div className="border-t border-slate-800/50 pt-5">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 text-center">Arbitragem Humana</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {!isEditingDecision ? (
+                    <>
+                    <Button 
+                      onClick={() => handleSave()}
+                      disabled={isFinalizing}
+                      className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-widest rounded-xl h-12 shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] transition-all">
+                      {isFinalizing ? 'Aplicando...' : 'Confirmar Plano'}
+                    </Button>
+                    <Button 
+                      onClick={() => setIsEditingDecision(true)}
+                      variant="ghost" 
+                      disabled={isFinalizing}
+                      className="flex-1 border border-slate-700 text-slate-300 hover:text-white text-xs font-black uppercase tracking-widest hover:bg-slate-800 rounded-xl h-12 transition-all">
+                      Ajustar Manualmente
+                    </Button>
+                    </>
+                  ) : (
+                    <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <Button onClick={() => { setManualDecision('full_train'); setIsEditingDecision(false); handleSave('full_train'); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 rounded-xl h-12 bg-emerald-500/5">Livre</Button>
+                      <Button onClick={() => { setManualDecision('modified_train'); setIsEditingDecision(false); handleSave('modified_train'); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-indigo-500/20 text-indigo-400 border-indigo-500/30 rounded-xl h-12 bg-indigo-500/5">Modificado</Button>
+                      <Button onClick={() => { setManualDecision('recovery'); setIsEditingDecision(false); handleSave('recovery'); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-xl h-12 bg-amber-500/5">Recovery</Button>
+                      <Button onClick={() => { setManualDecision('hold'); setIsEditingDecision(false); handleSave('hold'); }} variant="outline" className="text-xs font-black uppercase tracking-widest hover:bg-rose-500/20 text-rose-400 border-rose-500/30 rounded-xl h-12 bg-rose-500/5">Hold</Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
