@@ -494,7 +494,10 @@ export function AthleteList({
                                 </span>
                               ) : null,
                               athlete.clube_anterior ? (
-                                <span key="club" className="text-slate-400">
+                                <span
+                                  key="club"
+                                  className="font-black text-cyan-500/80"
+                                >
                                   {athlete.clube_anterior}
                                 </span>
                               ) : null,
@@ -658,7 +661,7 @@ export function AthleteList({
                           </div>
                         )}
                         {athlete.clube_anterior && (
-                          <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5 sm:mt-1 leading-tight">
+                          <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
                             {athlete.clube_anterior}
                           </div>
                         )}
