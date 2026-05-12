@@ -493,14 +493,14 @@ export function AthleteList({
                                     : athlete.modalidade}
                                 </span>
                               ) : null,
-                              athlete.clube_anterior ? (
-                                <span
-                                  key="club"
-                                  className="font-black text-cyan-500/80"
-                                >
-                                  {athlete.clube_anterior}
-                                </span>
-                              ) : null,
+                                athlete.clube_anterior ? (
+                                  <span
+                                    key="club"
+                                    className="font-black text-emerald-400/90 drop-shadow-md"
+                                  >
+                                    {athlete.clube_anterior}
+                                  </span>
+                                ) : null,
                               athlete.group_name ? (
                                 <span key="proj" className="text-cyan-500/80">
                                   {athlete.group_name
@@ -661,12 +661,12 @@ export function AthleteList({
                           </div>
                         )}
                         {athlete.clube_anterior && (
-                          <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
+                          <div className="text-[10px] sm:text-xs font-black text-emerald-400 drop-shadow-md uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
                             {athlete.clube_anterior}
                           </div>
                         )}
                         {athlete.group_name && (
-                          <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
+                          <div className="text-[10px] sm:text-xs font-black text-amber-500 drop-shadow-md uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
                             {athlete.group_name
                               .replace(/Projeto /i, "")
                               .replace(/Projeto/i, "")}

@@ -620,41 +620,22 @@ export function AthleteRegistration({
         let password = formData.password;
 
         if (!finalAthleteCode && !initialData?.id) {
-          // Optimized: Fetch all existing codes once and find a gap
+          // Find max existing code and increment
           const { data: existingCodes } = await supabase
             .from("athletes")
             .select("athlete_code");
 
-          const usedCodes = new Set(
-            existingCodes?.map((a) => a.athlete_code) || [],
-          );
+          const usedCodesList = existingCodes
+            ?.map((a) => parseInt(a.athlete_code || "0", 10))
+            .filter((n) => !isNaN(n) && n >= 11001) || [];
 
-          // Try to find a random gap
-          let attempts = 0;
-          while (attempts < 100) {
-            const random = Math.floor(Math.random() * 1000)
-              .toString()
-              .padStart(3, "0");
-            const code = `11${random}`;
-            if (!usedCodes.has(code)) {
-              finalAthleteCode = code;
-              setAthleteCode(code);
-              break;
-            }
-            attempts++;
+          if (usedCodesList.length > 0) {
+            const maxCode = Math.max(...usedCodesList);
+            finalAthleteCode = (maxCode + 1).toString();
+          } else {
+            finalAthleteCode = "11001";
           }
-
-          // If still no code (unlikely), find first available
-          if (!finalAthleteCode) {
-            for (let i = 0; i < 1000; i++) {
-              const code = `11${i.toString().padStart(3, "0")}`;
-              if (!usedCodes.has(code)) {
-                finalAthleteCode = code;
-                setAthleteCode(code);
-                break;
-              }
-            }
-          }
+          setAthleteCode(finalAthleteCode);
         }
 
         const dbAthlete: Partial<Athlete> & { [key: string]: any } = {

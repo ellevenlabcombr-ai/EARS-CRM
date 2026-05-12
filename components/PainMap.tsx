@@ -805,13 +805,21 @@ export function PainMap({
                 </div>
 
                 <div className="flex gap-3">
-                  {value[selectedPart.id] !== undefined && (
+                  {value[selectedPart.id] !== undefined ? (
                     <Button
                       variant="outline"
                       className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 uppercase tracking-widest font-bold"
                       onClick={handleRemove}
                     >
-                      {lang === "pt" ? "Remover" : "Remove"}
+                      {lang === "pt" ? "Desmarcar" : "Remove"}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="flex-1 border-slate-500/50 text-slate-400 hover:bg-slate-500/10 hover:text-slate-300 uppercase tracking-widest font-bold"
+                      onClick={() => setSelectedPart(null)}
+                    >
+                      {lang === "pt" ? "Cancelar" : "Cancel"}
                     </Button>
                   )}
                   <Button className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]" onClick={handleSave}

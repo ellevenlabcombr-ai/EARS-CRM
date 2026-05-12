@@ -1241,10 +1241,7 @@ export function AthleteDashboard({
       const fullTimestamp = getLocalDateTimeString();
       const localDateStr = getLocalDateString();
       
-      const clinicalSignsText = clinicalSigns.length > 0 
-        ? `[SINAIS CLÍNICOS: ${clinicalSigns.join(", ")}] ` 
-        : "";
-      const finalNotes = `${clinicalSignsText}${notes.trim()}`.trim() || null;
+      const finalNotes = notes.trim() || null;
       
       // Calculate max pain to map to muscle_soreness
       let maxPain = 0;
@@ -1370,6 +1367,22 @@ export function AthleteDashboard({
           hydration_perception: answers["hydration"],
           hydration_score: answers["hydration"],
           menstrual_cycle: cycleInfo?.phase,
+          urine_color: answers["urine_color"],
+          nutrition: answers["nutrition"],
+          mood: answers["mood"],
+          pre_training_meal: answers["pre_training_meal"],
+          training_recovery: answers["training_recovery"],
+          confidence: answers["confidence"],
+          overall_wellbeing: answers["overall_wellbeing"],
+          symptoms: {
+            ...(clinicalSigns.length > 0 ? clinicalSigns.reduce((acc, sign) => ({ ...acc, [sign]: 1 }), {}) : {}),
+            leg_heaviness: answers["leg_heaviness"] || 0,
+            previous_activity: answers["previous_activity"] || 0,
+            rpe_simple: rpe_simple,
+            mapped_rpe: mapped_rpe,
+            duration_minutes: duration_minutes,
+            session_load: session_load
+          }
         };
         const { error: wellnessError } = await supabase.from("wellness_records").insert([finalWellnessData]);
         if (wellnessError) console.error("Could not sync to wellness_records:", wellnessError);
@@ -1992,7 +2005,7 @@ export function AthleteDashboard({
         </div>
 
         {/* Motivational Quote */}
-        <div className={`bg-slate-900/40 p-6 rounded-2xl border ${theme.borderAlpha} relative ${theme.shadowStrong} overflow-hidden max-w-sm mx-auto`}>
+        <div className={`bg-slate-900/40 p-6 rounded-2xl border ${theme.borderAlpha} relative ${theme.shadowStrong} overflow-hidden max-w-sm md:max-w-2xl mx-auto w-full`}>
           <Quote className={`absolute top-4 left-4 w-6 h-6 ${theme.bgAlpha}`} />
           <p className="text-sm text-slate-300 font-medium italic relative z-10 leading-relaxed pt-2 px-4">
             &quot;{motivationalQuote.text}&quot;
@@ -2004,7 +2017,7 @@ export function AthleteDashboard({
 
         {/* Cycle Intelligence Module - Dashboard Integration */}
         {athleteGender === 'F' && (
-          <div className="max-w-md mx-auto w-full">
+          <div className="max-w-md md:max-w-2xl mx-auto w-full">
             {cycleInfo ? (
               <Card 
                 className="bg-rose-500/5 border-rose-500/20 overflow-hidden border-dashed p-1"
@@ -2088,7 +2101,7 @@ export function AthleteDashboard({
             </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
                   <ActivitySquare className="w-4 h-4" />
