@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { supabase, supabaseDebugInfo } from "@/lib/supabase";
 import { Athlete as DbAthlete } from "@/types/database";
-import { 
-  Search, 
-  Filter, 
-  UserPlus, 
-  MoreVertical, 
-  Activity, 
-  Calendar, 
+import {
+  Search,
+  Filter,
+  UserPlus,
+  MoreVertical,
+  Activity,
+  Calendar,
   ChevronRight,
   ShieldCheck,
   ShieldAlert,
@@ -28,7 +28,7 @@ import {
   AlertCircle,
   AlertTriangle,
   LayoutGrid,
-  List as ListIcon
+  List as ListIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -40,7 +40,13 @@ interface AthleteListProps {
 }
 
 // Separate component for rendering avatars
-const AthleteAvatar = ({ avatarUrl, name }: { avatarUrl: string | null, name: string }) => {
+const AthleteAvatar = ({
+  avatarUrl,
+  name,
+}: {
+  avatarUrl: string | null;
+  name: string;
+}) => {
   if (!avatarUrl) {
     return (
       <div className="w-full h-full bg-slate-900 flex items-center justify-center">
@@ -50,48 +56,54 @@ const AthleteAvatar = ({ avatarUrl, name }: { avatarUrl: string | null, name: st
   }
 
   return (
-    <Image 
-      src={avatarUrl} 
-      alt={name} 
-      fill 
-      className="object-cover object-top" 
+    <Image
+      src={avatarUrl}
+      alt={name}
+      fill
+      className="object-cover object-top"
       referrerPolicy="no-referrer"
       unoptimized
     />
   );
 };
 
-export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: AthleteListProps) {
+export function AthleteList({
+  onAddAthlete,
+  onEditAthlete,
+  onViewDashboard,
+}: AthleteListProps) {
   const { language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterGroup, setFilterGroup] = useState<string>("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [selectedAthleteForInfo, setSelectedAthleteForInfo] = useState<DbAthlete | null>(null);
+  const [selectedAthleteForInfo, setSelectedAthleteForInfo] =
+    useState<DbAthlete | null>(null);
   const [athletes, setAthletes] = useState<DbAthlete[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const fetchAthletes = useCallback(async (retryCount = 0) => {
     try {
       setIsLoading(true);
       setError(null);
       if (!supabase) {
-        const msg = 'Supabase client not initialized in AthleteList';
+        const msg = "Supabase client not initialized in AthleteList";
         console.error(msg);
         setError(msg);
         return;
       }
 
-      console.log('Fetching athletes from Supabase (optimized query)...');
-      
+      console.log("Fetching athletes from Supabase (optimized query)...");
+
       const { data, error: fetchError } = await supabase
-        .from('athletes')
-        .select(`
+        .from("athletes")
+        .select(
+          `
           id, 
           name, 
           nickname,
@@ -107,14 +119,17 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           created_at,
           risk_level,
           readiness_score
-        `)
-        .order('name');
+        `,
+        )
+        .order("name");
 
       if (fetchError) {
-        console.error('Supabase fetch error details:', fetchError);
-        if (fetchError.code === '57014' && retryCount < 2) {
-          console.warn(`Timeout fetching athletes, retrying... (${retryCount + 1}/2)`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        console.error("Supabase fetch error details:", fetchError);
+        if (fetchError.code === "57014" && retryCount < 2) {
+          console.warn(
+            `Timeout fetching athletes, retrying... (${retryCount + 1}/2)`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           return fetchAthletes(retryCount + 1);
         }
         const detailedError = `Supabase fetch error: ${JSON.stringify(fetchError, Object.getOwnPropertyNames(fetchError))}`;
@@ -125,17 +140,23 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
 
       if (data) {
         setAthletes(data);
-        
+
         // Extract unique categories and groups
-        const uniqueCategories = Array.from(new Set(data.map(a => a.category).filter(Boolean))) as string[];
-        const uniqueGroups = Array.from(new Set(data.map(a => a.group_name).filter(Boolean))) as string[];
-        
+        const uniqueCategories = Array.from(
+          new Set(data.map((a) => a.category).filter(Boolean)),
+        ) as string[];
+        const uniqueGroups = Array.from(
+          new Set(data.map((a) => a.group_name).filter(Boolean)),
+        ) as string[];
+
         setCategories(uniqueCategories.sort());
         setGroups(uniqueGroups.sort());
       }
     } catch (err: any) {
-      const errorMsg = err?.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-      console.error('CRITICAL ERROR fetching athletes:', errorMsg);
+      const errorMsg =
+        err?.message ||
+        (typeof err === "object" ? JSON.stringify(err) : String(err));
+      console.error("CRITICAL ERROR fetching athletes:", errorMsg);
       setError(`Erro ao carregar atletas: ${errorMsg}`);
     } finally {
       setIsLoading(false);
@@ -147,44 +168,77 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
     setIsClient(true);
   }, [fetchAthletes]);
 
-  const filteredAthletes = athletes.filter(athlete => {
+  const filteredAthletes = athletes.filter((athlete) => {
     const normalizedSearch = searchTerm.toLowerCase();
-    const matchesSearch = 
-      athlete.name.toLowerCase().includes(normalizedSearch) || 
-      (athlete.nickname && athlete.nickname.toLowerCase().includes(normalizedSearch)) ||
-      (athlete.athlete_code && athlete.athlete_code.toLowerCase().includes(normalizedSearch));
-    
-    const matchesStatus = filterStatus === "all" || athlete.status === filterStatus;
-    const matchesCategory = filterCategory === "all" || athlete.category === filterCategory;
-    const matchesGroup = filterGroup === "all" || athlete.group_name === filterGroup;
-    
+    const matchesSearch =
+      athlete.name.toLowerCase().includes(normalizedSearch) ||
+      (athlete.nickname &&
+        athlete.nickname.toLowerCase().includes(normalizedSearch)) ||
+      (athlete.athlete_code &&
+        athlete.athlete_code.toLowerCase().includes(normalizedSearch));
+
+    const matchesStatus =
+      filterStatus === "all" || athlete.status === filterStatus;
+    const matchesCategory =
+      filterCategory === "all" || athlete.category === filterCategory;
+    const matchesGroup =
+      filterGroup === "all" || athlete.group_name === filterGroup;
+
     return matchesSearch && matchesStatus && matchesCategory && matchesGroup;
   });
 
   const getStatusConfig = (status: string | undefined) => {
     switch (status) {
-      case 'Apto':
-      case 'Apto com Restrição':
-        return { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', icon: ShieldCheck };
-      case 'Transição':
-      case 'Reabilitação':
-        return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', icon: TrendingUp };
-      case 'DM':
-      case 'Departamento Médico':
-        return { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', icon: Stethoscope };
+      case "Apto":
+      case "Apto com Restrição":
+        return {
+          color: "text-emerald-400",
+          bg: "bg-emerald-500/10",
+          border: "border-emerald-500/20",
+          icon: ShieldCheck,
+        };
+      case "Transição":
+      case "Reabilitação":
+        return {
+          color: "text-amber-400",
+          bg: "bg-amber-500/10",
+          border: "border-amber-500/20",
+          icon: TrendingUp,
+        };
+      case "DM":
+      case "Departamento Médico":
+        return {
+          color: "text-rose-400",
+          bg: "bg-rose-500/10",
+          border: "border-rose-500/20",
+          icon: Stethoscope,
+        };
       default:
-        return { color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/20', icon: Activity };
+        return {
+          color: "text-slate-400",
+          bg: "bg-slate-500/10",
+          border: "border-slate-500/20",
+          icon: Activity,
+        };
     }
   };
 
   const getRiskConfig = (risk: string | undefined) => {
     switch (risk) {
-      case 'Crítico':
-        return { color: 'text-white', bg: 'bg-rose-600', icon: AlertCircle };
-      case 'Alto':
-        return { color: 'text-rose-400', bg: 'bg-rose-500/20', icon: AlertCircle };
-      case 'Médio':
-        return { color: 'text-amber-400', bg: 'bg-amber-500/20', icon: AlertTriangle };
+      case "Crítico":
+        return { color: "text-white", bg: "bg-rose-600", icon: AlertCircle };
+      case "Alto":
+        return {
+          color: "text-rose-400",
+          bg: "bg-rose-500/20",
+          icon: AlertCircle,
+        };
+      case "Médio":
+        return {
+          color: "text-amber-400",
+          bg: "bg-amber-500/20",
+          icon: AlertTriangle,
+        };
       default:
         return null;
     }
@@ -205,32 +259,38 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
             <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-black text-white uppercase tracking-widest leading-none truncate">Elenco</h1>
-            <p className="text-xxs sm:text-xxs font-bold text-slate-500 uppercase tracking-tighter mt-1 truncate">Gestão de Atletas</p>
+            <h1 className="text-lg sm:text-xl font-black text-white uppercase tracking-widest leading-none truncate">
+              Elenco
+            </h1>
+            <p className="text-xxs sm:text-xxs font-bold text-slate-500 uppercase tracking-tighter mt-1 truncate">
+              Gestão de Atletas
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <div className="relative hidden md:block">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Buscar atleta, apelido ou código..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-slate-900/50 border border-slate-700/50 rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-cyan-500 w-64 transition-all"
             />
           </div>
-          <Button 
+          <Button
             variant="outline"
             onClick={fetchAthletes}
             disabled={isLoading}
             className="border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 font-black uppercase tracking-widest text-xxs sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl flex items-center gap-2"
           >
-            <RefreshCcw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCcw
+              className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
+            />
             <span className="hidden lg:inline">Atualizar</span>
           </Button>
-          <Button 
+          <Button
             onClick={onAddAthlete}
             className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest text-xxs sm:text-xs px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 flex items-center gap-1 sm:gap-2"
           >
@@ -244,73 +304,81 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
       {/* Filters Bar */}
       <div className="px-6 py-4 bg-[#0A1120]/40 border-b border-slate-800/30 flex flex-wrap items-center gap-4 shrink-0">
         <div className="flex items-center gap-2 bg-slate-900/50 p-1 rounded-xl border border-slate-800/50">
-          {['all', 'Apto', 'Transição', 'DM'].map((status) => (
+          {["all", "Apto", "Transição", "DM"].map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
               className={`px-4 py-1.5 rounded-lg text-xxs font-black uppercase tracking-widest transition-all ${
-                filterStatus === status 
-                  ? "bg-slate-700 text-white shadow-lg" 
+                filterStatus === status
+                  ? "bg-slate-700 text-white shadow-lg"
                   : "text-slate-500 hover:text-slate-300"
               }`}
             >
-              {status === 'all' ? 'Todos' : status}
+              {status === "all" ? "Todos" : status}
             </button>
           ))}
         </div>
-        
+
         <div className="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
-        
+
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-slate-500" />
-          <span className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Projeto:</span>
-          <select 
+          <span className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+            Projeto:
+          </span>
+          <select
             value={filterGroup}
             onChange={(e) => setFilterGroup(e.target.value)}
             className="bg-transparent text-xxs font-bold text-slate-300 uppercase tracking-widest focus:outline-none cursor-pointer"
           >
             <option value="all">Todos</option>
-            {groups.map(group => (
-              <option key={group} value={group}>{group}</option>
+            {groups.map((group) => (
+              <option key={group} value={group}>
+                {group}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Categoria:</span>
-          <select 
+          <span className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+            Categoria:
+          </span>
+          <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
             className="bg-transparent text-xxs font-bold text-slate-300 uppercase tracking-widest focus:outline-none cursor-pointer"
           >
             <option value="all">Todas</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
-        
+
         {/* View Mode Toggle */}
         <div className="flex items-center bg-slate-900/50 p-1 rounded-xl border border-slate-800/50 ml-auto sm:ml-0">
           <button
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode("grid")}
             className={`p-1.5 rounded-lg transition-all ${
-              viewMode === 'grid' 
-                ? 'bg-slate-700 text-cyan-400 shadow-md' 
-                : 'text-slate-500 hover:text-slate-300'
+              viewMode === "grid"
+                ? "bg-slate-700 text-cyan-400 shadow-md"
+                : "text-slate-500 hover:text-slate-300"
             }`}
-             title="Visualização em Grade"
+            title="Visualização em Grade"
           >
             <LayoutGrid size={16} />
           </button>
           <button
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode("list")}
             className={`p-1.5 rounded-lg transition-all ${
-              viewMode === 'list' 
-                ? 'bg-slate-700 text-cyan-400 shadow-md' 
-                : 'text-slate-500 hover:text-slate-300'
+              viewMode === "list"
+                ? "bg-slate-700 text-cyan-400 shadow-md"
+                : "text-slate-500 hover:text-slate-300"
             }`}
             title="Visualização em Lista"
           >
@@ -318,13 +386,16 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </button>
         </div>
 
-        {(filterStatus !== 'all' || filterGroup !== 'all' || filterCategory !== 'all' || searchTerm !== '') && (
-          <button 
+        {(filterStatus !== "all" ||
+          filterGroup !== "all" ||
+          filterCategory !== "all" ||
+          searchTerm !== "") && (
+          <button
             onClick={() => {
-              setFilterStatus('all');
-              setFilterGroup('all');
-              setFilterCategory('all');
-              setSearchTerm('');
+              setFilterStatus("all");
+              setFilterGroup("all");
+              setFilterCategory("all");
+              setSearchTerm("");
             }}
             className="flex items-center gap-1.5 text-xxs font-black text-rose-500 uppercase tracking-widest hover:text-rose-400 transition-colors sm:ml-auto"
           >
@@ -341,7 +412,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
             <AlertCircle className="w-5 h-5 shrink-0" />
             <div className="text-xs font-bold uppercase tracking-wider">
               <p>{error}</p>
-              <button 
+              <button
                 onClick={fetchAthletes}
                 className="mt-2 text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
               >
@@ -354,28 +425,39 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-500">
             <div className="w-12 h-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
-            <p className="font-bold uppercase tracking-widest text-sm">Carregando atletas...</p>
+            <p className="font-bold uppercase tracking-widest text-sm">
+              Carregando atletas...
+            </p>
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4" : "flex flex-col gap-4"}>
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4"
+                  : "flex flex-col gap-4"
+              }
+            >
               {filteredAthletes.map((athlete) => {
                 const statusCfg = getStatusConfig(athlete.status as any);
                 const StatusIcon = statusCfg.icon;
-                
-                if (viewMode === 'list') {
+
+                if (viewMode === "list") {
                   return (
                     <div
                       key={athlete.id}
                       className="group relative bg-[#0A1120] border border-slate-800/50 rounded-2xl hover:border-cyan-500/50 transition-all shadow-xl overflow-hidden flex"
                     >
                       {/* Photo Section */}
-                      <div 
+                      <div
                         className="relative w-32 shrink-0 cursor-pointer overflow-hidden bg-slate-900"
                         onClick={() => onViewDashboard(athlete)}
                       >
                         <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
-                          <AthleteAvatar avatarUrl={athlete.avatar_url || null} name={athlete.name} />
+                          <AthleteAvatar
+                            avatarUrl={athlete.avatar_url || null}
+                            name={athlete.name}
+                          />
                         </div>
                         <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay"></div>
                       </div>
@@ -390,47 +472,84 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                           )}
                           <h3 className="font-black text-white text-xl leading-tight uppercase tracking-tight flex items-center gap-2">
                             {athlete.nickname || athlete.name}
-                            {athlete.group_name && athlete.group_name.toUpperCase().includes('AGUIA') && (
-                              <span className="text-lg" title="Projeto Águias">🦅</span>
-                            )}
+                            {athlete.group_name &&
+                              athlete.group_name
+                                .toUpperCase()
+                                .includes("AGUIA") && (
+                                <span
+                                  className="text-lg"
+                                  title="Projeto Águias"
+                                >
+                                  🦅
+                                </span>
+                              )}
                           </h3>
                           <div className="flex flex-wrap items-center gap-3 mt-2 text-xs font-bold uppercase tracking-widest">
                             {[
-                              athlete.modalidade ? <span key="mod" className="text-slate-300">{athlete.modalidade === 'Volleyball' ? 'Voleibol' : athlete.modalidade}</span> : null,
-                              athlete.clube_anterior ? <span key="club" className="text-slate-400">{athlete.clube_anterior}</span> : null,
-                              athlete.group_name ? <span key="proj" className="text-cyan-500/80">{athlete.group_name.replace(/Projeto /i, '').replace(/Projeto/i, '')}</span> : null
-                            ].filter(Boolean).map((item, index, arr) => (
-                              <React.Fragment key={index}>
-                                {item}
-                                {index < arr.length - 1 && <span className="text-slate-500">•</span>}
-                              </React.Fragment>
-                            ))}
+                              athlete.modalidade ? (
+                                <span key="mod" className="text-slate-300">
+                                  {athlete.modalidade === "Volleyball"
+                                    ? "Voleibol"
+                                    : athlete.modalidade}
+                                </span>
+                              ) : null,
+                              athlete.clube_anterior ? (
+                                <span key="club" className="text-slate-400">
+                                  {athlete.clube_anterior}
+                                </span>
+                              ) : null,
+                              athlete.group_name ? (
+                                <span key="proj" className="text-cyan-500/80">
+                                  {athlete.group_name
+                                    .replace(/Projeto /i, "")
+                                    .replace(/Projeto/i, "")}
+                                </span>
+                              ) : null,
+                            ]
+                              .filter(Boolean)
+                              .map((item, index, arr) => (
+                                <React.Fragment key={index}>
+                                  {item}
+                                  {index < arr.length - 1 && (
+                                    <span className="text-slate-500">•</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
                           </div>
                         </div>
 
                         <div className="flex flex-col md:items-end gap-3 shrink-0">
                           <div className="flex items-center gap-2">
-                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}>
+                            <div
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}
+                            >
                               <StatusIcon className="w-3.5 h-3.5" />
-                              <span className="text-xxs font-black uppercase tracking-widest">{athlete.status}</span>
+                              <span className="text-xxs font-black uppercase tracking-widest">
+                                {athlete.status}
+                              </span>
                             </div>
-                            {athlete.risk_level && athlete.risk_level !== 'Baixo' && (
-                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color} border-white/5`}>
-                                <AlertCircle className="w-3.5 h-3.5" />
-                                <span className="text-xxs font-black uppercase tracking-widest">Risco {athlete.risk_level}</span>
-                              </div>
-                            )}
+                            {athlete.risk_level &&
+                              athlete.risk_level !== "Baixo" && (
+                                <div
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color} border-white/5`}
+                                >
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  <span className="text-xxs font-black uppercase tracking-widest">
+                                    Risco {athlete.risk_level}
+                                  </span>
+                                </div>
+                              )}
                           </div>
-                          
+
                           <div className="flex items-center gap-2 mt-2 md:mt-0">
-                            <button 
+                            <button
                               onClick={() => setSelectedAthleteForInfo(athlete)}
                               className="p-2 border border-slate-700/50 rounded-xl text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors bg-slate-800/20"
                               title="Ver Informações"
                             >
                               <Info className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => onViewDashboard(athlete)}
                               className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/20 hover:border-cyan-500 text-cyan-400 hover:text-[#050B14] rounded-xl text-xs font-black uppercase tracking-[0.1em] transition-all shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] ml-2"
                             >
@@ -449,39 +568,54 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                     className="group relative bg-[#0A1120] border border-slate-800/50 rounded-3xl hover:border-cyan-500/50 transition-all shadow-2xl overflow-hidden flex flex-col"
                   >
                     {/* Photo Section - Clickable */}
-                    <div 
+                    <div
                       className="relative w-full aspect-[4/5] cursor-pointer overflow-hidden bg-slate-900"
                       onClick={() => onViewDashboard(athlete)}
                     >
                       <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
-                        <AthleteAvatar avatarUrl={athlete.avatar_url || null} name={athlete.name} />
+                        <AthleteAvatar
+                          avatarUrl={athlete.avatar_url || null}
+                          name={athlete.name}
+                        />
                       </div>
-                      
+
                       {/* Cinematic Gradient Overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-[#050B14]/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
-                      
+
                       {/* Hover Glow */}
                       <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay"></div>
 
                       {/* Status Badge */}
                       <div className="absolute top-4 left-4 flex flex-col gap-2">
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${statusCfg.bg} ${statusCfg.color}`}>
+                        <div
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${statusCfg.bg} ${statusCfg.color}`}
+                        >
                           <StatusIcon className="w-3.5 h-3.5" />
-                          <span className="text-xxs font-black uppercase tracking-widest">{athlete.status}</span>
+                          <span className="text-xxs font-black uppercase tracking-widest">
+                            {athlete.status}
+                          </span>
                         </div>
-                        
-                        {athlete.risk_level && athlete.risk_level !== 'Baixo' && (
-                          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color}`}>
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            <span className="text-xxs font-black uppercase tracking-widest">Risco {athlete.risk_level}</span>
-                          </div>
-                        )}
+
+                        {athlete.risk_level &&
+                          athlete.risk_level !== "Baixo" && (
+                            <div
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color}`}
+                            >
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              <span className="text-xxs font-black uppercase tracking-widest">
+                                Risco {athlete.risk_level}
+                              </span>
+                            </div>
+                          )}
                       </div>
 
                       {/* Actions */}
                       <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setSelectedAthleteForInfo(athlete); }}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAthleteForInfo(athlete);
+                          }}
                           className="p-2 bg-[#0A1120]/80 backdrop-blur-md border border-white/10 rounded-xl text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors shadow-lg"
                           title="Ver Informações"
                         >
@@ -498,9 +632,17 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                         )}
                         <h3 className="font-black text-white text-base sm:text-xl md:text-2xl leading-tight group-hover:text-cyan-400 transition-colors uppercase tracking-tight flex items-center gap-1 sm:gap-2 drop-shadow-lg">
                           {athlete.nickname || athlete.name}
-                          {athlete.group_name && athlete.group_name.toUpperCase().includes('AGUIA') && (
-                            <span className="text-base sm:text-xl" title="Projeto Águias">🦅</span>
-                          )}
+                          {athlete.group_name &&
+                            athlete.group_name
+                              .toUpperCase()
+                              .includes("AGUIA") && (
+                              <span
+                                className="text-base sm:text-xl"
+                                title="Projeto Águias"
+                              >
+                                🦅
+                              </span>
+                            )}
                         </h3>
                       </div>
                     </div>
@@ -510,7 +652,9 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                       <div className="flex flex-col gap-1 mb-4 sm:mb-5">
                         {athlete.modalidade && (
                           <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight">
-                            {athlete.modalidade === 'Volleyball' ? 'Voleibol' : athlete.modalidade}
+                            {athlete.modalidade === "Volleyball"
+                              ? "Voleibol"
+                              : athlete.modalidade}
                           </div>
                         )}
                         {athlete.clube_anterior && (
@@ -520,12 +664,14 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                         )}
                         {athlete.group_name && (
                           <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
-                            {athlete.group_name.replace(/Projeto /i, '').replace(/Projeto/i, '')}
+                            {athlete.group_name
+                              .replace(/Projeto /i, "")
+                              .replace(/Projeto/i, "")}
                           </div>
                         )}
                       </div>
 
-                      <button 
+                      <button
                         onClick={() => onViewDashboard(athlete)}
                         className="w-full py-2.5 sm:py-3 bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/20 hover:border-cyan-500 text-cyan-400 hover:text-[#050B14] rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] mt-auto"
                       >
@@ -542,8 +688,12 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                 <div className="w-20 h-20 rounded-full bg-slate-900/50 flex items-center justify-center mb-4 border border-slate-800">
                   <Search className="w-8 h-8 opacity-20" />
                 </div>
-                <p className="font-bold uppercase tracking-widest text-sm">Nenhum atleta encontrado</p>
-                <p className="text-xs mt-1">Tente ajustar seus filtros ou busca</p>
+                <p className="font-bold uppercase tracking-widest text-sm">
+                  Nenhum atleta encontrado
+                </p>
+                <p className="text-xs mt-1">
+                  Tente ajustar seus filtros ou busca
+                </p>
               </div>
             )}
           </>
@@ -574,11 +724,15 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                     <User className="w-5 h-5 text-cyan-500" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black text-white uppercase tracking-widest">Informações da Atleta</h2>
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-tighter">Dados Cadastrais</p>
+                    <h2 className="text-lg font-black text-white uppercase tracking-widest">
+                      Informações da Atleta
+                    </h2>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-tighter">
+                      Dados Cadastrais
+                    </p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setSelectedAthleteForInfo(null)}
                   className="p-2 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-all"
                 >
@@ -591,11 +745,11 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                 <div className="flex items-center gap-6">
                   <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-slate-800 shadow-xl shrink-0 relative">
                     {selectedAthleteForInfo.avatar_url ? (
-                      <Image 
-                        src={selectedAthleteForInfo.avatar_url} 
-                        alt={selectedAthleteForInfo.name} 
-                        fill 
-                        className="object-cover" 
+                      <Image
+                        src={selectedAthleteForInfo.avatar_url}
+                        alt={selectedAthleteForInfo.name}
+                        fill
+                        className="object-cover"
                         referrerPolicy="no-referrer"
                         unoptimized
                       />
@@ -611,7 +765,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-cyan-400 font-bold uppercase tracking-[0.2em] text-xs">
-                        {selectedAthleteForInfo.group_name || 'Sem Projeto'}
+                        {selectedAthleteForInfo.group_name || "Sem Projeto"}
                       </p>
                       {selectedAthleteForInfo.athlete_code && (
                         <div className="px-2 py-0.5 rounded text-xxs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">
@@ -624,32 +778,57 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Categoria</p>
-                    <p className="text-sm font-bold text-slate-200 uppercase">{selectedAthleteForInfo.category}</p>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+                      Categoria
+                    </p>
+                    <p className="text-sm font-bold text-slate-200 uppercase">
+                      {selectedAthleteForInfo.category}
+                    </p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Posição</p>
-                    <p className="text-sm font-bold text-slate-200 uppercase">{selectedAthleteForInfo.posicao || 'Atleta'}</p>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+                      Posição
+                    </p>
+                    <p className="text-sm font-bold text-slate-200 uppercase">
+                      {selectedAthleteForInfo.posicao || "Atleta"}
+                    </p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Status Atual</p>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+                      Status Atual
+                    </p>
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${getStatusConfig(selectedAthleteForInfo.status as any).bg.replace('/10', '')}`}></div>
-                      <span className={`text-sm font-black uppercase tracking-wider ${getStatusConfig(selectedAthleteForInfo.status as any).color}`}>
+                      <div
+                        className={`w-2 h-2 rounded-full ${getStatusConfig(selectedAthleteForInfo.status as any).bg.replace("/10", "")}`}
+                      ></div>
+                      <span
+                        className={`text-sm font-black uppercase tracking-wider ${getStatusConfig(selectedAthleteForInfo.status as any).color}`}
+                      >
                         {selectedAthleteForInfo.status}
                       </span>
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Modalidade</p>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+                      Modalidade
+                    </p>
                     <p className="text-sm font-bold text-slate-200 uppercase">
-                      {selectedAthleteForInfo.modalidade === 'Volleyball' && language === 'pt' ? 'Vôlei' : (selectedAthleteForInfo.modalidade || '-')}
+                      {selectedAthleteForInfo.modalidade === "Volleyball" &&
+                      language === "pt"
+                        ? "Vôlei"
+                        : selectedAthleteForInfo.modalidade || "-"}
                     </p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Data de Cadastro</p>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">
+                      Data de Cadastro
+                    </p>
                     <p className="text-sm font-bold text-slate-200 uppercase">
-                      {isClient && selectedAthleteForInfo.created_at ? new Date(selectedAthleteForInfo.created_at).toLocaleDateString('pt-BR') : '-'}
+                      {isClient && selectedAthleteForInfo.created_at
+                        ? new Date(
+                            selectedAthleteForInfo.created_at,
+                          ).toLocaleDateString("pt-BR")
+                        : "-"}
                     </p>
                   </div>
                 </div>
