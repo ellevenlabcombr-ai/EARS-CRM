@@ -562,13 +562,13 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                   </div>
                 </div>
 
-                {initialEvent?.id && (
-                  <div className="space-y-4 pt-4 border-t border-slate-800">
-                    <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                       <AlignLeft className="w-4 h-4" />
-                       Pós-Evento (Opcional)
-                    </h3>
-                    <div className="space-y-4">
+                <div className="space-y-4 pt-4 border-t border-slate-800">
+                  <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                     <AlignLeft className="w-4 h-4" />
+                     Pós-Evento / Anotações
+                  </h3>
+                  <div className="space-y-4">
+                    {(formData.category === 'competition' || formData.category === 'game') && (
                       <div className="space-y-2">
                         <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Resultado (Placar, Posição, etc)</label>
                         <input 
@@ -579,18 +579,18 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                           placeholder="Ex: Vitória 2-1" 
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Feedback / Observações</label>
-                        <textarea 
-                          value={formData.feedback}
-                          onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white text-sm focus:border-cyan-500 outline-none transition-all placeholder:text-slate-600 font-medium min-h-[100px] resize-none"
-                          placeholder="Ex: Atleta relatou cansaço no segundo tempo..." 
-                        />
-                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Feedback / Observações</label>
+                      <textarea 
+                        value={formData.feedback}
+                        onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white text-sm focus:border-cyan-500 outline-none transition-all placeholder:text-slate-600 font-medium min-h-[100px] resize-none"
+                        placeholder="Ex: Atleta relatou cansaço no segundo tempo..." 
+                      />
                     </div>
                   </div>
-                )}
+                </div>
 
               </form>
             </div>

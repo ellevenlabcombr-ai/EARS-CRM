@@ -906,7 +906,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         console.log(`Fetching data for athlete: ${athlete.name} (ID: ${athlete.id})`);
 
         // Fetch all data in parallel
-        const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes] = await Promise.all([
+        const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes, eventsRes] = await Promise.all([
           supabase
             .from('wellness_records')
             .select('record_date, readiness_score, fatigue_level, muscle_soreness, sleep_hours, sleep_quality, stress_level, fatigue_level, muscle_soreness, soreness_location, menstrual_cycle, menstrual_symptoms, hydration_perception, hydration_score, urine_color, symptoms, comments, created_at')
@@ -938,7 +938,14 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             .select('*')
             .eq('athlete_id', athlete.id)
             .order('assessment_date', { ascending: false })
-            .limit(14)
+            .limit(14),
+          supabase
+            .from('agenda_events')
+            .select('id, start_time, title, category, result, feedback')
+            .eq('athlete_id', athlete.id)
+            .in('category', ['competition', 'game'])
+            .order('start_time', { ascending: false })
+            .limit(30)
         ]);
 
         if (alertsRes.data) {
@@ -1139,10 +1146,31 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           console.error("NOTES FETCH ERROR:", notesRes.error);
         }
 
-        if (notesRes.data) {
-          const formattedNotes = notesRes.data.map(n => ({
+        if (notesRes.data || (eventsRes && eventsRes.data)) {
+          const eventsData = eventsRes?.data || [];
+          const formattedEvents = eventsData
+            .filter(e => e.result || e.feedback)
+            .map(e => {
+               const details = [];
+               details.push(`Evento: ${e.title || 'Competição'}`);
+               if (e.result) details.push(`Resultado: ${e.result}`);
+               if (e.feedback) details.push(`Observações: ${e.feedback}`);
+               return {
+                 id: `event-${e.id}`,
+                 date: new Date(e.start_time).toLocaleString('pt-BR'),
+                 raw_date: new Date(e.start_time).getTime(),
+                 text: details.join('\n'),
+                 signed: true,
+                 professional: 'Auto-Gerado do Calendário',
+                 isEvent: true
+               };
+            });
+
+          const notesData = notesRes?.data || [];
+          const formattedNotes = notesData.map(n => ({
             id: n.id,
             date: new Date(n.note_date).toLocaleString('pt-BR'),
+            raw_date: new Date(n.note_date).getTime(),
             text: n.generated_text || n.observations || '',
             signed: n.is_signed,
             professional: n.professional_name,
@@ -1152,7 +1180,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             treatments: n.treatments || [],
             observations: n.observations || ''
           }));
-          setProntuarioNotes(formattedNotes);
+
+          const combined = [...formattedNotes, ...formattedEvents].sort((a, b) => b.raw_date - a.raw_date);
+          setProntuarioNotes(combined);
         }
 
         if (assessmentsRes) {
@@ -4395,13 +4425,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  type="checkbox" 
                  id="selectAllNotes"
                  className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/50"
-                 checked={selectedNotes.length === prontuarioNotes.length && prontuarioNotes.length > 0}
+                 checked={selectedNotes.length === prontuarioNotes.filter(n => !n.isEvent).length && prontuarioNotes.filter(n => !n.isEvent).length > 0}
                  onChange={(e) => {
-                   if (e.target.checked) setSelectedNotes(prontuarioNotes.map(n => n.id));
+                   if (e.target.checked) setSelectedNotes(prontuarioNotes.filter(n => !n.isEvent).map(n => n.id));
                    else setSelectedNotes([]);
                  }}
                />
-               <label htmlFor="selectAllNotes" className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Selecionar Todos</label>
+               <label htmlFor="selectAllNotes" className="text-xs font-bold text-slate-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">Selecionar Todos (Registros Clínicos)</label>
             </div>
 
             <div className="space-y-4">
@@ -4410,15 +4440,17 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                        <input 
-                          type="checkbox"
-                          className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/80 cursor-pointer"
-                          checked={selectedNotes.includes(note.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) setSelectedNotes([...selectedNotes, note.id]);
-                            else setSelectedNotes(selectedNotes.filter(id => id !== note.id));
-                          }}
-                        />
+                        {!note.isEvent && (
+                          <input 
+                            type="checkbox"
+                            className="w-4 h-4 rounded border-slate-700 text-cyan-500 focus:ring-cyan-500 bg-slate-900/80 cursor-pointer"
+                            checked={selectedNotes.includes(note.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) setSelectedNotes([...selectedNotes, note.id]);
+                              else setSelectedNotes(selectedNotes.filter(id => id !== note.id));
+                            }}
+                          />
+                        )}
                         <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
                           <Clock className="w-4 h-4" /> {note.date}
                         </div>
@@ -4426,34 +4458,38 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                       <div className="flex items-center gap-2">
                         {note.signed && (
                           <div className="flex items-center gap-1 text-emerald-400 text-xxs font-black uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20 mr-2">
-                            <Check className="w-3 h-3" /> Assinado
+                            <Check className="w-3 h-3" /> {note.isEvent ? 'Observações' : 'Assinado'}
                           </div>
                         )}
-                        <button 
-                          onClick={() => handleEditNote(note)}
-                          className="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"
-                          title="Editar"
-                        >
-                          <PenTool className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => setConfirmDeleteNote(note.id)}
-                          disabled={isDeletingNote === note.id}
-                          className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {!note.isEvent && (
+                          <>
+                            <button 
+                              onClick={() => handleEditNote(note)}
+                              className="p-1.5 text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                              title="Editar"
+                            >
+                              <PenTool className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => setConfirmDeleteNote(note.id)}
+                              disabled={isDeletingNote === note.id}
+                              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                              title="Excluir"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                     <p className="text-sm text-slate-300 leading-relaxed mb-6 whitespace-pre-wrap">{note.text}</p>
                     <div className="border-t border-slate-800/50 pt-4 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
-                        <PenTool className="w-4 h-4 text-slate-500" />
+                        {note.isEvent ? <Calendar className="w-4 h-4 text-cyan-500" /> : <PenTool className="w-4 h-4 text-slate-500" />}
                       </div>
                       <div>
                         <p className="text-xs font-bold text-white">{note.professional}</p>
-                        <p className="text-xxs text-slate-500 uppercase tracking-widest">Fisioterapeuta Responsável</p>
+                        <p className="text-xxs text-slate-500 uppercase tracking-widest">{note.isEvent ? 'Registro de Calendário' : 'Fisioterapeuta Responsável'}</p>
                       </div>
                     </div>
                   </CardContent>
