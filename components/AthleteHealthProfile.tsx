@@ -277,6 +277,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const [showSessionFinalizedUI, setShowSessionFinalizedUI] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments' | 'agenda'>('overview');
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
@@ -943,7 +944,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             .from('agenda_events')
             .select('id, start_time, title, category, result, feedback')
             .eq('athlete_id', athlete.id)
-            .in('category', ['competition', 'game'])
+            .in('category', ['competition', 'game', 'training'])
             .order('start_time', { ascending: false })
             .limit(30)
         ]);
@@ -1198,7 +1199,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     };
 
     fetchAthleteData();
-  }, [athlete.id, athlete.name, fetchAllAssessmentsData]);
+  }, [athlete.id, athlete.name, fetchAllAssessmentsData, refreshCounter]);
 
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
@@ -4513,7 +4514,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </h2>
             </div>
             <div className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-4 sm:p-6 shadow-xl relative mt-4">
-              <AthleteAgendaList athleteId={athlete.id} lang={language as "pt" | "en"} />
+              <AthleteAgendaList 
+                athleteId={athlete.id} 
+                lang={language as "pt" | "en"} 
+                onEventChanged={() => setRefreshCounter(c => c + 1)} 
+              />
             </div>
           </div>
         )}

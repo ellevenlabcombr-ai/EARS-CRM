@@ -23,9 +23,10 @@ const getCategoryIcon = (category: string) => {
 interface AthleteAgendaListProps {
   athleteId: string;
   lang: "pt" | "en";
+  onEventChanged?: () => void;
 }
 
-export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
+export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAgendaListProps) {
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -76,6 +77,7 @@ export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
       setIsCreateModalOpen(false);
       setEventToEdit(null);
       fetchEvents();
+      onEventChanged?.();
     } catch (err: any) {
       throw err;
     }
@@ -178,6 +180,7 @@ export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
           onDelete={() => {
             setSelectedEvent(null);
             fetchEvents();
+            onEventChanged?.();
           }}
           onEdit={() => {
             setEventToEdit(selectedEvent);
