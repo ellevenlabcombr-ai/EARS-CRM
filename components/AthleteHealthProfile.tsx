@@ -2624,6 +2624,16 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   'bg-emerald-500/10', 
               trend: 'stable' 
             },
+            ...(athlete.gender === 'F' ? [{
+              label: 'Ciclo Menstrual',
+              value: wellnessHistory.length > 0 && wellnessHistory[wellnessHistory.length - 1].menstrual_cycle 
+                     ? (wellnessHistory[wellnessHistory.length - 1].menstrual_cycle === 'menstrual' || wellnessHistory[wellnessHistory.length - 1].menstrual_cycle === 'Menstruação' || wellnessHistory[wellnessHistory.length - 1].menstrual_cycle === 'Menstrual' ? 'Menstruada' : wellnessHistory[wellnessHistory.length - 1].menstrual_cycle) 
+                     : 'Não info',
+              icon: Activity,
+              color: 'text-pink-400',
+              bg: 'bg-pink-500/10',
+              trend: 'stable'
+            }] : [])
           ].map((card, i) => (
             <Card key={i} className={`bg-slate-900/40 border-slate-800/50 shadow-lg group hover:border-slate-700 transition-all active:scale-[0.98] cursor-pointer relative overflow-hidden ${card.alert ? 'ring-1 ring-rose-500/30' : ''}`}>
               {card.alert && (
