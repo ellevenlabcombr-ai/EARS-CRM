@@ -807,7 +807,8 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col justify-start items-center gap-6 py-6 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 flex flex-col overflow-y-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex flex-col items-center gap-5 my-auto py-4">
           {menuItems.map((item) => {
             const isActive = currentView === item.id;
             
@@ -823,7 +824,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                     }`}
                   >
                     {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-400 rounded-r-full"></div>}
-                    <span className="text-2xl">{item.emoji}</span>
+                    <span className="text-[28px]">{item.emoji}</span>
                   </button>
                   
                   {/* Simple Tooltip */}
@@ -834,16 +835,17 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               </React.Fragment>
             );
           })}
+          </div>
         </nav>
 
         {/* User / Logout */}
-        <div className="py-6 border-t border-slate-800/50 shrink-0 flex flex-col items-center gap-4">
+        <div className="py-4 border-t border-slate-800/50 shrink-0 flex flex-col items-center gap-4">
           <div className="relative group shrink-0">
             <button 
               onClick={() => setLanguage(language === 'pt' ? 'en' : 'pt')}
               className="w-12 h-12 rounded-xl flex items-center justify-center transition-all relative border border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-cyan-400"
             >
-               <span className="text-2xl">🌎</span>
+               <span className="text-[28px]">🌎</span>
             </button>
             <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2 py-1 bg-slate-800 text-white text-xxs font-bold uppercase tracking-widest rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-[110] border border-slate-700 pointer-events-none">
                Idioma
@@ -855,7 +857,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               onClick={() => handleNavigation('logout')}
               className="w-12 h-12 rounded-xl flex items-center justify-center transition-all relative border border-transparent text-slate-400 hover:bg-rose-500/10 hover:text-rose-400"
             >
-              <span className="text-2xl">📲</span>
+              <span className="text-[28px]">📲</span>
             </button>
             <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2 py-1 bg-slate-800 text-white text-xxs font-bold uppercase tracking-widest rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-[110] border border-slate-700 pointer-events-none">
                Sair
