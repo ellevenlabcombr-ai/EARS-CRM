@@ -209,6 +209,22 @@ const getOptionsForMetric = (metricId: string, lang: Language) => {
     { value: 5, label: opts.veryGood, color: "bg-emerald-500", emoji: "🤩" },
   ];
 
+  const focusOptions = [
+    { value: 1, label: lang === "pt" ? "Muito Baixo" : "Very Low", color: "bg-red-500", emoji: "🌫️" },
+    { value: 2, label: lang === "pt" ? "Baixo" : "Low", color: "bg-orange-500", emoji: "📉" },
+    { value: 3, label: lang === "pt" ? "Médio" : "Average", color: "bg-yellow-500", emoji: "⚖️" },
+    { value: 4, label: lang === "pt" ? "Alto" : "High", color: "bg-lime-500", emoji: "🎯" },
+    { value: 5, label: lang === "pt" ? "Muito Alto" : "Very High", color: "bg-emerald-500", emoji: "🦅" },
+  ];
+
+  const anxietyOptions = [
+    { value: 1, label: lang === "pt" ? "Nenhuma" : "None", color: "bg-emerald-500", emoji: "🧘" },
+    { value: 2, label: lang === "pt" ? "Baixa" : "Low", color: "bg-lime-500", emoji: "😌" },
+    { value: 3, label: lang === "pt" ? "Moderada" : "Moderate", color: "bg-yellow-500", emoji: "😬" },
+    { value: 4, label: lang === "pt" ? "Alta" : "High", color: "bg-orange-500", emoji: "😰" },
+    { value: 5, label: lang === "pt" ? "Muito Alta" : "Very High", color: "bg-red-500", emoji: "😱" },
+  ];
+
   const sleepHourOptions = [
     { value: 4, label: "< 5h", color: "bg-red-500", emoji: "🥱" },
     { value: 6, label: "5-6h", color: "bg-orange-500", emoji: "😪" },
@@ -339,6 +355,10 @@ const getOptionsForMetric = (metricId: string, lang: Language) => {
     case "training_recovery":
     case "overall_wellbeing":
       return defaultOptions;
+    case "focus":
+      return focusOptions;
+    case "pre_competition_anxiety":
+      return anxietyOptions;
     case "menstrual_cycle":
       return menstrualCycleOptions;
     case "menstrual_flow":
@@ -348,7 +368,7 @@ const getOptionsForMetric = (metricId: string, lang: Language) => {
   }
 };
 
-const getMetrics = (lang: Language, gender: "M" | "F" = "M", isMenstruating: boolean = false) => {
+const getMetrics = (lang: Language, gender: "M" | "F" = "M", isMenstruating: boolean = false, hasUpcomingCompetition: boolean = false) => {
   const m = t[lang].metrics;
   const baseMetrics: any[] = [
     // Morning Section
@@ -374,6 +394,7 @@ const getMetrics = (lang: Language, gender: "M" | "F" = "M", isMenstruating: boo
       description: m.energy.desc,
     },
     { id: "mood", group: "morning", label: m.mood.label, icon: Smile, description: m.mood.desc },
+    { id: "focus", group: "morning", label: m.focus?.label || "Foco / Concentração", icon: Target, description: m.focus?.desc || "Qual seu nível de foco e concentração?" },
     {
       id: "stress",
       group: "morning",
@@ -481,6 +502,23 @@ const getMetrics = (lang: Language, gender: "M" | "F" = "M", isMenstruating: boo
     }
   }
 
+  if (hasUpcomingCompetition) {
+    const anxietyMetric = {
+      id: "pre_competition_anxiety",
+      group: "morning",
+      label: m.pre_competition_anxiety?.label || (lang === "pt" ? "Ansiedade Pré-Competitiva" : "Pre-Competition Anxiety"),
+      icon: Activity,
+      description: m.pre_competition_anxiety?.desc || (lang === "pt" ? "Qual seu nível de ansiedade ou nervosismo?" : "What is your anxiety level?"),
+    };
+    
+    const moodIndex = baseMetrics.findIndex(m => m.id === "mood");
+    if (moodIndex !== -1) {
+      baseMetrics.splice(moodIndex + 1, 0, anxietyMetric);
+    } else {
+      baseMetrics.push(anxietyMetric);
+    }
+  }
+
   return baseMetrics;
 };
 
@@ -568,6 +606,7 @@ export function AthleteDashboard({
   const [latestPainMap, setLatestPainMap] = useState<Record<string, { level: number; type: string }>>({});
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [respondedToday, setRespondedToday] = useState<boolean>(false);
+  const [hasUpcomingCompetition, setHasUpcomingCompetition] = useState<boolean>(false);
   const [todaySummary, setTodaySummary] = useState<any>(null);
   
   // Questionnaires & Setup
@@ -881,6 +920,28 @@ export function AthleteDashboard({
       
       if (assessmentsData) {
         setAssessments(assessmentsData);
+      }
+
+      // 4. Fetch upcoming competitions
+      const today = new Date().toISOString();
+      const { data: upcomingEvents } = await supabase
+        .from("agenda_events")
+        .select("*")
+        .eq("athlete_id", athleteId)
+        .gte("start_time", today)
+        .limit(3);
+      
+      if (upcomingEvents && upcomingEvents.length > 0) {
+        // Find if there is a match/competition either today or tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 2); // check within next 2 days
+        const hasCompetition = upcomingEvents.some(evt => {
+          const evtDate = new Date(evt.start_time);
+          return (evt.category === 'Jogo' || evt.category === 'Competição' || evt.category === 'game' || evt.category === 'competition') && evtDate < tomorrow;
+        });
+        setHasUpcomingCompetition(hasCompetition);
+      } else {
+        setHasUpcomingCompetition(false);
       }
 
       clearTimeout(timeoutId);
@@ -1349,7 +1410,9 @@ export function AthleteDashboard({
           rpe_simple: rpe_simple,
           mapped_rpe: mapped_rpe,
           duration_minutes: duration_minutes,
-          session_load: session_load
+          session_load: session_load,
+          focus: answers["focus"] || null,
+          pre_competition_anxiety: answers["pre_competition_anxiety"] || null
         }
       };
 
@@ -1419,7 +1482,9 @@ export function AthleteDashboard({
             rpe_simple: rpe_simple,
             mapped_rpe: mapped_rpe,
             duration_minutes: duration_minutes,
-            session_load: session_load
+            session_load: session_load,
+            focus: answers["focus"] || null,
+            pre_competition_anxiety: answers["pre_competition_anxiety"] || null
           }
         };
         const { error: wellnessError } = await supabase.from("wellness_records").insert([finalWellnessData]);

@@ -292,6 +292,12 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='recurrence_days') THEN
         ALTER TABLE agenda_events ADD COLUMN recurrence_days INTEGER[];
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='result') THEN
+        ALTER TABLE agenda_events ADD COLUMN result TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='feedback') THEN
+        ALTER TABLE agenda_events ADD COLUMN feedback TEXT;
+    END IF;
 END $$;
 
 -- 2.2. Criar tabela de check_ins se não existir

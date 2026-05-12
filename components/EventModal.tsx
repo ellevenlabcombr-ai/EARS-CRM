@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Clock, Tag, User, AlertTriangle, Trash2, MapPin, Bell, Repeat } from "lucide-react";
+import { X, Clock, Tag, User, AlertTriangle, Trash2, MapPin, Bell, Repeat, AlignLeft } from "lucide-react";
 import { AgendaEvent, getCategoryColor } from "@/types/agenda";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -136,6 +136,26 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                   <div className="flex gap-4">
                     <Tag className="w-4 h-4 mt-1 text-gray-500 shrink-0" />
                     <p className="text-sm text-gray-800 leading-relaxed font-medium bg-gray-50 p-2 rounded-lg border border-gray-100">{event.description}</p>
+                  </div>
+                )}
+
+                {(event.result || event.feedback) && (
+                  <div className="flex gap-4 pt-4 border-t border-gray-100">
+                    <AlignLeft className="w-4 h-4 mt-1 text-gray-500 shrink-0" />
+                    <div className="space-y-3 font-medium text-sm">
+                      {event.result && (
+                        <div>
+                          <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5">Resultado</span>
+                          <span className="text-gray-900 bg-gray-100 px-2 py-0.5 rounded font-bold">{event.result}</span>
+                        </div>
+                      )}
+                      {event.feedback && (
+                        <div>
+                          <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-0.5">Feedback</span>
+                          <p className="text-gray-800 leading-relaxed italic border-l-2 border-gray-300 pl-2">{event.feedback}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 

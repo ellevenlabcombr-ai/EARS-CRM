@@ -32,9 +32,10 @@ interface Appointment {
 
 interface AgendaDashboardProps {
   onOpenProfile?: (athlete: any) => void;
+  athleteId?: string;
 }
 
-export function AgendaDashboard({ onOpenProfile }: AgendaDashboardProps) {
+export function AgendaDashboard({ onOpenProfile, athleteId }: AgendaDashboardProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);

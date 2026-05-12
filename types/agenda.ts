@@ -15,6 +15,8 @@ export interface AgendaEvent {
   risk_score: number | null;
   priority: number;
   origin: 'manual' | 'system' | 'sync';
+  result?: string | null;
+  feedback?: string | null;
   created_at: string;
   reminder_minutes?: number | null;
   recurrence_rule?: string;

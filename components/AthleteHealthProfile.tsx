@@ -96,6 +96,7 @@ import BiomechanicalAssessment from "./BiomechanicalAssessment";
 import PhysicalAssessment from "./PhysicalAssessment";
 import FunctionalScreening from "./FunctionalScreening";
 import DynamometryAssessment from "./DynamometryAssessment";
+import { SmartAgenda } from "./SmartAgenda";
 import { NeurologicalAssessment } from "./NeurologicalAssessment";
 import { PsychologicalAssessment } from "./PsychologicalAssessment";
 import { NutritionalAssessmentForm } from "./NutritionalAssessmentForm";
@@ -275,7 +276,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const [showSessionFinalizedUI, setShowSessionFinalizedUI] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments' | 'agenda'>('overview');
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
@@ -2397,6 +2398,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               { id: 'ficha', label: 'Cadastro', icon: User },
               { id: 'clinical', label: 'Avaliações', icon: Stethoscope },
               { id: 'prontuario', label: 'Prontuário', icon: FileText },
+              { id: 'agenda', label: 'Calendário', icon: Calendar },
               { id: 'attachments', label: 'Anexos', icon: ClipboardList },
               { id: 'history', label: 'Histórico', icon: Clock },
             ].map((tab, i, arr) => {
@@ -4463,6 +4465,19 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Nenhum registro encontrado</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'agenda' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-cyan-500" />Agenda do Atleta
+              </h2>
+            </div>
+            <div className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-4 sm:p-6 shadow-xl relative mt-4">
+              <SmartAgenda athleteId={athlete.id} />
             </div>
           </div>
         )}

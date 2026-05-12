@@ -20,7 +20,11 @@ import { MonthCalendarGrid } from "./MonthCalendarGrid";
 import { EventModal } from "./EventModal";
 import { CreateEventModal } from "./CreateEventModal";
 
-export function SmartAgenda() {
+interface SmartAgendaProps {
+  athleteId?: string;
+}
+
+export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'week' | 'month'>('month');
   const [events, setEvents] = useState<AgendaEvent[]>([]);
@@ -49,12 +53,18 @@ export function SmartAgenda() {
         rangeEnd = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 });
       }
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('agenda_events')
         .select('*')
         .gte('start_time', rangeStart.toISOString())
         .lte('start_time', rangeEnd.toISOString())
         .order('start_time', { ascending: true });
+
+      if (athleteId) {
+        query = query.eq('athlete_id', athleteId);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         if (error.code === '42P01') {

@@ -54,6 +54,8 @@ export const t = {
       duration_minutes: { label: 'Duração (Ontem)', desc: 'Quanto tempo durou o treino? (Minutos)' },
       previous_activity: { label: 'Atividade de Ontem', desc: 'Qual foi sua principal atividade física ontem?' },
       menstrual_flow: { label: 'Volume do Fluxo Menstrual', desc: 'Qual a intensidade do seu fluxo?' },
+      focus: { label: 'Foco / Concentração', desc: 'Qual seu nível de foco e concentração para o treino de hoje?' },
+      pre_competition_anxiety: { label: 'Ansiedade Pré-Competitiva', desc: 'Qual seu nível de ansiedade ou nervosismo para o próximo jogo?' },
     },
     options: {
       veryBad: 'Muito Mal',
@@ -155,6 +157,8 @@ export const t = {
       duration_minutes: { label: 'Duration (Yesterday)', desc: 'How long was the training? (Minutes)' },
       previous_activity: { label: 'Yesterday\'s Activity', desc: 'What was your main physical activity yesterday?' },
       menstrual_flow: { label: 'Menstrual Flow Volume', desc: 'How heavy is your flow?' },
+      focus: { label: 'Focus / Concentration', desc: 'What is your level of focus and concentration for today\'s training?' },
+      pre_competition_anxiety: { label: 'Pre-Competition Anxiety', desc: 'What is your level of anxiety or nervousness for the upcoming game?' },
     },
     options: {
       veryBad: 'Very Bad',
