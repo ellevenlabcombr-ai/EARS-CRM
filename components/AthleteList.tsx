@@ -357,7 +357,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6" : "flex flex-col gap-4"}>
               {filteredAthletes.map((athlete) => {
                 const statusCfg = getStatusConfig(athlete.status as any);
                 const StatusIcon = statusCfg.icon;
@@ -492,34 +492,34 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                       </div>
 
                       {/* Name & Info (Bottom of Photo) */}
-                      <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                         {athlete.athlete_code && (
-                          <div className="text-sm font-black text-cyan-400 uppercase tracking-widest drop-shadow-md mb-1">
+                          <div className="text-xs sm:text-sm font-black text-cyan-400 uppercase tracking-widest drop-shadow-md mb-1">
                             #{athlete.athlete_code}
                           </div>
                         )}
-                        <h3 className="font-black text-white text-2xl leading-tight group-hover:text-cyan-400 transition-colors uppercase tracking-tight flex items-center gap-2 drop-shadow-lg">
+                        <h3 className="font-black text-white text-base sm:text-xl md:text-2xl leading-tight group-hover:text-cyan-400 transition-colors uppercase tracking-tight flex items-center gap-1 sm:gap-2 drop-shadow-lg">
                           {athlete.nickname || athlete.name}
                           {athlete.group_name && athlete.group_name.toUpperCase().includes('AGUIA') && (
-                            <span className="text-xl" title="Projeto Águias">🦅</span>
+                            <span className="text-base sm:text-xl" title="Projeto Águias">🦅</span>
                           )}
                         </h3>
                       </div>
                     </div>
 
                     {/* Bottom Details Section */}
-                    <div className="p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
-                      <div className="flex flex-col gap-1 mb-5">
-                        <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                    <div className="p-3 sm:p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
+                      <div className="flex flex-col gap-1 mb-4 sm:mb-5">
+                        <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight">
                           {athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}
                         </div>
                         {athlete.group_name && (
-                          <div className="text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-1">
+                          <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
                             PROJETO: {athlete.group_name}
                           </div>
                         )}
                         {athlete.clube_anterior && (
-                          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
+                          <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5 sm:mt-1 leading-tight">
                             {athlete.clube_anterior}
                           </div>
                         )}
@@ -527,7 +527,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
 
                       <button 
                         onClick={() => onViewDashboard(athlete)}
-                        className="w-full py-3 bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/20 hover:border-cyan-500 text-cyan-400 hover:text-[#050B14] rounded-xl text-xs font-black uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] mt-auto mt-auto"
+                        className="w-full py-2.5 sm:py-3 bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/20 hover:border-cyan-500 text-cyan-400 hover:text-[#050B14] rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] mt-auto"
                       >
                         Acessar Dashboard
                       </button>
