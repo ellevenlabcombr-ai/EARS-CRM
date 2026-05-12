@@ -26,7 +26,9 @@ import {
   Wand2,
   RefreshCcw,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  LayoutGrid,
+  List as ListIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -72,6 +74,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const fetchAthletes = useCallback(async (retryCount = 0) => {
     try {
@@ -272,8 +275,6 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </select>
         </div>
 
-        <div className="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
-
         <div className="flex items-center gap-2">
           <span className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Categoria:</span>
           <select 
@@ -288,6 +289,34 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </select>
         </div>
 
+        <div className="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
+        
+        {/* View Mode Toggle */}
+        <div className="flex items-center bg-slate-900/50 p-1 rounded-xl border border-slate-800/50 ml-auto sm:ml-0">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-1.5 rounded-lg transition-all ${
+              viewMode === 'grid' 
+                ? 'bg-slate-700 text-cyan-400 shadow-md' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+             title="Visualização em Grade"
+          >
+            <LayoutGrid size={16} />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-1.5 rounded-lg transition-all ${
+              viewMode === 'list' 
+                ? 'bg-slate-700 text-cyan-400 shadow-md' 
+                : 'text-slate-500 hover:text-slate-300'
+            }`}
+            title="Visualização em Lista"
+          >
+            <ListIcon size={16} />
+          </button>
+        </div>
+
         {(filterStatus !== 'all' || filterGroup !== 'all' || filterCategory !== 'all' || searchTerm !== '') && (
           <button 
             onClick={() => {
@@ -296,7 +325,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
               setFilterCategory('all');
               setSearchTerm('');
             }}
-            className="flex items-center gap-1.5 text-xxs font-black text-rose-500 uppercase tracking-widest hover:text-rose-400 transition-colors ml-auto"
+            className="flex items-center gap-1.5 text-xxs font-black text-rose-500 uppercase tracking-widest hover:text-rose-400 transition-colors sm:ml-auto"
           >
             <X size={12} />
             Limpar Filtros
@@ -304,7 +333,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
         )}
       </div>
 
-      {/* Grid Content */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
         {error && (
           <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3 text-rose-400">
@@ -328,11 +357,95 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-6" : "flex flex-col gap-4"}>
               {filteredAthletes.map((athlete) => {
                 const statusCfg = getStatusConfig(athlete.status as any);
                 const StatusIcon = statusCfg.icon;
                 
+                if (viewMode === 'list') {
+                  return (
+                    <div
+                      key={athlete.id}
+                      className="group relative bg-[#0A1120] border border-slate-800/50 rounded-2xl hover:border-cyan-500/50 transition-all shadow-xl overflow-hidden flex"
+                    >
+                      {/* Photo Section */}
+                      <div 
+                        className="relative w-32 shrink-0 cursor-pointer overflow-hidden bg-slate-900"
+                        onClick={() => onViewDashboard(athlete)}
+                      >
+                        <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+                          <AthleteAvatar avatarUrl={athlete.avatar_url || null} name={athlete.name} />
+                        </div>
+                        <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay"></div>
+                      </div>
+
+                      {/* Content Section */}
+                      <div className="flex-1 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex flex-col">
+                          {athlete.athlete_code && (
+                            <div className="text-xs font-black text-cyan-400 uppercase tracking-widest mb-1">
+                              #{athlete.athlete_code}
+                            </div>
+                          )}
+                          <h3 className="font-black text-white text-xl leading-tight uppercase tracking-tight flex items-center gap-2">
+                            {athlete.name}
+                            {athlete.group_name && athlete.group_name.toUpperCase().includes('AGUIA') && (
+                              <span className="text-lg" title="Projeto Águias">🦅</span>
+                            )}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs font-bold uppercase tracking-widest">
+                            <span className="text-slate-300">{athlete.posicao || 'Atleta'}</span>
+                            <span className="text-slate-500">•</span>
+                            <span className="text-slate-400">{athlete.category || 'Sem Categoria'}</span>
+                            <span className="text-slate-500">•</span>
+                            <span className="text-slate-500">{athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}</span>
+                            <span className="text-slate-500">•</span>
+                            <span className="text-white/80">{athlete.group_name || 'Sem Projeto'}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col md:items-end gap-3 shrink-0">
+                          <div className="flex items-center gap-2">
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}>
+                              <StatusIcon className="w-3.5 h-3.5" />
+                              <span className="text-xxs font-black uppercase tracking-widest">{athlete.status}</span>
+                            </div>
+                            {athlete.risk_level && athlete.risk_level !== 'Baixo' && (
+                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color} border-white/5`}>
+                                <AlertCircle className="w-3.5 h-3.5" />
+                                <span className="text-xxs font-black uppercase tracking-widest">Risco {athlete.risk_level}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mt-2 md:mt-0">
+                            <button 
+                              onClick={() => setSelectedAthleteForInfo(athlete)}
+                              className="p-2 border border-slate-700/50 rounded-xl text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors bg-slate-800/20"
+                              title="Ver Informações"
+                            >
+                              <Info className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => onEditAthlete(athlete)}
+                              className="p-2 border border-slate-700/50 rounded-xl text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors bg-slate-800/20"
+                              title="Editar Cadastro"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => onViewDashboard(athlete)}
+                              className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/20 hover:border-cyan-500 text-cyan-400 hover:text-[#050B14] rounded-xl text-xs font-black uppercase tracking-[0.1em] transition-all shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] ml-2"
+                            >
+                              Dashboard
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={athlete.id}
