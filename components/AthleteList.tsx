@@ -389,7 +389,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                       {/* Name & Info (Bottom of Photo) */}
                       <div className="absolute bottom-0 left-0 right-0 p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                         {athlete.athlete_code && (
-                          <div className="inline-flex items-center mb-2 px-2 py-0.5 rounded text-xxs font-black bg-amber-500/20 text-amber-400 border border-amber-500/30 uppercase tracking-widest backdrop-blur-sm">
+                          <div className="text-sm font-black text-cyan-400 uppercase tracking-widest drop-shadow-md mb-1">
                             #{athlete.athlete_code}
                           </div>
                         )}
@@ -399,41 +399,31 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                             <span className="text-xl" title="Projeto Águias">🦅</span>
                           )}
                         </h3>
-                        <p className="text-xs font-bold text-cyan-500/80 uppercase tracking-widest mt-1 drop-shadow-md">
-                          {athlete.posicao || 'Atleta'}
-                        </p>
                       </div>
                     </div>
 
                     {/* Bottom Details Section */}
-                    <div className="p-5 flex flex-col gap-4 bg-[#050B14] relative z-10 border-t border-white/5">
-                      <div className="grid grid-cols-2 gap-3 text-xxs font-bold text-slate-400 uppercase tracking-widest">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-800">
-                            <Calendar className="w-3 h-3 text-slate-500" />
-                          </div>
-                          <span className="truncate">{athlete.category}</span>
+                    <div className="p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
+                      <div className="flex flex-col gap-1 mb-5">
+                        <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                          {athlete.posicao || 'Atleta'}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-800">
-                            <Activity className="w-3 h-3 text-slate-500" />
-                          </div>
-                          <span className="truncate">{athlete.modalidade || '-'}</span>
+                        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                          {athlete.category || 'Sem Categoria'}
                         </div>
-                        <div className="flex items-center gap-2 col-span-2">
-                          <div className="w-6 h-6 rounded-lg bg-slate-900 flex items-center justify-center border border-slate-800">
-                            <Users className="w-3 h-3 text-slate-500" />
-                          </div>
-                          <span className="truncate text-cyan-500/80">{athlete.group_name || 'Sem Projeto'}</span>
+                        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                          {athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}
+                        </div>
+                        <div className="text-xs font-black text-white/80 uppercase tracking-widest mt-1">
+                          {athlete.group_name || 'Sem Projeto'}
                         </div>
                       </div>
 
                       <button 
                         onClick={() => onViewDashboard(athlete)}
-                        className="w-full py-3.5 bg-slate-900 hover:bg-cyan-500/10 border border-slate-800 hover:border-cyan-500/30 rounded-2xl text-xxs font-black uppercase tracking-[0.2em] text-slate-400 hover:text-cyan-400 transition-all flex items-center justify-center gap-2 group/btn shadow-inner"
+                        className="w-full py-3 bg-cyan-500/10 hover:bg-cyan-500 border border-cyan-500/20 hover:border-cyan-500 text-cyan-400 hover:text-[#050B14] rounded-xl text-xs font-black uppercase tracking-[0.1em] transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.05)] hover:shadow-[0_0_25px_rgba(6,182,212,0.3)] mt-auto mt-auto"
                       >
                         Acessar Dashboard
-                        <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </div>
                   </div>
