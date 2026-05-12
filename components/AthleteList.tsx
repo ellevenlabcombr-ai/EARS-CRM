@@ -357,7 +357,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4" : "flex flex-col gap-4"}>
               {filteredAthletes.map((athlete) => {
                 const statusCfg = getStatusConfig(athlete.status as any);
                 const StatusIcon = statusCfg.icon;
@@ -394,19 +394,16 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                             )}
                           </h3>
                           <div className="flex flex-wrap items-center gap-3 mt-2 text-xs font-bold uppercase tracking-widest">
-                            <span className="text-slate-300">{athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}</span>
-                            {athlete.group_name && (
-                              <>
-                                <span className="text-slate-500">•</span>
-                                <span className="text-cyan-500/80">PROJETO: {athlete.group_name}</span>
-                              </>
-                            )}
-                            {athlete.clube_anterior && (
-                              <>
-                                <span className="text-slate-500">•</span>
-                                <span className="text-slate-500">{athlete.clube_anterior}</span>
-                              </>
-                            )}
+                            {[
+                              athlete.modalidade ? <span key="mod" className="text-slate-300">{athlete.modalidade === 'Volleyball' ? 'Voleibol' : athlete.modalidade}</span> : null,
+                              athlete.clube_anterior ? <span key="club" className="text-slate-400">{athlete.clube_anterior}</span> : null,
+                              athlete.group_name ? <span key="proj" className="text-cyan-500/80">{athlete.group_name.replace(/Projeto /i, '').replace(/Projeto/i, '')}</span> : null
+                            ].filter(Boolean).map((item, index, arr) => (
+                              <React.Fragment key={index}>
+                                {item}
+                                {index < arr.length - 1 && <span className="text-slate-500">•</span>}
+                              </React.Fragment>
+                            ))}
                           </div>
                         </div>
 
@@ -510,17 +507,19 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                     {/* Bottom Details Section */}
                     <div className="p-3 sm:p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
                       <div className="flex flex-col gap-1 mb-4 sm:mb-5">
-                        <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight">
-                          {athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}
-                        </div>
-                        {athlete.group_name && (
-                          <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
-                            PROJETO: {athlete.group_name}
+                        {athlete.modalidade && (
+                          <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight">
+                            {athlete.modalidade === 'Volleyball' ? 'Voleibol' : athlete.modalidade}
                           </div>
                         )}
                         {athlete.clube_anterior && (
                           <div className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5 sm:mt-1 leading-tight">
                             {athlete.clube_anterior}
+                          </div>
+                        )}
+                        {athlete.group_name && (
+                          <div className="text-[10px] sm:text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-0.5 sm:mb-1 leading-tight">
+                            {athlete.group_name.replace(/Projeto /i, '').replace(/Projeto/i, '')}
                           </div>
                         )}
                       </div>
