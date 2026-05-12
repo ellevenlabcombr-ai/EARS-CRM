@@ -245,7 +245,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   };
 
   const menuItems = useMemo(() => [
-    { id: 'home', label: 'Agenda', emoji: '🗓️' },
+    { id: 'agenda', label: 'Agenda', emoji: '🗓️' },
     { id: 'athletes', label: 'Atletas', emoji: '👥' },
     { id: 'wellness', label: 'Wellness', emoji: '🩻' },
     { id: 'pendencies', label: 'Pendências', emoji: '🗄️' },

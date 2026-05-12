@@ -4962,7 +4962,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   variant="ghost"
                   onClick={() => {
                     setShowSessionFinalizedUI(false);
-                    setActiveTab('prontuario');
+                    setActiveTab('overview');
                   }}
                   className="flex-1 text-slate-400 font-bold uppercase hover:bg-slate-800 rounded-2xl h-14"
                 >
