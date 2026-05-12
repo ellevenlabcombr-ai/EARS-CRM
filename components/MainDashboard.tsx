@@ -245,14 +245,14 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   };
 
   const menuItems = useMemo(() => [
-    { id: 'home', label: 'Operação', icon: Home },
-    { id: 'agenda', label: 'Agenda', icon: Calendar },
-    { id: 'pendencies', label: 'Tarefas', icon: ClipboardList },
-    { id: 'athletes', label: 'Atletas', icon: Users },
-    { id: 'wellness', label: 'Wellness', icon: Activity },
-    { id: 'reports', label: 'Relatórios', icon: FileText },
-    { id: 'finance', label: 'Financeiro', icon: DollarSign },
-    { id: 'settings', label: 'Configurações', icon: Settings },
+    { id: 'home', label: 'Operação', emoji: '🌎' },
+    { id: 'agenda', label: 'Agenda', emoji: '🗓️' },
+    { id: 'pendencies', label: 'Tarefas', emoji: '🗄️' },
+    { id: 'athletes', label: 'Atletas', emoji: '👥' },
+    { id: 'wellness', label: 'Wellness', emoji: '🩻' },
+    { id: 'reports', label: 'Relatórios', emoji: '📈' },
+    { id: 'finance', label: 'Financeiro', emoji: '💰' },
+    { id: 'settings', label: 'Configurações', emoji: '⚙️' },
   ] as const, []);
 
   const operationalItems = useMemo(() => [
@@ -747,8 +747,8 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               return (
                 <div className="flex-1 flex items-center justify-center min-h-screen text-slate-400">
                   <div className="text-center space-y-4">
-                    <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mx-auto">
-                      {React.createElement(menuItems.find(m => m.id === currentView)?.icon || Home, { className: "w-8 h-8 text-cyan-500" })}
+                    <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mx-auto text-3xl">
+                      {menuItems.find(m => m.id === currentView)?.emoji}
                     </div>
                     <h2 className="text-xl font-bold text-white uppercase tracking-widest">
                       {menuItems.find(m => m.id === currentView)?.label}
@@ -810,7 +810,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         {/* Navigation */}
         <nav className="flex-1 flex flex-col justify-center items-center gap-4 py-6 overflow-y-auto custom-scrollbar">
           {menuItems.map((item) => {
-            const Icon = item.icon;
             const isActive = currentView === item.id;
             
             return (
@@ -819,14 +818,14 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                 <div className="relative group">
                   <button
                     onClick={() => handleNavigation(item.id as View)}
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all relative ${
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all relative border ${
                       isActive 
-                        ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" 
-                        : "text-slate-400 hover:bg-slate-800/50 hover:text-cyan-400"
+                        ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" 
+                        : "text-slate-400 hover:bg-slate-800/50 hover:text-cyan-400 border-transparent"
                     }`}
                   >
                     {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-400 rounded-r-full"></div>}
-                    <Icon size={22} />
+                    <span className="text-xl">{item.emoji}</span>
                   </button>
                   
                   {/* Simple Tooltip */}

@@ -2534,7 +2534,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                  onClose={() => setIsSessionMode(false)}
                  onViewFullProntuario={() => {
                    setIsSessionMode(false);
-                   setActiveTab('prontuario');
+                   setActiveTab('overview');
                  }}
                  onOpenNewEvolution={handleOpenNewEvolution}
                  onSaveSession={async (data) => {
