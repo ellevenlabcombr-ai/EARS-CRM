@@ -807,8 +807,8 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col overflow-y-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="flex flex-col items-center gap-5 my-auto py-4">
+        <nav className="flex flex-col justify-center items-center flex-1 w-full gap-6 py-4 overflow-y-auto overflow-x-hidden no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <style dangerouslySetInnerHTML={{__html: `nav::-webkit-scrollbar { display: none; }`}} />
           {menuItems.map((item) => {
             const isActive = currentView === item.id;
             
@@ -824,7 +824,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                     }`}
                   >
                     {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-cyan-400 rounded-r-full"></div>}
-                    <span className="text-[28px]">{item.emoji}</span>
+                    <span className="text-[28px] leading-none">{item.emoji}</span>
                   </button>
                   
                   {/* Simple Tooltip */}
@@ -835,7 +835,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               </React.Fragment>
             );
           })}
-          </div>
         </nav>
 
         {/* User / Logout */}
