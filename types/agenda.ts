@@ -1,4 +1,4 @@
-export type AgendaCategory = 'clinical' | 'professional' | 'personal' | 'competition' | 'travel' | 'arbitration';
+export type AgendaCategory = 'clinical' | 'professional' | 'personal' | 'competition' | 'travel' | 'arbitration' | 'game' | 'training';
 
 export interface AgendaEvent {
   id: string;
@@ -31,12 +31,16 @@ export const calculatePriority = (event: Partial<AgendaEvent>): number => {
     priority = (Number(event.risk_score) || 0) * 0.7 + 5;
   } else if (event.category === 'competition') {
     priority = 10;
+  } else if (event.category === 'game') {
+    priority = 10;
   } else if (event.category === 'arbitration') {
     priority = 9;
   } else if (event.category === 'travel') {
     priority = 8;
   } else if (event.category === 'professional') {
     priority = 5;
+  } else if (event.category === 'training') {
+    priority = 6;
   } else {
     priority = 3;
   }
@@ -51,8 +55,11 @@ export const getCategoryColor = (event: AgendaEvent): string => {
     if (risk < 7) return 'bg-amber-500 text-white border-amber-400 shadow-md shadow-amber-400/20';
     return 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-500/20';
   }
-  if (event.category === 'competition') {
+  if (event.category === 'competition' || event.category === 'game') {
     return 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20';
+  }
+  if (event.category === 'training') {
+    return 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20';
   }
   if (event.category === 'arbitration') {
     return 'bg-fuchsia-600 text-white border-fuchsia-500 shadow-lg shadow-fuchsia-500/20';

@@ -30,6 +30,7 @@ export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null);
+  const [eventToEdit, setEventToEdit] = useState<AgendaEvent | null>(null);
 
   const fetchEvents = async () => {
     try {
@@ -55,6 +56,28 @@ export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
       console.error("Failed to fetch agenda_events:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveEvent = async (eventData: any) => {
+    try {
+      if (eventData.id) {
+        const { error } = await supabase
+          .from('agenda_events')
+          .update(eventData)
+          .eq('id', eventData.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('agenda_events')
+          .insert([eventData]);
+        if (error) throw error;
+      }
+      setIsCreateModalOpen(false);
+      setEventToEdit(null);
+      fetchEvents();
+    } catch (err: any) {
+      throw err;
     }
   };
 
@@ -136,13 +159,13 @@ export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
 
       <CreateEventModal 
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={() => {
+        onClose={() => {
           setIsCreateModalOpen(false);
-          fetchEvents();
+          setEventToEdit(null);
         }}
+        onSave={handleSaveEvent}
         fixedAthleteId={athleteId}
-        initialEvent={{
+        initialEvent={eventToEdit || {
           athlete_id: athleteId
         } as any}
       />
@@ -157,8 +180,9 @@ export function AthleteAgendaList({ athleteId, lang }: AthleteAgendaListProps) {
             fetchEvents();
           }}
           onEdit={() => {
+            setEventToEdit(selectedEvent);
             setSelectedEvent(null);
-            setIsCreateModalOpen(true); // Ideally would pass event to edit, but for simplicity
+            setIsCreateModalOpen(true);
           }}
         />
       )}

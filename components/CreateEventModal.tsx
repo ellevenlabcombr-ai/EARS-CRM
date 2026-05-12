@@ -17,6 +17,8 @@ interface CreateEventModalProps {
 const CATEGORIES_CONFIG = [
   { value: 'clinical', label: 'Clínico', icon: Stethoscope, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', activeBg: 'bg-rose-500/20', activeBorder: 'border-rose-500' },
   { value: 'competition', label: 'Competição', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', activeBg: 'bg-amber-500/20', activeBorder: 'border-amber-500' },
+  { value: 'game', label: 'Jogo', icon: Trophy, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', activeBg: 'bg-orange-500/20', activeBorder: 'border-orange-500' },
+  { value: 'training', label: 'Treino', icon: Activity, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', activeBg: 'bg-blue-500/20', activeBorder: 'border-blue-500' },
   { value: 'arbitration', label: 'Arbitragem', icon: Scale, color: 'text-fuchsia-400', bg: 'bg-fuchsia-500/10', border: 'border-fuchsia-500/30', activeBg: 'bg-fuchsia-500/20', activeBorder: 'border-fuchsia-500' },
   { value: 'travel', label: 'Viagem', icon: Plane, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', activeBg: 'bg-violet-500/20', activeBorder: 'border-violet-500' },
   { value: 'professional', label: 'Profissional', icon: Briefcase, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', activeBg: 'bg-cyan-500/20', activeBorder: 'border-cyan-500' },
@@ -24,6 +26,10 @@ const CATEGORIES_CONFIG = [
 ];
 
 export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedAthleteId }: CreateEventModalProps) {
+  const availableCategories = fixedAthleteId 
+    ? CATEGORIES_CONFIG.filter(c => ['competition', 'game', 'training'].includes(c.value))
+    : CATEGORIES_CONFIG;
+
   const [athletes, setAthletes] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
@@ -40,10 +46,12 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
     }
   }, [isOpen]);
 
+  const defaultCategory = fixedAthleteId ? 'competition' : 'clinical';
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "clinical" as AgendaCategory,
+    category: defaultCategory as AgendaCategory,
     subcategory: "",
     location: "",
     address: "",
@@ -100,7 +108,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
       setFormData({
         title: "",
         description: "",
-        category: "clinical",
+        category: defaultCategory as AgendaCategory,
         subcategory: "",
         location: "",
         address: "",
@@ -274,7 +282,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                 <div className="space-y-3">
                   <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Tipo de Evento</label>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-                    {CATEGORIES_CONFIG.map((cat) => {
+                    {availableCategories.map((cat) => {
                       const Icon = cat.icon;
                       const isActive = formData.category === cat.value;
                       return (
@@ -315,13 +323,15 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                     <div>
                       <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between">
                         <span className="flex items-center gap-2"><MapPin className="w-4 h-4" /> Nome do Local</span>
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, location: "ELLEVEN", address: "Alameda Santos, 211 - Cj. 1604" })}
-                          className="text-[#050B14] bg-cyan-500 hover:bg-cyan-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1"
-                        >
-                          <MapPin className="w-3 h-3" /> No Consultório
-                        </button>
+                        {!fixedAthleteId && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, location: "ELLEVEN", address: "Alameda Santos, 211 - Cj. 1604" })}
+                            className="text-[#050B14] bg-cyan-500 hover:bg-cyan-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-1"
+                          >
+                            <MapPin className="w-3 h-3" /> No Consultório
+                          </button>
+                        )}
                       </label>
                       <input 
                         type="text"
@@ -386,7 +396,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                     </label>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className={`grid grid-cols-1 ${fixedAthleteId ? '' : 'sm:grid-cols-2'} gap-6`}>
                     {/* Start Date & Time */}
                     <div className="space-y-3">
                       <label className="text-xs font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-2">
@@ -399,7 +409,14 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                           onChange={e => {
                             const date = e.target.value;
                             const time = formData.start_time ? formData.start_time.split('T')[1]?.substring(0,5) : '08:00';
-                            setFormData({...formData, start_time: `${date}T${time}`});
+                            const newStart = `${date}T${time}`;
+                            let newEnd = formData.end_time;
+                            if (fixedAthleteId) {
+                               const hr = parseInt(time.split(':')[0]);
+                               const nextHr = Math.min(23, hr + 1).toString().padStart(2, '0');
+                               newEnd = `${date}T${nextHr}:${time.split(':')[1]}`;
+                            }
+                            setFormData({...formData, start_time: newStart, end_time: newEnd});
                           }}
                           className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium [color-scheme:dark] flex-1 min-w-0"
                         />
@@ -410,7 +427,14 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                             onChange={e => {
                               const time = e.target.value;
                               const date = formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0];
-                              setFormData({...formData, start_time: `${date}T${time}`});
+                              const newStart = `${date}T${time}`;
+                              let newEnd = formData.end_time;
+                              if (fixedAthleteId) {
+                                 const hr = parseInt(time.split(':')[0]);
+                                 const nextHr = Math.min(23, hr + 1).toString().padStart(2, '0');
+                                 newEnd = `${date}T${nextHr}:${time.split(':')[1]}`;
+                              }
+                              setFormData({...formData, start_time: newStart, end_time: newEnd});
                             }}
                             className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium [color-scheme:dark] w-[100px] shrink-0"
                           />
@@ -419,36 +443,38 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                     </div>
 
                     {/* End Date & Time */}
-                    <div className="space-y-3">
-                      <label className="text-xs font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-2 opacity-70">
-                        Término
-                      </label>
-                      <div className="flex gap-2">
-                        <input 
-                          type="date"
-                          min={formData.start_time ? formData.start_time.split('T')[0] : ''}
-                          value={formData.end_time ? formData.end_time.split('T')[0] : ''}
-                          onChange={e => {
-                            const date = e.target.value;
-                            const time = formData.end_time ? formData.end_time.split('T')[1]?.substring(0,5) : '09:00';
-                            setFormData({...formData, end_time: `${date}T${time}`});
-                          }}
-                          className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium [color-scheme:dark] flex-1 min-w-0"
-                        />
-                        {!formData.is_all_day && (
+                    {!fixedAthleteId && (
+                      <div className="space-y-3">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest block border-b border-slate-800 pb-2 opacity-70">
+                          Término
+                        </label>
+                        <div className="flex gap-2">
                           <input 
-                            type="time"
-                            value={formData.end_time ? formData.end_time.split('T')[1]?.substring(0,5) : ''}
+                            type="date"
+                            min={formData.start_time ? formData.start_time.split('T')[0] : ''}
+                            value={formData.end_time ? formData.end_time.split('T')[0] : ''}
                             onChange={e => {
-                              const time = e.target.value;
-                              const date = formData.end_time ? formData.end_time.split('T')[0] : (formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0]);
+                              const date = e.target.value;
+                              const time = formData.end_time ? formData.end_time.split('T')[1]?.substring(0,5) : '09:00';
                               setFormData({...formData, end_time: `${date}T${time}`});
                             }}
-                            className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium [color-scheme:dark] w-[100px] shrink-0"
+                            className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium [color-scheme:dark] flex-1 min-w-0"
                           />
-                        )}
+                          {!formData.is_all_day && (
+                            <input 
+                              type="time"
+                              value={formData.end_time ? formData.end_time.split('T')[1]?.substring(0,5) : ''}
+                              onChange={e => {
+                                const time = e.target.value;
+                                const date = formData.end_time ? formData.end_time.split('T')[0] : (formData.start_time ? formData.start_time.split('T')[0] : new Date().toISOString().split('T')[0]);
+                                setFormData({...formData, end_time: `${date}T${time}`});
+                              }}
+                              className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors font-medium [color-scheme:dark] w-[100px] shrink-0"
+                            />
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 
