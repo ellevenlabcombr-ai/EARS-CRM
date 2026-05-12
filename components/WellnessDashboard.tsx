@@ -1443,7 +1443,9 @@ ANALYZE check_ins;`}
                   </div>
                   <div className="space-y-2">
                     {selectedAnswers.symptoms && Object.values(selectedAnswers.symptoms).some(v => (v as number) > 0) ? (
-                      Object.entries(selectedAnswers.symptoms).map(([key, value]) => {
+                      Object.entries(selectedAnswers.symptoms)
+                        .filter(([k]) => !['leg_heaviness', 'previous_activity', 'rpe_simple', 'mapped_rpe', 'duration_minutes', 'session_load'].includes(k))
+                        .map(([key, value]) => {
                         if ((value as number) === 0) return null;
                         const labels: Record<string, string> = {
                           headache: "Dor de cabeça",
@@ -1453,7 +1455,18 @@ ANALYZE check_ins;`}
                           general_malaise: "Mal-estar geral",
                           skin_lesion: "Lesão de Pele / Bolhas",
                           ingrown_nail: "Unha Encravada",
-                          bruise: "Hematoma / Pancada"
+                          bruise: "Hematoma / Pancada",
+                          "Febre": "Febre",
+                          "Vômito": "Vômito",
+                          "Diarreia": "Diarreia",
+                          "Gripe": "Gripe",
+                          "Enjoo": "Enjoo",
+                          "Tontura": "Tontura",
+                          "Dor de Cabeça": "Dor de Cabeça",
+                          "Dor de Garganta": "Dor de Garganta",
+                          "Lesão Pele": "Lesão na Pele",
+                          "Bolhas": "Bolhas",
+                          "Unha Encravada": "Unha Encravada"
                         };
                         const levelLabels = ["Nenhum", "Leve", "Moderado", "Severo"];
                         return (
@@ -1464,7 +1477,7 @@ ANALYZE check_ins;`}
                               (value as number) === 2 ? 'text-orange-400 bg-orange-400/10' :
                               'text-red-400 bg-red-400/10'
                             }`}>
-                              {levelLabels[value as number]}
+                              {levelLabels[value as number] || `NÍVEL ${value}`}
                             </span>
                           </div>
                         );

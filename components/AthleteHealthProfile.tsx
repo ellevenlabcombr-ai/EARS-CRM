@@ -1068,7 +1068,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
           const formattedWellness = chronologicalData.map(w => {
             const clinicalSymptoms = w.symptoms ? Object.entries(w.symptoms)
-              .filter(([_, level]) => (level as number) > 0)
+              .filter(([key, level]) => (level as number) > 0 && !['leg_heaviness', 'previous_activity', 'rpe_simple', 'mapped_rpe', 'duration_minutes', 'session_load'].includes(key))
               .map(([key, _]) => SYMPTOM_LABELS[key] || key) : [];
             
             const allSymptoms = [...(w.menstrual_symptoms || []), ...clinicalSymptoms];

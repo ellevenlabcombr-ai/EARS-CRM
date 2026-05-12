@@ -1722,35 +1722,37 @@ export function AthleteDashboard({
 
       if (!respondedToday) {
         return (
-          <Card className="bg-[#0A1120] border-amber-500/30 overflow-hidden relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none" />
-            <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-amber-500/20 rounded-2xl border border-amber-500/30 animate-pulse">
-                    <AlertCircle className="w-8 h-8 text-amber-400" />
+          <div className="w-full">
+            <Card className="bg-[#0A1120] border-amber-500/30 overflow-hidden relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none" />
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-amber-500/20 rounded-2xl border border-amber-500/30 animate-pulse">
+                      <AlertCircle className="w-8 h-8 text-amber-400" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-xl font-black text-white uppercase tracking-tight">Check-in de hoje pendente</h3>
+                      <p className="text-slate-400 text-sm">Sua bateria clínica precisa ser atualizada para gerar insights.</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <h3 className="text-xl font-black text-white uppercase tracking-tight">Check-in de hoje pendente</h3>
-                    <p className="text-slate-400 text-sm">Sua bateria clínica precisa ser atualizada para gerar insights.</p>
-                  </div>
+                  <Button 
+                    onClick={() => setView("questionnaire")}
+                    className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-widest px-8 py-6 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
+                  >
+                    Responder agora
+                  </Button>
                 </div>
-                <Button 
-                  onClick={() => setView("questionnaire")}
-                  className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black uppercase tracking-widest px-8 py-6 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all hover:scale-105"
-                >
-                  Responder agora
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         );
       }
 
       const todayTips = todaySummary ? getTips(todaySummary) : [];
 
       return (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <Card className="bg-[#0A1120] border-emerald-500/30 overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
             <CardContent className="p-6">
@@ -2005,7 +2007,7 @@ export function AthleteDashboard({
         </div>
 
         {/* Motivational Quote */}
-        <div className={`bg-slate-900/40 p-6 rounded-2xl border ${theme.borderAlpha} relative ${theme.shadowStrong} overflow-hidden max-w-sm md:max-w-2xl mx-auto w-full`}>
+        <div className={`bg-slate-900/40 p-6 rounded-2xl border ${theme.borderAlpha} relative ${theme.shadowStrong} overflow-hidden w-full`}>
           <Quote className={`absolute top-4 left-4 w-6 h-6 ${theme.bgAlpha}`} />
           <p className="text-sm text-slate-300 font-medium italic relative z-10 leading-relaxed pt-2 px-4">
             &quot;{motivationalQuote.text}&quot;
@@ -2017,7 +2019,7 @@ export function AthleteDashboard({
 
         {/* Cycle Intelligence Module - Dashboard Integration */}
         {athleteGender === 'F' && (
-          <div className="max-w-md md:max-w-2xl mx-auto w-full">
+          <div className="w-full">
             {cycleInfo ? (
               <Card 
                 className="bg-rose-500/5 border-rose-500/20 overflow-hidden border-dashed p-1"
