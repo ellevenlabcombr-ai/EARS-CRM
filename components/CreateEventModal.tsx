@@ -67,7 +67,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
       return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
     };
 
-    if (isOpen && initialEvent) {
+    if (isOpen && initialEvent?.id) {
       setFormData({
         title: initialEvent.title || "",
         description: initialEvent.description || "",
@@ -89,7 +89,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
       setErrorMsg("");
       setConflictWarning(null);
       setIgnoreConflict(false);
-    } else if (isOpen && !initialEvent) {
+    } else if (isOpen) {
       const now = new Date();
       now.setHours(now.getHours() + 1);
       const startStr = toLocalInputFormat(now);
@@ -107,7 +107,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
         is_all_day: false,
         start_time: startStr,
         end_time: endStr,
-        athlete_id: "",
+        athlete_id: fixedAthleteId || initialEvent?.athlete_id || "",
         reminder_minutes: null,
         recurrence_rule: 'none',
         recurrence_days: [],
