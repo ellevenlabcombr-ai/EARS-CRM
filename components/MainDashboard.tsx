@@ -56,7 +56,6 @@ import { PendenciesDashboard } from "./PendenciesDashboard";
 import { ClinicalDashboard } from "./dashboard/ClinicalDashboard";
 import { DailyOperationsDashboard } from "./dashboard/DailyOperationsDashboard";
 import { EaglesDashboard } from "./dashboard/EaglesDashboard";
-import { TodayDashboard } from "./TodayDashboard";
 import { SettingsDashboard } from "./SettingsDashboard";
 import { Button } from "@/components/ui/button";
 import { SupabaseStatus } from "./SupabaseStatus";
@@ -69,7 +68,7 @@ import { ReportsDashboard } from "./ReportsDashboard";
 import { DataSafety } from "@/lib/dataSafety";
 import { SafeRender } from "./SafeRender";
 
-type View = 'today' | 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance';
+type View = 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance';
 
 interface MainDashboardProps {
   onLogout?: () => void;
@@ -77,7 +76,7 @@ interface MainDashboardProps {
 
 export function MainDashboard({ onLogout }: MainDashboardProps) {
   const { t, language, setLanguage } = useLanguage();
-  const [currentView, setCurrentView] = useState<View>('today');
+  const [currentView, setCurrentView] = useState<View>('home');
   const [activeMode, setActiveMode] = useState<'home' | 'clinical' | 'eagles'>('home');
   const [modeContext, setModeContext] = useState<Record<string, { view: View, athlete: any }>>({
     home: { view: 'home', athlete: null },
@@ -246,7 +245,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   };
 
   const menuItems = useMemo(() => [
-    { id: 'today', label: 'Hoje', icon: Home },
+    { id: 'home', label: 'Operação', icon: Home },
     { id: 'agenda', label: 'Agenda', icon: Calendar },
     { id: 'pendencies', label: 'Tarefas', icon: ClipboardList },
     { id: 'athletes', label: 'Atletas', icon: Users },
@@ -339,7 +338,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
 
   const getPageTitle = () => {
     switch (currentView) {
-      case 'today': return "Hoje";
       case 'home': return "Agenda & Operação";
       case 'clinical': return "Clinical Intelligence";
       case 'eagles': return "Projeto Águias";
@@ -362,17 +360,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
       <SafeRender componentName={`View: ${currentView}`}>
         {(() => {
           switch (currentView) {
-            case 'today':
-              return (
-                <TodayDashboard 
-                  onNavigate={handleNavigation}
-                  onViewAthlete={(id, startSession) => {
-                    setEditingAthlete({ id });
-                    setSessionRequested(!!startSession);
-                    handleNavigation('athlete-profile');
-                  }}
-                />
-              );
             case 'home':
               return (
                 <DailyOperationsDashboard 

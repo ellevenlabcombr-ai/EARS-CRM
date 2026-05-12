@@ -11,7 +11,8 @@ import {
   Filter,
   User,
   FileText,
-  Calendar
+  Calendar,
+  Plus
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getLocalDateString } from "@/lib/utils";
@@ -33,6 +34,8 @@ export function PendenciesDashboard() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
   const [searchTerm, setSearchTerm] = useState("");
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isAddingTask, setIsAddingTask] = useState(false);
 
   useEffect(() => {
     fetchPendencies();
@@ -47,39 +50,21 @@ export function PendenciesDashboard() {
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = getLocalDateString(yesterday);
 
-      const [athletesRes, wellnessRes, painRes] = await Promise.all([
+      const [athletesRes, painRes, tasksRes] = await Promise.all([
         supabase.from('athletes').select('id, name').limit(50),
-        supabase.from('wellness_records').select('athlete_id, record_date').gte('record_date', yesterdayStr).limit(200),
-        supabase.from('pain_reports').select('athlete_id, pain_level, body_part_id, created_at').gte('pain_level', 7).limit(50)
+        supabase.from('pain_reports').select('athlete_id, pain_level, body_part_id, created_at').gte('pain_level', 7).limit(50),
+        supabase.from('daily_tasks').select('id, title, status, created_at').order('created_at', { ascending: false }).limit(50)
       ]);
 
       if (athletesRes.error) throw athletesRes.error;
       
       const athletesData = athletesRes.data || [];
-      const wellnessData = wellnessRes.data || [];
       const painData = painRes.data || [];
+      const tasksData = tasksRes.data || [];
 
       const realPendencies: Pendency[] = [];
 
-      // 1. Wellness Pendencies (Athletes who didn't fill wellness today/yesterday)
-      athletesData.forEach(athlete => {
-        const hasWellness = wellnessData.some(w => w.athlete_id === athlete.id);
-        if (!hasWellness) {
-          realPendencies.push({
-            id: `wellness-${athlete.id}`,
-            type: 'wellness',
-            title: 'Wellness não preenchido',
-            description: 'O atleta ainda não preencheu o formulário de wellness nas últimas 24 horas.',
-            athleteName: athlete.name,
-            athleteId: athlete.id,
-            dueDate: getLocalDateString(),
-            priority: 'medium',
-            status: 'pending'
-          });
-        }
-      });
-
-      // 2. Pain Pendencies (High pain reports)
+      // 1. Pain Pendencies (High pain reports)
       painData.forEach((pain, idx) => {
         const athlete = athletesData.find(a => a.id === pain.athlete_id);
         if (athlete) {
@@ -97,11 +82,54 @@ export function PendenciesDashboard() {
         }
       });
 
+      // 2. Daily Tasks
+      tasksData.forEach(task => {
+         realPendencies.push({
+            id: `task-${task.id}`,
+            type: 'document',
+            title: task.title,
+            description: 'Tarefa operacional diária',
+            athleteName: 'Geral',
+            athleteId: '',
+            dueDate: getLocalDateString(new Date(task.created_at)),
+            priority: 'medium',
+            status: task.status === 'completed' ? 'completed' : 'pending'
+         });
+      });
+
       setPendencies(realPendencies);
     } catch (error) {
       console.error('Error fetching pendencies:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim() || !supabase) return;
+    try {
+      setIsAddingTask(true);
+      const { data, error } = await supabase.from('daily_tasks').insert([{ title: newTaskTitle.trim() }]).select().single();
+      if (error) throw error;
+      if (data) {
+        setPendencies([{
+          id: `task-${data.id}`,
+          type: 'document',
+          title: data.title,
+          description: 'Tarefa operacional diária',
+          athleteName: 'Geral',
+          athleteId: '',
+          dueDate: getLocalDateString(new Date(data.created_at)),
+          priority: 'medium',
+          status: 'pending'
+        }, ...pendencies]);
+        setNewTaskTitle('');
+      }
+    } catch (err) {
+      console.error('Error creating task:', err);
+    } finally {
+      setIsAddingTask(false);
     }
   };
 
@@ -169,6 +197,25 @@ export function PendenciesDashboard() {
         </div>
       </header>
 
+      <form onSubmit={handleAddTask} className="flex flex-col sm:flex-row gap-3">
+        <input 
+          type="text" 
+          placeholder="Nova tarefa operacional (ex: Reunião com a comissão às 14h)..." 
+          className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 transition-colors outline-none"
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          disabled={isAddingTask}
+        />
+        <button 
+          type="submit" 
+          disabled={isAddingTask || !newTaskTitle.trim()}
+          className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)]"
+        >
+          {isAddingTask ? <Clock className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          Adicionar
+        </button>
+      </form>
+
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3, 4].map(i => (
@@ -208,7 +255,7 @@ export function PendenciesDashboard() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-white uppercase tracking-tight">{pendency.athleteName}</p>
-                    <p className="text-xxs text-slate-500 uppercase tracking-widest">Atleta</p>
+                    <p className="text-xxs text-slate-500 uppercase tracking-widest">{pendency.athleteId ? 'Atleta' : 'Geral'}</p>
                   </div>
                 </div>
 
@@ -218,9 +265,27 @@ export function PendenciesDashboard() {
                 </div>
               </div>
 
-              <button className="w-full mt-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
-                Resolver Pendência <ChevronRight size={14} />
-              </button>
+              {pendency.id.startsWith('task-') && pendency.status !== 'completed' ? (
+                 <button 
+                   onClick={async () => {
+                      const taskId = pendency.id.replace('task-', '');
+                      if (supabase) {
+                        await supabase.from('daily_tasks').update({ status: 'completed' }).eq('id', taskId);
+                        setPendencies(prev => prev.map(p => p.id === pendency.id ? { ...p, status: 'completed' } : p));
+                      }
+                   }}
+                   className="w-full mt-6 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 hover:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
+                   <CheckCircle2 size={14} /> Concluir Tarefa
+                 </button>
+              ) : pendency.status !== 'completed' ? (
+                 <button className="w-full mt-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
+                   Avaliar Ocorrência <ChevronRight size={14} />
+                 </button>
+              ) : (
+                 <button disabled className="w-full mt-6 py-3 bg-emerald-500/5 border border-emerald-500/10 opacity-50 cursor-not-allowed rounded-xl text-xs font-bold text-emerald-500 uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
+                   <CheckCircle2 size={14} /> Concluído
+                 </button>
+              )}
             </motion.div>
           ))}
         </div>
