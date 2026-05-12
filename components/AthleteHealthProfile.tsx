@@ -4972,7 +4972,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   onClick={() => {
                     setShowSessionFinalizedUI(false);
                     setIsSessionMode(false);
-                    setActiveTab('prontuario');
+                    setActiveTab('overview');
                     setNotification({ message: 'Sessão Inteligente finalizada.', type: 'success' });
                   }}
                   className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-[#020617] font-black uppercase tracking-widest rounded-2xl h-14 shadow-[0_10px_30px_rgba(16,185,129,0.2)] transition-all active:scale-95"

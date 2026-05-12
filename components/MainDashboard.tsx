@@ -245,11 +245,10 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   };
 
   const menuItems = useMemo(() => [
-    { id: 'home', label: 'Operação', emoji: '🌎' },
-    { id: 'agenda', label: 'Agenda', emoji: '🗓️' },
-    { id: 'pendencies', label: 'Tarefas', emoji: '🗄️' },
+    { id: 'home', label: 'Agenda', emoji: '🗓️' },
     { id: 'athletes', label: 'Atletas', emoji: '👥' },
     { id: 'wellness', label: 'Wellness', emoji: '🩻' },
+    { id: 'pendencies', label: 'Pendências', emoji: '🗄️' },
     { id: 'reports', label: 'Relatórios', emoji: '📈' },
     { id: 'finance', label: 'Financeiro', emoji: '💰' },
     { id: 'settings', label: 'Configurações', emoji: '⚙️' },
@@ -808,13 +807,12 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col justify-center items-center gap-4 py-6 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 flex flex-col justify-start items-center gap-4 py-6 overflow-y-auto custom-scrollbar">
           {menuItems.map((item) => {
             const isActive = currentView === item.id;
             
             return (
               <React.Fragment key={item.id}>
-                {item.id === 'settings' && <div className="w-8 h-px bg-slate-800/50 my-2" />}
                 <div className="relative group">
                   <button
                     onClick={() => handleNavigation(item.id as View)}
@@ -840,21 +838,29 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
 
         {/* User / Logout */}
         <div className="py-6 border-t border-slate-800/50 shrink-0 flex flex-col items-center gap-4">
-          <button 
-            onClick={() => setLanguage(language === 'pt' ? 'en' : 'pt')}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-800/50 hover:text-cyan-400 transition-all"
-            title={language === 'pt' ? 'English' : 'Português'}
-          >
-            <Globe size={20} />
-          </button>
+          <div className="relative group">
+            <button 
+              onClick={() => setLanguage(language === 'pt' ? 'en' : 'pt')}
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all relative border border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-cyan-400"
+            >
+               <span className="text-xl">🌎</span>
+            </button>
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2 py-1 bg-slate-800 text-white text-xxs font-bold uppercase tracking-widest rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-[110] border border-slate-700 pointer-events-none">
+               Idioma
+            </div>
+          </div>
 
-          <button 
-            onClick={() => handleNavigation('logout')}
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition-all"
-            title="Sair"
-          >
-            <LogOut size={20} />
-          </button>
+          <div className="relative group">
+            <button 
+              onClick={() => handleNavigation('logout')}
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all relative border border-transparent text-slate-400 hover:bg-rose-500/10 hover:text-rose-400"
+            >
+              <span className="text-xl">📲</span>
+            </button>
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-2 py-1 bg-slate-800 text-white text-xxs font-bold uppercase tracking-widest rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-[110] border border-slate-700 pointer-events-none">
+               Sair
+            </div>
+          </div>
         </div>
       </aside>
 
