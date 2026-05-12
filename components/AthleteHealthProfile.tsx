@@ -96,7 +96,7 @@ import BiomechanicalAssessment from "./BiomechanicalAssessment";
 import PhysicalAssessment from "./PhysicalAssessment";
 import FunctionalScreening from "./FunctionalScreening";
 import DynamometryAssessment from "./DynamometryAssessment";
-import { SmartAgenda } from "./SmartAgenda";
+import { AthleteAgendaList } from "./AthleteAgendaList";
 import { NeurologicalAssessment } from "./NeurologicalAssessment";
 import { PsychologicalAssessment } from "./PsychologicalAssessment";
 import { NutritionalAssessmentForm } from "./NutritionalAssessmentForm";
@@ -4477,7 +4477,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </h2>
             </div>
             <div className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-4 sm:p-6 shadow-xl relative mt-4">
-              <SmartAgenda athleteId={athlete.id} />
+              <AthleteAgendaList athleteId={athlete.id} lang={language as "pt" | "en"} />
             </div>
           </div>
         )}

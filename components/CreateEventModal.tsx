@@ -11,6 +11,7 @@ interface CreateEventModalProps {
   onClose: () => void;
   onSave: (event: any) => void;
   initialEvent?: AgendaEvent | null;
+  fixedAthleteId?: string;
 }
 
 const CATEGORIES_CONFIG = [
@@ -22,7 +23,7 @@ const CATEGORIES_CONFIG = [
   { value: 'personal', label: 'Pessoal', icon: UserCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', activeBg: 'bg-emerald-500/20', activeBorder: 'border-emerald-500' },
 ];
 
-export function CreateEventModal({ isOpen, onClose, onSave, initialEvent }: CreateEventModalProps) {
+export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedAthleteId }: CreateEventModalProps) {
   const [athletes, setAthletes] = useState<{id: string, name: string}[]>([]);
 
   useEffect(() => {
@@ -344,21 +345,23 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent }: Crea
                     </div>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                      <User className="w-4 h-4" /> Atleta Associado (Opcional)
-                    </label>
-                    <select
-                      value={formData.athlete_id}
-                      onChange={e => setFormData({...formData, athlete_id: e.target.value})}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-600 font-medium appearance-none [color-scheme:dark]"
-                    >
-                      <option value="">Selecione um atleta...</option>
-                      {athletes.map(athlete => (
-                        <option key={athlete.id} value={athlete.id}>{athlete.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {!fixedAthleteId && (
+                    <div>
+                      <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <User className="w-4 h-4" /> Atleta Associado (Opcional)
+                      </label>
+                      <select
+                        value={formData.athlete_id}
+                        onChange={e => setFormData({...formData, athlete_id: e.target.value})}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-600 font-medium appearance-none [color-scheme:dark]"
+                      >
+                        <option value="">Selecione um atleta...</option>
+                        {athletes.map(athlete => (
+                          <option key={athlete.id} value={athlete.id}>{athlete.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Date & Time */}
@@ -533,7 +536,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent }: Crea
                   </div>
                 </div>
 
-                {initialEvent && (
+                {initialEvent?.id && (
                   <div className="space-y-4 pt-4 border-t border-slate-800">
                     <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                        <AlignLeft className="w-4 h-4" />
