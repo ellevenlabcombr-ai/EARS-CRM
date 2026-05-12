@@ -99,6 +99,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           category, 
           posicao, 
           modalidade,
+          clube_anterior,
           birth_date,
           status, 
           group_name, 
@@ -357,7 +358,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4" : "flex flex-col gap-4"}>
               {filteredAthletes.map((athlete) => {
                 const statusCfg = getStatusConfig(athlete.status as any);
                 const StatusIcon = statusCfg.icon;
