@@ -1053,7 +1053,10 @@ ANALYZE check_ins;`}
                     >
                       <td className="p-4 pl-6">
                         <div className="flex items-center gap-3">
-                          <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-slate-700">
+                          <div 
+                            className="relative w-10 h-10 rounded-lg overflow-hidden border border-slate-700 cursor-pointer hover:border-cyan-500 transition-colors"
+                            onClick={() => onViewAthlete(athlete)}
+                          >
                             <Image 
                               src={athlete.photo} 
                               alt={athlete.name} 
@@ -1183,7 +1186,13 @@ ANALYZE check_ins;`}
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-800/50 flex items-start justify-between bg-slate-900/50">
               <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-700">
+                <div 
+                  className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-700 cursor-pointer hover:border-cyan-500 transition-colors"
+                  onClick={() => {
+                    setSelectedAnswers(null);
+                    onViewAthlete(selectedAnswers);
+                  }}
+                >
                   <Image 
                     src={selectedAnswers.photo} 
                     alt={selectedAnswers.name} 
@@ -1497,9 +1506,13 @@ ANALYZE check_ins;`}
                     <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Estresse</p>
                   </div>
                   <div className="flex justify-between items-end h-[2.75rem]">
-                    <p className="text-sm text-slate-500">Nível (1-10)</p>
-                    <p className={`text-2xl font-black ${selectedAnswers.stress > 5 ? 'text-purple-400' : 'text-emerald-400'}`}>
-                      {selectedAnswers.stress}
+                    <p className="text-sm text-slate-500">Nível (1-5)</p>
+                    <p className={`text-2xl font-black ${selectedAnswers.stress < 3 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                      {selectedAnswers.stress === 1 ? 'Alto' :
+                       selectedAnswers.stress === 2 ? 'Médio' :
+                       selectedAnswers.stress === 3 ? 'Ok' :
+                       selectedAnswers.stress === 4 ? 'Baixo' :
+                       selectedAnswers.stress === 5 ? 'Nenhum' : '-'}
                     </p>
                   </div>
                 </div>
@@ -1515,12 +1528,16 @@ ANALYZE check_ins;`}
                   <div className="flex justify-between items-end h-[2.75rem]">
                     <p className="text-sm text-slate-500">Nível (1-5)</p>
                     <p className={`text-2xl font-black ${selectedAnswers.mood < 3 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {selectedAnswers.mood || '-'}
+                      {selectedAnswers.mood === 1 ? 'Muito Mal' :
+                       selectedAnswers.mood === 2 ? 'Mal' :
+                       selectedAnswers.mood === 3 ? 'Ok' :
+                       selectedAnswers.mood === 4 ? 'Bem' :
+                       selectedAnswers.mood === 5 ? 'Muito Bem' : '-'}
                     </p>
                   </div>
                 </div>
 
-                {/* Hydration */}
+                {/* Hydration & Urine */}
                 <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-cyan-500/10 rounded-lg">
@@ -1528,62 +1545,105 @@ ANALYZE check_ins;`}
                     </div>
                     <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Hidratação</p>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex justify-between items-end">
-                      <p className="text-sm text-slate-500">Percepção (1-5)</p>
-                      <p className="text-lg font-black text-white">{selectedAnswers.hydration_perception || '-'}</p>
+                      <p className="text-sm text-slate-500">Volume (1-5)</p>
+                      <p className="text-lg font-black text-white">
+                        {selectedAnswers.hydration_perception === 1 ? '< 1L' :
+                         selectedAnswers.hydration_perception === 2 ? '1-2L' :
+                         selectedAnswers.hydration_perception === 3 ? '2-3L' :
+                         selectedAnswers.hydration_perception === 4 ? '3-4L' :
+                         selectedAnswers.hydration_perception === 5 ? '> 4L' : '-'}
+                      </p>
                     </div>
-                    <div className="flex justify-between items-end">
-                      <p className="text-sm text-slate-500">Cor Urina (1-5)</p>
-                      <p className="text-sm font-bold text-cyan-400">{selectedAnswers.urine_color || '-'}</p>
+                    <div className="flex justify-between items-end border-t border-slate-800/50 pt-3">
+                      <p className="text-sm text-slate-500">Cor da Urina</p>
+                      <p className="text-sm font-bold text-cyan-400">
+                        {selectedAnswers.urine_color === 1 ? '💧 Muito clara' :
+                         selectedAnswers.urine_color === 2 ? '💧 Clara' :
+                         selectedAnswers.urine_color === 3 ? '🟡 Amarelo claro' :
+                         selectedAnswers.urine_color === 4 ? '🟠 Amarelo escuro' :
+                         selectedAnswers.urine_color === 5 ? '🟤 Âmbar' : selectedAnswers.urine_color || '-'}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Nutrition */}
+                {/* Nutrition & Pre-Training */}
                 <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-emerald-500/10 rounded-lg">
                       <Apple className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Nutrição</p>
+                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Alimentação</p>
                   </div>
-                  <div className="flex justify-between items-end h-[2.75rem]">
-                    <p className="text-sm text-slate-500">Qualidade (1-5)</p>
-                    <p className={`text-2xl font-black ${selectedAnswers.nutrition < 3 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {selectedAnswers.nutrition || '-'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Pre-Training Meal */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-amber-500/10 rounded-lg">
-                      <Utensils className="w-5 h-5 text-amber-400" />
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-end">
+                      <p className="text-sm text-slate-500">Geral (1-5)</p>
+                      <p className={`text-2xl font-black ${selectedAnswers.nutrition < 3 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {selectedAnswers.nutrition === 1 ? 'Muito Ruim' :
+                         selectedAnswers.nutrition === 2 ? 'Ruim' :
+                         selectedAnswers.nutrition === 3 ? 'Ok' :
+                         selectedAnswers.nutrition === 4 ? 'Boa' :
+                         selectedAnswers.nutrition === 5 ? 'Muito Boa' : '-'}
+                      </p>
                     </div>
-                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Refeição Pré-Treino</p>
-                  </div>
-                  <div className="flex justify-between items-end h-[2.75rem]">
-                    <p className="text-sm text-slate-500">Qualidade (1-5)</p>
-                    <p className={`text-2xl font-black ${selectedAnswers.preTrainingMeal < 3 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {selectedAnswers.preTrainingMeal || '-'}
-                    </p>
+                    <div className="flex justify-between items-end border-t border-slate-800/50 pt-3">
+                      <p className="text-sm text-slate-500">Refeição Pré-Treino</p>
+                      <p className={`text-xl font-black ${selectedAnswers.preTrainingMeal < 3 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {selectedAnswers.preTrainingMeal === 1 ? 'Não Comi' :
+                         selectedAnswers.preTrainingMeal === 2 ? 'Comi Pouco' :
+                         selectedAnswers.preTrainingMeal === 3 ? 'Ok' :
+                         selectedAnswers.preTrainingMeal === 4 ? 'Comi Bem' :
+                         selectedAnswers.preTrainingMeal === 5 ? 'Comi Bastante' : '-'}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Confidence & Recovery */}
+                {/* Training Load & RPE */}
                 <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50 sm:col-span-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-blue-500/10 rounded-lg">
-                          <Target className="w-5 h-5 text-blue-400" />
-                        </div>
-                        <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Confiança</p>
-                      </div>
-                      <p className="text-2xl font-black text-white">{selectedAnswers.confidence || '-'}/5</p>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <Activity className="w-5 h-5 text-blue-400" />
                     </div>
+                    <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Treinamento & Esforço (Última Sessão)</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Atividade</p>
+                      <p className="text-sm font-bold text-white">
+                        {selectedAnswers.symptoms?.previous_activity === 1 ? 'Musculação' :
+                         selectedAnswers.symptoms?.previous_activity === 2 ? 'Treino Tático/Técnico' :
+                         selectedAnswers.symptoms?.previous_activity === 3 ? 'Recuperação/Fisioterapia' :
+                         selectedAnswers.symptoms?.previous_activity === 4 ? 'Jogo/Competição' :
+                         selectedAnswers.symptoms?.previous_activity === 5 ? 'Day Off' : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Duração</p>
+                      <p className="text-lg font-black text-blue-400">{selectedAnswers.symptoms?.duration_minutes ? `${selectedAnswers.symptoms.duration_minutes} min` : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Esforço (PSE)</p>
+                      <p className="text-lg font-black text-amber-400">
+                        {selectedAnswers.symptoms?.rpe_simple === 1 ? 'Muito Fácil' :
+                         selectedAnswers.symptoms?.rpe_simple === 2 ? 'Fácil' :
+                         selectedAnswers.symptoms?.rpe_simple === 3 ? 'Moderado' :
+                         selectedAnswers.symptoms?.rpe_simple === 4 ? 'Difícil' :
+                         selectedAnswers.symptoms?.rpe_simple === 5 ? 'Muito Difícil' : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1">Sessão</p>
+                      <p className="text-lg font-black text-emerald-400">{selectedAnswers.symptoms?.session_load || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Metrics */}
+                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50 sm:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-8">
                     <div>
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-orange-500/10 rounded-lg">
@@ -1591,16 +1651,58 @@ ANALYZE check_ins;`}
                         </div>
                         <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Recuperação</p>
                       </div>
-                      <p className="text-2xl font-black text-white">{selectedAnswers.trainingRecovery || '-'}/5</p>
+                      <p className="text-2xl font-black text-white">
+                        {selectedAnswers.trainingRecovery === 1 ? 'Muito Ruim' :
+                         selectedAnswers.trainingRecovery === 2 ? 'Ruim' :
+                         selectedAnswers.trainingRecovery === 3 ? 'Médio' :
+                         selectedAnswers.trainingRecovery === 4 ? 'Boa' :
+                         selectedAnswers.trainingRecovery === 5 ? 'Muito Boa' : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-blue-500/10 rounded-lg">
+                          <Target className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Confiança</p>
+                      </div>
+                      <p className="text-2xl font-black text-white">
+                        {selectedAnswers.confidence === 1 ? 'Muito Baixa' :
+                         selectedAnswers.confidence === 2 ? 'Baixa' :
+                         selectedAnswers.confidence === 3 ? 'Ok' :
+                         selectedAnswers.confidence === 4 ? 'Alta' :
+                         selectedAnswers.confidence === 5 ? 'Muito Alta' : '-'}
+                      </p>
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-emerald-500/10 rounded-lg">
                           <Heart className="w-5 h-5 text-emerald-400" />
                         </div>
-                        <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Bem-estar</p>
+                        <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Geral</p>
                       </div>
-                      <p className="text-2xl font-black text-white">{selectedAnswers.overallWellbeing || '-'}/5</p>
+                      <p className="text-2xl font-black text-white">
+                        {selectedAnswers.overallWellbeing === 1 ? 'Muito Mal' :
+                         selectedAnswers.overallWellbeing === 2 ? 'Mal' :
+                         selectedAnswers.overallWellbeing === 3 ? 'Ok' :
+                         selectedAnswers.overallWellbeing === 4 ? 'Bem' :
+                         selectedAnswers.overallWellbeing === 5 ? 'Muito Bem' : '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-rose-500/10 rounded-lg">
+                          <Activity className="w-5 h-5 text-rose-400" />
+                        </div>
+                        <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Peso nas Pernas</p>
+                      </div>
+                      <p className="text-2xl font-black text-white">
+                        {selectedAnswers.symptoms?.leg_heaviness === 1 ? 'Muito Pesadas' :
+                         selectedAnswers.symptoms?.leg_heaviness === 2 ? 'Pesadas' :
+                         selectedAnswers.symptoms?.leg_heaviness === 3 ? 'Normais' :
+                         selectedAnswers.symptoms?.leg_heaviness === 4 ? 'Leves' :
+                         selectedAnswers.symptoms?.leg_heaviness === 5 ? 'Muito Leves' : '-'}
+                      </p>
                     </div>
                   </div>
                 </div>

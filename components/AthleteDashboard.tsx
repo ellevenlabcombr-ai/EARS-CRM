@@ -545,7 +545,7 @@ export function AthleteDashboard({
   // Questionnaires & Setup
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState("");
-  const [clinicalSigns, setClinicalSigns] = useState<string[]>([]);
+  const [clinicalSigns, setClinicalSigns] = useState<Record<string, number>>({});
   const [painMap, setPainMap] = useState<Record<string, { level: number; type: string }>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -938,9 +938,17 @@ export function AthleteDashboard({
   const isComplete = metrics.every((m) => answers[m.id] !== undefined);
 
   const toggleClinicalSign = (id: string) => {
-    setClinicalSigns((prev) => 
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setClinicalSigns((prev) => {
+      const currentLevel = prev[id] || 0;
+      const nextLevel = (currentLevel + 1) % 4; // 0 -> 1 -> 2 -> 3 -> 0
+      const newSigns = { ...prev };
+      if (nextLevel === 0) {
+        delete newSigns[id];
+      } else {
+        newSigns[id] = nextLevel;
+      }
+      return newSigns;
+    });
   };
 
   // Menstrual Cycle Helpers
@@ -1114,11 +1122,13 @@ export function AthleteDashboard({
     const moderateSigns = ["Enjoo", "Tontura", "Dor de Cabeça", "Dor de Garganta"];
     const minorSigns = ["Lesão Pele", "Bolhas", "Unha Encravada"];
 
-    clinicalSigns.forEach(sign => {
-      if (severeSigns.includes(sign)) signsDeduction += 15;
-      else if (moderateSigns.includes(sign)) signsDeduction += 8;
-      else if (minorSigns.includes(sign)) signsDeduction += 2;
-      else signsDeduction += 5; 
+    Object.keys(clinicalSigns).forEach(sign => {
+      const level = clinicalSigns[sign];
+      const baseDeduction = level * 2; // e.g. Leve=2, Moderado=4, Severo=6
+      if (severeSigns.includes(sign)) signsDeduction += (15 * (level/3));
+      else if (moderateSigns.includes(sign)) signsDeduction += (8 * (level/3));
+      else if (minorSigns.includes(sign)) signsDeduction += (2 * (level/3));
+      else signsDeduction += (5 * (level/3)); 
     });
 
     // Age factor 
@@ -1305,7 +1315,7 @@ export function AthleteDashboard({
         overall_wellbeing: answers["overall_wellbeing"],
         menstrual_cycle: cycleInfo?.phase,
         symptoms: {
-          ...(clinicalSigns.length > 0 ? clinicalSigns.reduce((acc, sign) => ({ ...acc, [sign]: 1 }), {}) : {}),
+          ...clinicalSigns,
           leg_heaviness: answers["leg_heaviness"] || 0,
           previous_activity: answers["previous_activity"] || 0,
           rpe_simple: rpe_simple,
@@ -1375,7 +1385,7 @@ export function AthleteDashboard({
           confidence: answers["confidence"],
           overall_wellbeing: answers["overall_wellbeing"],
           symptoms: {
-            ...(clinicalSigns.length > 0 ? clinicalSigns.reduce((acc, sign) => ({ ...acc, [sign]: 1 }), {}) : {}),
+            ...clinicalSigns,
             leg_heaviness: answers["leg_heaviness"] || 0,
             previous_activity: answers["previous_activity"] || 0,
             rpe_simple: rpe_simple,
@@ -3046,26 +3056,34 @@ export function AthleteDashboard({
                     // Luteal (TPM) and Menstrual phases are relevant for these symptoms
                     return (pKey === 'menstrual' || pKey === 'luteal');
                   }).map((sign) => {
-                    const isSelected = clinicalSigns.includes(sign.id);
+                    const isSelected = !!clinicalSigns[sign.id];
+                    const level = clinicalSigns[sign.id] || 0;
                     return (
                       <button
                         key={sign.id}
                         onClick={() => toggleClinicalSign(sign.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${
+                        className={`flex justify-between items-center px-3 py-2 rounded-xl border transition-all ${
                           isSelected 
                             ? 'bg-red-500/20 border-red-500/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)] scale-[0.98]' 
                             : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                         }`}
                       >
-                        <span className="text-lg">{sign.emoji}</span>
-                        <span className="text-xxs font-black uppercase tracking-tight text-left">
-                          {lang === "pt" ? sign.label_pt : sign.label_en}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{sign.emoji}</span>
+                          <span className="text-xxs font-black uppercase tracking-tight text-left">
+                            {lang === "pt" ? sign.label_pt : sign.label_en}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <span className="ml-2 text-[10px] font-black uppercase tracking-widest bg-red-500/20 text-red-400 border border-red-500/30 px-1.5 py-0.5 rounded animate-pulse">
+                            {level === 1 ? 'Leve' : level === 2 ? 'Moderado' : 'Severo'}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
-                {clinicalSigns.length > 0 && (
+                {Object.keys(clinicalSigns).length > 0 && (
                   <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-widest rounded-lg flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
                     {lang === "pt" ? "ATENÇÃO: Sua bateria clínica será impactada por estes sintomas." : "ATTENTION: Your clinical battery will be impacted by these symptoms."}
