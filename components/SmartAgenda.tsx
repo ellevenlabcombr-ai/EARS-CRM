@@ -15,7 +15,6 @@ import { supabase } from "@/lib/supabase";
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AgendaEvent, AgendaCategory } from "@/types/agenda";
-import { SmartDaySummary } from "./SmartDaySummary";
 import { CalendarGrid } from "./CalendarGrid";
 import { MonthCalendarGrid } from "./MonthCalendarGrid";
 import { EventModal } from "./EventModal";
@@ -240,8 +239,6 @@ export function SmartAgenda() {
           </button>
         </div>
       </header>
-
-      <SmartDaySummary events={events} />
 
       <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">

@@ -807,7 +807,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 flex flex-col justify-start items-center gap-4 py-6 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 flex flex-col justify-center items-center gap-6 py-6 overflow-y-auto custom-scrollbar">
           {menuItems.map((item) => {
             const isActive = currentView === item.id;
             
