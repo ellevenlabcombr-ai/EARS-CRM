@@ -923,13 +923,16 @@ export function AthleteDashboard({
       }
 
       // 4. Fetch upcoming competitions
-      const today = new Date().toISOString();
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const isoToday = startOfToday.toISOString();
+
       const { data: upcomingEvents } = await supabase
         .from("agenda_events")
         .select("*")
         .eq("athlete_id", athleteId)
-        .gte("start_time", today)
-        .limit(3);
+        .gte("start_time", isoToday)
+        .limit(10);
       
       if (upcomingEvents && upcomingEvents.length > 0) {
         // Find if there is a match/competition either today or tomorrow
@@ -1082,7 +1085,7 @@ export function AthleteDashboard({
     return { currentDay, phase, phaseKey, nextPeriodDays, isLate, lateDays, cycleLength };
   }, [athleteData, lang, athleteGender]);
 
-  const metrics = getMetrics(lang, athleteGender, cycleInfo?.phaseKey === 'menstrual');
+  const metrics = getMetrics(lang, athleteGender, cycleInfo?.phaseKey === 'menstrual', hasUpcomingCompetition);
   const isComplete = metrics.every((m) => answers[m.id] !== undefined);
 
   const athleteAge = useMemo(() => {
