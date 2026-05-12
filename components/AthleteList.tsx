@@ -588,30 +588,6 @@ export function AthleteList({
                       {/* Hover Glow */}
                       <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-overlay"></div>
 
-                      {/* Status Badge */}
-                      <div className="absolute top-4 left-4 flex flex-col gap-2">
-                        <div
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${statusCfg.bg} ${statusCfg.color}`}
-                        >
-                          <StatusIcon className="w-3.5 h-3.5" />
-                          <span className="text-xxs font-black uppercase tracking-widest">
-                            {athlete.status}
-                          </span>
-                        </div>
-
-                        {athlete.risk_level &&
-                          athlete.risk_level !== "Baixo" && (
-                            <div
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color}`}
-                            >
-                              <AlertCircle className="w-3.5 h-3.5" />
-                              <span className="text-xxs font-black uppercase tracking-widest">
-                                Risco {athlete.risk_level}
-                              </span>
-                            </div>
-                          )}
-                      </div>
-
                       {/* Actions */}
                       <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
                         <button
@@ -647,6 +623,30 @@ export function AthleteList({
                               </span>
                             )}
                         </h3>
+                        
+                        {/* Status Badges */}
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <div
+                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${statusCfg.bg} ${statusCfg.color}`}
+                          >
+                            <StatusIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                            <span className="text-[10px] sm:text-xxs font-black uppercase tracking-widest">
+                              {athlete.status}
+                            </span>
+                          </div>
+
+                          {athlete.risk_level &&
+                            athlete.risk_level !== "Baixo" && (
+                              <div
+                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg backdrop-blur-md border border-white/5 shadow-lg ${getRiskConfig(athlete.risk_level)?.bg} ${getRiskConfig(athlete.risk_level)?.color}`}
+                              >
+                                <AlertCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                <span className="text-[10px] sm:text-xxs font-black uppercase tracking-widest">
+                                  Risco {athlete.risk_level}
+                               </span>
+                              </div>
+                            )}
+                        </div>
                       </div>
                     </div>
 
