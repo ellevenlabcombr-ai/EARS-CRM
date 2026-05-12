@@ -296,6 +296,14 @@ const getOptionsForMetric = (metricId: string, lang: Language) => {
     { value: 5, label: opts.rpe_very_hard, color: "bg-red-500", emoji: "🥵" },
   ];
 
+  const menstrualFlowOptions = [
+    { value: 1, label: lang === "pt" ? "Muito Leve" : "Very Light", color: "bg-pink-300", emoji: "💧" },
+    { value: 2, label: lang === "pt" ? "Leve" : "Light", color: "bg-pink-400", emoji: "💧" },
+    { value: 3, label: lang === "pt" ? "Moderado" : "Moderate", color: "bg-rose-500", emoji: "🩸" },
+    { value: 4, label: lang === "pt" ? "Intenso" : "Heavy", color: "bg-rose-600", emoji: "🩸🩸" },
+    { value: 5, label: lang === "pt" ? "Muito Intenso" : "Very Heavy", color: "bg-red-700", emoji: "🩸🩸🩸" },
+  ];
+
   const previousActivityOptions = [
     { value: 5, label: opts.act_rest, color: "bg-emerald-500", emoji: "🛌" },
     { value: 4, label: opts.act_phys, color: "bg-lime-500", emoji: "🏋️" },
@@ -333,14 +341,16 @@ const getOptionsForMetric = (metricId: string, lang: Language) => {
       return defaultOptions;
     case "menstrual_cycle":
       return menstrualCycleOptions;
+    case "menstrual_flow":
+      return menstrualFlowOptions;
     default:
       return defaultOptions;
   }
 };
 
-const getMetrics = (lang: Language, gender: "M" | "F" = "M") => {
+const getMetrics = (lang: Language, gender: "M" | "F" = "M", isMenstruating: boolean = false) => {
   const m = t[lang].metrics;
-  const baseMetrics = [
+  const baseMetrics: any[] = [
     // Morning Section
     {
       id: "sleep",
@@ -452,6 +462,24 @@ const getMetrics = (lang: Language, gender: "M" | "F" = "M") => {
       description: m.overall_wellbeing.desc,
     },
   ];
+
+  if (gender === "F" && isMenstruating) {
+    const menstrualFlowMetric = {
+      id: "menstrual_flow",
+      group: "habits",
+      label: m.menstrual_flow?.label || (lang === "pt" ? "Volume do Fluxo Menstrual" : "Menstrual Flow Volume"),
+      icon: Droplets,
+      description: m.menstrual_flow?.desc || (lang === "pt" ? "Qual a intensidade do seu fluxo?" : "How heavy is your flow?"),
+    };
+    
+    // Insert after urine_color
+    const urineColorIndex = baseMetrics.findIndex(m => m.id === "urine_color");
+    if (urineColorIndex !== -1) {
+      baseMetrics.splice(urineColorIndex + 1, 0, menstrualFlowMetric);
+    } else {
+      baseMetrics.push(menstrualFlowMetric);
+    }
+  }
 
   return baseMetrics;
 };
@@ -934,9 +962,6 @@ export function AthleteDashboard({
     }
   };
 
-  const metrics = getMetrics(lang, athleteGender);
-  const isComplete = metrics.every((m) => answers[m.id] !== undefined);
-
   const toggleClinicalSign = (id: string) => {
     setClinicalSigns((prev) => {
       const currentLevel = prev[id] || 0;
@@ -995,6 +1020,9 @@ export function AthleteDashboard({
 
     return { currentDay, phase, phaseKey, nextPeriodDays, isLate, lateDays, cycleLength };
   }, [athleteData, lang, athleteGender]);
+
+  const metrics = getMetrics(lang, athleteGender, cycleInfo?.phaseKey === 'menstrual');
+  const isComplete = metrics.every((m) => answers[m.id] !== undefined);
 
   const athleteAge = useMemo(() => {
     if (!athleteData?.birth_date) return null;

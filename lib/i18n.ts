@@ -53,6 +53,7 @@ export const t = {
       rpe_simple: { label: 'Esforço (Ontem)', desc: 'Qual foi o esforço no treino de ontem?' },
       duration_minutes: { label: 'Duração (Ontem)', desc: 'Quanto tempo durou o treino? (Minutos)' },
       previous_activity: { label: 'Atividade de Ontem', desc: 'Qual foi sua principal atividade física ontem?' },
+      menstrual_flow: { label: 'Volume do Fluxo Menstrual', desc: 'Qual a intensidade do seu fluxo?' },
     },
     options: {
       veryBad: 'Muito Mal',
@@ -153,6 +154,7 @@ export const t = {
       rpe_simple: { label: 'Effort (Yesterday)', desc: 'What was your effort level in yesterday\'s training?' },
       duration_minutes: { label: 'Duration (Yesterday)', desc: 'How long was the training? (Minutes)' },
       previous_activity: { label: 'Yesterday\'s Activity', desc: 'What was your main physical activity yesterday?' },
+      menstrual_flow: { label: 'Menstrual Flow Volume', desc: 'How heavy is your flow?' },
     },
     options: {
       veryBad: 'Very Bad',
