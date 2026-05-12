@@ -357,7 +357,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
           </div>
         ) : (
           <>
-            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-6" : "flex flex-col gap-4"}>
+            <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "flex flex-col gap-4"}>
               {filteredAthletes.map((athlete) => {
                 const statusCfg = getStatusConfig(athlete.status as any);
                 const StatusIcon = statusCfg.icon;
@@ -388,19 +388,25 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                             </div>
                           )}
                           <h3 className="font-black text-white text-xl leading-tight uppercase tracking-tight flex items-center gap-2">
-                            {athlete.name}
+                            {athlete.nickname || athlete.name}
                             {athlete.group_name && athlete.group_name.toUpperCase().includes('AGUIA') && (
                               <span className="text-lg" title="Projeto Águias">🦅</span>
                             )}
                           </h3>
                           <div className="flex flex-wrap items-center gap-3 mt-2 text-xs font-bold uppercase tracking-widest">
-                            <span className="text-slate-300">{athlete.posicao || 'Atleta'}</span>
-                            <span className="text-slate-500">•</span>
-                            <span className="text-slate-400">{athlete.category || 'Sem Categoria'}</span>
-                            <span className="text-slate-500">•</span>
-                            <span className="text-slate-500">{athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}</span>
-                            <span className="text-slate-500">•</span>
-                            <span className="text-white/80">{athlete.group_name || 'Sem Projeto'}</span>
+                            <span className="text-slate-300">{athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}</span>
+                            {athlete.group_name && (
+                              <>
+                                <span className="text-slate-500">•</span>
+                                <span className="text-cyan-500/80">PROJETO: {athlete.group_name}</span>
+                              </>
+                            )}
+                            {athlete.clube_anterior && (
+                              <>
+                                <span className="text-slate-500">•</span>
+                                <span className="text-slate-500">{athlete.clube_anterior}</span>
+                              </>
+                            )}
                           </div>
                         </div>
 
@@ -425,13 +431,6 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                               title="Ver Informações"
                             >
                               <Info className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => onEditAthlete(athlete)}
-                              className="p-2 border border-slate-700/50 rounded-xl text-slate-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors bg-slate-800/20"
-                              title="Editar Cadastro"
-                            >
-                              <MoreVertical className="w-4 h-4" />
                             </button>
                             <button 
                               onClick={() => onViewDashboard(athlete)}
@@ -490,13 +489,6 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                         >
                           <Info className="w-4 h-4" />
                         </button>
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); onEditAthlete(athlete); }}
-                          className="p-2 bg-[#0A1120]/80 backdrop-blur-md border border-white/10 rounded-xl text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors shadow-lg"
-                          title="Editar Cadastro"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
                       </div>
 
                       {/* Name & Info (Bottom of Photo) */}
@@ -507,7 +499,7 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                           </div>
                         )}
                         <h3 className="font-black text-white text-2xl leading-tight group-hover:text-cyan-400 transition-colors uppercase tracking-tight flex items-center gap-2 drop-shadow-lg">
-                          {athlete.name}
+                          {athlete.nickname || athlete.name}
                           {athlete.group_name && athlete.group_name.toUpperCase().includes('AGUIA') && (
                             <span className="text-xl" title="Projeto Águias">🦅</span>
                           )}
@@ -519,17 +511,18 @@ export function AthleteList({ onAddAthlete, onEditAthlete, onViewDashboard }: At
                     <div className="p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
                       <div className="flex flex-col gap-1 mb-5">
                         <div className="text-xs font-bold text-slate-300 uppercase tracking-widest">
-                          {athlete.posicao || 'Atleta'}
-                        </div>
-                        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                          {athlete.category || 'Sem Categoria'}
-                        </div>
-                        <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                           {athlete.modalidade === 'Volleyball' ? 'Voleibol' : (athlete.modalidade || 'Sem Modalidade')}
                         </div>
-                        <div className="text-xs font-black text-white/80 uppercase tracking-widest mt-1">
-                          {athlete.group_name || 'Sem Projeto'}
-                        </div>
+                        {athlete.group_name && (
+                          <div className="text-xs font-black text-cyan-500/80 uppercase tracking-widest mt-1 mb-1">
+                            PROJETO: {athlete.group_name}
+                          </div>
+                        )}
+                        {athlete.clube_anterior && (
+                          <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
+                            {athlete.clube_anterior}
+                          </div>
+                        )}
                       </div>
 
                       <button 
