@@ -15,6 +15,7 @@ interface EventCardProps {
 export function EventCard({ event, onClick, isMultiDay }: EventCardProps) {
   const colorClass = getCategoryColor(event);
   const startTime = new Date(event.start_time);
+  const isValidStart = !isNaN(startTime.getTime());
   
   const getStatusIcon = () => {
     if (event.category === 'clinical' && event.status) {
@@ -49,7 +50,7 @@ export function EventCard({ event, onClick, isMultiDay }: EventCardProps) {
           {getStatusIcon()}
           <span className="truncate">{event.title}</span>
         </span>
-        {!event.is_all_day && (
+        {!event.is_all_day && isValidStart && (
           <span className="text-[9px] font-black uppercase tracking-tighter opacity-70 shrink-0">
             {format(startTime, "h:mm a")}
           </span>
