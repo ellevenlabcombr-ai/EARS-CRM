@@ -52,12 +52,12 @@ export const calculatePriority = (event: Partial<AgendaEvent>): number => {
 
 export const getCategoryColor = (event: AgendaEvent): string => {
   if (event.category === 'clinical') {
-    const risk = event.risk_score || 0;
-    if (risk < 4) return 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-500/20';
-    if (risk < 7) return 'bg-amber-500 text-white border-amber-400 shadow-md shadow-amber-400/20';
     return 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-500/20';
   }
-  if (event.category === 'competition' || event.category === 'game') {
+  if (event.category === 'competition') {
+    return 'bg-amber-500 text-white border-amber-400 shadow-lg shadow-amber-500/20';
+  }
+  if (event.category === 'game') {
     return 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/20';
   }
   if (event.category === 'training') {
