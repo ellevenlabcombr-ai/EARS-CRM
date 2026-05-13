@@ -19,6 +19,14 @@ export function SettingsDashboard() {
 
   const sections = [
     {
+      id: 'general' as const,
+      title: 'Geral', // Mantém Geral em primeiro
+      icon: Home,
+      color: 'bg-slate-500',
+      textColor: 'text-slate-500',
+      component: <GeneralSettings />
+    },
+    {
       id: 'agenda' as const,
       title: 'Agenda',
       icon: Calendar,
@@ -28,7 +36,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'dev' as const,
-      title: 'Desenvolvimento e Debug',
+      title: 'Desenv. e\nDebug', // Quebra de linha manual
       icon: Code,
       color: 'bg-amber-500',
       textColor: 'text-amber-500',
@@ -36,7 +44,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'data' as const,
-      title: 'Esportes/Dados',
+      title: 'Esportes\nDados', // Quebra de linha manual
       icon: Database,
       color: 'bg-blue-500',
       textColor: 'text-blue-500',
@@ -49,14 +57,6 @@ export function SettingsDashboard() {
       color: 'bg-emerald-500',
       textColor: 'text-emerald-500',
       component: <FinanceSettings />
-    },
-    {
-      id: 'general' as const,
-      title: 'Geral',
-      icon: Home,
-      color: 'bg-slate-500',
-      textColor: 'text-slate-500',
-      component: <GeneralSettings />
     },
     {
       id: 'branding' as const,
@@ -101,8 +101,8 @@ export function SettingsDashboard() {
       </header>
 
       {/* Horizontal Nav - Timeline Style */}
-      <div className="overflow-x-auto custom-scrollbar pb-4 pt-2 w-full">
-        <div className="flex items-center justify-between min-w-[700px]">
+      <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full">
+        <div className="flex items-center justify-between min-w-[800px] px-2">
           {sections.map((section, i, arr) => {
             const activeIndex = arr.findIndex(t => t.id === activeSection);
             const isPast = activeIndex > i;
@@ -112,18 +112,18 @@ export function SettingsDashboard() {
             return (
               <React.Fragment key={section.id}>
                 <div 
-                  className={`flex flex-col items-center gap-3 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
+                  className={`flex flex-col items-center gap-3 cursor-pointer transition-all flex-shrink-0 ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
                   onClick={() => setActiveSection(section.id)}
                 >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
-                    <Icon className="w-6 h-6" />
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
-                  <span className={`text-[0.65rem] font-black uppercase tracking-widest text-center max-w-[6rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] sm:text-[0.65rem] font-black uppercase tracking-widest text-center whitespace-pre-wrap max-w-[5rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
                     {section.title}
                   </span>
                 </div>
                 {i < arr.length - 1 && (
-                  <div className={`flex-1 h-[3px] mx-4 mb-8 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
+                  <div className={`flex-1 h-[2px] sm:h-[3px] mx-2 sm:mx-4 mb-10 sm:mb-8 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
                 )}
               </React.Fragment>
             );
