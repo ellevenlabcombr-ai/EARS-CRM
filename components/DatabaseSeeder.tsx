@@ -1523,7 +1523,7 @@ END $storage$;`;
   };
 
   return (
-    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 max-w-xl mx-auto mt-10">
+    <div className="space-y-6 max-w-xl mx-auto">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center">
           <Database className="w-6 h-6 text-cyan-400" />
