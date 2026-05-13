@@ -7,7 +7,7 @@ import { supabase, supabaseDebugInfo } from "@/lib/supabase";
 import { 
   Activity, 
   Bell, 
-  CircleCheck, 
+  CheckCircle2, 
   Clock, 
   Search, 
   AlertCircle,
@@ -920,7 +920,7 @@ ANALYZE check_ins;`}
           <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
             <CardContent className="p-4 sm:p-6 flex items-center gap-4">
               <div className="p-4 bg-cyan-500/10 rounded-2xl border border-cyan-500/20">
-                <CircleCheck className="w-8 h-8 text-cyan-400" />
+                <CheckCircle2 className="w-8 h-8 text-cyan-400" />
               </div>
               <div>
                 <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">Taxa de Resposta</p>
@@ -1082,7 +1082,7 @@ ANALYZE check_ins;`}
                       <td className="p-4 text-center hidden lg:table-cell">
                         {athlete.status === 'completed' ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xxs font-black uppercase tracking-widest">
-                            <CircleCheck className="w-3 h-3" /> OK
+                            <CheckCircle2 className="w-3 h-3" /> OK
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-400 text-xxs font-black uppercase tracking-widest">

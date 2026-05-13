@@ -4,7 +4,7 @@ import React from "react";
 import { AgendaEvent, getCategoryColor } from "@/types/agenda";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Bell, Check, CircleCheck, XCircle } from "lucide-react";
+import { Bell, Check, CheckCircle2, XCircle } from "lucide-react";
 
 interface EventCardProps {
   event: AgendaEvent;
@@ -14,17 +14,11 @@ interface EventCardProps {
 
 export function EventCard({ event, onClick, isMultiDay }: EventCardProps) {
   const colorClass = getCategoryColor(event);
-  let startTimeStr = "00:00";
-  try {
-    if (event.start_time) {
-      const parsed = new Date(event.start_time);
-      if (!isNaN(parsed.getTime())) startTimeStr = format(parsed, "HH:mm");
-    }
-  } catch {}
+  const startTime = new Date(event.start_time);
   
   const getStatusIcon = () => {
     if (event.category === 'clinical' && event.status) {
-       if (event.status === 'confirmed' || event.status === 'attended') return <CircleCheck className="w-3 h-3 shrink-0" />;
+       if (event.status === 'confirmed' || event.status === 'attended') return <CheckCircle2 className="w-3 h-3 shrink-0" />;
        if (event.status === 'no_show' || event.status === 'cancelled') return <XCircle className="w-3 h-3 shrink-0 opacity-50" />;
     }
     return null;
@@ -57,7 +51,7 @@ export function EventCard({ event, onClick, isMultiDay }: EventCardProps) {
         </span>
         {!event.is_all_day && (
           <span className="text-[9px] font-black uppercase tracking-tighter opacity-70 shrink-0">
-            {startTimeStr}
+            {format(startTime, "h:mm a")}
           </span>
         )}
       </div>

@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { 
   AlertCircle, 
   Clock, 
-  CircleCheck, 
+  CheckCircle2, 
   ChevronRight, 
   Search,
   Filter,
@@ -152,7 +152,7 @@ export function PendenciesDashboard() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'document': return <FileText size={18} />;
-      case 'evaluation': return <CircleCheck size={18} />;
+      case 'evaluation': return <CheckCircle2 size={18} />;
       case 'wellness': return <AlertCircle size={18} />;
       default: return <Clock size={18} />;
     }
@@ -275,7 +275,7 @@ export function PendenciesDashboard() {
                       }
                    }}
                    className="w-full mt-6 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 hover:text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
-                   <CircleCheck size={14} /> Concluir Tarefa
+                   <CheckCircle2 size={14} /> Concluir Tarefa
                  </button>
               ) : pendency.status !== 'completed' ? (
                  <button className="w-full mt-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-white uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
@@ -283,7 +283,7 @@ export function PendenciesDashboard() {
                  </button>
               ) : (
                  <button disabled className="w-full mt-6 py-3 bg-emerald-500/5 border border-emerald-500/10 opacity-50 cursor-not-allowed rounded-xl text-xs font-bold text-emerald-500 uppercase tracking-widest flex items-center justify-center gap-2 transition-all">
-                   <CircleCheck size={14} /> Concluído
+                   <CheckCircle2 size={14} /> Concluído
                  </button>
               )}
             </motion.div>
@@ -292,7 +292,7 @@ export function PendenciesDashboard() {
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 bg-slate-900/50 rounded-3xl flex items-center justify-center text-slate-700 mb-6">
-            <CircleCheck size={40} />
+            <CheckCircle2 size={40} />
           </div>
           <h2 className="text-xl font-bold text-white uppercase tracking-widest mb-2">Tudo em dia!</h2>
           <p className="text-slate-500">Não encontramos nenhuma pendência para os critérios selecionados.</p>

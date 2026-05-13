@@ -10,7 +10,7 @@ import {
   TrendingUp, 
   TrendingDown,
   Clock,
-  CircleCheck,
+  CheckCircle2,
   AlertCircle,
   Search
 } from "lucide-react";
@@ -197,7 +197,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
           label="Aptos" 
           value={`${aptoPercent}%`} 
           subValue={`${aptosCount} atletas`}
-          icon={CircleCheck}
+          icon={CheckCircle2}
           color="green"
         />
         <StatCard 
@@ -245,7 +245,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
                 ))
               ) : (
                 <div className="text-center py-8">
-                  <CircleCheck className="mx-auto text-emerald-500/20 mb-2" size={32} />
+                  <CheckCircle2 className="mx-auto text-emerald-500/20 mb-2" size={32} />
                   <p className="text-xs text-slate-500 font-bold uppercase">Nenhum alerta crítico</p>
                 </div>
               )}

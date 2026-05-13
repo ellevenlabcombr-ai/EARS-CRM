@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, History, Download, Eye, Trash2, CircleCheck, Clock } from 'lucide-react';
+import { X, History, Download, Eye, Trash2, CheckCircle2, Clock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 
@@ -124,7 +124,7 @@ export function AttachmentVersionHistory({
                             </span>
                             {version.is_current_version && (
                               <span className="text-xxs font-black bg-emerald-500/10 text-emerald-500 uppercase tracking-widest px-1.5 py-0.5 rounded border border-emerald-500/20 flex items-center gap-1">
-                                <CircleCheck size={8} /> Atual
+                                <CheckCircle2 size={8} /> Atual
                               </span>
                             )}
                           </div>

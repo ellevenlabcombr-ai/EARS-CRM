@@ -43,10 +43,8 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
 
   const colorClass = getCategoryColor(event);
   const startTime = new Date(event.start_time);
-  const endTime = new Date(event.end_time || event.start_time);
-  const isValidStart = !isNaN(startTime.getTime());
-  const isValidEnd = !isNaN(endTime.getTime());
-  const isMultiDay = (isValidStart && isValidEnd && !isSameDay(startTime, endTime)) || event.is_all_day;
+  const endTime = new Date(event.end_time);
+  const isMultiDay = !isSameDay(startTime, endTime) || event.is_all_day;
 
   const generateGCalLink = () => {
     const title = encodeURIComponent(event.title);
@@ -67,8 +65,8 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
     const cleanPhone = athletePhone.replace(/\D/g, '');
     const phoneWithCode = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
     
-    const dateStr = isValidStart ? format(startTime, "dd/MM", { locale: ptBR }) : "--/--";
-    const timeStr = isValidStart ? format(startTime, "HH:mm", { locale: ptBR }) : "--:--";
+    const dateStr = format(startTime, "dd/MM", { locale: ptBR });
+    const timeStr = format(startTime, "HH:mm", { locale: ptBR });
     const nameStr = athleteName ? athleteName.split(' ')[0] : 'Atleta';
     
     const message = `Olá ${nameStr}, seu atendimento está agendado para o dia ${dateStr} às ${timeStr}, confirma?`;
@@ -129,20 +127,15 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                     <h2 className="text-xl font-black text-gray-900 leading-tight tracking-tight">
                       {event.title}
                     </h2>
-                  <p className="text-sm text-gray-700 font-medium capitalize">
-                    {(() => {
-                      if (!isValidStart) return "Horário Inválido";
-                      if (isMultiDay && !event.is_all_day) {
-                        return isValidEnd 
-                          ? `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(endTime, "HH:mm")}`
-                          : "Horário Inválido";
-                      }
-                      if (event.is_all_day) {
-                        return `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })}${isValidEnd && !isSameDay(startTime, endTime) ? ` – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })}` : ''} • Dia Todo`;
-                      }
-                      return `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${isValidEnd ? format(endTime, "HH:mm") : '--:--'}`;
-                    })()}
-                  </p>
+                    <p className="text-sm text-gray-700 font-medium">
+                      {isMultiDay && !event.is_all_day ? (
+                        `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(endTime, "HH:mm")}`
+                      ) : event.is_all_day ? (
+                        `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })}${!isSameDay(startTime, endTime) ? ` – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })}` : ''} • Dia Todo`
+                      ) : (
+                        `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "HH:mm")}`
+                      )}
+                    </p>
                   </div>
                 </div>
 

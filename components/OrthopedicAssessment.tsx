@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  Stethoscope, ChevronRight, ArrowLeft, Save, CircleCheck,
-  FileQuestion, Eye, Activity, SquareCheck, TriangleAlert, ShieldAlert, AlertTriangle
+  Stethoscope, ChevronRight, ArrowLeft, Save, CheckCircle2,
+  FileQuestion, Eye, Activity, CheckSquare, TriangleAlert, ShieldAlert, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -155,7 +155,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
     { id: 'anamnese', label: 'Anamnese', icon: FileQuestion },
     { id: 'inspecao', label: 'Inspeção', icon: Eye },
     { id: 'mobilidade', label: 'Mobilidade', icon: Activity },
-    { id: 'funcional', label: 'Funcional', icon: SquareCheck },
+    { id: 'funcional', label: 'Funcional', icon: CheckSquare },
     { id: 'especificos', label: 'Específicos', icon: TriangleAlert },
     { id: 'redflags', label: 'Flags', icon: ShieldAlert },
   ] as const;
@@ -200,7 +200,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
             showSuccess ? "bg-emerald-500 text-slate-900" : "bg-cyan-500 hover:bg-cyan-400 text-slate-900"
           }`}
         >
-          {isSaving ? <span className="animate-pulse">...</span> : showSuccess ? <CircleCheck className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {isSaving ? <span className="animate-pulse">...</span> : showSuccess ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
           <span className="hidden sm:inline">{showSuccess ? 'Salvo' : 'Finalizar'}</span>
         </button>
       </header>
@@ -568,7 +568,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
                        return (
                          <label key={test} className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${selected ? 'bg-rose-500/10 border-rose-500' : 'bg-slate-950 border-slate-800 hover:bg-slate-900'}`}>
                            <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 border mt-0.5 ${selected ? 'bg-rose-500 border-rose-500' : 'border-slate-600'}`}>
-                             {selected && <SquareCheck className="w-3 h-3 text-white" />}
+                             {selected && <CheckSquare className="w-3 h-3 text-white" />}
                            </div>
                            <span className={`text-sm font-bold ${selected ? 'text-rose-400' : 'text-slate-300'}`}>{test}</span>
                          </label>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, AlertTriangle, CircleCheck, Clock } from "lucide-react";
+import { AlertCircle, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 
 interface AlertsOverviewProps {
   highRiskCount: number;
@@ -37,7 +37,7 @@ export function AlertsOverview({
     {
       label: "Estáveis",
       value: stableCount,
-      icon: CircleCheck,
+      icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
       border: "border-emerald-500/20",

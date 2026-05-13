@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, Clock, MapPin, User, Plus, Search, Filter, ChevronLeft, ChevronRight, AlertCircle, CircleCheck, XCircle, FileText, Activity, Thermometer, AlertTriangle, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Plus, Search, Filter, ChevronLeft, ChevronRight, AlertCircle, CheckCircle2, XCircle, FileText, Activity, Thermometer, AlertTriangle, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { format, addDays, startOfWeek, endOfWeek, isSameDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

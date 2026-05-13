@@ -51,19 +51,10 @@ export function MonthCalendarGrid({ events, onEventClick, currentDate }: MonthCa
       {/* Grid - Days */}
       <div className="grid grid-cols-7 auto-rows-fr">
         {calendarDays.map((day, idx) => {
-          const dayEvents = events.filter(event => {
-            if (!event.start_time) return false;
-            const startD = new Date(event.start_time);
-            if (isNaN(startD.getTime())) return false;
-            
-            if (isSameDay(startD, day)) return true;
-            
-            if (event.end_time) {
-              const endD = new Date(event.end_time);
-              if (!isNaN(endD.getTime()) && startD < day && endD > day) return true;
-            }
-            return false;
-          });
+          const dayEvents = events.filter(event => 
+            isSameDay(new Date(event.start_time), day) || 
+            (new Date(event.start_time) < day && new Date(event.end_time) > day)
+          );
 
           return (
             <div 
@@ -97,7 +88,7 @@ export function MonthCalendarGrid({ events, onEventClick, currentDate }: MonthCa
                       title={event.title}
                     >
                       <span className="hidden md:inline font-bold opacity-80">
-                        {!event.is_all_day && event.start_time && !isNaN(new Date(event.start_time).getTime()) && format(new Date(event.start_time), "HH:mm")}{" "}
+                        {!event.is_all_day && format(new Date(event.start_time), "HH:mm")}{" "}
                       </span>
                       {event.title}
                     </button>

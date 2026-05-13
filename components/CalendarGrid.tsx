@@ -64,13 +64,8 @@ export function CalendarGrid({ events, onEventClick, currentDate }: CalendarGrid
             const currentD = startOfDay(day);
             
             const dayEvents = events.filter(e => {
-              if (!e.start_time) return false;
-              const sd = new Date(e.start_time);
-              if (isNaN(sd.getTime())) return false;
-              const ed = new Date(e.end_time || e.start_time);
-              
-              const originalStart = startOfDay(sd);
-              const originalEnd = startOfDay(ed);
+              const originalStart = startOfDay(new Date(e.start_time));
+              const originalEnd = startOfDay(new Date(e.end_time));
               
               // Handle all events in the same grid
               return currentD >= originalStart && currentD <= originalEnd;
@@ -80,7 +75,7 @@ export function CalendarGrid({ events, onEventClick, currentDate }: CalendarGrid
               <div key={dayIdx} className="relative border-r border-slate-800/30 last:border-r-0 min-h-full">
                 {dayEvents.map(event => {
                   const originalStart = new Date(event.start_time);
-                  const originalEnd = new Date(event.end_time || event.start_time);
+                  const originalEnd = new Date(event.end_time);
                   
                   let eventStart = new Date(originalStart);
                   let eventEnd = new Date(originalEnd);

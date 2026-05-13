@@ -34,7 +34,6 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [initialEventForEdit, setInitialEventForEdit] = useState<AgendaEvent | null>(null);
-  const [initialDateForCreate, setInitialDateForCreate] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<AgendaEvent | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   
@@ -189,7 +188,6 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
 
   const handleEditEvent = (event: AgendaEvent) => {
     setInitialEventForEdit(event);
-    setInitialDateForCreate(null);
     setIsCreateModalOpen(true);
   };
 
@@ -216,16 +214,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
     ? events 
     : events.filter(e => e.category === filter);
 
-  const clinicalToday = events.filter(e => {
-    try {
-      if (!e.start_time) return false;
-      const d = new Date(e.start_time);
-      if (isNaN(d.getTime())) return false;
-      return isSameDay(d, new Date()) && e.category === 'clinical';
-    } catch {
-      return false;
-    }
-  });
+  const clinicalToday = events.filter(e => isSameDay(new Date(e.start_time), new Date()) && e.category === 'clinical');
   const confirmedToday = clinicalToday.filter(e => e.status === 'confirmed' || e.status === 'attended').length;
   const pendingToday = clinicalToday.length - confirmedToday;
 
@@ -273,7 +262,6 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
           <button 
             onClick={() => {
               setInitialEventForEdit(null);
-              setInitialDateForCreate(null);
               setIsCreateModalOpen(true);
             }}
             className="flex items-center gap-2 px-6 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl transition-all font-black text-xs uppercase tracking-widest shadow-xl shadow-cyan-500/20 active:scale-95"
@@ -384,7 +372,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
             }}
             onTimeSlotClick={(date) => {
               setInitialEventForEdit(null);
-              setInitialDateForCreate(date);
+              // Open modal with start time pre-filled? We can pass it to the Create modal via state if we wrap it, but for now just open it.
               setIsCreateModalOpen(true);
             }}
           />
@@ -414,7 +402,6 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleSaveEvent}
         initialEvent={initialEventForEdit}
-        initialDate={initialDateForCreate || undefined}
       />
 
       <EventModal 

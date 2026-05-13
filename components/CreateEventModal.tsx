@@ -11,7 +11,6 @@ interface CreateEventModalProps {
   onClose: () => void;
   onSave: (event: any) => void;
   initialEvent?: AgendaEvent | null;
-  initialDate?: Date;
   fixedAthleteId?: string;
 }
 
@@ -109,20 +108,12 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
       setConflictWarning(null);
       setIgnoreConflict(false);
     } else if (isOpen) {
-      let startStr = "";
-      let endStr = "";
-      if (initialDate) {
-         const start = new Date(initialDate);
-         const end = new Date(initialDate.getTime() + 60 * 60000); // +1h
-         startStr = toLocalInputFormat(start);
-         endStr = toLocalInputFormat(end);
-      } else {
-        const now = new Date();
-        now.setHours(now.getHours() + 1);
-        startStr = toLocalInputFormat(now);
-        now.setHours(now.getHours() + 1);
-        endStr = toLocalInputFormat(now);
-      }
+      const now = new Date();
+      now.setHours(now.getHours() + 1);
+      const startStr = toLocalInputFormat(now);
+      now.setHours(now.getHours() + 1);
+      const endStr = toLocalInputFormat(now);
+
        
       setFormData({
         title: "",
@@ -150,7 +141,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
       setConflictWarning(null);
       setIgnoreConflict(false);
     }
-  }, [isOpen, initialEvent, initialDate]);
+  }, [isOpen, initialEvent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

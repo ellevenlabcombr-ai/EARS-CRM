@@ -19,7 +19,7 @@ import {
   Mail,
   MapPin,
   AlertCircle,
-  CircleCheck,
+  CheckCircle2,
   Users,
   Stethoscope,
   Trophy,
@@ -862,7 +862,7 @@ export function AthleteRegistration({
               </>
             ) : success ? (
               <>
-                <CircleCheck className="w-3 h-3 sm:w-4 sm:h-4" />
+                <CheckCircle2 className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">Salvo!</span>
                 <span className="xs:hidden">OK!</span>
               </>
@@ -1503,7 +1503,7 @@ export function AthleteRegistration({
                 </>
               ) : success ? (
                 <>
-                  <CircleCheck className="w-6 h-6" />
+                  <CheckCircle2 className="w-6 h-6" />
                   Salvo com Sucesso!
                 </>
               ) : (

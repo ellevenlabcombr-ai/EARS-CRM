@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
   Calendar, Clock, Users, Activity, AlertTriangle,
-  CircleCheck as CircleCheck, ChevronRight, Loader2, RefreshCcw,
+  CheckCircle2, ChevronRight, Loader2, RefreshCcw,
   Trophy, AlertCircle, Plus, Stethoscope, ArrowRight,
   ClipboardList, ChevronDown, ChevronUp, BookOpen, User as UserIcon,
   Check, X, Play, StickyNote, Trash2, ListTodo, Bell,
@@ -46,20 +46,6 @@ const defaultSettings: ClinicalSettings = {
   attention_pain_max: 6,
   risk_message: 'Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.',
   attention_message: 'Atleta em estado de atenção. Monitorar carga de treino e recuperação.'
-};
-
-const safeFormatTimeUI = (timeStr: string | null | undefined) => {
-  if (!timeStr) return "";
-  try {
-    if (timeStr.includes('T')) {
-      const d = new Date(timeStr);
-      if (isNaN(d.getTime())) return timeStr.substring(0, 5);
-      return format(d, "HH:mm");
-    }
-    return timeStr.substring(0, 5);
-  } catch {
-    return timeStr.substring(0, 5) || "";
-  }
 };
 
 export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOperationsProps) {
@@ -133,17 +119,6 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
       setIsLoading(true);
       if (!supabase) return;
 
-      const safeFormatTime = (timeStr: string | null | undefined) => {
-        if (!timeStr) return "";
-        try {
-          const d = new Date(timeStr);
-          if (isNaN(d.getTime())) return timeStr.substring(0, 5); // fallback for simple hh:mm
-          return format(d, "HH:mm");
-        } catch {
-          return "";
-        }
-      };
-
       const dateStr = getLocalDateString(viewDate);
       const startOfView = new Date(viewDate);
       startOfView.setHours(0, 0, 0, 0);
@@ -204,8 +179,8 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
           source: 'smart_agenda',
           date: dateStr,
           // Store original times and add normalized ones for UI list
-          display_start: safeFormatTime(e.start_time),
-          display_end: safeFormatTime(e.end_time),
+          display_start: format(new Date(e.start_time), "HH:mm"),
+          display_end: format(new Date(e.end_time), "HH:mm"),
           type: e.category,
           status: e.status || 'pending'
         }))
@@ -400,7 +375,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
                   </div>
                   <div className="w-1 h-1 rounded-full bg-slate-700"></div>
                   <div className="text-cyan-400 font-black tracking-widest text-sm">
-                    {nextAppointment.display_start || safeFormatTimeUI(nextAppointment.start_time)} - {nextAppointment.display_end || safeFormatTimeUI(nextAppointment.end_time)}
+                    {nextAppointment.display_start || (nextAppointment.start_time?.includes('T') ? format(new Date(nextAppointment.start_time), "HH:mm") : nextAppointment.start_time?.substring(0, 5))} - {nextAppointment.display_end || (nextAppointment.end_time?.includes('T') ? format(new Date(nextAppointment.end_time), "HH:mm") : nextAppointment.end_time?.substring(0, 5))}
                   </div>
                 </div>
               </div>
@@ -456,7 +431,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
               {fullAgenda.length === 0 ? (
                 <div className="p-20 text-center flex flex-col items-center justify-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-slate-800/30 flex items-center justify-center text-slate-600 mb-2">
-                    <CircleCheck size={32} />
+                    <CheckCircle2 size={32} />
                   </div>
                   <p className="text-emerald-500 font-bold text-lg uppercase tracking-widest">✅ Operação tranquila hoje</p>
                   <p className="text-slate-500 text-sm font-medium">Nenhum compromisso ou alerta agendado.</p>
@@ -470,8 +445,8 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
                   >
                     <div className="flex items-start sm:items-center gap-4 sm:gap-6">
                       <div className="text-center w-12 sm:w-16 shrink-0 pt-1 sm:pt-0">
-                        <p className="text-xs sm:text-sm font-black text-white">{appt.display_start || safeFormatTimeUI(appt.start_time)}</p>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase">{appt.display_end || safeFormatTimeUI(appt.end_time)}</p>
+                        <p className="text-xs sm:text-sm font-black text-white">{appt.display_start || (appt.start_time?.includes('T') ? format(new Date(appt.start_time), "HH:mm") : appt.start_time?.substring(0, 5))}</p>
+                        <p className="text-[10px] text-slate-500 font-bold uppercase">{appt.display_end || (appt.end_time?.includes('T') ? format(new Date(appt.end_time), "HH:mm") : appt.end_time?.substring(0, 5))}</p>
                       </div>
                       <div className="w-px h-10 bg-slate-800/50 hidden sm:block"></div>
                       <div className="min-w-0 pr-2">

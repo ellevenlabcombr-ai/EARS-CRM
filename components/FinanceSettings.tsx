@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { motion } from 'motion/react';
-import { Plus, Trash, CircleCheck, Lock, Target, TrendingUp, X } from 'lucide-react';
+import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X } from 'lucide-react';
 import { getLocalDateString } from '@/lib/utils';
 
 export function FinanceSettings() {
@@ -131,7 +131,7 @@ export function FinanceSettings() {
     <div className="space-y-8 text-white">
       {message && (
         <div className={`p-4 rounded-xl flex items-center gap-2 font-bold ${message.type === 'error' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
-          <CircleCheck size={16} /> {message.text}
+          <CheckCircle2 size={16} /> {message.text}
         </div>
       )}
 

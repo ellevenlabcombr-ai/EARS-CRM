@@ -4,7 +4,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  CircleCheck, 
+  CheckCircle2, 
   ChevronRight, 
   ChevronLeft, 
   Zap, 

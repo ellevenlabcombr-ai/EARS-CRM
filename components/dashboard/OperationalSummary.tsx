@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClipboardList, Users, CircleCheck, Clock, AlertCircle } from "lucide-react";
+import { ClipboardList, Users, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 interface OperationalSummaryProps {
   totalAthletes: number;
@@ -28,7 +28,7 @@ export function OperationalSummary({
     {
       label: "Check-ins Hoje",
       value: checkinsTodayCount,
-      icon: CircleCheck,
+      icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },

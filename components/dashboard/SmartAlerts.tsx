@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BellRing, TrendingDown, Clock, Activity, CircleCheck, History, Loader2, AlertCircle } from "lucide-react";
+import { BellRing, TrendingDown, Clock, Activity, CheckCircle2, History, Loader2, AlertCircle } from "lucide-react";
 import { ClinicalAlert } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { resolveClinicalAlert } from "@/lib/clinical";
@@ -75,7 +75,7 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
             <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
               <div className="p-4 bg-slate-800/30 rounded-full">
                 {view === 'active' ? (
-                  <CircleCheck className="w-8 h-8 text-emerald-500/20" />
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500/20" />
                 ) : (
                   <History className="w-8 h-8 text-slate-500/20" />
                 )}
@@ -114,7 +114,7 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
                         {resolvingId === alert.id ? (
                           <Loader2 className="w-3 h-3 animate-spin mr-1" />
                         ) : (
-                          <CircleCheck className="w-3 h-3 mr-1" />
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
                         )}
                         Resolver
                       </Button>
@@ -123,7 +123,7 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
 
                   {view === 'resolved' && alert.resolved_at && (
                     <p className="text-xxs font-bold text-emerald-500/60 uppercase mt-2 flex items-center gap-1">
-                      <CircleCheck className="w-2.5 h-2.5" />
+                      <CheckCircle2 className="w-2.5 h-2.5" />
                       Resolvido em {new Date(alert.resolved_at).toLocaleDateString()}
                     </p>
                   )}
