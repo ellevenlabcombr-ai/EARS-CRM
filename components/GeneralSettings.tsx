@@ -84,7 +84,7 @@ export function GeneralSettings() {
           </div>
           <div>
             <p className="text-5xl font-black text-white tracking-tighter mb-2">{stats.athletesCount}</p>
-            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Atletas Federados</p>
+            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Atletas</p>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-800/50">
             <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -132,8 +132,38 @@ export function GeneralSettings() {
         </div>
       </div>
 
-      {/* Security Banner */}
+      {/* Quick Actions and Security Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl group">
+          <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Ações Rápidas</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <button className="p-4 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-2xl transition-all hover:bg-cyan-500/5 group/btn">
+              <div className="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-xl flex items-center justify-center mb-3 group-hover/btn:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+              <p className="text-[10px] font-black text-white uppercase tracking-widest text-left">Novo Atleta</p>
+            </button>
+            <button className="p-4 bg-slate-950 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition-all hover:bg-indigo-500/5 group/btn">
+              <div className="w-10 h-10 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center mb-3 group-hover/btn:scale-110 transition-transform">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <p className="text-[10px] font-black text-white uppercase tracking-widest text-left">Agendar Horário</p>
+            </button>
+            <button className="p-4 bg-slate-950 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition-all hover:bg-amber-500/5 group/btn">
+              <div className="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center mb-3 group-hover/btn:scale-110 transition-transform">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <p className="text-[10px] font-black text-white uppercase tracking-widest text-left">Logs de Sistema</p>
+            </button>
+            <button className="p-4 bg-slate-950 border border-slate-800 hover:border-rose-500/50 rounded-2xl transition-all hover:bg-rose-500/5 group/btn">
+              <div className="w-10 h-10 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center mb-3 group-hover/btn:scale-110 transition-transform">
+                <Activity className="w-5 h-5" />
+              </div>
+              <p className="text-[10px] font-black text-white uppercase tracking-widest text-left">Health Check</p>
+            </button>
+          </div>
+        </div>
+
         <div className="bg-amber-500/10 border border-amber-500/20 p-8 rounded-3xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
             <ShieldAlert className="w-48 h-48 text-amber-500" />
@@ -155,23 +185,27 @@ export function GeneralSettings() {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
-          <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Próximas Atualizações</h3>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-2 h-2 rounded-full bg-cyan-500 mt-1.5"></div>
-              <div>
-                <p className="text-sm font-bold text-white uppercase tracking-tight">Sincronização Cloud</p>
-                <p className="text-xs text-slate-500 mt-1">Backup automático em tempo real para múltiplos servidores.</p>
-              </div>
+      <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
+        <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Próximas Atualizações</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50">
+            <div className="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Activity className="w-5 h-5" />
             </div>
-            <div className="flex items-start gap-4">
-              <div className="w-2 h-2 rounded-full bg-slate-700 mt-1.5"></div>
-              <div>
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-tight">Dashboard de Performance v4</p>
-                <p className="text-xs text-slate-600 mt-1">Novos gráficos de análise biomecânica preditiva.</p>
-              </div>
+            <div>
+              <p className="text-sm font-bold text-white uppercase tracking-tight">Sincronização Cloud</p>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Backup automático em tempo real para múltiplos servidores com redundância global.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 opacity-60">
+            <div className="w-10 h-10 bg-slate-800 text-slate-400 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Settings className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-400 uppercase tracking-tight">AI Engine v4</p>
+              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Novos gráficos de análise biomecânica preditiva e análise de fadiga por sensores IoT.</p>
             </div>
           </div>
         </div>
