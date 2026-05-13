@@ -12,15 +12,19 @@ interface EventModalProps {
   event: AgendaEvent | null;
   isOpen: boolean;
   onClose: () => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, deleteAllSerie?: boolean) => void;
   onEdit?: (event: AgendaEvent) => void;
 }
 
 export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventModalProps) {
   const [athleteName, setAthleteName] = useState<string>("");
   const [athletePhone, setAthletePhone] = useState<string>("");
+  const [showDeleteOptions, setShowDeleteOptions] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) {
+      setShowDeleteOptions(false);
+    }
     const fetchAthlete = async () => {
       if (event?.athlete_id) {
         const { data } = await supabase.from('athletes').select('name, phone').eq('id', event.athlete_id).single();
@@ -87,11 +91,17 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
             <div className={`h-2 ${colorClass.split(' ')[0]}`} />
             
             <div className="p-0">
-              <div className="flex justify-end p-2">
+              <div className="flex justify-end p-2 relative">
                 <div className="flex gap-1">
                   {onDelete && (
                     <button 
-                      onClick={() => onDelete(event.id)}
+                      onClick={() => {
+                        if (event.recurrence_group_id) {
+                          setShowDeleteOptions(true);
+                        } else {
+                          onDelete(event.id);
+                        }
+                      }}
                       className="p-2 hover:bg-rose-50 text-rose-500 rounded-full transition-colors"
                       title="Excluir"
                     >
@@ -105,6 +115,54 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                     <X className="w-4 h-4" />
                   </button>
                 </div>
+
+                {/* Recurring Deletion Options Overlay */}
+                <AnimatePresence>
+                  {showDeleteOptions && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      className="absolute top-12 right-2 z-10 w-64 bg-white border border-gray-200 rounded-xl shadow-xl p-3 space-y-2 overflow-hidden"
+                    >
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 px-1">Este evento é recorrente</p>
+                      <button 
+                        onClick={() => {
+                          setShowDeleteOptions(false);
+                          onDelete?.(event.id, false);
+                        }}
+                        className="w-full text-left p-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3 border border-transparent hover:border-gray-100"
+                      >
+                        <Trash2 className="w-4 h-4 text-rose-500" />
+                        <div>
+                          <p className="text-xs font-black text-gray-900 uppercase">Apenas este evento</p>
+                          <p className="text-[10px] text-gray-500 font-medium">Remove apenas o agendamento de hoje</p>
+                        </div>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setShowDeleteOptions(false);
+                          onDelete?.(event.id, true);
+                        }}
+                        className="w-full text-left p-3 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-3 border border-transparent hover:border-rose-100 group"
+                      >
+                        <Repeat className="w-4 h-4 text-rose-500 group-hover:rotate-180 transition-transform duration-500" />
+                        <div>
+                          <p className="text-xs font-black text-rose-600 uppercase">Toda a série</p>
+                          <p className="text-[10px] text-rose-400 font-medium">Remove este e os próximos eventos</p>
+                        </div>
+                      </button>
+                      <div className="pt-2 border-t border-gray-50">
+                        <button 
+                          onClick={() => setShowDeleteOptions(false)}
+                          className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div className="px-6 pb-6 space-y-5">

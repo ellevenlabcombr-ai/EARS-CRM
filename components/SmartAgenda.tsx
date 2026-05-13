@@ -191,15 +191,20 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
     setIsCreateModalOpen(true);
   };
 
-  const handleDeleteEvent = async (id: string) => {
+  const handleDeleteEvent = async (id: string, deleteAllSerie = false) => {
     if (!supabase) return;
 
     try {
-      const { error } = await supabase
-        .from('agenda_events')
-        .delete()
-        .eq('id', id);
+      let query = supabase.from('agenda_events').delete();
+      
+      if (deleteAllSerie && selectedEvent?.recurrence_group_id) {
+        query = query.eq('recurrence_group_id', selectedEvent.recurrence_group_id)
+                     .gte('start_time', selectedEvent.start_time);
+      } else {
+        query = query.eq('id', id);
+      }
 
+      const { error } = await query;
       if (error) throw error;
       
       setIsEventModalOpen(false);
