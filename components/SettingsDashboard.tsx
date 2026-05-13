@@ -78,7 +78,7 @@ export function SettingsDashboard() {
   const activeComponent = sections.find(s => s.id === activeSection);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto space-y-8 flex flex-col h-[calc(100vh-theme(spacing.20))]">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto space-y-8 flex flex-col">
       <header className="flex-shrink-0 flex items-center gap-4 mb-4">
         <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center border border-slate-800">
           <Settings2 className="w-6 h-6 text-slate-400" />
@@ -91,9 +91,9 @@ export function SettingsDashboard() {
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 flex-1 min-h-[600px]">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
         {/* Sidebar Nav */}
-        <aside className="w-full lg:w-64 flex-shrink-0 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-hide shrink-0">
+        <aside className="w-full lg:w-64 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-hide shrink-0 sticky top-4">
           {sections.map((section) => {
             const isActive = activeSection === section.id;
             const Icon = section.icon;
@@ -102,7 +102,7 @@ export function SettingsDashboard() {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`flex items-center gap-3 w-full p-3 sm:p-4 rounded-xl text-left transition-all flex-shrink-0 lg:flex-shrink ${
+                className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl text-left transition-all flex-shrink-0 w-auto lg:w-full ${
                   isActive 
                     ? 'bg-slate-800/80 border border-slate-700 shadow-md' 
                     : 'bg-transparent border border-transparent hover:bg-slate-800/40 text-slate-400 hover:text-slate-200'
@@ -125,7 +125,7 @@ export function SettingsDashboard() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 bg-slate-900/40 border border-slate-800/80 rounded-3xl overflow-y-auto relative h-full">
+        <main className="flex-1 w-full bg-slate-900/40 border border-slate-800/80 rounded-3xl relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
@@ -133,7 +133,7 @@ export function SettingsDashboard() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.2 }}
-              className="p-6 lg:p-8 min-h-full"
+              className="p-6 lg:p-8"
             >
               <div className="mb-8 pb-4 border-b border-slate-800/50 flex flex-col gap-2">
                 <div className="flex items-center gap-3">
