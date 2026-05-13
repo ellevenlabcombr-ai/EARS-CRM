@@ -4,7 +4,7 @@ import React from "react";
 import { AgendaEvent, getCategoryColor } from "@/types/agenda";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Bell, Check, CheckCircle2, XCircle } from "lucide-react";
+import { Bell, Check, CircleCheck, XCircle } from "lucide-react";
 
 interface EventCardProps {
   event: AgendaEvent;
@@ -24,7 +24,7 @@ export function EventCard({ event, onClick, isMultiDay }: EventCardProps) {
   
   const getStatusIcon = () => {
     if (event.category === 'clinical' && event.status) {
-       if (event.status === 'confirmed' || event.status === 'attended') return <CheckCircle2 className="w-3 h-3 shrink-0" />;
+       if (event.status === 'confirmed' || event.status === 'attended') return <CircleCheck className="w-3 h-3 shrink-0" />;
        if (event.status === 'no_show' || event.status === 'cancelled') return <XCircle className="w-3 h-3 shrink-0 opacity-50" />;
     }
     return null;

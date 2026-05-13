@@ -174,7 +174,7 @@ export const CoachEarsDashboard: React.FC<Props> = ({ data, sport = 'Toda a Equi
             <CardContent className="p-0">
               {atRisk.length === 0 ? (
                 <div className="p-8 text-center">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-500/20 mx-auto mb-3" />
+                  <CircleCheck className="w-10 h-10 text-emerald-500/20 mx-auto mb-3" />
                   <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Nenhum risco detectado</p>
                 </div>
               ) : (
@@ -216,4 +216,4 @@ export const CoachEarsDashboard: React.FC<Props> = ({ data, sport = 'Toda a Equi
   );
 };
 
-const CheckCircle2 = ({ className, ...props }: any) => <Activity className={className} {...props} />;
+const CircleCheck = ({ className, ...props }: any) => <Activity className={className} {...props} />;

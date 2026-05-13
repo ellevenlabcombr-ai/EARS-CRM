@@ -31,7 +31,7 @@ import {
   Moon,
   Smile,
   Battery,
-  CheckCircle2,
+  CircleCheck,
   ActivitySquare,
   Droplets,
   AlertCircle,
@@ -64,7 +64,7 @@ import {
   TrendingDown,
   AlertTriangle,
   Minus,
-  CheckCircle2 as CheckCircle,
+  CircleCheck as CheckCircle,
   LayoutDashboard,
   Users,
   Calendar,
@@ -2284,7 +2284,7 @@ export function AthleteDashboard({
                             ))
                           ) : (
                             <div className="w-full text-center py-8 bg-slate-900/20 rounded-2xl border border-dashed border-slate-800/50">
-                              <CheckCircle2 className="w-8 h-8 text-emerald-500/20 mx-auto mb-2" />
+                              <CircleCheck className="w-8 h-8 text-emerald-500/20 mx-auto mb-2" />
                               <p className="text-slate-500 font-bold uppercase tracking-widest text-xxs">
                                 {lang === "pt" ? "Nenhuma dor relatada" : "No pain reported"}
                               </p>
@@ -2321,7 +2321,7 @@ export function AthleteDashboard({
                         }`}
                       >
                         {day.hasRecord ? (
-                          <CheckCircle2 className="w-4 h-4" />
+                          <CircleCheck className="w-4 h-4" />
                         ) : (
                           <span className="text-xxs font-bold">
                             {day.dayName.charAt(0)}

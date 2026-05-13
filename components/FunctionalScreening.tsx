@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Accessibility,
-  CheckCircle2, 
+  CircleCheck, 
   AlertCircle, 
   Save, 
   X, 
@@ -499,7 +499,7 @@ export default function FunctionalScreening({ athleteId, onCancel, onSave }: Fun
                                }`}
                              >
                                {comp}
-                               {scores[test.id].compensations.includes(comp) && <CheckCircle2 className="w-3 h-3" />}
+                               {scores[test.id].compensations.includes(comp) && <CircleCheck className="w-3 h-3" />}
                              </button>
                            ))}
                          </div>

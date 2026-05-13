@@ -10,7 +10,7 @@ import {
   Coffee, 
   Smartphone, 
   AlertCircle, 
-  CheckCircle2, 
+  CircleCheck, 
   Save,
   ArrowLeft,
   Info,
@@ -166,7 +166,7 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
 
   const formSteps = [
     { id: 1, title: 'Quantidade', icon: Clock },
-    { id: 2, title: 'Qualidade', icon: CheckCircle2 },
+    { id: 2, title: 'Qualidade', icon: CircleCheck },
     { id: 3, title: 'Interrupções', icon: AlertCircle },
     { id: 4, title: 'Hábitos', icon: Smartphone },
     { id: 5, title: 'Impacto Diurno', icon: Sun },
@@ -271,7 +271,7 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
         {step === 2 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
             <h3 className="text-sm font-black text-white uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-cyan-500" /> Qualidade Percebida
+              <CircleCheck className="w-4 h-4 text-cyan-500" /> Qualidade Percebida
             </h3>
             <div className="space-y-6">
               <div className="space-y-2">
@@ -514,7 +514,7 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
             exit={{ opacity: 0, y: 50 }}
             className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold"
           >
-            <CheckCircle2 size={20} />
+            <CircleCheck size={20} />
             Avaliação salva com sucesso!
           </motion.div>
         )}

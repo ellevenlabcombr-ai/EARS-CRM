@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Brain, AlertTriangle, Save, ArrowLeft, Activity, 
-  CheckCircle2, FileQuestion, GraduationCap, Eye, ChevronRight
+  CircleCheck, FileQuestion, GraduationCap, Eye, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -404,7 +404,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                                       setCognitive({...cognitive, immediateMemory: newMem});
                                     }}
                                     className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all border ${isChecked ? 'bg-emerald-500 text-slate-900 border-emerald-500' : 'bg-slate-950 border-slate-700 text-slate-600'}`}>
-                                    {isChecked && <CheckCircle2 className="w-4 h-4" />}
+                                    {isChecked && <CircleCheck className="w-4 h-4" />}
                                   </button>
                                 </div>
                               )
@@ -707,7 +707,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                         <button key={flag.key} onClick={() => setRedFlags({...redFlags, [flag.key]: !selected})}
                           className={`p-4 rounded-2xl border text-left flex flex-col gap-3 transition-colors ${selected ? 'bg-amber-500/10 border-amber-500 text-amber-400' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
                           <div className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${selected ? 'border-amber-500 bg-amber-500' : 'border-slate-700'}`}>
-                            {selected && <CheckCircle2 className="w-3 h-3 text-[#050B14]" />}
+                            {selected && <CircleCheck className="w-3 h-3 text-[#050B14]" />}
                           </div>
                           <span className="text-xs font-bold leading-snug">{flag.label}</span>
                         </button>

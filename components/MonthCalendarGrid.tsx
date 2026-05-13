@@ -97,7 +97,7 @@ export function MonthCalendarGrid({ events, onEventClick, currentDate }: MonthCa
                       title={event.title}
                     >
                       <span className="hidden md:inline font-bold opacity-80">
-                        {!event.is_all_day && format(new Date(event.start_time), "HH:mm")}{" "}
+                        {!event.is_all_day && event.start_time && !isNaN(new Date(event.start_time).getTime()) && format(new Date(event.start_time), "HH:mm")}{" "}
                       </span>
                       {event.title}
                     </button>

@@ -11,7 +11,7 @@ import {
   Filter,
   ArrowUpRight,
   ArrowDownRight,
-  CheckCircle2,
+  CircleCheck,
   Clock,
   MoreHorizontal,
   Wallet,
@@ -452,7 +452,7 @@ export function FinanceDashboard() {
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                             t.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-500'
                           }`}>
-                            {t.status === 'paid' ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                            {t.status === 'paid' ? <CircleCheck size={12} /> : <Clock size={12} />}
                             {t.status === 'paid' ? 'Pago' : 'Pendente'}
                           </span>
                         </td>
@@ -721,7 +721,7 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
             <div className="bg-[#050B14] border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
               <label className="flex items-center gap-3 cursor-pointer group">
                 <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${isRecurring ? 'bg-indigo-500 border-indigo-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
-                  {isRecurring && <CheckCircle2 size={14} className="text-white" />}
+                  {isRecurring && <CircleCheck size={14} className="text-white" />}
                 </div>
                 <input type="checkbox" checked={isRecurring} onChange={e => setIsRecurring(e.target.checked)} className="hidden" />
                 <div>
@@ -977,7 +977,7 @@ function LatePayments({ athletes, transactions }: { athletes: any[], transaction
          <div className="space-y-4">
             {lateList.length === 0 ? (
                <div className="p-10 text-center text-emerald-500 font-bold bg-emerald-500/5 rounded-2xl border border-emerald-500/10 flex flex-col items-center">
-                 <CheckCircle2 size={40} className="mb-4" />
+                 <CircleCheck size={40} className="mb-4" />
                  <p className="text-lg">Excelente! Todos os alunos estão em dia.</p>
                </div>
             ) : lateList.map(a => (

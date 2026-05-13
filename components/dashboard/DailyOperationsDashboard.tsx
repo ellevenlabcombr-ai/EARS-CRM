@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { 
   Calendar, Clock, Users, Activity, AlertTriangle,
-  CheckCircle2, ChevronRight, Loader2, RefreshCcw,
+  CircleCheck as CircleCheck, ChevronRight, Loader2, RefreshCcw,
   Trophy, AlertCircle, Plus, Stethoscope, ArrowRight,
   ClipboardList, ChevronDown, ChevronUp, BookOpen, User as UserIcon,
   Check, X, Play, StickyNote, Trash2, ListTodo, Bell,
@@ -456,7 +456,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
               {fullAgenda.length === 0 ? (
                 <div className="p-20 text-center flex flex-col items-center justify-center space-y-4">
                   <div className="w-16 h-16 rounded-full bg-slate-800/30 flex items-center justify-center text-slate-600 mb-2">
-                    <CheckCircle2 size={32} />
+                    <CircleCheck size={32} />
                   </div>
                   <p className="text-emerald-500 font-bold text-lg uppercase tracking-widest">✅ Operação tranquila hoje</p>
                   <p className="text-slate-500 text-sm font-medium">Nenhum compromisso ou alerta agendado.</p>

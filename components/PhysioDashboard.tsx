@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Stethoscope,
   MessageSquare,
-  CheckCircle2,
+  CircleCheck,
   ChevronLeft,
   Calendar,
   BarChart3,
@@ -414,7 +414,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
                 ))
               ) : (
                 <div className="col-span-full text-center p-12 bg-emerald-500/5 rounded-3xl border border-emerald-500/10">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4 opacity-50" />
+                  <CircleCheck className="w-12 h-12 text-emerald-500 mx-auto mb-4 opacity-50" />
                   <p className="text-emerald-400 font-black uppercase tracking-widest text-xs">Todos os atletas em conformidade</p>
                 </div>
               )}
