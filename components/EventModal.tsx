@@ -119,7 +119,7 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                 >
                   Sim, excluir evento
                 </button>
-                {event.recurrence_group_id && (
+                {event?.recurrence_group_id && (
                   <button
                     onClick={() => confirmDelete(true)}
                     className="w-full px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded-lg transition-colors"

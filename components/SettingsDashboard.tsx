@@ -19,12 +19,28 @@ export function SettingsDashboard() {
 
   const sections = [
     {
-      id: 'general' as const,
-      title: 'Geral',
-      icon: Home,
-      color: 'bg-slate-500',
-      textColor: 'text-slate-500',
-      component: <GeneralSettings />
+      id: 'agenda' as const,
+      title: 'Agenda',
+      icon: Calendar,
+      color: 'bg-indigo-500',
+      textColor: 'text-indigo-500',
+      component: <AgendaSettings />
+    },
+    {
+      id: 'dev' as const,
+      title: 'Desenvolvimento e Debug',
+      icon: Code,
+      color: 'bg-amber-500',
+      textColor: 'text-amber-500',
+      component: <DatabaseSeeder />
+    },
+    {
+      id: 'data' as const,
+      title: 'Esportes/Dados',
+      icon: Database,
+      color: 'bg-blue-500',
+      textColor: 'text-blue-500',
+      component: <SportsSettings />
     },
     {
       id: 'finance' as const,
@@ -35,20 +51,20 @@ export function SettingsDashboard() {
       component: <FinanceSettings />
     },
     {
+      id: 'general' as const,
+      title: 'Geral',
+      icon: Home,
+      color: 'bg-slate-500',
+      textColor: 'text-slate-500',
+      component: <GeneralSettings />
+    },
+    {
       id: 'branding' as const,
       title: 'Identidade Visual',
       icon: Palette,
       color: 'bg-cyan-500',
       textColor: 'text-cyan-500',
       component: <BrandingSettings />
-    },
-    {
-      id: 'agenda' as const,
-      title: 'Agenda',
-      icon: Calendar,
-      color: 'bg-indigo-500',
-      textColor: 'text-indigo-500',
-      component: <AgendaSettings />
     },
     {
       id: 'clinical' as const,
@@ -65,22 +81,6 @@ export function SettingsDashboard() {
       color: 'bg-purple-500',
       textColor: 'text-purple-500',
       component: <ClinicalTagsSettings />
-    },
-    {
-      id: 'data' as const,
-      title: 'Esportes/Dados',
-      icon: Database,
-      color: 'bg-blue-500',
-      textColor: 'text-blue-500',
-      component: <SportsSettings />
-    },
-    {
-      id: 'dev' as const,
-      title: 'Desenvolvimento e Debug',
-      icon: Code,
-      color: 'bg-amber-500',
-      textColor: 'text-amber-500',
-      component: <DatabaseSeeder />
     }
   ];
 
