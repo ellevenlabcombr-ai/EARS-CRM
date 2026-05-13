@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, Palette, Calendar, HeartPulse, Database, Code, Tag, DollarSign, Settings2 } from 'lucide-react';
+import { Home, ChevronRight, Palette, Calendar, HeartPulse, Database, Code, Tag, DollarSign, Settings2 } from 'lucide-react';
+import { GeneralSettings } from './GeneralSettings';
 import { BrandingSettings } from './BrandingSettings';
 import { AgendaSettings } from './AgendaSettings';
 import { ClinicalSettings } from './ClinicalSettings';
@@ -11,12 +12,20 @@ import { SportsSettings } from './SportsSettings';
 import { DatabaseSeeder } from './DatabaseSeeder';
 import { FinanceSettings } from './FinanceSettings';
 
-type SettingsSection = 'finance' | 'branding' | 'agenda' | 'clinical' | 'tags' | 'data' | 'dev';
+type SettingsSection = 'general' | 'finance' | 'branding' | 'agenda' | 'clinical' | 'tags' | 'data' | 'dev';
 
 export function SettingsDashboard() {
-  const [activeSection, setActiveSection] = useState<SettingsSection>('finance');
+  const [activeSection, setActiveSection] = useState<SettingsSection>('general');
 
   const sections = [
+    {
+      id: 'general' as const,
+      title: 'Geral',
+      icon: Home,
+      color: 'bg-slate-500',
+      textColor: 'text-slate-500',
+      component: <GeneralSettings />
+    },
     {
       id: 'finance' as const,
       title: 'Financeiro',
