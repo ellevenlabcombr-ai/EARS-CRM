@@ -91,47 +91,46 @@ export function SettingsDashboard() {
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 items-start">
-        {/* Sidebar Nav */}
-        <aside className="w-full lg:w-64 flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-hide shrink-0 sticky top-4">
-          {sections.map((section) => {
+      {/* Horizontal Nav - Timeline Style */}
+      <div className="overflow-x-auto custom-scrollbar pb-4 pt-2 w-full">
+        <div className="flex items-center justify-between min-w-[700px]">
+          {sections.map((section, i, arr) => {
+            const activeIndex = arr.findIndex(t => t.id === activeSection);
+            const isPast = activeIndex > i;
             const isActive = activeSection === section.id;
             const Icon = section.icon;
 
             return (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`flex items-center gap-3 p-3 sm:p-4 rounded-xl text-left transition-all flex-shrink-0 w-auto lg:w-full ${
-                  isActive 
-                    ? 'bg-slate-800/80 border border-slate-700 shadow-md' 
-                    : 'bg-transparent border border-transparent hover:bg-slate-800/40 text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  isActive ? section.color + ' bg-opacity-20 ' + section.textColor : 'bg-slate-900 border border-slate-800 text-slate-500'
-                }`}>
-                  <Icon size={16} />
+              <React.Fragment key={section.id}>
+                <div 
+                  className={`flex flex-col items-center gap-3 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
+                  onClick={() => setActiveSection(section.id)}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <span className={`text-[0.65rem] font-black uppercase tracking-widest text-center max-w-[6rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
+                    {section.title}
+                  </span>
                 </div>
-                <span className={`text-xs sm:text-sm font-black uppercase tracking-wider whitespace-nowrap ${isActive ? 'text-white' : ''}`}>
-                  {section.title}
-                </span>
-                {isActive && (
-                  <ChevronRight size={16} className="ml-auto text-slate-500 hidden lg:block" />
+                {i < arr.length - 1 && (
+                  <div className={`flex-1 h-[3px] mx-4 mb-8 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
                 )}
-              </button>
+              </React.Fragment>
             );
           })}
-        </aside>
+        </div>
+      </div>
 
+      <div className="flex flex-col gap-6 w-full items-start">
         {/* Main Content */}
         <main className="flex-1 w-full bg-slate-900/40 border border-slate-800/80 rounded-3xl relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: -10 }}
               transition={{ duration: 0.2 }}
               className="p-6 lg:p-8"
             >
