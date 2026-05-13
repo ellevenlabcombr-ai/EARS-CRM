@@ -141,7 +141,7 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
                       <div className="flex flex-wrap items-center gap-3 mt-2 text-xs font-medium text-slate-500">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
-                          {format(new Date(event.start_time), "dd 'de' MMMM, HH:mm", { locale: lang === 'pt' ? ptBR : enUS })}
+                          {event.start_time && !isNaN(new Date(event.start_time).getTime()) ? format(new Date(event.start_time), "dd 'de' MMMM, HH:mm", { locale: lang === 'pt' ? ptBR : enUS }) : "---"}
                         </span>
                         {event.meet_link && (
                           <span className="flex items-center gap-1 text-indigo-400">
