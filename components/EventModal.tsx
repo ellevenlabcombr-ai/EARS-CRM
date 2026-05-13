@@ -43,23 +43,27 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
   if (!event) return null;
 
   const colorClass = getCategoryColor(event);
-  const startTime = new Date(event.start_time);
-  const endTime = new Date(event.end_time);
-  const isMultiDay = !isSameDay(startTime, endTime) || event.is_all_day;
+  const startTime = event.start_time ? new Date(event.start_time) : new Date();
+  const endTime = event.end_time ? new Date(event.end_time) : new Date();
+  const isMultiDay = (startTime && endTime) ? (!isSameDay(startTime, endTime) || event.is_all_day) : event.is_all_day;
 
   const generateWhatsAppLink = () => {
-    if (!athletePhone) return "#";
+    if (!athletePhone || !startTime) return "#";
     
-    const cleanPhone = athletePhone.replace(/\D/g, '');
-    const phoneWithCode = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    
-    const dateStr = format(startTime, "dd/MM", { locale: ptBR });
-    const timeStr = format(startTime, "HH:mm", { locale: ptBR });
-    const nameStr = athleteName ? athleteName.split(' ')[0] : 'Atleta';
-    
-    const message = `Olá ${nameStr}, seu atendimento está agendado para o dia ${dateStr} às ${timeStr}, confirma?`;
-    
-    return `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodeURIComponent(message)}`;
+    try {
+      const cleanPhone = athletePhone.replace(/\D/g, '');
+      const phoneWithCode = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+      
+      const dateStr = format(startTime, "dd/MM", { locale: ptBR });
+      const timeStr = format(startTime, "HH:mm", { locale: ptBR });
+      const nameStr = athleteName ? athleteName.split(' ')[0] : 'Atleta';
+      
+      const message = `Olá ${nameStr}, seu atendimento está agendado para o dia ${dateStr} às ${timeStr}, confirma?`;
+      
+      return `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodeURIComponent(message)}`;
+    } catch (e) {
+      return "#";
+    }
   };
 
   const paymentColors: any = {
@@ -69,8 +73,8 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
   };
 
   const getPaymentStatusText = () => {
-    if (event.payment_status === 'paid') return 'Pago';
-    if (event.payment_status === 'partially_paid') return 'Pago Parcialmente';
+    if (event?.payment_status === 'paid') return 'Pago';
+    if (event?.payment_status === 'partially_paid') return 'Pago Parcialmente';
     return 'Pendente';
   };
 
@@ -91,8 +95,8 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
 
   return (
     <AnimatePresence mode="wait">
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+      {isOpen && event && (
+        <div key="overlay" className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
           {showDeleteConfirm ? (
             <motion.div
               key="delete-confirm"
@@ -173,16 +177,18 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                     <div className={`w-4 h-4 mt-1.5 rounded-sm shrink-0 shadow-sm ${colorClass.split(' ')[0]}`} />
                     <div className="space-y-1">
                       <h2 className="text-xl font-black text-gray-900 leading-tight tracking-tight">
-                        {event.title}
+                        {event?.title || 'Sem Título'}
                       </h2>
                       <p className="text-sm text-gray-700 font-medium">
-                        {isMultiDay && !event.is_all_day ? (
-                          `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(endTime, "HH:mm")}`
-                        ) : event.is_all_day ? (
-                          `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })}${!isSameDay(startTime, endTime) ? ` – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })}` : ''} • Dia Todo`
-                        ) : (
-                          `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "HH:mm")}`
-                        )}
+                        {startTime && endTime ? (
+                          isMultiDay && !event?.is_all_day ? (
+                            `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(endTime, "HH:mm")}`
+                          ) : event?.is_all_day ? (
+                            `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })}${!isSameDay(startTime, endTime) ? ` – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })}` : ''} • Dia Todo`
+                          ) : (
+                            `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "HH:mm")}`
+                          )
+                        ) : 'Data não informada'}
                       </p>
                     </div>
                   </div>

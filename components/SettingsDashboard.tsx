@@ -20,7 +20,7 @@ export function SettingsDashboard() {
   const sections = [
     {
       id: 'general' as const,
-      title: 'Geral', // Mantém Geral em primeiro
+      title: 'Geral',
       icon: Home,
       color: 'bg-slate-500',
       textColor: 'text-slate-500',
@@ -36,7 +36,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'dev' as const,
-      title: 'Desenv. e\nDebug', // Quebra de linha manual
+      title: 'Desenv. e\nde Bug',
       icon: Code,
       color: 'bg-amber-500',
       textColor: 'text-amber-500',
@@ -44,7 +44,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'data' as const,
-      title: 'Esportes\nDados', // Quebra de linha manual
+      title: 'Esportes\ne Dados',
       icon: Database,
       color: 'bg-blue-500',
       textColor: 'text-blue-500',
@@ -102,12 +102,11 @@ export function SettingsDashboard() {
 
       {/* Horizontal Nav - Timeline Style */}
       <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full">
-        <div className="flex items-center justify-between min-w-[800px] px-2">
+        <div className="flex items-center justify-between min-w-[950px] px-6">
           {sections.map((section, i, arr) => {
-            const activeIndex = arr.findIndex(t => t.id === activeSection);
-            const isPast = activeIndex > i;
-            const isActive = activeSection === section.id;
             const Icon = section.icon;
+            const isActive = activeSection === section.id;
+            const activeIndex = arr.findIndex(t => t.id === activeSection);
 
             return (
               <React.Fragment key={section.id}>
@@ -115,15 +114,15 @@ export function SettingsDashboard() {
                   className={`flex flex-col items-center gap-3 cursor-pointer transition-all flex-shrink-0 ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
                   onClick={() => setActiveSection(section.id)}
                 >
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+                    <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
                   </div>
-                  <span className={`text-[10px] sm:text-[0.65rem] font-black uppercase tracking-widest text-center whitespace-pre-wrap max-w-[5rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] sm:text-[0.7rem] font-black uppercase tracking-widest text-center whitespace-pre-wrap max-w-[6.5rem] sm:max-w-[8rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
                     {section.title}
                   </span>
                 </div>
                 {i < arr.length - 1 && (
-                  <div className={`flex-1 h-[2px] sm:h-[3px] mx-2 sm:mx-4 mb-10 sm:mb-8 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
+                  <div className={`flex-1 h-[2px] sm:h-[3px] mx-2 sm:mx-6 mb-12 sm:mb-10 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
                 )}
               </React.Fragment>
             );
