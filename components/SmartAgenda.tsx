@@ -191,25 +191,16 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
     setIsCreateModalOpen(true);
   };
 
-  const handleDeleteEvent = async (id: string, deleteGroup?: boolean) => {
+  const handleDeleteEvent = async (id: string) => {
     if (!supabase) return;
 
     try {
-      if (deleteGroup && selectedEvent?.recurrence_group_id) {
-        const { error } = await supabase
-          .from('agenda_events')
-          .delete()
-          .eq('recurrence_group_id', selectedEvent.recurrence_group_id);
-          
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('agenda_events')
-          .delete()
-          .eq('id', id);
+      const { error } = await supabase
+        .from('agenda_events')
+        .delete()
+        .eq('id', id);
 
-        if (error) throw error;
-      }
+      if (error) throw error;
       
       setIsEventModalOpen(false);
       setSelectedEvent(null);
@@ -223,15 +214,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
     ? events 
     : events.filter(e => e.category === filter);
 
-  const clinicalToday = events.filter(e => {
-    try {
-      const d = new Date(e.start_time);
-      if (isNaN(d.getTime())) return false;
-      return isSameDay(d, new Date()) && e.category === 'clinical';
-    } catch {
-      return false;
-    }
-  });
+  const clinicalToday = events.filter(e => isSameDay(new Date(e.start_time), new Date()) && e.category === 'clinical');
   const confirmedToday = clinicalToday.filter(e => e.status === 'confirmed' || e.status === 'attended').length;
   const pendingToday = clinicalToday.length - confirmedToday;
 

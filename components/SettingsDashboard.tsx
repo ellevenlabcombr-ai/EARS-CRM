@@ -60,7 +60,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'branding' as const,
-      title: 'Identidade Visual',
+      title: 'Identidade',
       icon: Palette,
       color: 'bg-cyan-500',
       textColor: 'text-cyan-500',
@@ -68,7 +68,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'clinical' as const,
-      title: 'Regras Clínicas',
+      title: 'Regras',
       icon: HeartPulse,
       color: 'bg-rose-500',
       textColor: 'text-rose-500',
@@ -76,7 +76,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'tags' as const,
-      title: 'Tags Clínicas',
+      title: 'Tags',
       icon: Tag,
       color: 'bg-purple-500',
       textColor: 'text-purple-500',
@@ -90,7 +90,7 @@ export function SettingsDashboard() {
     <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto space-y-8 flex flex-col">
       <header className="flex-shrink-0 flex items-center gap-4 mb-4">
         <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center border border-slate-800">
-          <Settings2 className="w-6 h-6 text-slate-400" />
+          <Settings2 className="w-7 h-7 text-slate-400" />
         </div>
         <div>
           <h1 className="text-2xl lg:text-3xl font-black text-white uppercase tracking-tight">
@@ -102,27 +102,27 @@ export function SettingsDashboard() {
 
       {/* Horizontal Nav - Timeline Style */}
       <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full">
-        <div className="flex items-center justify-between min-w-[950px] px-6">
+        <div className="flex items-center justify-between min-w-[950px] px-4">
           {sections.map((section, i, arr) => {
-            const Icon = section.icon;
-            const isActive = activeSection === section.id;
             const activeIndex = arr.findIndex(t => t.id === activeSection);
+            const isActive = activeSection === section.id;
+            const Icon = section.icon;
 
             return (
               <React.Fragment key={section.id}>
                 <div 
-                  className={`flex flex-col items-center gap-3 cursor-pointer transition-all flex-shrink-0 ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
+                  className={`flex flex-col items-center gap-4 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
                   onClick={() => setActiveSection(section.id)}
                 >
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
-                    <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+                    <Icon className="w-8 h-8" />
                   </div>
-                  <span className={`text-[10px] sm:text-[0.7rem] font-black uppercase tracking-widest text-center whitespace-pre-wrap max-w-[6.5rem] sm:max-w-[8rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
+                  <span className={`text-[0.8rem] font-black uppercase tracking-widest text-center max-w-[8rem] leading-tight whitespace-pre-line ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
                     {section.title}
                   </span>
                 </div>
                 {i < arr.length - 1 && (
-                  <div className={`flex-1 h-[2px] sm:h-[3px] mx-2 sm:mx-6 mb-12 sm:mb-10 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
+                  <div className={`flex-1 h-[3px] mx-6 mb-11 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
                 )}
               </React.Fragment>
             );
@@ -143,11 +143,11 @@ export function SettingsDashboard() {
               className="p-6 lg:p-8"
             >
               <div className="mb-8 pb-4 border-b border-slate-800/50 flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl bg-opacity-20 flex items-center justify-center ${activeComponent?.color} ${activeComponent?.textColor}`}>
-                    {activeComponent && <activeComponent.icon size={20} />}
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-xl bg-opacity-20 flex items-center justify-center ${activeComponent?.color} ${activeComponent?.textColor}`}>
+                    {activeComponent && <activeComponent.icon size={26} />}
                   </div>
-                  <h2 className="text-xl font-black text-white uppercase tracking-wider">
+                  <h2 className="text-xl lg:text-2xl font-black text-white uppercase tracking-wider whitespace-pre-line">
                     {activeComponent?.title}
                   </h2>
                 </div>

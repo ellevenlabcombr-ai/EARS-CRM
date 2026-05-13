@@ -78,16 +78,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
 
   useEffect(() => {
     const toLocalInputFormat = (date: Date) => {
-      try {
-        if (isNaN(date.getTime())) {
-          const now = new Date();
-          return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
-        }
-        return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
-      } catch (e) {
-        const now = new Date();
-        return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
-      }
+      return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().substring(0, 16);
     };
 
     if (isOpen && initialEvent?.id) {

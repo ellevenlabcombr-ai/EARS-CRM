@@ -16,14 +16,7 @@ export function DayCalendarGrid({ events, currentDate, onEventClick, onTimeSlotC
   const END_HOUR = 20;
   const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i);
 
-  const dayEvents = events.filter(e => {
-    try {
-      const d = new Date(e.start_time);
-      return !isNaN(d.getTime()) && isSameDay(d, currentDate);
-    } catch {
-      return false;
-    }
-  });
+  const dayEvents = events.filter(e => isSameDay(new Date(e.start_time), currentDate));
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
@@ -48,8 +41,6 @@ export function DayCalendarGrid({ events, currentDate, onEventClick, onTimeSlotC
           {dayEvents.map(event => {
             const startStr = new Date(event.start_time);
             const endStr = new Date(event.end_time);
-            
-            if (isNaN(startStr.getTime()) || isNaN(endStr.getTime())) return null;
             
             // Calculate absolute positions
             const startMins = startStr.getHours() * 60 + startStr.getMinutes() - (START_HOUR * 60);
