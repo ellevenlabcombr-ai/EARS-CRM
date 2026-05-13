@@ -45,10 +45,14 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
   const colorClass = getCategoryColor(event);
   const startTime = event.start_time ? new Date(event.start_time) : new Date();
   const endTime = event.end_time ? new Date(event.end_time) : new Date();
-  const isMultiDay = (startTime && endTime) ? (!isSameDay(startTime, endTime) || event.is_all_day) : event.is_all_day;
+  
+  const isValidStart = !isNaN(startTime.getTime());
+  const isValidEnd = !isNaN(endTime.getTime());
+  
+  const isMultiDay = (isValidStart && isValidEnd) ? (!isSameDay(startTime, endTime) || event.is_all_day) : (event.is_all_day || false);
 
   const generateWhatsAppLink = () => {
-    if (!athletePhone || !startTime) return "#";
+    if (!athletePhone || !isValidStart) return "#";
     
     try {
       const cleanPhone = athletePhone.replace(/\D/g, '');
@@ -180,7 +184,7 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                         {event?.title || 'Sem Título'}
                       </h2>
                       <p className="text-sm text-gray-700 font-medium">
-                        {startTime && endTime ? (
+                        {isValidStart && isValidEnd ? (
                           isMultiDay && !event?.is_all_day ? (
                             `${format(startTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(startTime, "HH:mm")} – ${format(endTime, "EEEE, d 'de' MMMM", { locale: ptBR })} • ${format(endTime, "HH:mm")}`
                           ) : event?.is_all_day ? (
