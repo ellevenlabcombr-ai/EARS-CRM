@@ -216,7 +216,16 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
     ? events 
     : events.filter(e => e.category === filter);
 
-  const clinicalToday = events.filter(e => isSameDay(new Date(e.start_time), new Date()) && e.category === 'clinical');
+  const clinicalToday = events.filter(e => {
+    try {
+      if (!e.start_time) return false;
+      const d = new Date(e.start_time);
+      if (isNaN(d.getTime())) return false;
+      return isSameDay(d, new Date()) && e.category === 'clinical';
+    } catch {
+      return false;
+    }
+  });
   const confirmedToday = clinicalToday.filter(e => e.status === 'confirmed' || e.status === 'attended').length;
   const pendingToday = clinicalToday.length - confirmedToday;
 
