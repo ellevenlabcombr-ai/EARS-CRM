@@ -175,7 +175,7 @@ export function AgendaSettings() {
 
   if (isLoading) {
     return (
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-12 flex flex-col items-center justify-center gap-4">
+      <div className="flex flex-col items-center justify-center gap-4 py-8">
         <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Carregando configurações...</p>
       </div>
@@ -183,7 +183,7 @@ export function AgendaSettings() {
   }
 
   return (
-    <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-8">
+    <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Horários */}
         <div className="space-y-6">

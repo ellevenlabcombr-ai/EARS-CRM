@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Clock, Tag, User, AlertTriangle, Trash2, MapPin, Bell, Repeat, AlignLeft, CalendarPlus, Link as LinkIcon, DollarSign, MessageCircle } from "lucide-react";
+import { X, Clock, Tag, User, AlertTriangle, Trash2, MapPin, Bell, Repeat, AlignLeft, Link as LinkIcon, DollarSign, MessageCircle } from "lucide-react";
 import { AgendaEvent, getCategoryColor } from "@/types/agenda";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -45,19 +45,6 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
   const startTime = new Date(event.start_time);
   const endTime = new Date(event.end_time);
   const isMultiDay = !isSameDay(startTime, endTime) || event.is_all_day;
-
-  const generateGCalLink = () => {
-    const title = encodeURIComponent(event.title);
-    
-    let detailsStr = event.description || '';
-    if (event.meet_link) detailsStr += `\n\nVideochamada: ${event.meet_link}`;
-    const details = encodeURIComponent(detailsStr);
-    
-    const location = encodeURIComponent(`${event.location || ''} ${event.address || ''}`);
-    const sdt = startTime.toISOString().replace(/-|:|\.\d\d\d/g, "");
-    const edt = endTime.toISOString().replace(/-|:|\.\d\d\d/g, "");
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${sdt}/${edt}&details=${details}&location=${location}`;
-  };
 
   const generateWhatsAppLink = () => {
     if (!athletePhone) return "#";
@@ -275,14 +262,6 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
 
               <div className="pt-4 mt-4 border-t border-gray-100/50 flex flex-wrap items-center justify-between gap-3 px-6 pb-6">
                 <div className="flex gap-2 flex-1 min-w-[150px]">
-                   <a 
-                      href={generateGCalLink()}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 text-xs font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-sm"
-                   >
-                     <CalendarPlus className="w-4 h-4 text-blue-500" /> GCAL
-                   </a>
                    {athletePhone && (
                      <a 
                         href={generateWhatsAppLink()}

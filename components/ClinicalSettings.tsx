@@ -189,7 +189,7 @@ export function ClinicalSettings() {
   }
 
   return (
-    <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-8">
+    <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Limites Críticos */}

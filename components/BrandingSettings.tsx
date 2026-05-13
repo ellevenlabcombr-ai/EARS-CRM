@@ -149,7 +149,7 @@ export function BrandingSettings() {
   };
 
   return (
-    <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-8">
+    <div className="space-y-8">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Logo Preview */}
         <div className="flex-shrink-0">
