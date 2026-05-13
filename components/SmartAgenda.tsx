@@ -12,11 +12,12 @@ import {
   AlertCircle
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, addMonths } from "date-fns";
+import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subMonths, addMonths, startOfDay, endOfDay, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AgendaEvent, AgendaCategory } from "@/types/agenda";
 import { CalendarGrid } from "./CalendarGrid";
 import { MonthCalendarGrid } from "./MonthCalendarGrid";
+import { DayCalendarGrid } from "./DayCalendarGrid";
 import { EventModal } from "./EventModal";
 import { CreateEventModal } from "./CreateEventModal";
 
@@ -26,7 +27,7 @@ interface SmartAgendaProps {
 
 export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('month');
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('month');
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,10 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
       setLoading(true);
       let rangeStart, rangeEnd;
 
-      if (viewMode === 'week') {
+      if (viewMode === 'day') {
+        rangeStart = startOfDay(currentDate);
+        rangeEnd = endOfDay(currentDate);
+      } else if (viewMode === 'week') {
         rangeStart = startOfWeek(currentDate, { weekStartsOn: 1 });
         rangeEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
       } else {
@@ -210,6 +214,10 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
     ? events 
     : events.filter(e => e.category === filter);
 
+  const clinicalToday = events.filter(e => isSameDay(new Date(e.start_time), new Date()) && e.category === 'clinical');
+  const confirmedToday = clinicalToday.filter(e => e.status === 'confirmed' || e.status === 'attended').length;
+  const pendingToday = clinicalToday.length - confirmedToday;
+
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-8">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -217,7 +225,21 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
           <h1 className="text-3xl lg:text-4xl font-black text-white uppercase tracking-tight">
             Smart Agenda
           </h1>
-          <p className="text-slate-400 mt-2">Gestão unificada e inteligência de decisão clínica.</p>
+          {clinicalToday.length > 0 ? (
+            <div className="flex items-center gap-3 mt-3">
+              <span className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-lg text-xs font-black uppercase tracking-widest">
+                {clinicalToday.length} Hoje
+              </span>
+              <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 rounded-lg text-xs font-black uppercase tracking-widest">
+                {confirmedToday} Confirmados
+              </span>
+              <span className="px-3 py-1 bg-slate-800 text-slate-400 rounded-lg text-xs font-black uppercase tracking-widest">
+                {pendingToday} Pendentes
+              </span>
+            </div>
+          ) : (
+            <p className="text-slate-400 mt-2">Gestão unificada e inteligência de decisão clínica.</p>
+          )}
         </div>
         
         <div className="flex items-center gap-3">
@@ -255,7 +277,9 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => {
-                if (viewMode === 'week') {
+                if (viewMode === 'day') {
+                  setCurrentDate(addDays(currentDate, -1));
+                } else if (viewMode === 'week') {
                   setCurrentDate(addDays(currentDate, -7));
                 } else {
                   setCurrentDate(subMonths(currentDate, 1));
@@ -266,7 +290,9 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
               <ChevronLeft className="w-5 h-5" />
             </button>
             <h2 className="text-lg font-black text-white uppercase tracking-tight min-w-[12.5rem] text-center">
-              {viewMode === 'week' ? (
+              {viewMode === 'day' ? (
+                format(currentDate, "dd 'de' MMMM", { locale: ptBR })
+              ) : viewMode === 'week' ? (
                 `${format(startOfWeek(currentDate, { weekStartsOn: 1 }), "dd MMM", { locale: ptBR })} - ${format(endOfWeek(currentDate, { weekStartsOn: 1 }), "dd MMM", { locale: ptBR })}`
               ) : (
                 format(currentDate, "MMMM yyyy", { locale: ptBR })
@@ -274,7 +300,9 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
             </h2>
             <button 
               onClick={() => {
-                if (viewMode === 'week') {
+                if (viewMode === 'day') {
+                  setCurrentDate(addDays(currentDate, 1));
+                } else if (viewMode === 'week') {
                   setCurrentDate(addDays(currentDate, 7));
                 } else {
                   setCurrentDate(addMonths(currentDate, 1));
@@ -286,14 +314,14 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
             </button>
           </div>
 
-          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700">
+          <div className="flex bg-slate-800/50 p-1 rounded-xl border border-slate-700 overflow-x-auto min-w-0 mx-2 flex-shrink">
             <button
-              onClick={() => setViewMode('month')}
+              onClick={() => setViewMode('day')}
               className={`px-4 py-2 rounded-lg text-xxs font-black uppercase tracking-widest transition-all ${
-                viewMode === 'month' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'
+                viewMode === 'day' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
-              Mês
+              Dia
             </button>
             <button
               onClick={() => setViewMode('week')}
@@ -302,6 +330,14 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
               }`}
             >
               Semana
+            </button>
+            <button
+              onClick={() => setViewMode('month')}
+              className={`px-4 py-2 rounded-lg text-xxs font-black uppercase tracking-widest transition-all ${
+                viewMode === 'month' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              Mês
             </button>
           </div>
         </div>
@@ -326,6 +362,20 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
           <div className="py-40 flex items-center justify-center">
             <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : viewMode === 'day' ? (
+          <DayCalendarGrid 
+            events={filteredEvents}
+            currentDate={currentDate}
+            onEventClick={(event) => {
+              setSelectedEvent(event);
+              setIsEventModalOpen(true);
+            }}
+            onTimeSlotClick={(date) => {
+              setInitialEventForEdit(null);
+              // Open modal with start time pre-filled? We can pass it to the Create modal via state if we wrap it, but for now just open it.
+              setIsCreateModalOpen(true);
+            }}
+          />
         ) : viewMode === 'month' ? (
           <MonthCalendarGrid 
             events={filteredEvents} 

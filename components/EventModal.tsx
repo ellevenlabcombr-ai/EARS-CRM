@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Clock, Tag, User, AlertTriangle, Trash2, MapPin, Bell, Repeat, AlignLeft } from "lucide-react";
+import { X, Clock, Tag, User, AlertTriangle, Trash2, MapPin, Bell, Repeat, AlignLeft, CalendarPlus, Link as LinkIcon, DollarSign, MessageCircle } from "lucide-react";
 import { AgendaEvent, getCategoryColor } from "@/types/agenda";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -18,13 +18,15 @@ interface EventModalProps {
 
 export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventModalProps) {
   const [athleteName, setAthleteName] = useState<string>("");
+  const [athletePhone, setAthletePhone] = useState<string>("");
 
   useEffect(() => {
     const fetchAthlete = async () => {
       if (event?.athlete_id) {
-        const { data } = await supabase.from('athletes').select('name').eq('id', event.athlete_id).single();
+        const { data } = await supabase.from('athletes').select('name, phone').eq('id', event.athlete_id).single();
         if (data) {
           setAthleteName(data.name);
+          setAthletePhone(data.phone || "");
         }
       }
     };
@@ -33,6 +35,7 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
     } else {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAthleteName("");
+      setAthletePhone("");
     }
   }, [event?.athlete_id, isOpen]);
 
@@ -42,6 +45,46 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
   const startTime = new Date(event.start_time);
   const endTime = new Date(event.end_time);
   const isMultiDay = !isSameDay(startTime, endTime) || event.is_all_day;
+
+  const generateGCalLink = () => {
+    const title = encodeURIComponent(event.title);
+    
+    let detailsStr = event.description || '';
+    if (event.meet_link) detailsStr += `\n\nVideochamada: ${event.meet_link}`;
+    const details = encodeURIComponent(detailsStr);
+    
+    const location = encodeURIComponent(`${event.location || ''} ${event.address || ''}`);
+    const sdt = startTime.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const edt = endTime.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${sdt}/${edt}&details=${details}&location=${location}`;
+  };
+
+  const generateWhatsAppLink = () => {
+    if (!athletePhone) return "#";
+    
+    const cleanPhone = athletePhone.replace(/\D/g, '');
+    const phoneWithCode = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    
+    const dateStr = format(startTime, "dd/MM", { locale: ptBR });
+    const timeStr = format(startTime, "HH:mm", { locale: ptBR });
+    const nameStr = athleteName ? athleteName.split(' ')[0] : 'Atleta';
+    
+    const message = `Olá ${nameStr}, seu atendimento está agendado para o dia ${dateStr} às ${timeStr}, confirma?`;
+    
+    return `https://api.whatsapp.com/send?phone=${phoneWithCode}&text=${encodeURIComponent(message)}`;
+  };
+
+  const paymentColors: any = {
+    paid: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    partially_paid: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    pending: 'bg-rose-500/10 text-rose-600 border-rose-500/20'
+  };
+
+  const getPaymentStatusText = () => {
+    if (event.payment_status === 'paid') return 'Pago';
+    if (event.payment_status === 'partially_paid') return 'Pago Parcialmente';
+    return 'Pendente';
+  };
 
   return (
     <AnimatePresence>
@@ -59,22 +102,10 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
             <div className="p-0">
               <div className="flex justify-end p-2">
                 <div className="flex gap-1">
-                  {onEdit && (
-                    <button 
-                      onClick={() => {
-                        onClose();
-                        onEdit(event);
-                      }}
-                      className="p-2 hover:bg-gray-100 text-gray-600 rounded-full transition-colors"
-                      title="Editar"
-                    >
-                      <Trash2 className="w-4 h-4 rotate-180" /> {/* Simulating edit icon if Lucide Pencil is missing, but I'll use a better approach */}
-                    </button>
-                  )}
                   {onDelete && (
                     <button 
                       onClick={() => onDelete(event.id)}
-                      className="p-2 hover:bg-gray-100 text-gray-600 rounded-full transition-colors"
+                      className="p-2 hover:bg-rose-50 text-rose-500 rounded-full transition-colors"
                       title="Excluir"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -115,6 +146,37 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                       <p className="text-sm text-gray-900 font-bold">{event.location}</p>
                       {event.address && (
                         <p className="text-xs text-gray-500 leading-relaxed">{event.address}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {event.meet_link && (
+                  <div className="flex gap-4">
+                    <LinkIcon className="w-4 h-4 mt-1 text-indigo-500 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-0.5">Meet / Vídeo</p>
+                      <a href={event.meet_link} target="_blank" rel="noreferrer" className="text-sm text-indigo-600 font-bold hover:underline truncate block">
+                        {event.meet_link}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {event.category === 'clinical' && (event.event_value || event.payment_status) && (
+                  <div className="flex gap-4">
+                    <DollarSign className="w-4 h-4 mt-1 text-emerald-500 shrink-0" />
+                    <div className="flex flex-col gap-2">
+                      {event.event_value && (
+                        <div>
+                          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Valor</p>
+                          <p className="text-sm text-gray-900 font-bold">R$ {Number(event.event_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                        </div>
+                      )}
+                      {event.payment_status && (
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border w-max ${paymentColors[event.payment_status] || paymentColors.pending}`}>
+                          {getPaymentStatusText()}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -172,6 +234,20 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                        event.category === 'professional' ? 'Profissional' : 
                        event.category === 'travel' ? 'Viagem' : 'Pessoal'}
                     </span>
+                    {event.category === 'clinical' && event.status && event.status !== 'scheduled' && (
+                      <span className={`px-2.5 py-1 rounded shadow-sm text-[10px] font-black uppercase tracking-widest ${
+                        event.status === 'confirmed' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' :
+                        event.status === 'attended' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                        event.status === 'no_show' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' :
+                        event.status === 'cancelled' ? 'bg-slate-500/10 text-slate-500 border border-slate-500/20' :
+                        ''
+                      }`}>
+                        {event.status === 'confirmed' ? 'Confirmado' :
+                         event.status === 'attended' ? 'Compareceu' :
+                         event.status === 'no_show' ? 'Faltou' :
+                         'Cancelado'}
+                      </span>
+                    )}
                     {event.subcategory && (
                       <span className="px-2.5 py-1 bg-gray-200 rounded text-[10px] font-black text-gray-700 border border-gray-300 uppercase tracking-widest">
                         {event.subcategory}
@@ -195,6 +271,41 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                     )}
                   </div>
                 </div>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-gray-100/50 flex flex-wrap items-center justify-between gap-3 px-6 pb-6">
+                <div className="flex gap-2 flex-1 min-w-[150px]">
+                   <a 
+                      href={generateGCalLink()}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 text-xs font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-sm"
+                   >
+                     <CalendarPlus className="w-4 h-4 text-blue-500" /> GCAL
+                   </a>
+                   {athletePhone && (
+                     <a 
+                        href={generateWhatsAppLink()}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 text-xs font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-sm"
+                        title="Lembrar via WhatsApp"
+                     >
+                       <MessageCircle className="w-4 h-4" /> Avisar
+                     </a>
+                   )}
+                </div>
+                {onEdit && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onEdit(event);
+                    }}
+                    className="flex-1 min-w-[100px] px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 shadow-lg shadow-slate-900/20"
+                  >
+                    Editar
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>

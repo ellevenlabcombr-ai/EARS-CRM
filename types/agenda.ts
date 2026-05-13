@@ -1,4 +1,4 @@
-export type AgendaCategory = 'clinical' | 'professional' | 'personal' | 'competition' | 'travel' | 'arbitration' | 'game' | 'training' | 'live';
+export type AgendaCategory = 'clinical' | 'professional' | 'personal' | 'competition' | 'travel' | 'arbitration' | 'game' | 'training' | 'live' | 'block';
 
 export interface AgendaEvent {
   id: string;
@@ -6,10 +6,14 @@ export interface AgendaEvent {
   description: string | null;
   start_time: string;
   end_time: string;
+  status?: 'scheduled' | 'confirmed' | 'cancelled' | 'attended' | 'no_show';
   category: AgendaCategory;
   subcategory: string | null;
   location?: string | null;
   address?: string | null;
+  meet_link?: string | null;
+  payment_status?: 'pending' | 'paid' | 'partially_paid';
+  event_value?: number | null;
   is_all_day?: boolean;
   athlete_id: string | null;
   risk_score: number | null;
@@ -51,6 +55,9 @@ export const calculatePriority = (event: Partial<AgendaEvent>): number => {
 };
 
 export const getCategoryColor = (event: AgendaEvent): string => {
+  if (event.category === 'block') {
+    return 'bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(0,0,0,0.05)_10px,rgba(0,0,0,0.05)_20px)] bg-slate-200 text-slate-600 border-dashed border-slate-400 opacity-80';
+  }
   if (event.category === 'clinical') {
     return 'bg-rose-600 text-white border-rose-500 shadow-md shadow-rose-500/20';
   }

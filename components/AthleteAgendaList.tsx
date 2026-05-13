@@ -143,10 +143,38 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
                           <Clock className="w-3.5 h-3.5" />
                           {format(new Date(event.start_time), "dd 'de' MMMM, HH:mm", { locale: lang === 'pt' ? ptBR : enUS })}
                         </span>
+                        {event.meet_link && (
+                          <span className="flex items-center gap-1 text-indigo-400">
+                            <Video className="w-3.5 h-3.5" />
+                            Live
+                          </span>
+                        )}
                         {event.location && (
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3.5 h-3.5" />
                             {event.location}
+                          </span>
+                        )}
+                        {event.category === 'clinical' && event.status && event.status !== 'scheduled' && (
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                            event.status === 'confirmed' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' :
+                            event.status === 'attended' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            event.status === 'no_show' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            event.status === 'cancelled' ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20' :
+                            ''
+                          }`}>
+                            {event.status === 'confirmed' ? 'Confirmado' :
+                             event.status === 'attended' ? 'Compareceu' :
+                             event.status === 'no_show' ? 'Faltou' :
+                             'Cancelado'}
+                          </span>
+                        )}
+                        {event.category === 'clinical' && event.payment_status && event.payment_status !== 'pending' && (
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                            event.payment_status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}>
+                            {event.payment_status === 'paid' ? 'Pago' : 'Pago Parcial'}
                           </span>
                         )}
                       </div>

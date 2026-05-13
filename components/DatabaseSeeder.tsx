@@ -298,6 +298,18 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='feedback') THEN
         ALTER TABLE agenda_events ADD COLUMN feedback TEXT;
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='status') THEN
+        ALTER TABLE agenda_events ADD COLUMN status TEXT DEFAULT 'scheduled';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='meet_link') THEN
+        ALTER TABLE agenda_events ADD COLUMN meet_link TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='payment_status') THEN
+        ALTER TABLE agenda_events ADD COLUMN payment_status TEXT DEFAULT 'pending';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agenda_events' AND column_name='event_value') THEN
+        ALTER TABLE agenda_events ADD COLUMN event_value NUMERIC(10,2);
+    END IF;
 END $$;
 
 -- 2.2. Criar tabela de check_ins se não existir

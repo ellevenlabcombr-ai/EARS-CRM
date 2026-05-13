@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Calendar, Clock, Tag, User, AlertTriangle, Stethoscope, Trophy, Briefcase, UserCircle, AlignLeft, Activity, Plane, MapPin, Scale, Video } from "lucide-react";
+import { X, Calendar, Clock, Tag, User, AlertTriangle, Stethoscope, Trophy, Briefcase, UserCircle, AlignLeft, Activity, Plane, MapPin, Scale, Video, Link, Ban } from "lucide-react";
 import { AgendaCategory, calculatePriority, AgendaEvent } from "@/types/agenda";
 
 interface CreateEventModalProps {
@@ -24,12 +24,13 @@ const CATEGORIES_CONFIG = [
   { value: 'travel', label: 'Viagem', icon: Plane, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', activeBg: 'bg-violet-500/20', activeBorder: 'border-violet-500' },
   { value: 'professional', label: 'Profissional', icon: Briefcase, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', activeBg: 'bg-cyan-500/20', activeBorder: 'border-cyan-500' },
   { value: 'personal', label: 'Pessoal', icon: UserCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', activeBg: 'bg-emerald-500/20', activeBorder: 'border-emerald-500' },
+  { value: 'block', label: 'Bloqueio', icon: Ban, color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/30', activeBg: 'bg-slate-500/20', activeBorder: 'border-slate-500' },
 ];
 
 export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedAthleteId }: CreateEventModalProps) {
   const availableCategories = fixedAthleteId 
     ? CATEGORIES_CONFIG.filter(c => ['competition', 'game', 'training'].includes(c.value))
-    : CATEGORIES_CONFIG.filter(c => ['clinical', 'live', 'arbitration', 'professional', 'personal'].includes(c.value));
+    : CATEGORIES_CONFIG.filter(c => ['clinical', 'live', 'arbitration', 'professional', 'personal', 'block'].includes(c.value));
 
   const [athletes, setAthletes] = useState<{id: string, name: string}[]>([]);
 
@@ -56,6 +57,10 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
     subcategory: "",
     location: "",
     address: "",
+    meet_link: "",
+    payment_status: 'pending' as 'pending' | 'paid' | 'partially_paid',
+    event_value: "" as string | number,
+    status: 'scheduled' as 'scheduled' | 'confirmed' | 'cancelled' | 'attended' | 'no_show',
     is_all_day: false,
     start_time: "",
     end_time: "",
@@ -84,6 +89,10 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
         subcategory: initialEvent.subcategory || "",
         location: initialEvent.location || "",
         address: initialEvent.address || "",
+        meet_link: initialEvent.meet_link || "",
+        payment_status: initialEvent.payment_status || 'pending',
+        event_value: initialEvent.event_value ? initialEvent.event_value.toString() : "",
+        status: initialEvent.status || 'scheduled',
         is_all_day: initialEvent.is_all_day || false,
         start_time: toLocalInputFormat(new Date(initialEvent.start_time)),
         end_time: toLocalInputFormat(new Date(initialEvent.end_time)),
@@ -113,6 +122,10 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
         subcategory: "",
         location: "",
         address: "",
+        meet_link: "",
+        payment_status: 'pending',
+        event_value: "",
+        status: 'scheduled',
         is_all_day: false,
         start_time: startStr,
         end_time: endStr,
@@ -215,12 +228,18 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
       finalAddress = 'Alameda Santos, 211 - Cj. 1604';
     }
 
+    let finalMeetLink = formData.meet_link?.trim();
+
     const priority = calculatePriority({
       category: formData.category,
     });
 
+    const parsedEventValue = formData.event_value && formData.event_value !== "" ? parseFloat(formData.event_value.toString().replace(',', '.')) : null;
+
     const savePayload: any = {
       ...formData,
+      meet_link: finalMeetLink || null,
+      event_value: parsedEventValue,
       start_time: startISO,
       end_time: endISO,
       location: finalLocation || null,
@@ -372,6 +391,72 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                         ))}
                       </select>
                     </div>
+                  )}
+
+                  {formData.category === 'clinical' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                           <AlertTriangle className="w-4 h-4" /> Status / Presença
+                        </label>
+                        <select
+                          value={formData.status}
+                          onChange={e => setFormData({...formData, status: e.target.value as any})}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-600 font-medium appearance-none [color-scheme:dark]"
+                        >
+                          <option value="scheduled">Agendado (sem confirmação)</option>
+                          <option value="confirmed">Presença Confirmada</option>
+                          <option value="attended">Atendido (Compareceu)</option>
+                          <option value="no_show">Faltou (Não Compareceu)</option>
+                          <option value="cancelled">Cancelado</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                           Pagamento
+                        </label>
+                        <select
+                          value={formData.payment_status}
+                          onChange={e => setFormData({...formData, payment_status: e.target.value as any})}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-600 font-medium appearance-none [color-scheme:dark]"
+                        >
+                          <option value="pending">Pendente</option>
+                          <option value="paid">Pago</option>
+                          <option value="partially_paid">Parcialmente Pago</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                           Valor do Atendimento (R$)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">R$</span>
+                          <input 
+                            type="number"
+                            step="0.01"
+                            placeholder="0,00"
+                            value={formData.event_value}
+                            onChange={e => setFormData({...formData, event_value: e.target.value})}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-slate-600 font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {(formData.category === 'live' || formData.category === 'clinical') && (
+                     <div>
+                       <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                          <Link className="w-4 h-4" /> Link da Videochamada (Meet, Zoom, etc.)
+                       </label>
+                       <input 
+                         type="url"
+                         placeholder="https://meet.google.com/..."
+                         value={formData.meet_link}
+                         onChange={e => setFormData({...formData, meet_link: e.target.value})}
+                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 font-medium"
+                       />
+                     </div>
                   )}
                 </div>
 
