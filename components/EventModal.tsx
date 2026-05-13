@@ -12,13 +12,14 @@ interface EventModalProps {
   event: AgendaEvent | null;
   isOpen: boolean;
   onClose: () => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, deleteGroup?: boolean) => void;
   onEdit?: (event: AgendaEvent) => void;
 }
 
 export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventModalProps) {
   const [athleteName, setAthleteName] = useState<string>("");
   const [athletePhone, setAthletePhone] = useState<string>("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchAthlete = async () => {
@@ -73,6 +74,73 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
     return 'Pendente';
   };
 
+  useEffect(() => {
+    if (!isOpen) setShowDeleteConfirm(false);
+  }, [isOpen]);
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = (deleteGroup: boolean) => {
+    if (onDelete && event) {
+      onDelete(event.id, deleteGroup);
+    }
+    setShowDeleteConfirm(false);
+  };
+
+  if (showDeleteConfirm) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-sm bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col p-6 space-y-6"
+            >
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center">
+                  <AlertTriangle className="w-6 h-6 text-rose-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-gray-900 tracking-tight">Excluir Agendamento</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Tem certeza que deseja excluir este agendamento?
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => confirmDelete(false)}
+                  className="w-full px-4 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-lg transition-colors"
+                >
+                  Sim, excluir evento
+                </button>
+                {event.recurrence_group_id && (
+                  <button
+                    onClick={() => confirmDelete(true)}
+                    className="w-full px-4 py-3 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded-lg transition-colors"
+                  >
+                    Excluir este e os próximos (Série)
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    );
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -91,7 +159,7 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                 <div className="flex gap-1">
                   {onDelete && (
                     <button 
-                      onClick={() => onDelete(event.id)}
+                      onClick={handleDeleteClick}
                       className="p-2 hover:bg-rose-50 text-rose-500 rounded-full transition-colors"
                       title="Excluir"
                     >
