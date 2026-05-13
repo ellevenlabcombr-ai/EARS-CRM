@@ -222,17 +222,17 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
         
         <div className="flex items-center gap-3">
           <div className="flex flex-wrap items-center bg-slate-900/50 border border-slate-800 rounded-xl p-1 gap-1">
-            {(['all', 'clinical', 'competition', 'travel', 'professional', 'personal'] as const).map((cat) => (
+            {(['all', 'clinical', 'live', 'arbitration', 'professional', 'personal', 'competition', 'game', 'training'] as const).map((cat) => (
               <button
                 key={cat}
-                onClick={() => setFilter(cat)}
+                onClick={() => setFilter(cat as any)}
                 className={`px-3 py-2 rounded-lg text-xxs font-black uppercase tracking-widest transition-all ${
                   filter === cat 
                     ? 'bg-cyan-500 text-slate-950 shadow-lg shadow-cyan-500/20' 
                     : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
-                {cat === 'all' ? 'Todos' : cat === 'clinical' ? 'Clínico' : cat === 'competition' ? 'Competição' : cat === 'travel' ? 'Viagem' : cat === 'professional' ? 'Profissional' : 'Pessoal'}
+                {cat === 'all' ? 'Todos' : cat === 'clinical' ? 'Clínico' : cat === 'live' ? 'Live' : cat === 'arbitration' ? 'Arbitragem' : cat === 'competition' ? 'Competição' : cat === 'game' ? 'Jogo' : cat === 'training' ? 'Treino' : cat === 'professional' ? 'Profissional' : 'Pessoal'}
               </button>
             ))}
           </div>

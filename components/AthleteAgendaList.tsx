@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Tag, Stethoscope, Trophy, Scale, Plane, Briefcase, UserCircle, Activity } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Tag, Stethoscope, Trophy, Scale, Plane, Briefcase, UserCircle, Activity, Video } from "lucide-react";
 import { Button } from "./ui/button";
 import { CreateEventModal } from "./CreateEventModal";
 import { EventModal } from "./EventModal";
@@ -12,6 +12,9 @@ const getCategoryIcon = (category: string) => {
   switch (category) {
     case 'clinical': return Stethoscope;
     case 'competition': return Trophy;
+    case 'game': return Trophy;
+    case 'training': return Activity;
+    case 'live': return Video;
     case 'arbitration': return Scale;
     case 'travel': return Plane;
     case 'professional': return Briefcase;
@@ -119,7 +122,7 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
         ) : (
           events.map((event) => {
             const Icon = getCategoryIcon(event.category as any);
-            const colorClass = getCategoryColor(event.category as any);
+            const colorClassString = getCategoryColor(event);
             
             return (
               <div 
@@ -129,8 +132,8 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-xl ${colorClass.bg} ${colorClass.activeBorder} border border-transparent`}>
-                      <Icon className={`w-6 h-6 ${colorClass.color}`} />
+                    <div className={`p-3 rounded-xl ${colorClassString} border border-transparent`}>
+                      <Icon className={`w-6 h-6`} />
                     </div>
                     <div>
                       <h4 className="text-white font-bold">{event.title}</h4>
@@ -149,8 +152,8 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
                       </div>
                     </div>
                   </div>
-                  <div className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${colorClass.bg} ${colorClass.color}`}>
-                    {event.category}
+                  <div className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${colorClassString}`}>
+                    {event.category === 'clinical' ? 'Clínico' : event.category === 'competition' ? 'Competição' : event.category === 'game' ? 'Jogo' : event.category === 'training' ? 'Treino' : event.category === 'live' ? 'Live' : event.category === 'arbitration' ? 'Arbitragem' : event.category === 'travel' ? 'Viagem' : event.category === 'professional' ? 'Profissional' : 'Pessoal'}
                   </div>
                 </div>
               </div>

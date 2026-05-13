@@ -1,4 +1,4 @@
-export type AgendaCategory = 'clinical' | 'professional' | 'personal' | 'competition' | 'travel' | 'arbitration' | 'game' | 'training';
+export type AgendaCategory = 'clinical' | 'professional' | 'personal' | 'competition' | 'travel' | 'arbitration' | 'game' | 'training' | 'live';
 
 export interface AgendaEvent {
   id: string;
@@ -37,6 +37,8 @@ export const calculatePriority = (event: Partial<AgendaEvent>): number => {
     priority = 9;
   } else if (event.category === 'travel') {
     priority = 8;
+  } else if (event.category === 'live') {
+    priority = 8;
   } else if (event.category === 'professional') {
     priority = 5;
   } else if (event.category === 'training') {
@@ -65,6 +67,9 @@ export const getCategoryColor = (event: AgendaEvent): string => {
     return 'bg-fuchsia-600 text-white border-fuchsia-500 shadow-lg shadow-fuchsia-500/20';
   }
   if (event.category === 'travel') {
+    return 'bg-violet-600 text-white border-violet-500 shadow-lg shadow-violet-500/20';
+  }
+  if (event.category === 'live') {
     return 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20';
   }
   if (event.category === 'professional') {

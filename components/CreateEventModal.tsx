@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Calendar, Clock, Tag, User, AlertTriangle, Stethoscope, Trophy, Briefcase, UserCircle, AlignLeft, Activity, Plane, MapPin, Scale } from "lucide-react";
+import { X, Calendar, Clock, Tag, User, AlertTriangle, Stethoscope, Trophy, Briefcase, UserCircle, AlignLeft, Activity, Plane, MapPin, Scale, Video } from "lucide-react";
 import { AgendaCategory, calculatePriority, AgendaEvent } from "@/types/agenda";
 
 interface CreateEventModalProps {
@@ -16,6 +16,7 @@ interface CreateEventModalProps {
 
 const CATEGORIES_CONFIG = [
   { value: 'clinical', label: 'Clínico', icon: Stethoscope, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', activeBg: 'bg-rose-500/20', activeBorder: 'border-rose-500' },
+  { value: 'live', label: 'Live', icon: Video, color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', activeBg: 'bg-indigo-500/20', activeBorder: 'border-indigo-500' },
   { value: 'competition', label: 'Competição', icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', activeBg: 'bg-amber-500/20', activeBorder: 'border-amber-500' },
   { value: 'game', label: 'Jogo', icon: Trophy, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30', activeBg: 'bg-orange-500/20', activeBorder: 'border-orange-500' },
   { value: 'training', label: 'Treino', icon: Activity, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', activeBg: 'bg-blue-500/20', activeBorder: 'border-blue-500' },
@@ -28,7 +29,7 @@ const CATEGORIES_CONFIG = [
 export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedAthleteId }: CreateEventModalProps) {
   const availableCategories = fixedAthleteId 
     ? CATEGORIES_CONFIG.filter(c => ['competition', 'game', 'training'].includes(c.value))
-    : CATEGORIES_CONFIG;
+    : CATEGORIES_CONFIG.filter(c => ['clinical', 'live', 'arbitration', 'professional', 'personal'].includes(c.value));
 
   const [athletes, setAthletes] = useState<{id: string, name: string}[]>([]);
 
@@ -562,35 +563,37 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t border-slate-800">
-                  <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                     <AlignLeft className="w-4 h-4" />
-                     Pós-Evento / Anotações
-                  </h3>
-                  <div className="space-y-4">
-                    {(formData.category === 'competition' || formData.category === 'game') && (
+                {!!fixedAthleteId && (
+                  <div className="space-y-4 pt-4 border-t border-slate-800">
+                    <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                       <AlignLeft className="w-4 h-4" />
+                       Pós-Evento / Anotações
+                    </h3>
+                    <div className="space-y-4">
+                      {(formData.category === 'competition' || formData.category === 'game') && (
+                        <div className="space-y-2">
+                          <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Resultado (Placar, Posição, etc)</label>
+                          <input 
+                            type="text" 
+                            value={formData.result}
+                            onChange={(e) => setFormData({ ...formData, result: e.target.value })}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white text-sm focus:border-cyan-500 outline-none transition-all placeholder:text-slate-600 font-medium"
+                            placeholder="Ex: Vitória 2-1" 
+                          />
+                        </div>
+                      )}
                       <div className="space-y-2">
-                        <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Resultado (Placar, Posição, etc)</label>
-                        <input 
-                          type="text" 
-                          value={formData.result}
-                          onChange={(e) => setFormData({ ...formData, result: e.target.value })}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white text-sm focus:border-cyan-500 outline-none transition-all placeholder:text-slate-600 font-medium"
-                          placeholder="Ex: Vitória 2-1" 
+                        <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Feedback / Observações</label>
+                        <textarea 
+                          value={formData.feedback}
+                          onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white text-sm focus:border-cyan-500 outline-none transition-all placeholder:text-slate-600 font-medium min-h-[100px] resize-none"
+                          placeholder="Ex: Atleta relatou cansaço no segundo tempo..." 
                         />
                       </div>
-                    )}
-                    <div className="space-y-2">
-                      <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest pl-1">Feedback / Observações</label>
-                      <textarea 
-                        value={formData.feedback}
-                        onChange={(e) => setFormData({ ...formData, feedback: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 text-white text-sm focus:border-cyan-500 outline-none transition-all placeholder:text-slate-600 font-medium min-h-[100px] resize-none"
-                        placeholder="Ex: Atleta relatou cansaço no segundo tempo..." 
-                      />
                     </div>
                   </div>
-                </div>
+                )}
 
               </form>
             </div>

@@ -166,6 +166,9 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                       {event.category === 'arbitration' ? 'Arbitragem' : 
                        event.category === 'clinical' ? 'Clínico' : 
                        event.category === 'competition' ? 'Competição' : 
+                       event.category === 'game' ? 'Jogo' : 
+                       event.category === 'training' ? 'Treino' :
+                       event.category === 'live' ? 'Live' :
                        event.category === 'professional' ? 'Profissional' : 
                        event.category === 'travel' ? 'Viagem' : 'Pessoal'}
                     </span>
