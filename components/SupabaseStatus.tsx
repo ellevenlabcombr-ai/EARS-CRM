@@ -35,7 +35,7 @@ export function SupabaseStatus() {
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999] max-w-md animate-in fade-in slide-in-from-bottom-4">
-      <div className={`${isWarning ? 'bg-amber-500/10 border-amber-500/30' : 'bg-rose-500/10 border-rose-500/30'} backdrop-blur-md p-4 rounded-2xl shadow-2xl relative`}>
+      <div className={`${isWarning ? 'bg-amber-500/10 border-amber-500/30' : 'bg-rose-500/10 border-rose-500/30'} backdrop-blur-md p-4 rounded-2xl shadow-2xl border relative`}>
         <button 
           onClick={() => setIsVisible(false)}
           className="absolute top-2 right-2 text-slate-500 hover:text-white transition-colors"

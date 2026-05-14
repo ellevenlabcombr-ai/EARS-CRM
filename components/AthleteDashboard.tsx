@@ -1599,14 +1599,14 @@ export function AthleteDashboard({
             </div>
             
             <div className="text-center space-y-4">
-               <div className="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto border-rose-500/30">
+               <div className="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto border border-rose-500/30">
                  <CalendarDays className="w-10 h-10 text-rose-500" />
                </div>
                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Monitoramento do Ciclo</h2>
                <p className="text-slate-400 font-medium">Informe os dados básicos para acompanharmos seu ciclo menstrual.</p>
             </div>
 
-            <Card className="glass-panel border-rose-500/20 shadow-2xl p-8 max-w-xl mx-auto space-y-10">
+            <Card className="bg-[#0A1120] border-rose-500/20 shadow-2xl p-8 max-w-xl mx-auto space-y-10">
               <div className="space-y-4">
                  <label className="text-xs font-black text-rose-400 uppercase tracking-widest block text-center mb-3">Data da Última Menstruação</label>
                  <input 
@@ -1618,7 +1618,7 @@ export function AthleteDashboard({
                  <p className="text-xxs text-slate-500 text-center uppercase tracking-wider italic">* O primeiro dia do seu último período menstrual.</p>
               </div>
 
-              <div className="space-y-6 pt-4 border-t ">
+              <div className="space-y-6 pt-4 border-t border-slate-800/50">
                  <label className="text-xs font-black text-rose-400 uppercase tracking-widest block text-center">Duração média do ciclo (em dias)</label>
                  <div className="flex items-center justify-center gap-8">
                    <Button 
@@ -1696,7 +1696,7 @@ export function AthleteDashboard({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="glass-panel  p-6 space-y-4">
+              <Card className="bg-[#0A1120] border-slate-800/50 p-6 space-y-4">
                 <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <Info className="w-4 h-4 text-cyan-400" />
                   O que está acontecendo?
@@ -1715,14 +1715,14 @@ export function AthleteDashboard({
               </Card>
 
               <div className="space-y-6">
-                <Card className="glass-panel  p-6 space-y-4">
+                <Card className="bg-[#0A1120] border-slate-800/50 p-6 space-y-4">
                   <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                     <Apple className="w-4 h-4 text-emerald-400" />
                     Nutrição Estratégica
                   </h3>
                   <div className="space-y-2">
                     {phaseData.nutrition.map((item, i) => (
-                      <div key={i} className="flex items-start gap-2 bg-slate-900/50 p-2 rounded-lg border ">
+                      <div key={i} className="flex items-start gap-2 bg-slate-900/50 p-2 rounded-lg border border-slate-800/50">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                         <span className="text-xs text-slate-300 font-medium">{item}</span>
                       </div>
@@ -1730,7 +1730,7 @@ export function AthleteDashboard({
                   </div>
                 </Card>
 
-                <Card className="glass-panel  p-6 space-y-4">
+                <Card className="bg-[#0A1120] border-slate-800/50 p-6 space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                       <Droplets className="w-4 h-4 text-blue-400" />
@@ -1829,7 +1829,7 @@ export function AthleteDashboard({
       if (!respondedToday) {
         return (
           <div className="w-full">
-            <Card className="glass-panel border-amber-500/30 overflow-hidden relative group">
+            <Card className="bg-[#0A1120] border-amber-500/30 overflow-hidden relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none" />
               <CardContent className="p-6">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -1859,7 +1859,7 @@ export function AthleteDashboard({
 
       return (
         <div className="space-y-4 w-full">
-          <Card className="glass-panel border-emerald-500/30 overflow-hidden relative">
+          <Card className="bg-[#0A1120] border-emerald-500/30 overflow-hidden relative">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -1909,7 +1909,7 @@ export function AthleteDashboard({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {todayTips.map((tip, i) => (
-                      <div key={i} className="flex items-start gap-3 bg-slate-900/50 p-4 rounded-xl  hover:border-emerald-500/30 transition-colors">
+                      <div key={i} className="flex items-start gap-3 bg-slate-900/50 p-4 rounded-xl border border-slate-800/50 hover:border-emerald-500/30 transition-colors">
                         <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
                           <span className="text-emerald-400 text-xs font-black">{i + 1}</span>
                         </div>
@@ -1981,7 +1981,7 @@ export function AthleteDashboard({
           className="space-y-4 pb-12"
         >
         {/* Top Bar: Title, Language & Gamification Stats */}
-        <div className="flex flex-col sm:flex-row justify-between items-center glass-panel p-3 rounded-2xl border  gap-3 w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900/40 p-3 rounded-2xl border border-slate-800/50 gap-3 w-full">
           <div className="flex items-center gap-2 w-full sm:w-auto pl-12 sm:pl-0">
             <Button variant="ghost" size="icon" onClick={onBack} className="text-slate-400 hover:text-rose-400 mr-1 shrink-0" title="Sair">
               <LogOut className="w-5 h-5" />
@@ -2113,7 +2113,7 @@ export function AthleteDashboard({
         </div>
 
         {/* Motivational Quote */}
-        <div className={`glass-panel p-6 rounded-2xl border ${theme.borderAlpha} relative ${theme.shadowStrong} overflow-hidden w-full`}>
+        <div className={`bg-slate-900/40 p-6 rounded-2xl border ${theme.borderAlpha} relative ${theme.shadowStrong} overflow-hidden w-full`}>
           <Quote className={`absolute top-4 left-4 w-6 h-6 ${theme.bgAlpha}`} />
           <p className="text-sm text-slate-300 font-medium italic relative z-10 leading-relaxed pt-2 px-4">
             &quot;{motivationalQuote.text}&quot;
@@ -2187,7 +2187,7 @@ export function AthleteDashboard({
                   Evolução de Wellness & Prontidão
                 </h3>
               </div>
-              <Card className="glass-panel  p-6">
+              <Card className="bg-[#0A1120] border-slate-800/50 p-6">
                 <div className="h-64 w-full">
                   <SafeRender componentName="Gráfico de Evolução" fallback={<div className="h-full flex items-center justify-center text-slate-500 font-bold text-xs">Erro ao carregar gráfico</div>}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -2215,7 +2215,7 @@ export function AthleteDashboard({
                   <ActivitySquare className="w-4 h-4" />
                   Intensidade de Dor (NPS)
                 </h3>
-                <Card className="glass-panel  p-6">
+                <Card className="bg-[#0A1120] border-slate-800/50 p-6">
                   <div className="h-48 w-full">
                     <SafeRender componentName="Gráfico de Dor" fallback={<div className="h-full flex items-center justify-center text-slate-500 font-bold text-xs">Erro ao carregar gráfico</div>}>
                       <ResponsiveContainer width="100%" height="100%">
@@ -2242,7 +2242,7 @@ export function AthleteDashboard({
                 </h3>
               </div>
               
-              <Card className="glass-panel  overflow-hidden shadow-xl">
+              <Card className="bg-slate-900/40 border-slate-800/50 overflow-hidden shadow-xl">
                 <CardContent className="p-6">
                   <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
                     <div className="w-full lg:w-1/2 shrink-0">
@@ -2283,7 +2283,7 @@ export function AthleteDashboard({
                               </span>
                             ))
                           ) : (
-                            <div className="w-full text-center py-8 bg-slate-900/20 rounded-2xl border border-dashed ">
+                            <div className="w-full text-center py-8 bg-slate-900/20 rounded-2xl border border-dashed border-slate-800/50">
                               <CheckCircle2 className="w-8 h-8 text-emerald-500/20 mx-auto mb-2" />
                               <p className="text-slate-500 font-bold uppercase tracking-widest text-xxs">
                                 {lang === "pt" ? "Nenhuma dor relatada" : "No pain reported"}
@@ -2307,7 +2307,7 @@ export function AthleteDashboard({
                 <Trophy className="w-4 h-4" />
                 Progresso Semanal
               </h3>
-              <div className="glass-panel p-5 rounded-2xl border ">
+              <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/50">
                 <div className="flex justify-between items-center mb-6">
                   {last7Days.map((day, i) => (
                     <div key={i} className="flex flex-col items-center gap-2">
@@ -2331,7 +2331,7 @@ export function AthleteDashboard({
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-between pt-4 border-t ">
+                <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
                   <div className="flex items-center gap-2">
                     <Flame className="w-5 h-5 text-orange-500" />
                     <span className="text-2xl font-black text-white">{streak}</span>
@@ -2365,7 +2365,7 @@ export function AthleteDashboard({
           </div>
         </div>
 
-        <div className="space-y-6 mt-12 pt-8 border-t ">
+        <div className="space-y-6 mt-12 pt-8 border-t border-slate-800/50">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 bg-slate-800 rounded-lg border border-slate-700">
               <History className="w-6 h-6 text-slate-400" />
@@ -2380,7 +2380,7 @@ export function AthleteDashboard({
               <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${athleteGender === 'M' ? 'border-indigo-500' : 'border-rose-500'}`}></div>
             </div>
           ) : checkins.length === 0 ? (
-            <div className="text-center py-12 bg-slate-900/30 rounded-2xl border ">
+            <div className="text-center py-12 bg-slate-900/30 rounded-2xl border border-slate-800/50">
               <p className="text-slate-400 font-medium">{t[lang].noRecords}</p>
               <p className="text-sm text-slate-500 mt-1">
                 {t[lang].firstCheckin}
@@ -2401,7 +2401,7 @@ export function AthleteDashboard({
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                     >
-                      <Card className={`glass-panel  hover:${theme.border} transition-colors overflow-hidden relative group`}>
+                      <Card className={`bg-[#0A1120] border-slate-800/50 hover:${theme.border} transition-colors overflow-hidden relative group`}>
                         <div
                           className={`absolute left-0 top-0 bottom-0 w-1 ${isGood ? "bg-emerald-500" : isWarning ? "bg-amber-500" : "bg-red-500"}`}
                         ></div>
@@ -2464,7 +2464,7 @@ export function AthleteDashboard({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass-panel border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col"
+              className="bg-[#0A1120] border border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col"
             >
               <div className="flex justify-between items-center p-6 border-b border-slate-800">
                 <div>
@@ -2490,7 +2490,7 @@ export function AthleteDashboard({
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                 {/* Readiness Score */}
-                <div className="flex flex-col items-center justify-center p-6 glass-panel rounded-3xl border ">
+                <div className="flex flex-col items-center justify-center p-6 bg-slate-900/40 rounded-3xl border border-slate-800/50">
                   <div className="relative flex items-center justify-center w-32 h-32">
                     <svg className="w-full h-full transform -rotate-90">
                       <circle
@@ -2555,7 +2555,7 @@ export function AthleteDashboard({
                     }
 
                     return (
-                      <div key={m.id} className="bg-slate-900/50 p-4 rounded-2xl border  flex flex-col items-center text-center">
+                      <div key={m.id} className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/50 flex flex-col items-center text-center">
                         <m.icon className={`w-5 h-5 ${theme.text} mb-2`} />
                         <span className="text-xxs text-slate-500 uppercase font-black tracking-widest mb-1">{m.label}</span>
                         <span className="text-base">{emoji} <span className="text-sm text-white font-bold ml-1">{labelStr}</span></span>
@@ -2566,7 +2566,7 @@ export function AthleteDashboard({
 
                 {/* Pain Map */}
                 {(selectedRecord.soreness_location || selectedRecord.wellness_records?.[0]?.soreness_location) && (
-                  <div className="space-y-4 pt-4 border-t ">
+                  <div className="space-y-4 pt-4 border-t border-slate-800/50">
                     <div className="flex items-center gap-3">
                       <ActivitySquare className="w-5 h-5 text-rose-400" />
                       <h4 className="text-sm font-black text-white uppercase tracking-widest">Mapa de Dor</h4>
@@ -2603,7 +2603,7 @@ export function AthleteDashboard({
                         />
                       </div>
                       <div className="flex-1 space-y-6 w-full">
-                        <div className="bg-slate-950/50 p-4 rounded-xl border  space-y-3">
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 space-y-3">
                           <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Intensidade Geral</p>
                           <p className={`text-2xl font-black ${selectedRecord.muscle_soreness > 4 ? 'text-rose-400' : 'text-emerald-400'}`}>
                             {selectedRecord.muscle_soreness}/10
@@ -2641,9 +2641,9 @@ export function AthleteDashboard({
 
                 {/* Notes */}
                 {selectedRecord.notes && (
-                  <div className="space-y-3 pt-4 border-t ">
+                  <div className="space-y-3 pt-4 border-t border-slate-800/50">
                     <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Observações</p>
-                    <div className="p-4 glass-panel rounded-2xl border ">
+                    <div className="p-4 bg-slate-900/40 rounded-2xl border border-slate-800/50">
                       <p className="text-sm text-slate-300 italic">&quot;{selectedRecord.notes}&quot;</p>
                     </div>
                   </div>
@@ -2674,7 +2674,7 @@ export function AthleteDashboard({
           <p className="text-slate-400 font-medium">{t[lang].summarySent}</p>
         </div>
 
-        <Card className={`glass-panel ${theme.borderAlpha} shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden`}>
+        <Card className={`bg-[#0A1120] ${theme.borderAlpha} shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden`}>
           <CardHeader className={`bg-gradient-to-r ${theme.gradientFrom} to-transparent pb-6 border-b ${theme.borderAlpha} text-center`}>
             <div className="w-48 h-48 mx-auto bg-slate-900 rounded-full flex items-center justify-center border-4 border-slate-800 mb-4 relative shadow-[0_0_30px_rgba(0,0,0,0.5)]">
               <span
@@ -2746,7 +2746,7 @@ export function AthleteDashboard({
                 return (
                   <div
                     key={m.id}
-                    className="bg-slate-900/50 p-3 rounded-xl border  flex flex-col items-center text-center"
+                    className="bg-slate-900/50 p-3 rounded-xl border border-slate-800/50 flex flex-col items-center text-center"
                   >
                     <m.icon className={`w-5 h-5 ${theme.text} mb-2`} />
                     <span className="text-xxs text-slate-400 uppercase font-bold tracking-wider mb-1">
@@ -2795,7 +2795,7 @@ export function AthleteDashboard({
             <motion.div
               initial={{ scale: 0.5, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="glass-panel border border-emerald-500/30 p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(16,185,129,0.3)] text-center space-y-6 max-w-sm w-full"
+              className="bg-[#0A1120] border border-emerald-500/30 p-8 rounded-[2.5rem] shadow-[0_0_50px_rgba(16,185,129,0.3)] text-center space-y-6 max-w-sm w-full"
             >
               <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
                 <CheckCircle className="w-12 h-12 text-emerald-400" />
@@ -2829,7 +2829,7 @@ export function AthleteDashboard({
             <motion.div
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
-              className="glass-panel border border-amber-500/30 p-8 rounded-[2rem] shadow-[0_0_50px_rgba(245,158,11,0.2)] text-center max-w-sm w-full"
+              className="bg-[#0A1120] border border-amber-500/30 p-8 rounded-[2rem] shadow-[0_0_50px_rgba(245,158,11,0.2)] text-center max-w-sm w-full"
             >
               <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto border border-amber-500/30 mb-6">
                 <Bell className="w-8 h-8 text-amber-400" />
@@ -2924,7 +2924,7 @@ export function AthleteDashboard({
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="px-6 py-2 bg-[#050B14]/60 backdrop-blur-xl rounded-full border  flex items-center gap-3 shadow-2xl"
+            className="px-6 py-2 bg-[#050B14]/60 backdrop-blur-xl rounded-full border border-slate-800/50 flex items-center gap-3 shadow-2xl"
           >
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
             <span className="text-xs font-black text-white/80 uppercase tracking-[0.3em]">Protocolo Wellness Elite</span>
@@ -2966,7 +2966,7 @@ export function AthleteDashboard({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card className={`overflow-hidden glass-panel ${theme.borderAlpha} shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
+                <Card className={`overflow-hidden bg-[#0A1120] ${theme.borderAlpha} shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
                   <CardHeader className={`bg-gradient-to-r ${theme.gradientFrom} to-transparent pb-4 border-b ${theme.borderAlpha}`}>
                     <div className="flex items-center gap-3">
                       <div className={`p-2.5 ${theme.bgAlpha} rounded-lg border ${theme.border} ${theme.shadow}`}>
@@ -3050,7 +3050,7 @@ export function AthleteDashboard({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: metrics.length * 0.1 }}
         >
-          <Card className="overflow-hidden glass-panel border-cyan-500/20 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+          <Card className="overflow-hidden bg-[#0A1120] border-cyan-500/20 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
             <CardHeader className="bg-gradient-to-r from-cyan-500/10 to-transparent pb-4 border-b border-cyan-500/10">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-cyan-500/20 rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
@@ -3092,15 +3092,15 @@ export function AthleteDashboard({
                   <div className="space-y-3">
                     <p className="text-xxs font-black text-slate-500 uppercase tracking-widest px-1">Legenda de Cores</p>
                     <div className="grid grid-cols-1 gap-2">
-                      <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50 border ">
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50 border border-slate-800/50">
                         <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                         <span className="text-xxs font-bold text-slate-400 uppercase tracking-widest">0-3: Leve / Normal</span>
                       </div>
-                      <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50 border ">
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50 border border-slate-800/50">
                         <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
                         <span className="text-xxs font-bold text-slate-400 uppercase tracking-widest">4-6: Moderado / Atenção</span>
                       </div>
-                      <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50 border ">
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/50 border border-slate-800/50">
                         <div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
                         <span className="text-xxs font-bold text-slate-400 uppercase tracking-widest">7-10: Intenso / Crítico</span>
                       </div>
@@ -3123,7 +3123,7 @@ export function AthleteDashboard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (metrics.length + 1) * 0.1 }}
           >
-            <Card className="overflow-hidden glass-panel border-slate-700/50 shadow-lg mb-6">
+            <Card className="overflow-hidden bg-[#0A1120] border-slate-700/50 shadow-lg mb-6">
               <CardHeader className="bg-gradient-to-r from-red-500/10 to-transparent pb-4 border-b border-red-500/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-red-500/20 rounded-lg border border-red-500/30">
@@ -3194,8 +3194,8 @@ export function AthleteDashboard({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: (metrics.length + 2) * 0.1 }}
         >
-          <Card className="overflow-hidden glass-panel border-slate-700/50 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-slate-800/50 to-transparent pb-4 border-b ">
+          <Card className="overflow-hidden bg-[#0A1120] border-slate-700/50 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-slate-800/50 to-transparent pb-4 border-b border-slate-800/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-slate-800 rounded-lg border border-slate-700">
                   <MessageSquare className="w-5 h-5 text-slate-400" />

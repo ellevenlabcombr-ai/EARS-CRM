@@ -274,7 +274,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="w-full max-w-xl bg-slate-900 border-slate-800 rounded-3xl shadow-2xl flex flex-col h-full max-h-[90vh] overflow-hidden"
+            className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col h-full max-h-[90vh] overflow-hidden"
           >
             {/* Header - Fixed */}
             <div className="p-6 sm:p-8 border-b border-slate-800 flex justify-between items-start shrink-0">
@@ -325,7 +325,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                 </div>
 
                 {/* Title & Location */}
-                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border ">
+                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border border-slate-800/50">
                   <div>
                     <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                        <AlignLeft className="w-4 h-4" /> Título
@@ -461,7 +461,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                 </div>
 
                 {/* Date & Time */}
-                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border ">
+                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border border-slate-800/50">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <Clock className="w-4 h-4 text-cyan-500" />

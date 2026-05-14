@@ -186,7 +186,7 @@ export function AgendaSettings() {
     <div className="space-y-6 md:space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         {/* Horários */}
-        <div className="bg-slate-900 border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
           <div className="flex items-center gap-3 md:gap-4 mb-2">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center">
               <Clock className="w-5 h-5 md:w-6 md:h-6" />
@@ -305,7 +305,7 @@ export function AgendaSettings() {
         </div>
       </div>
 
-      <div className="pt-6 md:pt-8 border-t  flex flex-col md:flex-row items-center justify-between gap-6 pb-10">
+      <div className="pt-6 md:pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6 pb-10">
         <div className="flex-1 w-full">
           {status !== 'idle' && (
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${

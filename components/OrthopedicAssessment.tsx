@@ -167,7 +167,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
   return (
     <div className="space-y-6">
       {/* Header */}
-      <header className="h-20 border-b  flex items-center justify-between px-4 sm:px-8 glass-panel/80 backdrop-blur-xl shrink-0 sticky top-0 z-50">
+      <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-4 sm:px-8 bg-[#0A1120]/80 backdrop-blur-xl shrink-0 sticky top-0 z-50">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button variant="ghost" size="icon" onClick={onBack} className="text-slate-400 hover:text-white mr-2 sm:mr-4 shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -210,7 +210,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
         {TABS.map((t) => {
           const isActive = activeTab === t.id;
           return (
-            <div key={t.id} onClick={() => setActiveTab(t.id)} className={`cursor-pointer shrink-0 flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isActive ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'}`}>
+            <div key={t.id} onClick={() => setActiveTab(t.id)} className={`cursor-pointer shrink-0 flex items-center gap-2 px-4 py-2 rounded-full border transition-colors ${isActive ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'}`}>
               <t.icon className="w-4 h-4" />
               <span className="text-xs font-black uppercase tracking-widest">{t.label}</span>
             </div>
@@ -227,7 +227,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <section className="space-y-4">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">1. Dor Atual</h3>
-                <Card className="glass-panel border-slate-800 p-6">
+                <Card className="bg-slate-900/40 border-slate-800 p-6">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-slate-200">Você sente dor hoje?</span>
@@ -288,7 +288,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
 
               <section className="space-y-4">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">2. Histórico Ortopédico</h3>
-                <Card className="glass-panel border-slate-800 p-6">
+                <Card className="bg-slate-900/40 border-slate-800 p-6">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-slate-200">Já teve lesão esportiva diagnosticada?</span>
@@ -341,7 +341,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-4 border-t ">
+                            <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
                               <span className="text-sm font-bold text-slate-200">Já lesionou o mesmo local mais de uma vez?</span>
                               <div className="flex gap-2">
                                 <Button variant={lesao.mesmoLocal ? "default" : "outline"} onClick={() => updateLesao(idx, 'mesmoLocal', true)} className={`${lesao.mesmoLocal ? 'bg-rose-500 hover:bg-rose-600' : 'border-slate-700'}`}>Sim</Button>
@@ -361,7 +361,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
 
               <section className="space-y-4">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">3. Crescimento Relacionado</h3>
-                <Card className="glass-panel border-slate-800 p-6">
+                <Card className="bg-slate-900/40 border-slate-800 p-6">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-slate-200">Cresceu rápido nos últimos meses?</span>
@@ -408,7 +408,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
               ].map(group => (
                 <section key={group.key} className="space-y-3">
                   <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">{group.title}</h3>
-                  <Card className="glass-panel border-slate-800 p-6">
+                  <Card className="bg-slate-900/40 border-slate-800 p-6">
                     <div className="space-y-6">
                       {group.items.map((item, idx) => {
                         const sKey = group.stateKeys[idx] as keyof typeof inspecao[keyof typeof inspecao];
@@ -439,7 +439,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <section className="space-y-4">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">Tornozelo (Knee to Wall)</h3>
-                <Card className="glass-panel border-slate-800 p-6">
+                <Card className="bg-slate-900/40 border-slate-800 p-6">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-400 uppercase">Direito (cm)</label>
@@ -469,7 +469,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
                   <div className="flex flex-wrap gap-2">
                     {t.opts.map(opt => (
                       <button key={opt} onClick={() => setMobilidade({...mobilidade, [t.key]: opt})}
-                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all ${mobilidade[t.key as keyof typeof mobilidade] === opt ? 'bg-cyan-500 text-slate-900 border-cyan-500' : 'glass-panel border-slate-800 text-slate-400 hover:bg-slate-800'}`}>
+                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all ${mobilidade[t.key as keyof typeof mobilidade] === opt ? 'bg-cyan-500 text-slate-900 border-cyan-500' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-800'}`}>
                         {opt}
                       </button>
                     ))}
@@ -484,7 +484,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                <section className="space-y-4">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">1. Agachamento Bilateral</h3>
-                <Card className="glass-panel border-slate-800 p-6 space-y-4">
+                <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-4">
                   <p className="text-xs text-slate-500 font-bold uppercase">Observar: calcanhar sobe, joelho entra, tronco colapsa, dor</p>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-slate-200 mr-4">Score Total:</span>
@@ -500,7 +500,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
 
               <section className="space-y-4">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">2. Single Leg Squat</h3>
-                <Card className="glass-panel border-slate-800 p-6 space-y-6">
+                <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-6">
                   {['Dir', 'Esq'].map(lado => (
                     <div key={lado} className="space-y-3">
                       <label className="text-sm font-black text-slate-300 uppercase block border-b border-slate-800 pb-2">Lado {lado === 'Dir' ? 'Direito' : 'Esquerdo'}</label>
@@ -536,7 +536,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
                   <div className="flex flex-wrap gap-2">
                     {t.opts.map(opt => (
                       <button key={opt} onClick={() => setFuncional({...funcional, [t.key]: opt})}
-                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all ${funcional[t.key as keyof typeof funcional] === opt ? 'bg-cyan-500 text-slate-900 border-cyan-500' : 'glass-panel border-slate-800 text-slate-400 hover:bg-slate-800'}`}>
+                        className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all ${funcional[t.key as keyof typeof funcional] === opt ? 'bg-cyan-500 text-slate-900 border-cyan-500' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-800'}`}>
                         {opt}
                       </button>
                     ))}
@@ -561,7 +561,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
               ].map(group => (
                 <section key={group.title} className="space-y-4">
                   <h3 className="text-sm font-black text-white uppercase tracking-widest text-cyan-400">{group.title}</h3>
-                  <Card className="glass-panel border-slate-800 p-6 space-y-3">
+                  <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-3">
                      {group.tests.map(test => {
                        const arr = especificos[group.key as keyof typeof especificos] as string[];
                        const selected = arr.includes(test);
@@ -605,7 +605,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
                      const selected = redflags[flag.key as keyof typeof redflags];
                      return (
                       <button key={flag.key} onClick={() => setRedflags({...redflags, [flag.key]: !selected})}
-                        className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition-colors ${selected ? 'bg-rose-500 text-white border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'glass-panel border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
+                        className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition-colors ${selected ? 'bg-rose-500 text-white border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? 'border-white bg-transparent' : 'border-slate-700'}`}>
                           {selected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
                         </div>

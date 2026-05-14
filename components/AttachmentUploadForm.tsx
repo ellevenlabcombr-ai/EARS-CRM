@@ -110,7 +110,7 @@ export function AttachmentUploadForm({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="bg-slate-900 border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
+            className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
           >
             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
               <h3 className="text-lg font-bold text-white uppercase tracking-widest flex items-center gap-2">

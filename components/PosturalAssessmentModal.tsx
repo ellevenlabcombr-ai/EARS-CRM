@@ -429,7 +429,7 @@ export function PosturalAssessmentModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-slate-950/95 backdrop-blur-xl">
-      <div className="glass-panel border-slate-800 w-full h-full max-w-6xl rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-[#0A1120] border border-slate-800 w-full h-full max-w-6xl rounded-3xl overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-800 bg-slate-900/50">
           <div className="flex items-center gap-4">
@@ -483,7 +483,7 @@ export function PosturalAssessmentModal({
               ) : (
                 <div className="flex flex-col gap-6">
                   {history.map(assessment => (
-                    <div key={assessment.id} className={`bg-slate-900/50 ${comparingIds.includes(assessment.id) ? 'border-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.15)] bg-slate-900/80' : 'border-slate-800'} rounded-2xl p-6 transition-all duration-300`}>
+                    <div key={assessment.id} className={`bg-slate-900/50 border ${comparingIds.includes(assessment.id) ? 'border-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.15)] bg-slate-900/80' : 'border-slate-800'} rounded-2xl p-6 transition-all duration-300`}>
                       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4 border-b border-slate-800 pb-4">
                         <div className="flex items-center gap-3">
                           <label className="flex items-center gap-2 cursor-pointer group">

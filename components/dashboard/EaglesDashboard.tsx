@@ -179,7 +179,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
               placeholder="Buscar atleta..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2.5 bg-slate-900/50 border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 w-64 transition-all"
+              className="pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 w-64 transition-all"
             />
           </div>
         </div>
@@ -221,7 +221,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
         {/* Left Column: Alerts & Top Injuries */}
         <div className="lg:col-span-1 space-y-8">
           {/* Group Alerts */}
-          <section className="glass-panel  rounded-3xl p-6 backdrop-blur-sm">
+          <section className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-6 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <AlertCircle size={18} className="text-amber-500" />
@@ -235,7 +235,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
             <div className="space-y-3">
               {alerts.length > 0 ? (
                 alerts.map((alert, idx) => (
-                  <div key={idx} className="p-3 bg-slate-950/50 border  rounded-xl flex items-center gap-3">
+                  <div key={idx} className="p-3 bg-slate-950/50 border border-slate-800/50 rounded-xl flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${alert.type === 'pain' ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-white truncate">{alert.athleteName}</p>
@@ -253,7 +253,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
           </section>
 
           {/* Top Injuries */}
-          <section className="glass-panel  rounded-3xl p-6 backdrop-blur-sm">
+          <section className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-6 backdrop-blur-sm">
             <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2 mb-6">
               <Activity size={18} className="text-cyan-500" />
               Top Lesões / Queixas
@@ -284,8 +284,8 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
 
         {/* Center Column: Athlete List */}
         <div className="lg:col-span-2 space-y-8">
-          <section className="glass-panel border  rounded-3xl overflow-hidden backdrop-blur-sm">
-            <div className="p-6 border-b  flex items-center justify-between">
+          <section className="bg-slate-900/40 border border-slate-800/50 rounded-3xl overflow-hidden backdrop-blur-sm">
+            <div className="p-6 border-b border-slate-800/50 flex items-center justify-between">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Users size={18} className="text-cyan-500" />
                 Lista de Atletas
@@ -382,7 +382,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
           </section>
 
           {/* Eagles Agenda */}
-          <section className="glass-panel border  rounded-3xl p-6 backdrop-blur-sm">
+          <section className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-6 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Calendar size={18} className="text-cyan-500" />
@@ -394,7 +394,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
             <div className="space-y-4">
               {appointments.length > 0 ? (
                 appointments.map((appt) => (
-                  <div key={appt.id} className="flex items-center gap-4 p-4 bg-slate-950/50 border  rounded-2xl">
+                  <div key={appt.id} className="flex items-center gap-4 p-4 bg-slate-950/50 border border-slate-800/50 rounded-2xl">
                     <div className="flex flex-col items-center justify-center min-w-[3.75rem] py-1 bg-slate-900 rounded-xl border border-slate-800">
                       <span className="text-xs font-black text-white">{appt.start_time?.substring(0, 5)}</span>
                       <span className="text-xxs font-black text-slate-500 uppercase">Início</span>

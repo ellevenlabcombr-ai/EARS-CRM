@@ -12,8 +12,8 @@ export function PainHeatSummary({ painData }: PainHeatSummaryProps) {
   const maxCount = Math.max(...painData.map(d => d.count), 1);
 
   return (
-    <Card className="glass-panel  shadow-xl h-full">
-      <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
+    <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl h-full">
+      <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
         <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           <Activity className="w-4 h-4 text-rose-500" />
           Mapa de Dor (Últimos 7 dias)

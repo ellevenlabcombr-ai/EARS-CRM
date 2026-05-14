@@ -13,14 +13,14 @@ interface MaturationAssessmentProps {
 }
 
 const NumberInput = ({ label, value, unit, onChange }: { label: string, value: number, unit: string, onChange: (v: number) => void }) => (
-  <div className="bg-slate-900/30 p-4 rounded-xl  flex flex-col justify-between">
+  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50 flex flex-col justify-between">
     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{label}</label>
     <div className="relative">
       <input
         type="number"
         value={value || ''}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full bg-slate-950 border-slate-800 rounded-lg py-2 px-3 text-white font-black text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+        className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black text-sm focus:outline-none focus:border-cyan-500 transition-colors"
       />
       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 uppercase">{unit}</span>
     </div>
@@ -246,15 +246,15 @@ export function MaturationAssessmentForm({ athleteId, onCancel, onSave }: Matura
 
               <div className="p-6">
                 <div className="grid grid-cols-2 gap-3 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Índice</span>
                     <span className="text-lg font-black mt-1 text-cyan-400">{metrics.maturationIndex}</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Razão</span>
                     <span className="text-lg font-black mt-1 text-cyan-400">{metrics.ratio}</span>
                   </div>
-                  <div className="col-span-2 bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="col-span-2 bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status</span>
                     <span className="text-lg font-black mt-1 truncate max-w-full text-cyan-400">{growthStatus}</span>
                   </div>

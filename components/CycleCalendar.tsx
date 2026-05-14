@@ -72,7 +72,7 @@ export function CycleCalendar({
   const prevMonth = () => setCurrentMonth(subDays(startOfMonth(currentMonth), 1));
 
   return (
-    <div className="bg-slate-950/50 rounded-3xl border-slate-800 p-6 space-y-6">
+    <div className="bg-slate-950/50 rounded-3xl border border-slate-800 p-6 space-y-6">
       <div className="flex justify-between items-center px-2">
         <h3 className="text-white font-black uppercase tracking-widest text-sm">
           {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}

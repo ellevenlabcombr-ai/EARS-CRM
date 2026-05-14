@@ -23,7 +23,7 @@ export function SessionDashboard({ onBack }: { onBack?: () => void }) {
         <div className="max-w-screen-xl mx-auto flex items-center justify-between">
           <button 
             onClick={onBack}
-            className="group flex items-center gap-3 py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border-white/10 active:scale-95"
+            className="group flex items-center gap-3 py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/10 active:scale-95"
             aria-label="Voltar"
           >
             <ArrowLeft size={18} className="text-slate-400 group-hover:text-white transition-colors" />
@@ -53,7 +53,7 @@ export function SessionDashboard({ onBack }: { onBack?: () => void }) {
             {/* Animated Glow Border */}
             <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-sky-500 rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
             
-            <div className="relative glass-panel backdrop-blur-2xl border border-white/10 rounded-[30px] p-12 text-center flex flex-col items-center shadow-2xl">
+            <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[30px] p-12 text-center flex flex-col items-center shadow-2xl">
               <div className="relative mb-10">
                 <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full animate-pulse" />
                 <div className="relative w-24 h-24 rounded-[2rem] bg-slate-950/80 flex items-center justify-center border border-white/5 shadow-inner transform -rotate-3 hover:rotate-0 transition-transform duration-500">

@@ -315,7 +315,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
             <p className="text-slate-400 text-xxs font-black uppercase tracking-widest min-w-[120px]">
               {format(viewDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
             </p>
-            <div className="flex bg-slate-900 rounded-lg p-1 border-slate-800">
+            <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
               <button 
                 onClick={() => setViewDate(new Date())}
                 className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${getLocalDateString(viewDate) === getLocalDateString(new Date()) ? 'bg-cyan-500 text-[#050B14]' : 'text-slate-400 hover:text-white'}`}
@@ -425,7 +425,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
           </div>
         </div>
 
-        <Card className="glass-panel  shadow-2xl overflow-hidden backdrop-blur-sm">
+        <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden backdrop-blur-sm">
           <CardContent className="p-0">
             <div className="divide-y divide-slate-800/50">
               {fullAgenda.length === 0 ? (

@@ -31,7 +31,6 @@ import {
   List as ListIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TiltCard } from "@/components/ui/TiltCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface AthleteListProps {
@@ -254,9 +253,9 @@ export function AthleteList({
   return (
     <div className="flex-1 flex flex-col h-screen bg-[#050B14] text-slate-200 overflow-hidden">
       {/* Header */}
-      <header className="h-20 border-b  flex items-center justify-between px-4 sm:px-8 glass-panel/80 backdrop-blur-xl shrink-0 z-10">
+      <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-4 sm:px-8 bg-[#0A1120]/80 backdrop-blur-xl shrink-0 z-10">
         <div className="flex items-center gap-2 sm:gap-3 pl-12 lg:pl-0 min-w-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border-cyan-500/20 shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 shrink-0">
             <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" />
           </div>
           <div className="min-w-0">
@@ -303,8 +302,8 @@ export function AthleteList({
       </header>
 
       {/* Filters Bar */}
-      <div className="px-6 py-4 glass-panel/40 border-b border-slate-800/30 flex flex-wrap items-center gap-4 shrink-0">
-        <div className="flex items-center gap-2 bg-slate-900/50 p-1 rounded-xl border ">
+      <div className="px-6 py-4 bg-[#0A1120]/40 border-b border-slate-800/30 flex flex-wrap items-center gap-4 shrink-0">
+        <div className="flex items-center gap-2 bg-slate-900/50 p-1 rounded-xl border border-slate-800/50">
           {["all", "Apto", "Transição", "DM"].map((status) => (
             <button
               key={status}
@@ -362,7 +361,7 @@ export function AthleteList({
         <div className="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center bg-slate-900/50 p-1 rounded-xl  ml-auto sm:ml-0">
+        <div className="flex items-center bg-slate-900/50 p-1 rounded-xl border border-slate-800/50 ml-auto sm:ml-0">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-1.5 rounded-lg transition-all ${
@@ -447,7 +446,7 @@ export function AthleteList({
                   return (
                     <div
                       key={athlete.id}
-                      className="group relative glass-panel  rounded-2xl hover:border-cyan-500/50 transition-all shadow-xl overflow-hidden flex"
+                      className="group relative bg-[#0A1120] border border-slate-800/50 rounded-2xl hover:border-cyan-500/50 transition-all shadow-xl overflow-hidden flex"
                     >
                       {/* Photo Section */}
                       <div
@@ -567,11 +566,11 @@ export function AthleteList({
                 }
 
                 return (
-                  <TiltCard key={athlete.id} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.02}>
-                    <div
-                      className="glass-panel group relative rounded-3xl hover:border-cyan-500/50 transition-all shadow-2xl overflow-hidden flex flex-col h-full"
-                    >
-                      {/* Photo Section - Clickable */}
+                  <div
+                    key={athlete.id}
+                    className="group relative bg-[#0A1120] border border-slate-800/50 rounded-3xl hover:border-cyan-500/50 transition-all shadow-2xl overflow-hidden flex flex-col"
+                  >
+                    {/* Photo Section - Clickable */}
                     <div
                       className="relative w-full aspect-[4/5] cursor-pointer overflow-hidden bg-slate-900"
                       onClick={() => onViewDashboard(athlete)}
@@ -596,7 +595,7 @@ export function AthleteList({
                             e.stopPropagation();
                             setSelectedAthleteForInfo(athlete);
                           }}
-                          className="p-2 glass-panel/80 backdrop-blur-md border border-white/10 rounded-xl text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors shadow-lg"
+                          className="p-2 bg-[#0A1120]/80 backdrop-blur-md border border-white/10 rounded-xl text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors shadow-lg"
                           title="Ver Informações"
                         >
                           <Info className="w-4 h-4" />
@@ -652,7 +651,7 @@ export function AthleteList({
                     </div>
 
                     {/* Bottom Details Section */}
-                    <div className="p-3 sm:p-5 flex flex-col bg-[#050B14] relative z-10 border-t  flex-1">
+                    <div className="p-3 sm:p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
                       <div className="flex flex-col gap-1 mb-4 sm:mb-5">
                         {athlete.modalidade && (
                           <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight">
@@ -683,7 +682,6 @@ export function AthleteList({
                       </button>
                     </div>
                   </div>
-                  </TiltCard>
                 );
               })}
             </div>
@@ -720,10 +718,10 @@ export function AthleteList({
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg glass-panel border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-[#0A1120] border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
               {/* Modal Header */}
-              <div className="p-6 border-b  flex items-center justify-between bg-slate-900/20">
+              <div className="p-6 border-b border-slate-800/50 flex items-center justify-between bg-slate-900/20">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                     <User className="w-5 h-5 text-cyan-500" />
@@ -840,7 +838,7 @@ export function AthleteList({
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 bg-slate-900/20 border-t  flex gap-3">
+              <div className="p-6 bg-slate-900/20 border-t border-slate-800/50 flex gap-3">
                 <Button
                   onClick={() => {
                     onEditAthlete(selectedAthleteForInfo);

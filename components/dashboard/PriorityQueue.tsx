@@ -111,7 +111,7 @@ export function PriorityQueue({ athletes, onViewAthlete, section = 'all' }: Prio
     const hoverBgClass = isRisk ? 'hover:bg-rose-500/5' : isMissing ? 'hover:bg-slate-800/30' : 'hover:bg-amber-500/5';
 
     return (
-      <div key={athlete.id} className={`p-6 flex flex-col gap-4 rounded-2xl shadow-sm ${borderClass} ${bgClass} ${hoverBgClass} transition-all relative overflow-hidden group`}>
+      <div key={athlete.id} className={`p-6 flex flex-col gap-4 rounded-2xl border shadow-sm ${borderClass} ${bgClass} ${hoverBgClass} transition-all relative overflow-hidden group`}>
         {/* Subtle accent border on left */}
         <div className={`absolute top-0 left-0 w-1 h-full ${isRisk ? 'bg-rose-500/50' : isMissing ? 'bg-slate-700/50' : 'bg-amber-500/50'}`}></div>
         
@@ -265,7 +265,7 @@ export function PriorityQueue({ athletes, onViewAthlete, section = 'all' }: Prio
             </div>
           </div>
 
-          <div className="flex items-center justify-end w-full pt-4 border-t  relative z-20">
+          <div className="flex items-center justify-end w-full pt-4 border-t border-slate-800/50 relative z-20">
             <Button 
               size="lg" 
               className={`w-full sm:w-48 h-10 text-xs font-black uppercase tracking-widest shadow-lg ${isRisk ? 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20' : 'bg-cyan-500 hover:bg-cyan-400 text-[#050B14] shadow-cyan-500/20'}`}
@@ -303,8 +303,8 @@ export function PriorityQueue({ athletes, onViewAthlete, section = 'all' }: Prio
 
       {/* 2. Radar Mode (Monitoramento Contínuo) */}
       {showClinical && clinicalQueue.length > 0 && (
-        <Card className="glass-panel  shadow-xl overflow-hidden">
-          <CardHeader className="border-b  bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between">
+        <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl overflow-hidden">
+          <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between">
             <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Activity className="w-4 h-4 text-cyan-500" />
               Radar Mode (Monitoramento)

@@ -92,7 +92,7 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-slate-900/50 p-4 rounded-2xl border-slate-800">
+      <div className="flex justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
         <div>
           <h3 className="text-sm font-black text-white uppercase tracking-widest">
             {lang === 'pt' ? 'Próximos Eventos' : 'Upcoming Events'}
@@ -113,7 +113,7 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
             {lang === 'pt' ? 'Carregando eventos...' : 'Loading events...'}
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center p-8 bg-slate-900/30 rounded-2xl border ">
+          <div className="text-center p-8 bg-slate-900/30 rounded-2xl border border-slate-800/50">
             <CalendarIcon className="w-8 h-8 text-slate-600 mx-auto mb-3" />
             <p className="text-slate-400 font-medium">
               {lang === 'pt' ? 'Nenhum evento agendado.' : 'No events scheduled.'}

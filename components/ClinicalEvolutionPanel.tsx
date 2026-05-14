@@ -73,7 +73,7 @@ const getRehabPhase = (last: EvolutionData): { phase: RehabPhase; color: string;
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-panel border-slate-800 p-3 rounded-xl shadow-2xl backdrop-blur-md">
+      <div className="bg-[#0A1120] border border-slate-800 p-3 rounded-xl shadow-2xl backdrop-blur-md">
         <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1">
@@ -124,7 +124,7 @@ export function ClinicalEvolutionPanel({ regionName, data, riskScore, lang = "pt
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 rounded-lg border-cyan-500/20">
+          <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
             <Activity className="w-5 h-5 text-cyan-400" />
           </div>
           <div>
@@ -164,7 +164,7 @@ export function ClinicalEvolutionPanel({ regionName, data, riskScore, lang = "pt
 
       {/* Variation Cards */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-slate-950/40 p-3 rounded-xl border ">
+        <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
           <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">Δ Dor</p>
           <div className="flex items-center justify-between">
             <span className={`text-sm font-black ${deltaPain < 0 ? 'text-emerald-400' : deltaPain > 0 ? 'text-rose-400' : 'text-slate-400'}`}>
@@ -173,7 +173,7 @@ export function ClinicalEvolutionPanel({ regionName, data, riskScore, lang = "pt
             {getTrendIcon(deltaPain, true)}
           </div>
         </div>
-        <div className="bg-slate-950/40 p-3 rounded-xl border ">
+        <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
           <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">Δ Força</p>
           <div className="flex items-center justify-between">
             <span className={`text-sm font-black ${deltaStrength > 0 ? 'text-emerald-400' : deltaStrength < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
@@ -182,7 +182,7 @@ export function ClinicalEvolutionPanel({ regionName, data, riskScore, lang = "pt
             {getTrendIcon(deltaStrength)}
           </div>
         </div>
-        <div className="bg-slate-950/40 p-3 rounded-xl border ">
+        <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50">
           <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">Δ ADM</p>
           <div className="flex items-center justify-between">
             <span className={`text-sm font-black ${deltaRom > 0 ? 'text-emerald-400' : deltaRom < 0 ? 'text-rose-400' : 'text-slate-400'}`}>

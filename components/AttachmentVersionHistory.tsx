@@ -71,7 +71,7 @@ export function AttachmentVersionHistory({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-slate-900 border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
           >
             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
               <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export function AttachmentVersionHistory({
                     className={`p-4 rounded-2xl border transition-all ${
                       version.is_current_version 
                         ? 'bg-cyan-500/5 border-cyan-500/20' 
-                        : 'bg-slate-950/50  hover:border-slate-700'
+                        : 'bg-slate-950/50 border-slate-800/50 hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-3">
@@ -159,7 +159,7 @@ export function AttachmentVersionHistory({
                       </div>
                     </div>
                     {version.version_note && (
-                      <div className="flex items-start gap-2 bg-slate-900/50 p-2.5 rounded-xl border ">
+                      <div className="flex items-start gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/50">
                         <Clock size={12} className="text-slate-600 mt-0.5 shrink-0" />
                         <p className="text-xxs text-slate-400 leading-relaxed italic">
                           &quot;{version.version_note}&quot;

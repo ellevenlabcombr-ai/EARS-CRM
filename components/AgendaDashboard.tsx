@@ -391,7 +391,7 @@ export function AgendaDashboard({ onOpenProfile, athleteId }: AgendaDashboardPro
         </div>
       </header>
 
-      <div className="bg-slate-900/50 border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm">
         <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center bg-slate-800 rounded-lg p-1">

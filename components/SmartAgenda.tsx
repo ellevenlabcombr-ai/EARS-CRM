@@ -232,7 +232,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
           </h1>
           {clinicalToday.length > 0 ? (
             <div className="flex items-center gap-3 mt-3">
-              <span className="px-3 py-1 bg-rose-500/10 border-rose-500/20 text-rose-500 rounded-lg text-xs font-black uppercase tracking-widest">
+              <span className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-lg text-xs font-black uppercase tracking-widest">
                 {clinicalToday.length} Hoje
               </span>
               <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 rounded-lg text-xs font-black uppercase tracking-widest">
@@ -277,7 +277,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
         </div>
       </header>
 
-      <div className="glass-panel border-slate-800 rounded-3xl p-6">
+      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <button 

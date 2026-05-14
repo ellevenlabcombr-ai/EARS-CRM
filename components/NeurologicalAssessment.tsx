@@ -279,7 +279,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                  application="O atleta deve graduar cada sintoma baseado em como se sente AGORA (0 = Nenhum, 6 = Severo)."
                  referenceValues={["Sintomas leves: Score 0-2 dependendo do sintoma", "Sintomas severos: Valores altos (4+) em qualquer sintoma", "Red Flags: Dor de cabeça severa, perda de consciência (ver Red Flags no último passo)"]}
                >
-                 <div className="bg-slate-800/30 border-slate-700/50 p-4 rounded-xl cursor-pointer hover:border-slate-500 transition-colors">
+                 <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl cursor-pointer hover:border-slate-500 transition-colors">
                    <p className="text-xs text-slate-400 font-bold flex items-center justify-between">
                      <span>Gradue cada sintoma baseando-se em como o atleta se sente AGORA. (0 = Nenhum, 6 = Severo)</span>
                      <FileQuestion className="w-4 h-4 text-cyan-500 shrink-0" />
@@ -313,7 +313,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                    };
                    const val = symptoms[key as keyof typeof symptoms];
                    return (
-                     <div key={key} className="glass-panel border-slate-800 p-4 rounded-2xl flex flex-col space-y-3 shrink-0">
+                     <div key={key} className="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl flex flex-col space-y-3 shrink-0">
                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{sympLabels[key]}</span>
                        <div className="flex justify-between items-center bg-slate-950 p-1 rounded-xl">
                          {[0,1,2,3,4,5,6].map(i => (
@@ -350,7 +350,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-4">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-4">
                    {[
                      { k: 'venue', l: 'Onde estamos hoje?' },
                      { k: 'half', l: 'Em que momento/tempo do jogo estamos?' },
@@ -382,7 +382,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-6">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-6">
                     <p className="text-xs text-slate-500 font-bold uppercase">Avalie o número de palavras recordadas corretamente em 3 tentativas.</p>
                     <div className="grid grid-cols-4 gap-4">
                        <div className="font-bold text-xs uppercase tracking-widest text-slate-400 pb-2 border-b border-slate-800">Palavra</div>
@@ -428,7 +428,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-4">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-4">
                    <p className="text-xs text-slate-500 font-bold uppercase mb-4">Leia os dígitos, o atleta deve repetir ao contrário.</p>
                    {[
                      { k: 'd3', label: '3 Dígitos: 4-9-3' },
@@ -445,7 +445,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      </div>
                    ))}
 
-                   <div className="pt-4 border-t  flex items-center justify-between">
+                   <div className="pt-4 border-t border-slate-800/50 flex items-center justify-between">
                      <span className="text-sm font-bold text-slate-300">Meses do Ano ao contrário</span>
                      <div className="flex gap-2">
                          <Button variant={cognitive.monthsReverse ? "default" : "outline"} onClick={() => setCognitive({...cognitive, monthsReverse: true})} className={`${cognitive.monthsReverse ? 'bg-emerald-500 hover:bg-emerald-600 outline-none' : 'border-slate-700'}`}>Passou</Button>
@@ -467,7 +467,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-4">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-4">
                    <p className="text-xs text-slate-500 font-bold uppercase mb-4">Das 5 palavras, quantas o atleta lembrou agora?</p>
                    <div className="flex gap-2">
                       {[0,1,2,3,4,5].map(i => (
@@ -498,7 +498,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-6">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-6">
                    {[
                      { k: 'mbessDouble', label: 'Bipodal (Double Leg)' },
                      { k: 'mbessSingle', label: 'Unipodal (Single Leg)' },
@@ -534,7 +534,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-6">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-6">
                    <p className="text-xs text-slate-500 font-bold uppercase mb-4">Marchar calcanhar-ponta em linha reta (3 metros e voltar).</p>
                    
                    <div className="flex items-center justify-between">
@@ -542,7 +542,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <input type="number" step="0.1" placeholder="Ex: 12.5" value={motor.tandemGaitTime} onChange={(e) => setMotor({...motor, tandemGaitTime: e.target.value})} className="w-24 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-center text-sm font-black focus:ring-1 focus:ring-cyan-500 outline-none text-slate-200" />
                    </div>
 
-                   <div className="flex items-center justify-between pt-4 border-t ">
+                   <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
                      <span className="text-sm font-bold text-slate-300">Qualidade (Passou sem desvios/quedas?)</span>
                      <div className="flex gap-2">
                         <Button variant={motor.tandemGaitPass ? "default" : "outline"} onClick={() => setMotor({...motor, tandemGaitPass: true})} className={`${motor.tandemGaitPass ? 'bg-emerald-500 hover:bg-emerald-600 outline-none' : 'border-slate-700'}`}>Sim</Button>
@@ -565,7 +565,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                      <FileQuestion className="w-4 h-4" />
                    </h3>
                  </TestInfoModal>
-                 <Card className="glass-panel border-slate-800 p-6 space-y-4">
+                 <Card className="bg-slate-900/40 border-slate-800 p-6 space-y-4">
                    <div className="flex items-center justify-between">
                      <span className="text-sm font-bold text-slate-300">Teste Feito com Sucesso?</span>
                      <div className="flex gap-2">
@@ -606,11 +606,11 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                        <th className="p-4 font-black text-center min-w-[80px]">Névoa</th>
                      </tr>
                    </thead>
-                   <tbody className="glass-panel">
+                   <tbody className="bg-slate-900/40">
                      {VOMS_FIELDS.map(field => {
                        const vObj = voms[field.key as keyof typeof voms] as any;
                        return (
-                         <tr key={field.key} className="border-b  last:border-0 hover:bg-slate-800/30 transition-colors">
+                         <tr key={field.key} className="border-b border-slate-800/50 last:border-0 hover:bg-slate-800/30 transition-colors">
                            <td className="p-4">
                              {field.application ? (
                                <TestInfoModal
@@ -650,7 +650,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                  </table>
                </div>
 
-               <Card className="glass-panel border-slate-800 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
+               <Card className="bg-slate-900/40 border-slate-800 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
                  <div>
                    <TestInfoModal
                      title="Near Point of Convergence (NPC)"
@@ -705,7 +705,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                       const selected = redFlags[flag.key as keyof typeof redFlags];
                       return (
                         <button key={flag.key} onClick={() => setRedFlags({...redFlags, [flag.key]: !selected})}
-                          className={`p-4 rounded-2xl border text-left flex flex-col gap-3 transition-colors ${selected ? 'bg-amber-500/10 border-amber-500 text-amber-400' : 'glass-panel border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
+                          className={`p-4 rounded-2xl border text-left flex flex-col gap-3 transition-colors ${selected ? 'bg-amber-500/10 border-amber-500 text-amber-400' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
                           <div className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${selected ? 'border-amber-500 bg-amber-500' : 'border-slate-700'}`}>
                             {selected && <CheckCircle2 className="w-3 h-3 text-[#050B14]" />}
                           </div>
@@ -717,7 +717,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                </section>
 
                {/* Absolute Red Flags */}
-               <section className="space-y-4 pt-6 border-t ">
+               <section className="space-y-4 pt-6 border-t border-slate-800/50">
                  <TestInfoModal
                    title="Red Flags Absolutos"
                    indication="Sinais de gravidade extrema ou suspeita de lesões estruturais severas."
@@ -747,7 +747,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                        const selected = redFlags[flag.key as keyof typeof redFlags];
                        return (
                         <button key={flag.key} onClick={() => setRedFlags({...redFlags, [flag.key]: !selected})}
-                          className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-colors ${selected ? 'bg-rose-500 text-white border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'glass-panel border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
+                          className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-colors ${selected ? 'bg-rose-500 text-white border-rose-500 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:bg-slate-900'}`}>
                           <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${selected ? 'border-white bg-transparent' : 'border-slate-700'}`}>
                             {selected && <div className="w-2 h-2 rounded-sm bg-white" />}
                           </div>

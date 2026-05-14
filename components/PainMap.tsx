@@ -461,7 +461,7 @@ export function PainMap({
   const renderBody = (isFront: boolean) => {
     const parts = bodyParts.filter((p) => (isFront ? p.front : p.back));
     return (
-      <div className={`relative w-full ${readOnly ? 'max-w-[11.25rem] sm:max-w-[13.75rem]' : 'max-w-[15rem] md:max-w-[18.75rem]'} mx-auto aspect-[1/2.2] bg-slate-950 rounded-3xl overflow-hidden border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] group`}>
+      <div className={`relative w-full ${readOnly ? 'max-w-[11.25rem] sm:max-w-[13.75rem]' : 'max-w-[15rem] md:max-w-[18.75rem]'} mx-auto aspect-[1/2.2] bg-slate-950 rounded-3xl overflow-hidden border border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.15)] group`}>
         {/* Sci-Fi Grid Background */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] bg-[size:20px_20px] opacity-50" />
 

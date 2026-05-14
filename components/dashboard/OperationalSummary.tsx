@@ -49,8 +49,8 @@ export function OperationalSummary({
   ];
 
   return (
-    <Card className="glass-panel  shadow-xl">
-      <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
+    <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
+      <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
         <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           <ClipboardList className="w-4 h-4 text-cyan-500" />
           Resumo Operacional
@@ -59,7 +59,7 @@ export function OperationalSummary({
       <CardContent className="p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
           {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-between p-4 bg-slate-800/20  rounded-2xl">
+            <div key={stat.label} className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-800/50 rounded-2xl">
               <div className="flex items-center gap-4">
                 <div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
                   <stat.icon size={18} />

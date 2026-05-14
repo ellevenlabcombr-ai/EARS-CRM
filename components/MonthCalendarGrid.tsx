@@ -36,7 +36,7 @@ export function MonthCalendarGrid({ events, onEventClick, currentDate }: MonthCa
   const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
   return (
-    <div className="bg-slate-900/30 border-slate-800 rounded-2xl md:rounded-3xl overflow-hidden">
+    <div className="bg-slate-900/30 border border-slate-800 rounded-2xl md:rounded-3xl overflow-hidden">
       {/* Header - Weekdays */}
       <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-900/50">
         {weekDays.map((day) => (

@@ -21,7 +21,7 @@ const Slider = ({ label, value, onChange, invertColor = false, max = 10 }: { lab
     : (ratio < 0.4 ? 'text-rose-400' : ratio < 0.7 ? 'text-amber-400' : 'text-emerald-400');
 
   return (
-    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl ">
+    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
       <div className="flex justify-between items-end">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
         <span className={`text-sm font-black ${valueColor}`}>{value}/{max}</span>
@@ -39,7 +39,7 @@ const Slider = ({ label, value, onChange, invertColor = false, max = 10 }: { lab
 };
 
 const SelectGroup = ({ label, value, options, onChange }: { label: string, value: string | boolean, options: {id: string | boolean, label: string}[], onChange: (v: any) => void }) => (
-  <div className="space-y-3 bg-slate-900/30 p-4 rounded-xl border ">
+  <div className="space-y-3 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
     <div className="grid grid-cols-2 gap-2">
       {options.map(opt => (
@@ -390,23 +390,23 @@ export function RedSAssessmentForm({ athleteId, onCancel, onSave }: RedSAssessme
 
               <div className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Energia</span>
                     <span className={`text-base font-black mt-1 ${metrics.energyDeficit > 60 ? 'text-rose-400' : metrics.energyDeficit > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>{metrics.energyDeficit}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Perform.</span>
                     <span className={`text-base font-black mt-1 ${metrics.performanceDecline > 60 ? 'text-rose-400' : metrics.performanceDecline > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>{metrics.performanceDecline}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Imunidade</span>
                     <span className={`text-base font-black mt-1 ${metrics.recoveryImpairment > 60 ? 'text-rose-400' : metrics.recoveryImpairment > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>{metrics.recoveryImpairment}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Hormonal</span>
                     <span className={`text-base font-black mt-1 ${metrics.hormonalRisk > 60 ? 'text-rose-400' : metrics.hormonalRisk > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>{metrics.hormonalRisk}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center col-span-2 md:col-span-1">
+                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center col-span-2 md:col-span-1">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Comport.</span>
                     <span className={`text-base font-black mt-1 ${metrics.behaviorRisk > 60 ? 'text-rose-400' : metrics.behaviorRisk > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>{metrics.behaviorRisk}%</span>
                   </div>

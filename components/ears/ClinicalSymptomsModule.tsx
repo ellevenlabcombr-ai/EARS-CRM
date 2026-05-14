@@ -50,7 +50,7 @@ export const ClinicalSymptomsModule: React.FC<Props> = ({ selected, onChange }) 
               key={s.id}
               onClick={() => toggle(s.id)}
               className={`
-                flex items-center gap-3 p-3 rounded-2xl transition-all duration-300
+                flex items-center gap-3 p-3 rounded-2xl border transition-all duration-300
                 ${isSelected 
                   ? 'bg-rose-500/10 border-rose-500 text-rose-400 shadow-[0_0_15px_rgba(244,63,94,0.1)]' 
                   : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700'}

@@ -196,7 +196,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                     Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
                   </p>
                   {safeMode?.active && !overrideSafeMode && (
-                    <div className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                    <div className={`px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
                       safeMode.level === 'high' ? 'bg-red-500/10 border-red-500/30 text-red-500' : 
                       safeMode.level === 'moderate' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' : 
                       'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
@@ -287,7 +287,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                 </div>
               </CardContent>
             </Card>
-            <Card className="glass-panel border-white/5 shadow-xl">
+            <Card className="bg-slate-900/40 border-white/5 shadow-xl">
               <CardContent className="p-4">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Padrão de Sono Atual</p>
                 <div className="flex items-center gap-4">
@@ -307,7 +307,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
             <div className="absolute top-0 right-0 p-4 opacity-[0.03] pointer-events-none">
               <BrainCircuit className="w-48 h-48 text-cyan-400" />
             </div>
-            <CardHeader className="pb-0 pt-6 px-6 border-b ">
+            <CardHeader className="pb-0 pt-6 px-6 border-b border-slate-800/50">
               <div className="flex items-center justify-between mb-4">
                 <CardTitle className="text-xs font-black text-cyan-500 uppercase tracking-[0.2em] flex items-center gap-2">
                   <Sparkles className="w-4 h-4" /> Inteligência Clínica EAR/S <span className="text-[10px] bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded-[4px] tracking-widest ml-1 leading-none">V3</span>
@@ -397,7 +397,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
               </div>
               
               {/* ARBITRAGEM HUMANA */}
-              <div className="border-t  pt-5">
+              <div className="border-t border-slate-800/50 pt-5">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 text-center">Arbitragem Humana</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   {!isEditingDecision ? (

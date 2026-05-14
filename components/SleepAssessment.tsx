@@ -251,7 +251,7 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
                     type="time" 
                     value={formData.bedtime}
                     onChange={(e) => setFormData({...formData, bedtime: e.target.value})}
-                    className="w-full bg-slate-900 border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
@@ -440,23 +440,23 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
 
               <div className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
-                   <div className="bg-slate-950 rounded-xl p-3  flex flex-col justify-center items-center text-center">
+                   <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Quantid.</span>
                       <span className={`text-base font-black mt-1 ${getScoreColor(assessmentResult.subscores.quantidade * 10)}`}>{assessmentResult.subscores.quantidade}</span>
                    </div>
-                   <div className="bg-slate-950 rounded-xl p-3 border  flex flex-col justify-center items-center text-center">
+                   <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Qualidade</span>
                       <span className={`text-base font-black mt-1 ${getScoreColor(assessmentResult.subscores.qualidade * 10)}`}>{assessmentResult.subscores.qualidade}</span>
                    </div>
-                   <div className="bg-slate-950 rounded-xl p-3 border  flex flex-col justify-center items-center text-center">
+                   <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Contin.</span>
                       <span className={`text-base font-black mt-1 ${getScoreColor(assessmentResult.subscores.continuidade * 10)}`}>{assessmentResult.subscores.continuidade}</span>
                    </div>
-                   <div className="bg-slate-950 rounded-xl p-3 border  flex flex-col justify-center items-center text-center">
+                   <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Hábitos</span>
                       <span className={`text-base font-black mt-1 ${getScoreColor(assessmentResult.subscores.habitos * 10)}`}>{assessmentResult.subscores.habitos}</span>
                    </div>
-                   <div className="col-span-2 md:col-span-1 bg-slate-950 rounded-xl p-3 border  flex flex-col justify-center items-center text-center">
+                   <div className="col-span-2 md:col-span-1 bg-slate-950 rounded-xl p-3 border border-slate-800/50 flex flex-col justify-center items-center text-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Impacto</span>
                       <span className={`text-base font-black mt-1 ${getScoreColor(assessmentResult.subscores.impacto * 10)}`}>{assessmentResult.subscores.impacto}</span>
                    </div>

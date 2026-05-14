@@ -66,7 +66,7 @@ export const AthleteEarsDashboard: React.FC<Props> = ({ athlete, history, perfor
     <div className="space-y-6">
       {/* Top Banner: Battery & Basic Status */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        <div className="md:col-span-4 rounded-[2.5rem] bg-slate-900 border-white/5 p-8 relative overflow-hidden group">
+        <div className="md:col-span-4 rounded-[2.5rem] bg-slate-900 border border-white/5 p-8 relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
             <Zap className="w-48 h-48" />
           </div>
@@ -132,7 +132,7 @@ export const AthleteEarsDashboard: React.FC<Props> = ({ athlete, history, perfor
               progress: athlete.gender === 'female' ? 100 : (latest?.clinical_symptoms?.length === 0 ? 100 : 40) 
             },
           ].map((m, i) => (
-            <Card key={i} className="bg-slate-900/50  backdrop-blur-lg overflow-hidden group">
+            <Card key={i} className="bg-slate-900/50 border-slate-800/50 backdrop-blur-lg overflow-hidden group">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className={`p-3 rounded-2xl bg-slate-800/50 border border-white/5 w-fit mb-4 group-hover:scale-110 transition-transform ${m.color}`}>
                   <m.icon className="w-5 h-5" />

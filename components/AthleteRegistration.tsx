@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { toast } from "sonner";
 import Image from "next/image";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropImage";
@@ -121,7 +120,7 @@ const FormInput = ({
   <div className="space-y-1 w-full">
     <input
       {...props}
-      className={`w-full bg-slate-900/50 ${error ? "border-rose-500" : "border-slate-700"} rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 transition-colors ${props.className || ""}`}
+      className={`w-full bg-slate-900/50 border ${error ? "border-rose-500" : "border-slate-700"} rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 transition-colors ${props.className || ""}`}
     />
     {error && (
       <motion.p
@@ -447,7 +446,7 @@ export function AthleteRegistration({
     if (file) {
       // Limit to 5MB for avatars
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("A foto deve ter no máximo 5MB");
+        alert("A foto deve ter no máximo 5MB");
         return;
       }
       const reader = new FileReader();
@@ -735,12 +734,12 @@ export function AthleteRegistration({
           }
         }
 
-        toast.error(`Erro ao salvar atleta: ${errorMsg}`);
+        alert(`Erro ao salvar atleta: ${errorMsg}`);
         setUploading(false);
         return; // Stop execution if error
       }
     } else {
-      toast.error(
+      alert(
         "Erro: Supabase não configurado. Verifique as variáveis de ambiente (NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY).",
       );
       setUploading(false);
@@ -787,7 +786,7 @@ export function AthleteRegistration({
       onBack();
     } catch (error) {
       console.error("Error deleting athlete:", error);
-      toast.error("Erro ao excluir atleta. Tente novamente.");
+      alert("Erro ao excluir atleta. Tente novamente.");
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -802,7 +801,7 @@ export function AthleteRegistration({
       className="flex-1 flex flex-col h-screen overflow-y-auto bg-[#050B14] text-slate-200 font-sans selection:bg-cyan-500/30"
     >
       {/* Header */}
-      <header className="h-20 border-b  flex items-center justify-between px-4 sm:px-8 glass-panel/80 backdrop-blur-xl shrink-0 sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-4 sm:px-8 bg-[#0A1120]/80 backdrop-blur-xl shrink-0 sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button
             variant="ghost"
@@ -882,7 +881,7 @@ export function AthleteRegistration({
           {/* Section 1: Dados Pessoais */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.personal")} />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 glass-panel p-6 sm:p-8 rounded-3xl  shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl">
               <div className="col-span-1 flex flex-col items-center justify-start gap-4 mb-8 lg:mb-0">
                 <input
                   type="file"
@@ -1009,7 +1008,7 @@ export function AthleteRegistration({
                     }
                   />
                 </div>
-                <div className="sm:col-span-2 pt-4 border-t  mt-2">
+                <div className="sm:col-span-2 pt-4 border-t border-slate-800/50 mt-2">
                   <FormLabel className="flex items-center gap-2 text-cyan-400">
                     <Key className="w-4 h-4" /> {t("reg.portalAccess")}
                   </FormLabel>
@@ -1044,7 +1043,7 @@ export function AthleteRegistration({
                     </button>
                   </div>
                 </div>
-                <div className="sm:col-span-2 pt-4 border-t  mt-2">
+                <div className="sm:col-span-2 pt-4 border-t border-slate-800/50 mt-2">
                   <FormLabel>{t("reg.address")}</FormLabel>
                 </div>
                 <div>
@@ -1118,7 +1117,7 @@ export function AthleteRegistration({
           {/* Section 2: Saúde e Convênio */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.health")} />
-            <div className="glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl space-y-6">
+            <div className="bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <FormLabel>{t("reg.insurance")}</FormLabel>
@@ -1159,7 +1158,7 @@ export function AthleteRegistration({
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t ">
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
                 <div className="flex items-center gap-4">
                   <FormLabel>{t("reg.allergies")}</FormLabel>
                   <button
@@ -1207,7 +1206,7 @@ export function AthleteRegistration({
           {/* Section 3: Dados Esportivos */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.sports")} />
-            <div className="glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl">
+            <div className="bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <FormLabel>{t("reg.sport")}</FormLabel>
@@ -1432,7 +1431,7 @@ export function AthleteRegistration({
           {/* Section 4: Dados do Responsável */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.guardian")} />
-            <div className="glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl">
+            <div className="bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <FormLabel>{t("reg.guardianName")}</FormLabel>
@@ -1535,7 +1534,7 @@ export function AthleteRegistration({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-panel border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
+              className="bg-[#0A1120] border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
             >
               <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                 <h3 className="text-lg font-black text-white uppercase tracking-widest">

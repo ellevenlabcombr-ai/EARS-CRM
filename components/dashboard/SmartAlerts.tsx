@@ -44,8 +44,8 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
   };
 
   return (
-    <Card className="glass-panel  shadow-xl h-full flex flex-col">
-      <CardHeader className="border-b  bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between space-y-0">
+    <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl h-full flex flex-col">
+      <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           {view === 'active' ? (
             <BellRing className="w-4 h-4 text-amber-500" />
@@ -87,7 +87,7 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
           ) : (
             displayAlerts.map((alert) => (
               <div key={alert.id} className={`p-4 flex items-start gap-3 hover:bg-slate-800/30 transition-colors relative group ${alert.severity === 'high' ? 'bg-rose-500/5' : ''}`}>
-                <div className={`mt-0.5 p-1.5 rounded-md bg-slate-800/50 shrink-0 ${
+                <div className={`mt-0.5 p-1.5 rounded-md bg-slate-800/50 shrink-0 border ${
                   alert.severity === 'high' ? 'border-rose-500/20' : 
                   alert.severity === 'medium' ? 'border-amber-500/20' : 'border-blue-500/20'
                 }`}>

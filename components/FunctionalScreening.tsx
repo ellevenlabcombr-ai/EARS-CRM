@@ -392,7 +392,7 @@ export default function FunctionalScreening({ athleteId, onCancel, onSave }: Fun
           {step !== 4 && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                {currentTests.map((test) => (
-                 <Card key={test.id} className="glass-panel  overflow-hidden">
+                 <Card key={test.id} className="bg-slate-900/40 border-slate-800/50 overflow-hidden">
                    <CardContent className="p-6">
                      <div className="flex flex-col md:flex-row gap-6">
                        {/* Test Info & Scoring */}
@@ -407,7 +407,7 @@ export default function FunctionalScreening({ athleteId, onCancel, onSave }: Fun
                            >
                              <h3 className="text-xs font-black text-white uppercase tracking-widest">{test.label}</h3>
                            </TestInfoModal>
-                           <div className="px-2 py-1 rounded bg-slate-950 border-slate-800 text-xxs font-bold uppercase flex items-center gap-2">
+                           <div className="px-2 py-1 rounded bg-slate-950 border border-slate-800 text-xxs font-bold uppercase flex items-center gap-2">
                              <span className={getScoreColor(processedScores[test.id].score)}>Score: {processedScores[test.id].score}</span>
                              {processedScores[test.id].score === 0 && <AlertTriangle className="w-3 h-3 text-rose-400 animate-pulse" />}
                            </div>
@@ -513,7 +513,7 @@ export default function FunctionalScreening({ athleteId, onCancel, onSave }: Fun
 
           {step === 4 && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-               <Card className="glass-panel ">
+               <Card className="bg-slate-900/40 border-slate-800/50">
                  <CardHeader>
                    <CardTitle className="text-sm font-black text-white uppercase tracking-widest">Observações Finais</CardTitle>
                  </CardHeader>

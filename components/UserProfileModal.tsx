@@ -209,9 +209,9 @@ export function UserProfileModal({ isOpen, onClose, onProfileUpdated }: UserProf
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md glass-panel border-slate-800 rounded-3xl shadow-2xl z-[101] overflow-hidden"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0A1120] border border-slate-800 rounded-3xl shadow-2xl z-[101] overflow-hidden"
           >
-            <div className="flex items-center justify-between p-6 border-b ">
+            <div className="flex items-center justify-between p-6 border-b border-slate-800/50">
               <h2 className="text-lg font-black text-white uppercase tracking-wider">Meu Perfil</h2>
               <button 
                 onClick={onClose}
@@ -282,7 +282,7 @@ export function UserProfileModal({ isOpen, onClose, onProfileUpdated }: UserProf
                         type="text" 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-slate-950 border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors"
                         placeholder="Seu nome"
                       />
                     </div>
@@ -310,7 +310,7 @@ export function UserProfileModal({ isOpen, onClose, onProfileUpdated }: UserProf
                   )}
 
                   {/* Actions */}
-                  <div className="pt-4 border-t ">
+                  <div className="pt-4 border-t border-slate-800/50">
                     <Button 
                       onClick={handleSave}
                       disabled={isSaving || isUploading}

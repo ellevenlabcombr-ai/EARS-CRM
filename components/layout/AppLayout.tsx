@@ -25,7 +25,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     <div className={`min-h-dvh w-full flex flex-col bg-[#050B14] ${className}`}>
       {/* Fixed/Sticky Header with Safe Area support */}
       {header && (
-        <header className="sticky top-0 z-50 w-full glass-panel/80 backdrop-blur-xl border-b  shadow-lg">
+        <header className="sticky top-0 z-50 w-full bg-[#0A1120]/80 backdrop-blur-xl border-b border-slate-800/50 shadow-lg">
           {/* Safe Area Top Padding */}
           {withSafeTop && <div className="h-[var(--safe-area-inset-top)] w-full" />}
           

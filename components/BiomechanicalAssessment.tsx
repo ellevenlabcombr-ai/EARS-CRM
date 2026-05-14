@@ -226,7 +226,7 @@ export default function BiomechanicalAssessment({
       <div className="space-y-6">
         {step === 1 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="glass-panel ">
+            <Card className="bg-slate-900/40 border-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Activity className="w-4 h-4 text-cyan-400" /> {l.squat}
@@ -244,7 +244,7 @@ export default function BiomechanicalAssessment({
 
         {step === 2 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="glass-panel ">
+            <Card className="bg-slate-900/40 border-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Target className="w-4 h-4 text-cyan-400" /> {l.jump}
@@ -261,7 +261,7 @@ export default function BiomechanicalAssessment({
 
         {step === 3 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="glass-panel ">
+            <Card className="bg-slate-900/40 border-slate-800/50">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <RefreshCw className="w-4 h-4 text-cyan-400" /> {l.balance}
@@ -278,7 +278,7 @@ export default function BiomechanicalAssessment({
         {step === 4 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-              <Card className="glass-panel border-red-900/30">
+              <Card className="bg-slate-900/40 border-red-900/30">
                 <CardHeader>
                   <CardTitle className="text-sm font-black text-red-400 uppercase tracking-widest flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
@@ -311,7 +311,7 @@ export default function BiomechanicalAssessment({
                 </CardContent>
               </Card>
 
-              <Card className="glass-panel border-orange-900/30">
+              <Card className="bg-slate-900/40 border-orange-900/30">
                 <CardHeader>
                   <CardTitle className="text-sm font-black text-orange-400 uppercase tracking-widest flex items-center gap-2">
                     <Activity className="w-4 h-4" />
@@ -371,7 +371,7 @@ export default function BiomechanicalAssessment({
                     <h4 className="text-xs font-black tracking-widest uppercase text-slate-400 flex items-center gap-2 mb-3">
                       {l.clinicalInterpretation}
                     </h4>
-                    <p className="text-sm text-slate-300 leading-relaxed font-medium bg-slate-950 p-4 rounded-xl ">
+                    <p className="text-sm text-slate-300 leading-relaxed font-medium bg-slate-950 p-4 rounded-xl border border-slate-800/50">
                       {riskLevel === 'high' ? l.highRiskDesc : 
                        riskLevel === 'moderate' ? l.modRiskDesc : l.lowRiskDesc}
                     </p>

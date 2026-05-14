@@ -35,7 +35,7 @@ export const AdaptiveQuestionModule: React.FC<Props> = ({ id, label, value, onCh
               onClick={() => onChange(opt.value)}
               className={`
                 relative flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300
-                ${isSelected ? 'bg-indigo-600 shadow-lg shadow-indigo-500/20 ring-2 ring-indigo-400' : 'bg-slate-900/50 hover:bg-slate-800 border-slate-800'}
+                ${isSelected ? 'bg-indigo-600 shadow-lg shadow-indigo-500/20 ring-2 ring-indigo-400' : 'bg-slate-900/50 hover:bg-slate-800 border border-slate-800'}
               `}
             >
               <span className="text-2xl sm:text-3xl mb-1">{opt.emoji}</span>

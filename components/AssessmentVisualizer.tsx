@@ -125,7 +125,7 @@ export function AssessmentVisualizer({ data, type, language, selectedAssessment,
 
   const COLORS = ['#0ea5e9', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6'];
 
-  const containerClass = isExporting ? "bg-white border-slate-200 rounded-2xl p-8 break-inside-avoid" : "bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:border-cyan-500/30 transition-all duration-300";
+  const containerClass = isExporting ? "bg-white border border-slate-200 rounded-2xl p-8 break-inside-avoid" : "bg-slate-900/60 border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:border-cyan-500/30 transition-all duration-300";
   const titleClass = isExporting ? "text-sm font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-2" : "text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2";
 
   const formatMetricName = (name: string) => {

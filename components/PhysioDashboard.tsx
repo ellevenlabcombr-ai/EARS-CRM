@@ -246,7 +246,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
   return (
     <div className="min-h-screen bg-[#050B14] text-slate-200 font-sans selection:bg-cyan-500/30">
       {/* Header */}
-      <header className="sticky top-0 z-50 glass-panel/80 backdrop-blur-md border-b  px-4 sm:px-6 py-4">
+      <header className="sticky top-0 z-50 bg-[#0A1120]/80 backdrop-blur-md border-b border-slate-800/50 px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 sm:gap-4 pl-12 lg:pl-0">
             <Button variant="ghost" size="icon" onClick={onBack} className="text-slate-400 hover:text-white shrink-0">
@@ -262,7 +262,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <div className="hidden md:flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-full border-slate-800">
+            <div className="hidden md:flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-xs font-bold text-slate-300">Sistema Online</span>
             </div>
@@ -273,7 +273,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
         {/* Command Center Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="glass-panel  shadow-xl">
+          <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="p-3 bg-blue-500/10 rounded-2xl mb-3">
                 <Users className="w-6 h-6 text-blue-400" />
@@ -283,7 +283,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
             </CardContent>
           </Card>
           
-          <Card className="glass-panel  shadow-xl">
+          <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="p-3 bg-emerald-500/10 rounded-2xl mb-3">
                 <Activity className="w-6 h-6 text-emerald-400" />
@@ -297,7 +297,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="glass-panel  shadow-xl">
+          <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="p-3 bg-amber-500/10 rounded-2xl mb-3">
                 <AlertCircle className="w-6 h-6 text-amber-400" />
@@ -317,7 +317,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="glass-panel  shadow-xl">
+          <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
             <CardContent className="p-6 flex flex-col items-center text-center">
               <div className="p-3 bg-yellow-500/10 rounded-2xl mb-3">
                 <Stethoscope className="w-6 h-6 text-yellow-400" />
@@ -346,7 +346,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isLoading ? (
-                <div className="col-span-full text-center p-12 glass-panel rounded-3xl border ">
+                <div className="col-span-full text-center p-12 bg-slate-900/40 rounded-3xl border border-slate-800/50">
                   <div className="w-10 h-10 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin mx-auto mb-4"></div>
                   <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Sincronizando dados...</p>
                 </div>
@@ -356,7 +356,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
                     key={`alert-${athlete.id}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="glass-panel border-slate-800 hover:border-rose-500/30 rounded-3xl p-6 shadow-2xl transition-all group relative overflow-hidden"
+                    className="bg-[#0A1120] border border-slate-800 hover:border-rose-500/30 rounded-3xl p-6 shadow-2xl transition-all group relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                       <AlertCircle className="w-16 h-16 text-rose-500" />
@@ -397,7 +397,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
                       )}
 
                       {athlete.notes && (
-                        <div className="bg-slate-900/50 rounded-2xl p-4 border ">
+                        <div className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800/50">
                           <span className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-1">Observação</span>
                           <p className="text-xs text-slate-300 italic leading-relaxed">&quot;{athlete.notes}&quot;</p>
                         </div>
@@ -428,7 +428,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
               Atividade Recente
             </h2>
 
-            <Card className="glass-panel  shadow-2xl rounded-3xl overflow-hidden">
+            <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl rounded-3xl overflow-hidden">
               <CardContent className="p-0">
                 <div className="divide-y divide-slate-800/50">
                   {athletes.filter(a => a.readiness > 0).slice(0, 6).map((athlete, i) => (
@@ -471,7 +471,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
                 <motion.button
                   key={i}
                   whileHover={{ y: -5 }}
-                  className="glass-panel border border-slate-800 p-6 rounded-3xl flex flex-col items-center text-center gap-3 group hover:border-cyan-500/30 transition-all shadow-xl"
+                  className="bg-[#0A1120] border border-slate-800 p-6 rounded-3xl flex flex-col items-center text-center gap-3 group hover:border-cyan-500/30 transition-all shadow-xl"
                 >
                   <div className={`p-4 ${action.color}/10 rounded-2xl text-${action.color.split('-')[1]}-400 group-hover:bg-cyan-500 group-hover:text-[#050B14] transition-all`}>
                     <action.icon size={24} />

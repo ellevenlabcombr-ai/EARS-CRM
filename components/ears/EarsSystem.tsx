@@ -100,7 +100,7 @@ export default function EarsSystem() {
              </div>
           </div>
 
-          <div className="flex items-center p-1.5 bg-slate-900/50 backdrop-blur-xl border-white/5 rounded-2xl">
+          <div className="flex items-center p-1.5 bg-slate-900/50 backdrop-blur-xl border border-white/5 rounded-2xl">
             {[
               { id: 'athlete', label: 'Dashboard', icon: LayoutDashboard },
               { id: 'questionnaire', label: 'Check-in', icon: ClipboardCheck },

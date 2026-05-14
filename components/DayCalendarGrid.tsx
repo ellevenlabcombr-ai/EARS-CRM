@@ -19,12 +19,12 @@ export function DayCalendarGrid({ events, currentDate, onEventClick, onTimeSlotC
   const dayEvents = events.filter(e => isSameDay(new Date(e.start_time), currentDate));
 
   return (
-    <div className="bg-slate-900 border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
       <div className="flex-1 overflow-y-auto relative min-h-[600px]">
         {/* Pass lines */}
         {hours.map((hour, i) => (
-          <div key={hour} className="flex border-b " style={{ height: '60px' }}>
-            <div className="w-16 flex-shrink-0 border-r  pr-2 pt-1 text-right">
+          <div key={hour} className="flex border-b border-slate-800/50" style={{ height: '60px' }}>
+            <div className="w-16 flex-shrink-0 border-r border-slate-800/50 pr-2 pt-1 text-right">
               <span className="text-xs font-medium text-slate-500">{`${hour.toString().padStart(2, '0')}:00`}</span>
             </div>
             <div 
