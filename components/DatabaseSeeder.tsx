@@ -821,6 +821,23 @@ BEGIN
         ALTER TABLE public.agenda_settings ADD COLUMN appointment_colors JSONB DEFAULT '{}'::jsonb;
     END IF;
 
+    -- Colunas na tabela automation_settings
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_api_url') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN evolution_api_url TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_api_key') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN evolution_api_key TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_instance_id') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN evolution_instance_id TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'resend_api_key') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN resend_api_key TEXT;
+    END IF;
+
     -- Colunas na tabela athletes
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'athletes' AND column_name = 'password') THEN
         ALTER TABLE public.athletes ADD COLUMN password TEXT;

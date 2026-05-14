@@ -7,10 +7,15 @@ import { Button } from '@/components/ui/button';
 
 export function AutomationSettings() {
   const [whatsappEnabled, setWhatsappEnabled] = useState(true);
+  const [whatsappProvider, setWhatsappProvider] = useState('evolution');
+  const [evolutionApiUrl, setEvolutionApiUrl] = useState('');
+  const [evolutionApiKey, setEvolutionApiKey] = useState('');
+  const [evolutionInstanceId, setEvolutionInstanceId] = useState('');
   const [whatsappReminderTemplate, setWhatsappReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
   const [whatsappFollowupTemplate, setWhatsappFollowupTemplate] = useState('Olá {nome}! Como você está se sentindo após o nosso atendimento?');
   
   const [emailEnabled, setEmailEnabled] = useState(false);
+  const [resendApiKey, setResendApiKey] = useState('');
   const [emailReminderTemplate, setEmailReminderTemplate] = useState('Seu atendimento está marcado para {data} às {hora}.');
   
   const [isLoading, setIsLoading] = useState(true);
@@ -41,9 +46,14 @@ export function AutomationSettings() {
       
       if (data) {
         if (data.whatsapp_enabled !== undefined) setWhatsappEnabled(data.whatsapp_enabled);
+        if (data.whatsapp_provider) setWhatsappProvider(data.whatsapp_provider);
+        if (data.evolution_api_url) setEvolutionApiUrl(data.evolution_api_url);
+        if (data.evolution_api_key) setEvolutionApiKey(data.evolution_api_key);
+        if (data.evolution_instance_id) setEvolutionInstanceId(data.evolution_instance_id);
         if (data.whatsapp_reminder_template) setWhatsappReminderTemplate(data.whatsapp_reminder_template);
         if (data.whatsapp_followup_template) setWhatsappFollowupTemplate(data.whatsapp_followup_template);
         if (data.email_enabled !== undefined) setEmailEnabled(data.email_enabled);
+        if (data.resend_api_key) setResendApiKey(data.resend_api_key);
         if (data.email_reminder_template) setEmailReminderTemplate(data.email_reminder_template);
       }
     } catch (err: any) {
@@ -72,9 +82,14 @@ export function AutomationSettings() {
 
       const payload = {
         whatsapp_enabled: whatsappEnabled,
+        whatsapp_provider: whatsappProvider,
+        evolution_api_url: evolutionApiUrl,
+        evolution_api_key: evolutionApiKey,
+        evolution_instance_id: evolutionInstanceId,
         whatsapp_reminder_template: whatsappReminderTemplate,
         whatsapp_followup_template: whatsappFollowupTemplate,
         email_enabled: emailEnabled,
+        resend_api_key: resendApiKey,
         email_reminder_template: emailReminderTemplate,
         updated_at: new Date().toISOString()
       };
@@ -162,6 +177,33 @@ export function AutomationSettings() {
               </div>
 
               <div className="flex flex-col gap-2">
+                <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Configuração da API (Evolution)</span>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={evolutionApiUrl}
+                    onChange={(e) => setEvolutionApiUrl(e.target.value)}
+                    placeholder="URL da Evolution API"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
+                  />
+                  <input
+                    type="password"
+                    value={evolutionApiKey}
+                    onChange={(e) => setEvolutionApiKey(e.target.value)}
+                    placeholder="Global API Key"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
+                  />
+                  <input
+                    type="text"
+                    value={evolutionInstanceId}
+                    onChange={(e) => setEvolutionInstanceId(e.target.value)}
+                    placeholder="Nome da Instância"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
                 <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Variáveis Suportadas:</span>
                 <div className="flex flex-wrap gap-2 text-xs font-mono">
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{nome}`}</span>
@@ -214,6 +256,17 @@ export function AutomationSettings() {
                     </div>
                   </div>
                 </div>
+
+                <div className="mt-8">
+                  <Button
+                    onClick={() => {
+                        alert("Simulação Iniciada!\nNa versão final, iremos buscar um agendamento real e disparar o webhook/API para a Evolution.")
+                    }}
+                    className="w-full bg-slate-800 hover:bg-[#25D366] text-white font-black uppercase tracking-widest transition-colors py-6 rounded-2xl text-xs md:text-sm shadow-xl"
+                  >
+                    Simular Disparo
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -242,6 +295,19 @@ export function AutomationSettings() {
         </div>
         
         <div className={`flex flex-col gap-8 pt-6 border-t border-slate-800/50 transition-opacity duration-300 ${emailEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <label className="text-[10px] md:text-xs font-black text-sky-500 uppercase tracking-widest pl-1">API do Resend</label>
+              <input
+                type="password"
+                value={resendApiKey}
+                onChange={(e) => setResendApiKey(e.target.value)}
+                placeholder="re_xxxxxxxxxxxxxx"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none text-sm transition-all"
+              />
+            </div>
+          </div>
+          
           <div className="space-y-4">
             <label className="text-[10px] md:text-xs font-black text-sky-500 uppercase tracking-widest pl-1">Template de Lembrete</label>
             <textarea 
@@ -250,6 +316,17 @@ export function AutomationSettings() {
               rows={4}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none transition-all text-sm font-medium resize-none"
             />
+          </div>
+
+          <div className="max-w-xs">
+            <Button
+              onClick={() => {
+                  alert("Simulação Iniciada!\nNa versão final, enviaremos um e-mail de teste usando a chave do Resend configurada.")
+              }}
+              className="w-full bg-slate-800 hover:bg-sky-500 text-white font-black uppercase tracking-widest transition-colors py-6 rounded-2xl text-xs md:text-sm shadow-xl"
+            >
+              Simular Envio
+            </Button>
           </div>
         </div>
       </div>
