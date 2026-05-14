@@ -42,22 +42,24 @@ export function BrandingInjector() {
   useEffect(() => {
     if (faviconUrl || logoUrl) {
       const urlToUse = faviconUrl || logoUrl;
+      const cacheBustedUrl = urlToUse + (urlToUse?.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+      
       const setFavicon = () => {
         let links = document.querySelectorAll("link[rel~='icon']");
         if (links.length > 0) {
           links.forEach(link => {
-            (link as HTMLLinkElement).href = urlToUse as string;
+            (link as HTMLLinkElement).href = cacheBustedUrl;
           });
         } else {
           let link = document.createElement('link');
           link.rel = 'icon';
-          link.href = urlToUse as string;
+          link.href = cacheBustedUrl;
           document.head.appendChild(link);
         }
         
         let shortcutLink = document.querySelector("link[rel='shortcut icon']");
         if (shortcutLink) {
-          (shortcutLink as HTMLLinkElement).href = urlToUse as string;
+          (shortcutLink as HTMLLinkElement).href = cacheBustedUrl;
         }
       };
       
