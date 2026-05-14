@@ -39,14 +39,29 @@ export function BrandingInjector() {
 
   useEffect(() => {
     if (logoUrl) {
-      // Find existing favicon or create one
-      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
-      link.href = logoUrl;
+      const setFavicon = () => {
+        let links = document.querySelectorAll("link[rel~='icon']");
+        if (links.length > 0) {
+          links.forEach(link => {
+            (link as HTMLLinkElement).href = logoUrl;
+          });
+        } else {
+          let link = document.createElement('link');
+          link.rel = 'icon';
+          link.href = logoUrl;
+          document.head.appendChild(link);
+        }
+        
+        let shortcutLink = document.querySelector("link[rel='shortcut icon']");
+        if (shortcutLink) {
+          (shortcutLink as HTMLLinkElement).href = logoUrl;
+        }
+      };
+      
+      setFavicon();
+      // Ensure it runs after Next.js potentially sets its own head elements
+      setTimeout(setFavicon, 500);
+      setTimeout(setFavicon, 2000);
     }
   }, [logoUrl]);
 
@@ -68,17 +83,16 @@ export function BrandingInjector() {
       {backgroundUrl && (
         <style dangerouslySetInnerHTML={{
           __html: `
-            body::before {
-              content: '';
-              position: fixed;
-              inset: 0;
-              z-index: 0;
-              background-image: url(${backgroundUrl});
-              background-position: center;
-              background-size: cover;
-              background-repeat: no-repeat;
-              opacity: 0.15;
-              pointer-events: none;
+            html, body, body.bg-\\[\\#050B14\\] {
+              background-color: #050B14 !important;
+              background-image: linear-gradient(rgba(5, 11, 20, 0.85), rgba(5, 11, 20, 0.85)), url("${backgroundUrl}") !important;
+              background-position: center !important;
+              background-size: cover !important;
+              background-repeat: no-repeat !important;
+              background-attachment: fixed !important;
+            }
+            div.bg-\\[\\#050B14\\], main.bg-\\[\\#050B14\\], header.bg-\\[\\#050B14\\], nav.bg-\\[\\#050B14\\] {
+              background-color: transparent !important;
             }
           `
         }} />
