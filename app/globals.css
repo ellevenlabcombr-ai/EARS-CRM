@@ -28,7 +28,7 @@
 
 @layer base {
   html, body {
-    @apply bg-transparent text-slate-50;
+    @apply bg-[#050B14] text-slate-50;
     /* Prevent overscroll bounce on mobile */
     overscroll-behavior-y: none;
   }

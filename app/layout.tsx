@@ -40,7 +40,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
 
   return (
     <html lang="pt-BR" className={`${inter.variable} dark`} suppressHydrationWarning>
-      <body className="font-sans antialiased bg-transparent text-slate-50" suppressHydrationWarning>
+      <body className="font-sans antialiased bg-[#050B14] text-slate-50" suppressHydrationWarning>
         {/* Environment script injected before hydration */}
         <script
           key="env-script"
