@@ -8,6 +8,7 @@ import Image from 'next/image';
 
 export function BrandingSettings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
   const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('ELLEVEN');
@@ -21,12 +22,14 @@ export function BrandingSettings() {
   const [welcomeMessage, setWelcomeMessage] = useState('');
   
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingFavicon, setIsUploadingFavicon] = useState(false);
   const [isUploadingSignature, setIsUploadingSignature] = useState(false);
   const [isUploadingBackground, setIsUploadingBackground] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,6 +47,7 @@ export function BrandingSettings() {
       
       if (data) {
         setLogoUrl(data.logo_url);
+        setFaviconUrl(data.favicon_url);
         setSignatureUrl(data.signature_url);
         setBackgroundUrl(data.background_url);
         setCompanyName(data.company_name || 'ELLEVEN');
@@ -61,7 +65,7 @@ export function BrandingSettings() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'signature' | 'background') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'favicon' | 'signature' | 'background') => {
     const file = e.target.files?.[0];
     if (!file || !supabase) return;
 
@@ -79,6 +83,8 @@ export function BrandingSettings() {
 
     if (type === 'logo') {
       setIsUploading(true);
+    } else if (type === 'favicon') {
+      setIsUploadingFavicon(true);
     } else if (type === 'signature') {
       setIsUploadingSignature(true);
     } else {
@@ -111,6 +117,8 @@ export function BrandingSettings() {
 
       if (type === 'logo') {
         setLogoUrl(publicUrl);
+      } else if (type === 'favicon') {
+        setFaviconUrl(publicUrl);
       } else if (type === 'signature') {
         setSignatureUrl(publicUrl);
       } else {
@@ -124,6 +132,7 @@ export function BrandingSettings() {
       setMessage(err.message || 'Erro ao carregar imagem.');
     } finally {
       if (type === 'logo') setIsUploading(false);
+      else if (type === 'favicon') setIsUploadingFavicon(false);
       else if (type === 'signature') setIsUploadingSignature(false);
       else setIsUploadingBackground(false);
     }
@@ -142,6 +151,7 @@ export function BrandingSettings() {
 
       const payload = {
         logo_url: logoUrl,
+        favicon_url: faviconUrl,
         signature_url: signatureUrl,
         background_url: backgroundUrl,
         company_name: companyName,
@@ -262,6 +272,72 @@ export function BrandingSettings() {
             <div className="mt-4 text-center md:text-left bg-slate-900 border border-slate-800 p-3 rounded-xl max-w-[14rem]">
               <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
                 <strong className="text-slate-400">Recomendado:</strong> PNG transparente ou SVG.<br/>Tamanho máximo: <strong>2MB</strong>.
+              </p>
+            </div>
+            
+            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight mb-4 mt-8 flex items-center md:justify-start gap-2 justify-center">
+              <ImageIcon className="w-5 h-5 text-cyan-400" />
+              <span>Favicon (Ícone da Aba)</span>
+            </h3>
+            <div className="relative w-32 h-32 md:w-40 md:h-40 bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800 flex items-center justify-center overflow-hidden group shadow-inner">
+              {faviconUrl ? (
+                <>
+                  <Image 
+                    src={faviconUrl} 
+                    alt="Favicon Preview" 
+                    fill 
+                    className="object-contain p-6 md:p-8 transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm">
+                    <button 
+                      onClick={() => faviconInputRef.current?.click()}
+                      className="p-3 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-all hover:scale-110 active:scale-95"
+                      title="Trocar Favicon"
+                    >
+                      <Upload size={20} />
+                    </button>
+                    <button 
+                      onClick={() => { setFaviconUrl(null); setStatus('idle'); }}
+                      className="p-3 bg-rose-500/20 hover:bg-rose-500/40 rounded-xl text-rose-400 transition-all hover:scale-110 active:scale-95 border border-rose-500/20 hover:border-rose-500/50"
+                      title="Remover Favicon"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div 
+                  onClick={() => faviconInputRef.current?.click()}
+                  className="flex flex-col items-center gap-3 text-slate-600 cursor-pointer hover:text-cyan-400 transition-colors bg-slate-900/50 hover:bg-cyan-500/5 w-full h-full justify-center group-hover:border-cyan-500/30"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-cyan-500/10 flex items-center justify-center transition-colors">
+                    <Upload size={24} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-center px-4">Upload do<br/>Favicon</span>
+                </div>
+              )}
+              
+              {isUploadingFavicon && (
+                <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center gap-3 backdrop-blur-md">
+                  <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
+                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest animate-pulse">Enviando...</span>
+                </div>
+              )}
+            </div>
+            
+            <input 
+              type="file" 
+              ref={faviconInputRef}
+              onChange={(e) => handleFileChange(e, 'favicon')}
+              className="hidden"
+              accept="image/*"
+            />
+            
+            <div className="mt-4 text-center md:text-left bg-slate-900 border border-slate-800 p-3 rounded-xl max-w-[14rem]">
+              <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                <strong className="text-slate-400">Recomendado:</strong> Tamanho quadrado (ex: 512x512). PNG ou ICO.
               </p>
             </div>
             
@@ -500,7 +576,7 @@ export function BrandingSettings() {
             <div className="pt-8 mt-auto border-t border-slate-800/50 flex justify-end">
               <Button 
                 onClick={handleSave}
-                disabled={isSaving || isUploading || isUploadingSignature || isUploadingBackground}
+                disabled={isSaving || isUploading || isUploadingFavicon || isUploadingSignature || isUploadingBackground}
                 className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 text-xs md:text-sm"
               >
                 {isSaving ? (

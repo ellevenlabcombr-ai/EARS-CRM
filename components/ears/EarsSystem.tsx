@@ -86,7 +86,7 @@ export default function EarsSystem() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-200 p-4 md:p-8">
+    <div className="min-h-screen bg-[#050B14] text-slate-200 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Navigation Sidebar/Top */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">

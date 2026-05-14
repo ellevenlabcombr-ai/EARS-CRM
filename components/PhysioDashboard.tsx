@@ -244,7 +244,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-slate-200 font-sans selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-[#050B14] text-slate-200 font-sans selection:bg-cyan-500/30">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0A1120]/80 backdrop-blur-md border-b border-slate-800/50 px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">

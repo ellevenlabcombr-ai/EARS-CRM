@@ -763,7 +763,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   };
 
   return (
-    <div className="flex h-dvh bg-transparent overflow-hidden font-sans selection:bg-cyan-500/30">
+    <div className="flex h-dvh bg-[#050B14] overflow-hidden font-sans selection:bg-cyan-500/30">
       <SupabaseStatus />
       {/* Mobile Menu Button */}
       {/* Mobile Menu Toggle */}

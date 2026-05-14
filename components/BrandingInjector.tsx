@@ -7,13 +7,14 @@ export function BrandingInjector() {
   const [color, setColor] = useState<string | null>(null);
   const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBranding = async () => {
       try {
         const { data, error } = await supabase
           .from('branding_settings')
-          .select('brand_color, background_url, logo_url')
+          .select('brand_color, background_url, logo_url, favicon_url')
           .limit(1)
           .maybeSingle();
         
@@ -21,6 +22,7 @@ export function BrandingInjector() {
           if (data.brand_color) setColor(data.brand_color);
           if (data.background_url) setBackgroundUrl(data.background_url);
           if (data.logo_url) setLogoUrl(data.logo_url);
+          if (data.favicon_url) setFaviconUrl(data.favicon_url);
         }
       } catch (err) {
         console.error('Failed to fetch branding settings', err);
@@ -38,23 +40,24 @@ export function BrandingInjector() {
   }, []);
 
   useEffect(() => {
-    if (logoUrl) {
+    if (faviconUrl || logoUrl) {
+      const urlToUse = faviconUrl || logoUrl;
       const setFavicon = () => {
         let links = document.querySelectorAll("link[rel~='icon']");
         if (links.length > 0) {
           links.forEach(link => {
-            (link as HTMLLinkElement).href = logoUrl;
+            (link as HTMLLinkElement).href = urlToUse as string;
           });
         } else {
           let link = document.createElement('link');
           link.rel = 'icon';
-          link.href = logoUrl;
+          link.href = urlToUse as string;
           document.head.appendChild(link);
         }
         
         let shortcutLink = document.querySelector("link[rel='shortcut icon']");
         if (shortcutLink) {
-          (shortcutLink as HTMLLinkElement).href = logoUrl;
+          (shortcutLink as HTMLLinkElement).href = urlToUse as string;
         }
       };
       
@@ -63,7 +66,7 @@ export function BrandingInjector() {
       setTimeout(setFavicon, 500);
       setTimeout(setFavicon, 2000);
     }
-  }, [logoUrl]);
+  }, [faviconUrl, logoUrl]);
 
   return (
     <>
