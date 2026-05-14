@@ -28,7 +28,7 @@ export function GeneralSettings() {
           .select('*', { count: 'exact', head: true });
           
         const { count: appointmentsCount } = await supabase
-          .from('appointments')
+          .from('agenda_events')
           .select('*', { count: 'exact', head: true });
 
         setStats({
@@ -91,69 +91,69 @@ export function GeneralSettings() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        <div className="group bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/30 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] transition-all duration-300">
-          <div className="flex items-start justify-between mb-4 md:mb-6">
-            <div className="w-10 h-10 md:w-14 md:h-14 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-              <Users className="w-5 h-5 md:w-7 md:h-7" />
+      {/* Stats Grid - Updated Labels and Weights */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="group bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/30 p-8 rounded-[2.5rem] transition-all duration-300">
+          <div className="flex items-start justify-between mb-6">
+            <div className="w-14 h-14 bg-cyan-500/10 text-cyan-400 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+              <Users className="w-7 h-7" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black text-cyan-500/50 uppercase tracking-[0.2em]">Registro Central</span>
+            <span className="text-[10px] font-black text-cyan-500/50 uppercase tracking-[0.3em]">Registro Central</span>
           </div>
-          <div>
-            <p className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-1 md:mb-2">{stats.athletesCount}</p>
-            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Atletas Monitorados</p>
+          <div className="text-center md:text-left">
+            <p className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-2">{stats.athletesCount}</p>
+            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Atletas Monitorados</p>
           </div>
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-800/50">
-            <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div className="mt-8 pt-6 border-t border-slate-800/50">
+            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                <motion.div 
                  initial={{ width: 0 }}
-                 animate={{ width: '75%' }}
-                 transition={{ duration: 1, ease: 'easeOut' }}
+                 animate={{ width: `${Math.min(100, (stats.athletesCount / 10) * 100)}%` }}
+                 transition={{ duration: 1.5, ease: 'easeOut' }}
                  className="h-full bg-cyan-500 rounded-full"
                ></motion.div>
             </div>
           </div>
         </div>
 
-        <div className="group bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/30 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] transition-all duration-300">
-          <div className="flex items-start justify-between mb-4 md:mb-6">
-            <div className="w-10 h-10 md:w-14 md:h-14 bg-rose-500/10 text-rose-400 rounded-xl md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-              <Activity className="w-5 h-5 md:w-7 md:h-7" />
+        <div className="group bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/30 p-8 rounded-[2.5rem] transition-all duration-300">
+          <div className="flex items-start justify-between mb-6">
+            <div className="w-14 h-14 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+              <Activity className="w-7 h-7" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black text-rose-500/50 uppercase tracking-[0.2em]">Fluxo de Dados</span>
+            <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-[0.3em]">Fluxo de Dados</span>
           </div>
-          <div>
-            <p className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-1 md:mb-2">{stats.checkinsCount}</p>
-            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Registros de Saúde</p>
+          <div className="text-center md:text-left">
+            <p className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-2">{stats.checkinsCount}</p>
+            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registros de Saúde</p>
           </div>
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-800/50">
-            <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div className="mt-8 pt-6 border-t border-slate-800/50">
+            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: '50%' }}
-                transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
-                className="h-full bg-rose-500 rounded-full"
+                animate={{ width: `${Math.min(100, (stats.checkinsCount / 20) * 100)}%` }}
+                transition={{ duration: 1.5, ease: 'easeOut', delay: 0.2 }}
+                className="h-full bg-emerald-500 rounded-full"
               ></motion.div>
             </div>
           </div>
         </div>
 
-        <div className="group bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/30 p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] transition-all duration-300 sm:col-span-2 md:col-span-1">
-          <div className="flex items-start justify-between mb-4 md:mb-6">
-            <div className="w-10 h-10 md:w-14 md:h-14 bg-indigo-500/10 text-indigo-400 rounded-xl md:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
-              <Calendar className="w-5 h-5 md:w-7 md:h-7" />
+        <div className="group bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/30 p-8 rounded-[2.5rem] transition-all duration-300 sm:col-span-2 md:col-span-1">
+          <div className="flex items-start justify-between mb-6">
+            <div className="w-14 h-14 bg-indigo-500/10 text-indigo-400 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300">
+              <Calendar className="w-7 h-7" />
             </div>
-            <span className="text-[9px] md:text-[10px] font-black text-indigo-500/50 uppercase tracking-[0.2em]">Planejamento</span>
+            <span className="text-[10px] font-black text-indigo-500/50 uppercase tracking-[0.3em]">Planejamento</span>
           </div>
-          <div>
-            <p className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-1 md:mb-2">{stats.appointmentsCount}</p>
-            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Eventos de Agenda</p>
+          <div className="text-center md:text-left">
+            <p className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-2">{stats.appointmentsCount}</p>
+            <p className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Eventos de Agenda</p>
           </div>
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-800/50">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className={`h-1 flex-1 rounded-full ${i <= 3 ? 'bg-indigo-500' : 'bg-slate-800'}`}></div>
+          <div className="mt-8 pt-6 border-t border-slate-800/50">
+            <div className="flex items-center gap-1.5">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                <div key={i} className={`h-1.5 flex-1 rounded-full ${i <= stats.appointmentsCount ? 'bg-indigo-500' : 'bg-slate-800'}`}></div>
               ))}
             </div>
           </div>
