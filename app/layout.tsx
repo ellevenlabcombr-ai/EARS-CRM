@@ -1,5 +1,5 @@
 import type {Metadata, Viewport} from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -9,6 +9,7 @@ import { AgendaNotifier } from '@/components/AgendaNotifier';
 import { BrandingInjector } from '@/components/BrandingInjector';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
 
 
 export const viewport: Viewport = {
@@ -39,7 +40,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   const envKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
   return (
-    <html lang="pt-BR" className={`${inter.variable} dark`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${spaceGrotesk.variable} dark`} suppressHydrationWarning>
       <body className="font-sans antialiased bg-[#050B14] text-slate-50" suppressHydrationWarning>
         {/* Environment script injected before hydration */}
         <script

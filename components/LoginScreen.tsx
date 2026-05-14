@@ -177,7 +177,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 shadow-2xl"
+              className="glass-panel rounded-3xl p-8"
             >
               <button 
                 onClick={() => setSelectedRole(null)}
@@ -212,7 +212,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full bg-[#050B14] border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-${selectedRole === 'athlete' ? 'cyan' : 'emerald'}-500 transition-colors`}
+                      className={`w-full bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-${selectedRole === 'athlete' ? 'cyan' : 'emerald'}-400 focus:bg-slate-950/60 transition-all`}
                       placeholder={selectedRole === 'athlete' ? "E-mail ou Código (Ex: 11001)" : "E-mail ou Usuário (Ex: Cris)"}
                     />
                   </div>
@@ -229,7 +229,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`w-full bg-[#050B14] border border-slate-700 rounded-xl pl-11 pr-12 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-${selectedRole === 'athlete' ? 'cyan' : 'emerald'}-500 transition-colors`}
+                      className={`w-full bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-xl pl-11 pr-12 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-${selectedRole === 'athlete' ? 'cyan' : 'emerald'}-400 focus:bg-slate-950/60 transition-all`}
                       placeholder="••••••••"
                     />
                     <button

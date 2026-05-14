@@ -21,11 +21,11 @@ const LoginScreen = dynamic(() => import('@/components/LoginScreen').then(mod =>
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AppLayout } from '@/components/layout/AppLayout';
 
+import { LogoLoader } from '@/components/LogoLoader';
+
 const LoadingSpinner = () => (
-  <div className="flex-1 flex items-center justify-center">
-    <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-500 font-black text-3xl shadow-[0_0_30px_rgba(6,182,212,0.2)] animate-pulse">
-      E
-    </div>
+  <div className="flex-1 flex items-center justify-center min-h-dvh">
+    <LogoLoader size="lg" showSpinner={false} />
   </div>
 );
 

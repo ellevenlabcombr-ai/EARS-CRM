@@ -1,0 +1,85 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { useBranding } from '@/hooks/useBranding';
+import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
+
+interface LogoLoaderProps {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
+  showSpinner?: boolean;
+}
+
+export function LogoLoader({ size = 'md', className = '', showSpinner = false }: LogoLoaderProps) {
+  const { logo_url, company_name } = useBranding();
+
+  const dimensions = {
+    sm: { width: 40, height: 40 },
+    md: { width: 64, height: 64 },
+    lg: { width: 96, height: 96 },
+    xl: { width: 144, height: 144 },
+  };
+
+  const { width, height } = dimensions[size];
+
+  if (!logo_url) {
+    // Fallback if no logo is available
+    return (
+      <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
+        <Loader2 
+          className={`animate-spin text-cyan-500 ${
+            size === 'sm' ? 'w-6 h-6' : 
+            size === 'md' ? 'w-10 h-10' : 
+            size === 'lg' ? 'w-14 h-14' : 'w-20 h-20'
+          }`} 
+        />
+        {showSpinner && (
+          <span className="text-cyan-500 font-bold tracking-widest text-sm uppercase animate-pulse">
+            Loading...
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col items-center justify-center gap-6 ${className}`}>
+      <motion.div
+        animate={{ 
+          scale: [1, 1.05, 1],
+          opacity: [0.8, 1, 0.8]
+        }}
+        transition={{ 
+          duration: 2, 
+          repeat: Infinity,
+          ease: "easeInOut" 
+        }}
+        className="relative"
+        style={{ width, height }}
+      >
+        <Image
+          src={logo_url}
+          alt={`${company_name} Logo`}
+          fill
+          className="object-contain"
+          unoptimized
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
+      
+      {showSpinner && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-3"
+        >
+          <Loader2 className="w-5 h-5 animate-spin text-cyan-500/80" />
+          <span className="text-cyan-500/80 font-bold tracking-widest text-sm uppercase">
+            Carregando
+          </span>
+        </motion.div>
+      )}
+    </div>
+  );
+}

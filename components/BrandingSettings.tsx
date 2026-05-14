@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Upload, X, CheckCircle, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { motion } from 'motion/react';
 
 export function BrandingSettings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -577,13 +578,18 @@ export function BrandingSettings() {
               <Button 
                 onClick={handleSave}
                 disabled={isSaving || isUploading || isUploadingFavicon || isUploadingSignature || isUploadingBackground}
-                className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 text-xs md:text-sm"
+                className={`w-full md:w-auto ${status === 'success' ? 'bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/20 text-[#050B14]' : 'bg-cyan-500 hover:bg-cyan-400 shadow-cyan-500/20 text-[#050B14]'} font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg transition-all active:scale-95 text-xs md:text-sm`}
               >
                 {isSaving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     Salvando...
                   </>
+                ) : status === 'success' ? (
+                  <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-0" />
+                    Salvo!
+                  </motion.div>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
