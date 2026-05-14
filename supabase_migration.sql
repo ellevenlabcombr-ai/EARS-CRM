@@ -358,7 +358,6 @@ CREATE TABLE IF NOT EXISTS public.branding_settings (
     instagram TEXT,
     phone TEXT,
     brand_color TEXT DEFAULT '#06b6d4',
-    background_color TEXT DEFAULT '#050B14',
     welcome_message TEXT,
     signature_url TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -387,9 +386,6 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='signature_url') THEN
         ALTER TABLE public.branding_settings ADD COLUMN signature_url TEXT;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='background_color') THEN
-        ALTER TABLE public.branding_settings ADD COLUMN background_color TEXT DEFAULT '#050B14';
     END IF;
 END $$;
 

@@ -157,18 +157,9 @@ BEGIN
             company_name TEXT DEFAULT 'ELLEVEN',
             logo_url TEXT,
             favicon_url TEXT,
-            brand_color TEXT DEFAULT '#06b6d4',
-            background_color TEXT DEFAULT '#050B14',
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
         INSERT INTO branding_settings (company_name) VALUES ('ELLEVEN');
-    END IF;
-
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='brand_color') THEN
-        ALTER TABLE public.branding_settings ADD COLUMN brand_color TEXT DEFAULT '#06b6d4';
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='background_color') THEN
-        ALTER TABLE public.branding_settings ADD COLUMN background_color TEXT DEFAULT '#050B14';
     END IF;
 
     -- Tabela de Configurações da Agenda
