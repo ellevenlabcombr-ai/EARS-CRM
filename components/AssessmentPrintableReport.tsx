@@ -30,9 +30,22 @@ export const AssessmentPrintableReport: React.FC<AssessmentPrintableReportProps>
 
   return (
     <div className="bg-white text-slate-900 w-full relative" style={{ width: '794px', minHeight: '1122px', border: 'none', backgroundColor: '#ffffff', boxSizing: 'border-box' }}>
+      {branding?.background_url && (
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${branding.background_url})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.05,
+            zIndex: 0
+          }}
+        />
+      )}
       
       {/* Block 1: Header / Papel Timbrado + Athlete Info */}
-      <div data-pdf-block="true" className="pt-[22mm] pl-[24mm] pr-[20mm] bg-white break-inside-avoid">
+      <div data-pdf-block="true" className="pt-[22mm] pl-[24mm] pr-[20mm] relative break-inside-avoid">
         {/* Top Minimalist Header */}
         <div className="flex justify-between items-end pb-6" style={{ borderBottom: '1px solid #EAEAEA' }}>
           <div className="flex items-center gap-2">
@@ -61,7 +74,7 @@ export const AssessmentPrintableReport: React.FC<AssessmentPrintableReportProps>
         </div>
       </div>
 
-      <div data-pdf-block="true" className="pl-[24mm] pr-[20mm] bg-white">
+      <div data-pdf-block="true" className="pl-[24mm] pr-[20mm] relative z-10">
         <div className="mb-6 flex justify-between items-center break-inside-avoid" style={{ borderBottom: '1px solid #EAEAEA', paddingBottom: '16px' }}>
           <h4 className="text-[10px] font-black text-slate-800 uppercase tracking-widest" style={{ color: '#111111' }}>
               {language === "pt" ? "Dados Detalhados" : "Detailed Data"}
@@ -82,7 +95,7 @@ export const AssessmentPrintableReport: React.FC<AssessmentPrintableReportProps>
 
       {/* Assessment Extras (e.g. Clinical Report) */}
       {assessment.clinical_report && (
-        <div data-pdf-block="true" className="pl-[24mm] pr-[20mm] mt-[12mm] bg-white break-inside-avoid">
+        <div data-pdf-block="true" className="pl-[24mm] pr-[20mm] mt-[12mm] relative z-10 break-inside-avoid">
           <div className="w-full">
             <ClinicalReportRenderer report={assessment.clinical_report} isDark={false} isPDF={true} />
           </div>
@@ -90,11 +103,21 @@ export const AssessmentPrintableReport: React.FC<AssessmentPrintableReportProps>
       )}
 
       {/* Letterhead Footer */}
-      <div data-pdf-block="true" className="relative mt-8 bg-white h-[30mm]">
+      <div data-pdf-block="true" className="relative mt-8 h-[40mm] z-10">
         <div className="absolute bottom-[22mm] left-[24mm] right-[20mm]">
-           <div className="flex justify-between items-center pt-5" style={{ borderTop: '1px solid #EAEAEA' }}>
-              <span className="text-[9px] font-medium uppercase tracking-[0.15em]" style={{ color: '#6B7280' }}>{branding?.company_name || 'ELLEVEN'} Performance Intelligence</span>
-              <span className="text-[9px] font-medium" style={{ color: '#6B7280' }}>{language === 'pt' ? 'Gerado em: ' : 'Generated: '}{new Date().toLocaleDateString()}</span>
+           <div className="flex justify-between items-start pt-5" style={{ borderTop: '1px solid #EAEAEA' }}>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: '#111111' }}>{branding?.company_name || 'ELLEVEN'}</span>
+                {branding?.cnpj && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>CNPJ: {branding.cnpj}</span>}
+                {branding?.address && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.address}</span>}
+              </div>
+              <div className="flex flex-col gap-1 text-right items-end">
+                <span className="text-[9px] font-medium" style={{ color: '#6B7280' }}>{language === 'pt' ? 'Gerado em: ' : 'Generated: '}{new Date().toLocaleDateString()}</span>
+                {branding?.phone && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.phone}</span>}
+                {branding?.instagram && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.instagram}</span>}
+                {branding?.website && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.website}</span>}
+                {branding?.linkedin && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.linkedin}</span>}
+              </div>
            </div>
         </div>
       </div>

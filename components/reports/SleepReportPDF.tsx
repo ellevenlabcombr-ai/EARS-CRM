@@ -2,7 +2,7 @@ import React from 'react';
 import { Activity } from 'lucide-react';
 import { ClinicalReportRenderer } from '../ClinicalReportRenderer';
 
-export const SleepReportPDF = ({ assessment, athlete, language = "pt" }: { assessment: any, athlete: any, language?: string }) => {
+export const SleepReportPDF = ({ assessment, athlete, language = "pt", branding }: { assessment: any, athlete: any, language?: string, branding?: any }) => {
   const data = assessment.raw_data || assessment.data || {};
   const score = assessment.score || data?.score || 0;
   
@@ -96,12 +96,29 @@ export const SleepReportPDF = ({ assessment, athlete, language = "pt" }: { asses
   
   return (
     <div className="bg-white font-sans box-border relative overflow-hidden" style={{ width: '794px', height: '1122px', border: 'none' }}>
+      {branding?.background_url && (
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${branding.background_url})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.05,
+            zIndex: 0
+          }}
+        />
+      )}
       {/* TOPO MINIMALISTA */}
-      <div data-pdf-block="true" className="pt-[22mm] break-inside-avoid">
+      <div data-pdf-block="true" className="pt-[22mm] pl-[24mm] pr-[20mm] relative break-inside-avoid">
         <div className="flex justify-between items-end pb-6" style={{ borderBottom: '1px solid #EAEAEA' }}>
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5" style={{ color: '#111111' }} />
-            <span className="text-base font-black tracking-widest uppercase" style={{ color: '#111111', letterSpacing: '0.15em' }}>ELLEVEN</span>
+            {branding?.logo_url ? (
+              <img src={branding.logo_url} alt={branding.company_name} className="h-6 object-contain" crossOrigin="anonymous" />
+            ) : (
+              <Activity className="w-5 h-5" style={{ color: '#111111' }} />
+            )}
+            <span className="text-base font-black tracking-widest uppercase" style={{ color: '#111111', letterSpacing: '0.15em' }}>{branding?.company_name || 'ELLEVEN'}</span>
           </div>
           <div className="text-right">
             <h1 className="text-[10px] font-medium uppercase tracking-[0.15em]" style={{ color: '#111111' }}>{l.sleepRecoveryReport}</h1>
@@ -113,7 +130,7 @@ export const SleepReportPDF = ({ assessment, athlete, language = "pt" }: { asses
       </div>
 
       {/* HERO SECTION */}
-      <div data-pdf-block="true" className="pt-[12mm] pb-[10mm] flex flex-col items-center text-center break-inside-avoid">
+      <div data-pdf-block="true" className="pt-[12mm] pb-[10mm] px-[24mm] pr-[20mm] relative z-10 flex flex-col items-center text-center break-inside-avoid">
          <h2 className="text-[18px] font-semibold tracking-tight leading-tight" style={{ color: '#111111' }}>{athlete.name}</h2>
          <p className="text-[10px] uppercase tracking-[0.1em] mt-1 mb-6" style={{ color: '#6B7280' }}>{athlete.sport || athlete.modalidade} • {athlete.category || l.professional}</p>
          
@@ -125,7 +142,7 @@ export const SleepReportPDF = ({ assessment, athlete, language = "pt" }: { asses
       </div>
 
       {/* METRICS STRIP */}
-      <div data-pdf-block="true" className="mb-[12mm] break-inside-avoid">
+      <div data-pdf-block="true" className="mb-[12mm] pl-[24mm] pr-[20mm] relative z-10 break-inside-avoid">
          <div className="flex justify-between items-start py-6" style={{ borderTop: '1px solid #EAEAEA', borderBottom: '1px solid #EAEAEA' }}>
             {metrics.map((m, i) => (
                <div key={i} className="flex flex-col flex-1 items-center" style={{ borderRight: i < metrics.length - 1 ? '1px solid #EAEAEA' : 'none' }}>
@@ -137,7 +154,7 @@ export const SleepReportPDF = ({ assessment, athlete, language = "pt" }: { asses
       </div>
 
       {/* CLINICAL REPORT SECTION */}
-      <div data-pdf-block="true" className="break-inside-avoid">
+      <div data-pdf-block="true" className="pl-[24mm] pr-[20mm] relative z-10 break-inside-avoid">
          <div className="w-full">
             <ClinicalReportRenderer 
                report={assessment.clinical_report || "No clinical interpretation available."} 
@@ -148,11 +165,23 @@ export const SleepReportPDF = ({ assessment, athlete, language = "pt" }: { asses
       </div>
 
       {/* RODAPÉ */}
-      <div className="absolute bottom-[22mm] left-[24mm] right-[20mm]">
-         <div className="flex justify-between items-center pt-5" style={{ borderTop: '1px solid #EAEAEA' }}>
-            <span className="text-[9px] font-medium uppercase tracking-[0.15em]" style={{ color: '#6B7280' }}>ELLEVEN Performance Intelligence</span>
-            <span className="text-[9px] font-medium" style={{ color: '#6B7280' }}>1</span>
-         </div>
+      <div data-pdf-block="true" className="relative mt-8 h-[40mm] z-10 break-inside-avoid">
+        <div className="absolute bottom-[22mm] left-[24mm] right-[20mm]">
+           <div className="flex justify-between items-start pt-5" style={{ borderTop: '1px solid #EAEAEA' }}>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: '#111111' }}>{branding?.company_name || 'ELLEVEN'}</span>
+                {branding?.cnpj && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>CNPJ: {branding.cnpj}</span>}
+                {branding?.address && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.address}</span>}
+              </div>
+              <div className="flex flex-col gap-1 text-right items-end">
+                <span className="text-[9px] font-medium" style={{ color: '#6B7280' }}>{language === 'pt' ? 'Gerado em: ' : 'Generated: '}{new Date().toLocaleDateString()}</span>
+                {branding?.phone && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.phone}</span>}
+                {branding?.instagram && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.instagram}</span>}
+                {branding?.website && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.website}</span>}
+                {branding?.linkedin && <span className="text-[8px] font-medium tracking-[0.1em]" style={{ color: '#6B7280' }}>{branding.linkedin}</span>}
+              </div>
+           </div>
+        </div>
       </div>
     </div>
   );

@@ -260,7 +260,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   
   // 1. STATE DECLARATIONS
   const [athlete, setAthlete] = useState<any>(initialAthlete);
-  const [branding, setBranding] = useState<{logo_url: string | null, company_name: string}>({ logo_url: null, company_name: 'ELLEVENLAB' });
+  const [branding, setBranding] = useState<any>({ logo_url: null, company_name: 'ELLEVENLAB' });
   const [wellnessHistory, setWellnessHistory] = useState<any[]>([]);
   const [prontuarioNotes, setProntuarioNotes] = useState<any[]>([]);
   const [attachments, setAttachments] = useState<any[]>([]);
@@ -506,9 +506,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   useEffect(() => {
     async function loadBranding() {
       try {
-         const { data } = await supabase.from('branding_settings').select('logo_url, company_name').single();
+         const { data } = await supabase.from('branding_settings').select('*').single();
          if (data) {
-           setBranding({ logo_url: data.logo_url, company_name: data.company_name || 'ELLEVENLAB' });
+           setBranding(data);
          }
       } catch (err) {
          console.error('Error fetching branding:', err);

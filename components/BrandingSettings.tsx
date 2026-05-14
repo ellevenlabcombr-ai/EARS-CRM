@@ -9,21 +9,26 @@ import Image from 'next/image';
 export function BrandingSettings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
+  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [companyName, setCompanyName] = useState('ELLEVEN');
   const [cnpj, setCnpj] = useState('');
   const [address, setAddress] = useState('');
   const [instagram, setInstagram] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [website, setWebsite] = useState('');
   const [phone, setPhone] = useState('');
   const [brandColor, setBrandColor] = useState('#06b6d4');
   const [welcomeMessage, setWelcomeMessage] = useState('');
   
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingSignature, setIsUploadingSignature] = useState(false);
+  const [isUploadingBackground, setIsUploadingBackground] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
+  const backgroundInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchBranding();
@@ -40,10 +45,13 @@ export function BrandingSettings() {
       if (data) {
         setLogoUrl(data.logo_url);
         setSignatureUrl(data.signature_url);
+        setBackgroundUrl(data.background_url);
         setCompanyName(data.company_name || 'ELLEVEN');
         setCnpj(data.cnpj || '');
         setAddress(data.address || '');
         setInstagram(data.instagram || '');
+        setLinkedin(data.linkedin || '');
+        setWebsite(data.website || '');
         setPhone(data.phone || '');
         setBrandColor(data.brand_color || '#06b6d4');
         setWelcomeMessage(data.welcome_message || '');
@@ -53,7 +61,7 @@ export function BrandingSettings() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'signature') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'signature' | 'background') => {
     const file = e.target.files?.[0];
     if (!file || !supabase) return;
 
@@ -71,8 +79,10 @@ export function BrandingSettings() {
 
     if (type === 'logo') {
       setIsUploading(true);
-    } else {
+    } else if (type === 'signature') {
       setIsUploadingSignature(true);
+    } else {
+      setIsUploadingBackground(true);
     }
     setStatus('idle');
 
@@ -101,8 +111,10 @@ export function BrandingSettings() {
 
       if (type === 'logo') {
         setLogoUrl(publicUrl);
-      } else {
+      } else if (type === 'signature') {
         setSignatureUrl(publicUrl);
+      } else {
+        setBackgroundUrl(publicUrl);
       }
       setStatus('success');
       setMessage('Imagem carregada com sucesso! Não esqueça de salvar.');
@@ -112,7 +124,8 @@ export function BrandingSettings() {
       setMessage(err.message || 'Erro ao carregar imagem.');
     } finally {
       if (type === 'logo') setIsUploading(false);
-      else setIsUploadingSignature(false);
+      else if (type === 'signature') setIsUploadingSignature(false);
+      else setIsUploadingBackground(false);
     }
   };
 
@@ -130,10 +143,13 @@ export function BrandingSettings() {
       const payload = {
         logo_url: logoUrl,
         signature_url: signatureUrl,
+        background_url: backgroundUrl,
         company_name: companyName,
         cnpj,
         address,
         instagram,
+        linkedin,
+        website,
         phone,
         brand_color: brandColor,
         welcome_message: welcomeMessage,
@@ -307,6 +323,65 @@ export function BrandingSettings() {
               className="hidden"
               accept="image/*"
             />
+            
+            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight mb-4 mt-8 flex items-center md:justify-start gap-2 justify-center">
+              <ImageIcon className="w-5 h-5 text-cyan-400" />
+              <span>Marca D'Água (Fundo)</span>
+            </h3>
+            <div className="relative w-48 h-32 md:w-56 md:h-40 bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800 flex items-center justify-center overflow-hidden group shadow-inner">
+              {backgroundUrl ? (
+                <>
+                  <Image 
+                    src={backgroundUrl} 
+                    alt="Background Preview" 
+                    fill 
+                    className="object-cover opacity-50 transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm">
+                    <button 
+                      onClick={() => backgroundInputRef.current?.click()}
+                      className="p-3 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-all hover:scale-110 active:scale-95"
+                      title="Trocar Fundo"
+                    >
+                      <Upload size={20} />
+                    </button>
+                    <button 
+                      onClick={() => { setBackgroundUrl(null); setStatus('idle'); }}
+                      className="p-3 bg-rose-500/20 hover:bg-rose-500/40 rounded-xl text-rose-400 transition-all hover:scale-110 active:scale-95 border border-rose-500/20 hover:border-rose-500/50"
+                      title="Remover Fundo"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div 
+                  onClick={() => backgroundInputRef.current?.click()}
+                  className="flex flex-col items-center gap-3 text-slate-600 cursor-pointer hover:text-cyan-400 transition-colors bg-slate-900/50 hover:bg-cyan-500/5 w-full h-full justify-center group-hover:border-cyan-500/30"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-cyan-500/10 flex items-center justify-center transition-colors">
+                    <Upload size={24} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-center px-4">Upload de<br/>Textura</span>
+                </div>
+              )}
+              
+              {isUploadingBackground && (
+                <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center gap-3 backdrop-blur-md">
+                  <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
+                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest animate-pulse">Enviando...</span>
+                </div>
+              )}
+            </div>
+            <input 
+              type="file" 
+              ref={backgroundInputRef}
+              onChange={(e) => handleFileChange(e, 'background')}
+              className="hidden"
+              accept="image/*"
+            />
           </div>
 
           {/* Form */}
@@ -351,6 +426,26 @@ export function BrandingSettings() {
                     onChange={(e) => setInstagram(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium placeholder:text-slate-600"
                     placeholder="@elleven.saude"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">LinkedIn</label>
+                  <input 
+                    type="text" 
+                    value={linkedin}
+                    onChange={(e) => setLinkedin(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium placeholder:text-slate-600"
+                    placeholder="https://linkedin.com/company/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Site Oficial</label>
+                  <input 
+                    type="text" 
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium placeholder:text-slate-600"
+                    placeholder="https://suaclinica.com.br"
                   />
                 </div>
                 <div className="space-y-2">
@@ -405,7 +500,7 @@ export function BrandingSettings() {
             <div className="pt-8 mt-auto border-t border-slate-800/50 flex justify-end">
               <Button 
                 onClick={handleSave}
-                disabled={isSaving || isUploading || isUploadingSignature}
+                disabled={isSaving || isUploading || isUploadingSignature || isUploadingBackground}
                 className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 text-xs md:text-sm"
               >
                 {isSaving ? (

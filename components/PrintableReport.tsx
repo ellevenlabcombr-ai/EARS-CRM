@@ -23,14 +23,28 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ athlete, repor
 
   return (
     <div className="bg-white text-slate-900 w-full relative" style={{ padding: '20mm', paddingBottom: '30mm', minHeight: '297mm' }}>
+      {branding?.background_url && (
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${branding.background_url})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            opacity: 0.05,
+            zIndex: 0
+          }}
+        />
+      )}
+      
       {/* Background watermarks or decorative elements can go here */}
-      <div className="absolute top-0 left-0 w-full h-3 flex">
+      <div className="absolute top-0 left-0 w-full h-3 flex z-10">
         <div className="w-3/4 h-full bg-slate-900" />
         <div className="w-1/4 h-full bg-yellow-400" />
       </div>
       
       {/* Header / Papel Timbrado */}
-      <div className="flex justify-between items-center border-b-2 border-slate-200 pb-8 mb-8 mt-4">
+      <div className="flex justify-between items-center border-b-2 border-slate-200 pb-8 mb-8 mt-4 relative z-10">
         <div className="flex items-center gap-6">
           {branding?.logo_url ? (
             <div className="h-16 flex items-center justify-center shrink-0">
@@ -56,7 +70,7 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ athlete, repor
       </div>
 
       {/* Athlete Info */}
-      <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 flex items-center gap-6">
+      <div className="bg-slate-50/80 rounded-2xl p-6 mb-8 border border-slate-100 flex items-center gap-6 relative z-10 backdrop-blur-sm">
         <div className="w-20 h-20 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center text-3xl font-bold text-slate-400 shrink-0 shadow-inner">
           {athlete?.avatar_url || athlete?.photo ? (
             <img src={athlete.avatar_url || athlete.photo} crossOrigin="anonymous" alt={athlete.name} className="w-full h-full object-cover" />
@@ -94,7 +108,7 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ athlete, repor
       </div>
 
       {/* Main Content Areas */}
-      <div className="space-y-8">
+      <div className="space-y-8 relative z-10">
         
         {/* IA Insights */}
         <div className="border border-slate-200 rounded-2xl p-6 relative overflow-hidden">
@@ -190,19 +204,27 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ athlete, repor
       </div>
 
       {/* Letterhead Footer */}
-      <div className="absolute bottom-0 left-0 w-full h-[30mm] flex items-end">
-        <div className="w-full relative">
+      <div className="absolute bottom-0 left-0 w-full h-[40mm] flex items-end bg-white/80 backdrop-blur-sm">
+        <div className="w-full relative h-full flex flex-col justify-end">
            <div className="absolute bottom-0 left-0 w-full h-[6mm] flex">
              <div className="w-1/4 h-full bg-yellow-400" />
              <div className="w-3/4 h-full bg-slate-900" />
            </div>
+           
            <div className="px-[20mm] pb-[10mm] flex justify-between items-end relative z-10 w-full">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{branding?.company_name || 'ELLEVENLAB'}</p>
-                <p className="text-[9px] text-slate-400 mt-0.5">Gestão de Performance e Saúde</p>
+              <div className="flex flex-col gap-1 text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-800">{branding?.company_name || 'ELLEVEN'}</span>
+                {branding?.cnpj && <span className="text-[8px] font-medium tracking-[0.1em]">CNPJ: {branding.cnpj}</span>}
+                {branding?.address && <span className="text-[8px] font-medium tracking-[0.1em]">{branding.address}</span>}
               </div>
-              <div className="text-right">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Documento Confidencial</p>
+              <div className="flex flex-col gap-1 text-right items-end text-slate-500">
+                <span className="text-[9px] font-medium text-slate-600 mb-1">
+                  Gerado em: {new Date().toLocaleDateString('pt-BR')}
+                </span>
+                {branding?.phone && <span className="text-[8px] font-medium tracking-[0.1em]">{branding.phone}</span>}
+                {branding?.instagram && <span className="text-[8px] font-medium tracking-[0.1em]">{branding.instagram}</span>}
+                {branding?.website && <span className="text-[8px] font-medium tracking-[0.1em]">{branding.website}</span>}
+                {branding?.linkedin && <span className="text-[8px] font-medium tracking-[0.1em]">{branding.linkedin}</span>}
               </div>
            </div>
         </div>

@@ -360,6 +360,9 @@ CREATE TABLE IF NOT EXISTS public.branding_settings (
     brand_color TEXT DEFAULT '#06b6d4',
     welcome_message TEXT,
     signature_url TEXT,
+    website TEXT,
+    linkedin TEXT,
+    background_url TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -386,6 +389,15 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='signature_url') THEN
         ALTER TABLE public.branding_settings ADD COLUMN signature_url TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='website') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN website TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='linkedin') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN linkedin TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='background_url') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN background_url TEXT;
     END IF;
 END $$;
 
