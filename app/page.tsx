@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { AnimatePresence, motion } from 'motion/react';
 
 const MainDashboard = dynamic(() => import('@/components/MainDashboard').then(mod => mod.MainDashboard), {
   loading: () => <LoadingSpinner />,
@@ -37,33 +38,46 @@ export default function Home() {
   const [isDirty, setIsDirty] = useState(false);
   const [pendingAction, setPendingAction] = useState<'logout' | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const savedSession = localStorage.getItem('ears_session');
-    if (savedSession) {
-      try {
-        const session = JSON.parse(savedSession);
-        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-        if (new Date().getTime() - session.timestamp < thirtyDays) {
-          setTimeout(() => {
-            setUserRole(session.role);
+    
+    const minimumSplashTime = new Promise(resolve => setTimeout(resolve, 1500));
+
+    const initializeSession = async () => {
+      let activeRole = null;
+      let activeAthlete = null;
+
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+          if (new Date().getTime() - session.timestamp < thirtyDays) {
+            activeRole = session.role;
             if (session.athleteData) {
-              setLoggedInAthlete(session.athleteData);
+              activeAthlete = session.athleteData;
             }
-            setIsInitializing(false);
-          }, 0);
-          return;
-        } else {
+          } else {
+            localStorage.removeItem('ears_session');
+          }
+        } catch (e) {
+          console.error("Error parsing saved session:", e);
           localStorage.removeItem('ears_session');
         }
-      } catch (e) {
-        console.error("Error parsing saved session:", e);
-        localStorage.removeItem('ears_session');
       }
-    }
-    setTimeout(() => {
+
+      await minimumSplashTime;
+
+      setUserRole(activeRole);
+      if (activeAthlete) {
+        setLoggedInAthlete(activeAthlete);
+      }
       setIsInitializing(false);
-    }, 0);
+      setShowSplash(false);
+    };
+    
+    initializeSession();
   }, []);
 
   const handleLogout = () => {
@@ -83,50 +97,67 @@ export default function Home() {
     }
   };
 
-  if (isInitializing) {
-    return (
-      <AppLayout withSafeBottom={false}>
-        <LoadingSpinner />
-      </AppLayout>
-    );
-  }
-
-  if (!userRole) {
-    return (
-      <AppLayout withSafeTop={false} withSafeBottom={false}>
-        <LoginScreen onLogin={handleLogin} />
-      </AppLayout>
-    );
-  }
-
-  if (userRole === 'athlete') {
-    return (
-      <AppLayout withSafeTop={false} withSafeBottom={false}>
-        <AthleteDashboard 
-          onBack={handleLogout} 
-          onDirtyChange={setIsDirty}
-          athleteId={loggedInAthlete?.id}
-          athleteGender={loggedInAthlete?.gender}
-          initialAthleteData={loggedInAthlete}
-        />
-        <ConfirmDialog 
-          isOpen={pendingAction === 'logout'}
-          onConfirm={() => {
-            setPendingAction(null);
-            setIsDirty(false);
-            localStorage.removeItem('ears_session');
-            setUserRole(null);
-            setLoggedInAthlete(null);
-          }}
-          onCancel={() => setPendingAction(null)}
-        />
-      </AppLayout>
-    );
-  }
-
   return (
-    <AppLayout withSafeTop={false} withSafeBottom={false}>
-      <MainDashboard onLogout={handleLogout} />
-    </AppLayout>
+    <>
+      <AnimatePresence mode="wait">
+        {showSplash && (
+          <motion.div
+            key="splash"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050B14]"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="flex flex-col items-center justify-center"
+            >
+              <h1 className="text-5xl md:text-6xl font-normal text-white tracking-tighter flex items-center justify-center gap-3" style={{ fontFamily: 'Ghanes, sans-serif' }}>
+                ELLEVEN <span className="text-cyan-500">/</span> EARS
+              </h1>
+              <motion.div 
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "200px" }}
+                  transition={{ delay: 0.5, duration: 1, ease: "easeInOut" }}
+                  className="h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent mt-8"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!isInitializing && (
+        <AppLayout withSafeTop={false} withSafeBottom={false}>
+          {!userRole ? (
+            <LoginScreen onLogin={handleLogin} />
+          ) : userRole === 'athlete' ? (
+            <>
+              <AthleteDashboard 
+                onBack={handleLogout} 
+                onDirtyChange={setIsDirty}
+                athleteId={loggedInAthlete?.id}
+                athleteGender={loggedInAthlete?.gender}
+                initialAthleteData={loggedInAthlete}
+              />
+              <ConfirmDialog 
+                isOpen={pendingAction === 'logout'}
+                onConfirm={() => {
+                  setPendingAction(null);
+                  setIsDirty(false);
+                  localStorage.removeItem('ears_session');
+                  setUserRole(null);
+                  setLoggedInAthlete(null);
+                }}
+                onCancel={() => setPendingAction(null)}
+              />
+            </>
+          ) : (
+            <MainDashboard onLogout={handleLogout} />
+          )}
+        </AppLayout>
+      )}
+    </>
   );
 }
