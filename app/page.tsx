@@ -132,9 +132,11 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="fixed inset-0 w-full h-full flex items-center justify-center bg-[#050B14] overflow-hidden"
+              className="fixed inset-0 w-full h-dvh overflow-y-auto bg-[#050B14] flex flex-col custom-scrollbar"
             >
-              <LoginScreen onLogin={handleLogin} />
+              <div className="flex-1 flex items-center justify-center min-h-[500px] py-12">
+                <LoginScreen onLogin={handleLogin} />
+              </div>
             </motion.div>
           ) : userRole === 'athlete' ? (
             <motion.div
