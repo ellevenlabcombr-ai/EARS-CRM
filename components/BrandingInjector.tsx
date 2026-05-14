@@ -66,19 +66,22 @@ export function BrandingInjector() {
         }} />
       )}
       {backgroundUrl && (
-        <div 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 0,
-            pointerEvents: 'none',
-            backgroundImage: `url(${backgroundUrl})`,
-            backgroundPosition: 'center',
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            opacity: 0.05
-          }}
-        />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            body::before {
+              content: '';
+              position: fixed;
+              inset: 0;
+              z-index: 0;
+              background-image: url(${backgroundUrl});
+              background-position: center;
+              background-size: cover;
+              background-repeat: no-repeat;
+              opacity: 0.15;
+              pointer-events: none;
+            }
+          `
+        }} />
       )}
     </>
   );

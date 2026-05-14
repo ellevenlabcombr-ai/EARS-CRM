@@ -209,7 +209,7 @@ export function FinanceDashboard() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#050B14] relative">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-transparent relative">
       <header className="px-6 h-20 border-b border-slate-800/50 flex items-center justify-between shrink-0 bg-[#0A1120] z-10">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">

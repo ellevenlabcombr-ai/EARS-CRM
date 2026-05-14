@@ -251,7 +251,7 @@ export function AthleteList({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-[#050B14] text-slate-200 overflow-hidden">
+    <div className="flex-1 flex flex-col h-screen bg-transparent text-slate-200 overflow-hidden">
       {/* Header */}
       <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-4 sm:px-8 bg-[#0A1120]/80 backdrop-blur-xl shrink-0 z-10">
         <div className="flex items-center gap-2 sm:gap-3 pl-12 lg:pl-0 min-w-0">
