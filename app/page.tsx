@@ -132,9 +132,9 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="fixed inset-0 w-full h-dvh overflow-y-auto bg-[#050B14] flex flex-col custom-scrollbar"
+              className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-[#050B14] flex flex-col items-center justify-center"
             >
-              <div className="flex-1 flex items-center justify-center min-h-[500px] py-12">
+              <div className="w-full flex-1 flex flex-col items-center justify-center px-4 max-h-[100dvh]">
                 <LoginScreen onLogin={handleLogin} />
               </div>
             </motion.div>
@@ -144,7 +144,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="fixed inset-0 w-full h-full overflow-hidden bg-[#050B14]"
+              className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-[#050B14]"
             >
               <AppLayout withSafeTop={false} withSafeBottom={false}>
                 <AthleteDashboard 
@@ -173,7 +173,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="fixed inset-0 w-full h-full overflow-hidden bg-[#050B14]"
+              className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-[#050B14]"
             >
               <AppLayout withSafeTop={false} withSafeBottom={false}>
                 <MainDashboard onLogout={handleLogout} />
