@@ -367,7 +367,15 @@ export function BrandingSettings() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Cor Principal (Brand Color)</label>
+                  <div className="flex items-center justify-between pl-1">
+                    <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Cor Principal (Brand Color)</label>
+                    <button 
+                      onClick={() => setBrandColor('#06b6d4')}
+                      className="text-[10px] uppercase font-bold text-slate-500 hover:text-cyan-400 transition-colors"
+                    >
+                      Padrão
+                    </button>
+                  </div>
                   <div className="flex items-center gap-3 w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all">
                     <input 
                       type="color" 
@@ -385,7 +393,15 @@ export function BrandingSettings() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Cor do Fundo (Background)</label>
+                  <div className="flex items-center justify-between pl-1">
+                    <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Cor do Fundo (Background)</label>
+                    <button 
+                      onClick={() => setBackgroundColor('#050B14')}
+                      className="text-[10px] uppercase font-bold text-slate-500 hover:text-cyan-400 transition-colors"
+                    >
+                      Padrão
+                    </button>
+                  </div>
                   <div className="flex items-center gap-3 w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all">
                     <input 
                       type="color" 
