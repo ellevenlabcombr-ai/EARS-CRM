@@ -37,7 +37,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       )}
 
       {/* Main Content Area */}
-      <main className={`flex-1 flex flex-col w-full ${containerClassName}`}>
+      <main className={`flex-1 flex flex-col w-full overflow-y-auto custom-scrollbar ${containerClassName}`}>
         {/* If no header, we still need safe area top padding */}
         {!header && withSafeTop && (
           <div className="h-[calc(var(--safe-area-inset-top)+16px)] w-full shrink-0" />

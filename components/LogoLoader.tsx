@@ -31,16 +31,7 @@ export function LogoLoader({ size = 'md', className = '', showSpinner = false }:
 
   return (
     <div className={`flex flex-col items-center justify-center gap-6 ${className}`}>
-      <motion.div
-        animate={{ 
-          scale: [1, 1.05, 1],
-          opacity: [0.8, 1, 0.8]
-        }}
-        transition={{ 
-          duration: 2, 
-          repeat: Infinity,
-          ease: "easeInOut" 
-        }}
+      <div
         className="relative"
         style={{ width, height }}
       >
@@ -52,7 +43,7 @@ export function LogoLoader({ size = 'md', className = '', showSpinner = false }:
           unoptimized
           referrerPolicy="no-referrer"
         />
-      </motion.div>
+      </div>
       
       {showSpinner && (
         <motion.div 
