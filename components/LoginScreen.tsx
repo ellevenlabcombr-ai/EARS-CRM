@@ -122,11 +122,11 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-2 flex items-center justify-center gap-3">
-            EARS <span className="text-cyan-500">|</span> ELLEVEN
+          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-2 flex items-center justify-center gap-3" style={{ fontFamily: '"Ghanes", sans-serif' }}>
+            ELLEVEN <span className="text-cyan-500">/</span> EARS
           </h1>
           <p className="text-slate-400 text-sm font-medium tracking-widest uppercase">
-            Electronic Athlete Readiness System
+            GESTÃO DE PERFORMANCE
           </p>
         </div>
 
