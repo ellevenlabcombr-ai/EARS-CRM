@@ -20,14 +20,8 @@ import {
 import { Button } from '@/components/ui/button';
 
 export function AgendaSettings() {
-  const [startTime, setStartTime] = useState('08:00');
-  const [endTime, setEndTime] = useState('18:00');
   const [duration, setDuration] = useState(30);
   const [breakInterval, setBreakInterval] = useState(0);
-  const [lunchStart, setLunchStart] = useState('12:00');
-  const [lunchEnd, setLunchEnd] = useState('13:00');
-  const [lunchEnabled, setLunchEnabled] = useState(true);
-  const [workingDays, setWorkingDays] = useState<string[]>(['1', '2', '3', '4', '5']);
   const [appointmentTypes, setAppointmentTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState('');
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
@@ -50,6 +44,31 @@ export function AgendaSettings() {
     { value: '6', label: 'Sáb' },
     { value: '0', label: 'Dom' },
   ];
+
+  type DaySchedule = {
+    enabled: boolean;
+    start: string;
+    end: string;
+    lunchEnabled: boolean;
+    lunchStart: string;
+    lunchEnd: string;
+  };
+
+  const defaultDay: DaySchedule = {
+    enabled: false, start: '08:00', end: '18:00', lunchEnabled: true, lunchStart: '12:00', lunchEnd: '13:00'
+  };
+
+  const [daySchedules, setDaySchedules] = useState<Record<string, DaySchedule>>({
+    '0': { ...defaultDay },
+    '1': { ...defaultDay, enabled: true },
+    '2': { ...defaultDay, enabled: true },
+    '3': { ...defaultDay, enabled: true },
+    '4': { ...defaultDay, enabled: true },
+    '5': { ...defaultDay, enabled: true },
+    '6': { ...defaultDay },
+  });
+  
+  const [selectedDay, setSelectedDay] = useState<string>('1');
 
   useEffect(() => {
     fetchSettings();
@@ -83,20 +102,27 @@ export function AgendaSettings() {
       }
       
       if (data) {
-        setStartTime(data.start_time || '08:00');
-        setEndTime(data.end_time || '18:00');
+        if (data.day_schedules && Object.keys(data.day_schedules).length > 0) {
+          setDaySchedules(data.day_schedules);
+        } else {
+          // migrate from old structure
+          const newScheds = { ...daySchedules };
+          for (let i = 0; i <= 6; i++) {
+            newScheds[i.toString()] = {
+              enabled: (data.working_days || []).includes(i.toString()),
+              start: data.start_time || '08:00',
+              end: data.end_time || '18:00',
+              lunchEnabled: data.lunch_enabled ?? true,
+              lunchStart: data.lunch_start || '12:00',
+              lunchEnd: data.lunch_end || '13:00',
+            };
+          }
+          setDaySchedules(newScheds);
+        }
+
         setDuration(data.default_duration_minutes || 30);
         setBreakInterval(data.break_interval_minutes || 0);
         setAppointmentTypes(data.appointment_types || []);
-        if (data.lunch_start) setLunchStart(data.lunch_start);
-        if (data.lunch_end) setLunchEnd(data.lunch_end);
-        if (data.lunch_enabled !== undefined) {
-          setLunchEnabled(data.lunch_enabled);
-        } else if (!data.lunch_start && !data.lunch_end) {
-          setLunchEnabled(false);
-        }
-        
-        // Auto apply current year holidays
         let loadedDates = data.blocked_dates || [];
         const currentYear = new Date().getFullYear();
         const getNationalHolidays = (year: number) => [
@@ -110,7 +136,6 @@ export function AgendaSettings() {
         }
         setBlockedDates(loadedDates);
 
-        if (data.working_days) setWorkingDays(data.working_days);
         if (data.delay_tolerance_minutes !== undefined) setDelayTolerance(data.delay_tolerance_minutes);
         if (data.cancellation_notice_hours !== undefined) setCancelNotice(data.cancellation_notice_hours);
         if (data.appointment_colors) setAppointmentColors(data.appointment_colors);
@@ -158,15 +183,18 @@ export function AgendaSettings() {
         throw selectError;
       }
 
+      const firstEnabledDay = Object.values(daySchedules).find(d => d.enabled) || daySchedules['1'];
+      
       const payload = {
-        start_time: startTime,
-        end_time: endTime,
+        start_time: firstEnabledDay.start,
+        end_time: firstEnabledDay.end,
         default_duration_minutes: duration,
         break_interval_minutes: breakInterval,
-        lunch_start: lunchStart,
-        lunch_end: lunchEnd,
-        lunch_enabled: lunchEnabled,
-        working_days: workingDays,
+        lunch_start: firstEnabledDay.lunchStart,
+        lunch_end: firstEnabledDay.lunchEnd,
+        lunch_enabled: firstEnabledDay.lunchEnabled,
+        working_days: Object.entries(daySchedules).filter(([_, d]) => d.enabled).map(([dayId]) => dayId),
+        day_schedules: daySchedules,
         appointment_types: appointmentTypes,
         blocked_dates: blockedDates,
         delay_tolerance_minutes: delayTolerance,
@@ -264,19 +292,31 @@ export function AgendaSettings() {
     return (h * 60) + m;
   };
 
-  const startMin = getMinutes(startTime);
-  const endMin = getMinutes(endTime);
-  const lunchStartMin = lunchEnabled ? getMinutes(lunchStart) : 0;
-  const lunchEndMin = lunchEnabled ? getMinutes(lunchEnd) : 0;
+  const updateDaySchedule = (field: keyof DaySchedule, value: string | boolean) => {
+    setDaySchedules(prev => ({
+      ...prev,
+      [selectedDay]: {
+        ...prev[selectedDay],
+        [field]: value
+      }
+    }));
+  };
 
-  const hasConflict = lunchEnabled 
+  const activeSchedule = daySchedules[selectedDay];
+  
+  const startMin = getMinutes(activeSchedule.start);
+  const endMin = getMinutes(activeSchedule.end);
+  const lunchStartMin = activeSchedule.lunchEnabled ? getMinutes(activeSchedule.lunchStart) : 0;
+  const lunchEndMin = activeSchedule.lunchEnabled ? getMinutes(activeSchedule.lunchEnd) : 0;
+
+  const hasConflict = activeSchedule.lunchEnabled 
     ? (startMin >= endMin || lunchStartMin >= lunchEndMin || lunchStartMin < startMin || lunchEndMin > endMin)
     : (startMin >= endMin);
 
   const totalMin = endMin - startMin;
-  const p1 = totalMin > 0 ? (lunchEnabled ? Math.max(0, ((lunchStartMin - startMin) / totalMin)) * 100 : 100) : 0;
-  const pLunch = (totalMin > 0 && lunchEnabled) ? Math.max(0, ((lunchEndMin - lunchStartMin) / totalMin)) * 100 : 0;
-  const p2 = (totalMin > 0 && lunchEnabled) ? Math.max(0, ((endMin - lunchEndMin) / totalMin)) * 100 : 0;
+  const p1 = totalMin > 0 ? (activeSchedule.lunchEnabled ? Math.max(0, ((lunchStartMin - startMin) / totalMin)) * 100 : 100) : 0;
+  const pLunch = (totalMin > 0 && activeSchedule.lunchEnabled) ? Math.max(0, ((lunchEndMin - lunchStartMin) / totalMin)) * 100 : 0;
+  const p2 = (totalMin > 0 && activeSchedule.lunchEnabled) ? Math.max(0, ((endMin - lunchEndMin) / totalMin)) * 100 : 0;
 
   if (isLoading) {
     return (
@@ -292,179 +332,190 @@ export function AgendaSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-32">
         {/* Horários */}
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:row-span-2">
-          <div className="flex items-center gap-3 md:gap-4 mb-4">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5 md:w-6 md:h-6" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Janela Operacional</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Configure seu expediente diário</p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-6 md:gap-8">
-            <div className="space-y-3 flex-1">
-              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Início</label>
-              <input 
-                type="time" 
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
-              />
-            </div>
-            <div className="space-y-3 flex-1">
-              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Término</label>
-              <input 
-                type="time" 
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-slate-800/50 mt-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between pl-1">
-              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest">Horário de Almoço</label>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  className="sr-only peer" 
-                  checked={lunchEnabled}
-                  onChange={(e) => setLunchEnabled(e.target.checked)}
-                />
-                <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
-              </label>
-            </div>
-            
-            <div className={`flex flex-col sm:flex-row gap-6 md:gap-8 transition-opacity duration-300 ${lunchEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-              <div className="space-y-3 flex-1">
-                <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Início Almoço</label>
-                <input 
-                  type="time" 
-                  value={lunchStart}
-                  onChange={(e) => setLunchStart(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
-                />
-              </div>
-              <div className="space-y-3 flex-1">
-                <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Fim Almoço</label>
-                <input 
-                  type="time" 
-                  value={lunchEnd}
-                  onChange={(e) => setLunchEnd(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-6 pt-6 border-t border-slate-800/50">
-            <div className="space-y-3 w-full">
-              <div className="flex items-center gap-2 mb-2 pl-1">
-                <Timer className="text-cyan-500 w-3 h-3 md:w-4 md:h-4" />
-                <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Duração Padrão</label>
-              </div>
-              <div className="relative">
-                <div className="flex items-center justify-between px-2 mb-3">
-                  <span className="text-2xl font-black text-white">{duration}</span>
-                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">min</span>
-                </div>
-                <input 
-                  type="range"
-                  min={15} max={120} step={15}
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                />
-              </div>
-            </div>
-            <div className="space-y-3 w-full">
-              <div className="flex items-center gap-2 mb-2 pl-1">
-                <Timer className="text-amber-500 w-3 h-3 md:w-4 md:h-4" />
-                <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Intervalo</label>
-              </div>
-              <div className="relative">
-                <div className="flex items-center justify-between px-2 mb-3">
-                  <span className="text-2xl font-black text-white">{breakInterval}</span>
-                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">min</span>
-                </div>
-                <input 
-                  type="range"
-                  min={0} max={60} step={5}
-                  value={breakInterval}
-                  onChange={(e) => setBreakInterval(parseInt(e.target.value) || 0)}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Timeline Visual */}
-          {!hasConflict && totalMin > 0 ? (
-            <div className="pt-8 mt-2">
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2">
-                <span>{startTime}</span>
-                <span>{endTime}</span>
-              </div>
-              <div className="h-2 w-full flex rounded-full overflow-hidden bg-slate-800 shadow-inner">
-                <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p1}%` }}></div>
-                {lunchEnabled && <div className="h-full bg-slate-700 opacity-50" style={{ width: `${pLunch}%` }}></div>}
-                {lunchEnabled && <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p2}%` }}></div>}
-              </div>
-              <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-2">
-                <span>Turno 1</span>
-                {lunchEnabled && <span className="text-slate-500">Intervalo {lunchStart} - {lunchEnd}</span>}
-                {lunchEnabled && <span>Turno 2</span>}
-              </div>
-            </div>
-          ) : (
-            <div className="pt-4 mt-4 border-t border-slate-800/50">
-              <div className="flex items-center justify-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400">
-                <AlertCircle size={16} className="shrink-0" />
-                <span className="text-xs font-bold uppercase tracking-widest leading-tight">Conflito Operacional Detectado</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Dias de Funcionamento */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
-          <div className="flex items-center gap-3 md:gap-4 mb-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
-                <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+                <Clock className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
-                <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Funcionamento Semanal</h3>
-                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Dias de operação padrão</p>
+                <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Janela Operacional</h3>
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Configure seu expediente diário</p>
               </div>
             </div>
-            
-            <div className="flex flex-wrap gap-2 pt-2">
-              {weekDays.map(day => {
-                const isActive = workingDays.includes(day.value);
-                return (
-                  <button
-                    key={day.value}
-                    onClick={() => {
-                      if (isActive) {
-                        setWorkingDays(workingDays.filter(d => d !== day.value));
-                      } else {
-                        setWorkingDays([...workingDays, day.value]);
-                      }
-                    }}
-                    className={`relative overflow-hidden flex items-center justify-center h-12 lg:h-14 px-4 min-w-[3rem] flex-1 sm:flex-none rounded-xl text-xs md:text-sm font-black tracking-wider uppercase transition-all duration-300 ${
-                      isActive
-                        ? 'bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]'
-                        : 'bg-slate-950 border border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300 hover:bg-slate-900'
-                    }`}
-                  >
-                    {isActive && <div className="absolute inset-0 bg-emerald-500/5 transition-opacity duration-300"></div>}
-                    <span className="relative z-10">{day.label}</span>
-                  </button>
-                );
-              })}
+          </div>
+          
+          <div className="flex flex-wrap gap-2 pt-2 mb-6">
+            {weekDays.map(day => {
+              const isActive = daySchedules[day.value]?.enabled;
+              const isSelected = selectedDay === day.value;
+              return (
+                <button
+                  key={day.value}
+                  onClick={() => setSelectedDay(day.value)}
+                  className={`relative overflow-hidden flex items-center justify-center h-10 lg:h-12 px-3 min-w-[2.5rem] flex-1 sm:flex-none rounded-xl text-xs md:text-sm font-black tracking-wider uppercase transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-cyan-500 text-[#050B14] shadow-[0_0_15px_rgba(6,182,212,0.3)] scale-[1.02]'
+                      : isActive
+                        ? 'bg-slate-800/80 border border-cyan-500/30 text-cyan-400'
+                        : 'bg-slate-950 border border-slate-800 text-slate-600 hover:border-slate-700 hover:text-slate-400'
+                  }`}
+                >
+                  <span className="relative z-10">{day.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-slate-950 border border-slate-800 rounded-xl mb-6">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-white uppercase tracking-widest">{weekDays.find(d => d.value === selectedDay)?.label}</span>
+              <span className="text-[10px] md:text-xs text-slate-500 font-medium">Status de operação</span>
             </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={activeSchedule.enabled}
+                onChange={(e) => updateDaySchedule('enabled', e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+            </label>
+          </div>
+
+          {!activeSchedule.enabled ? (
+            <div className="py-12 border border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center opacity-70">
+              <Ban className="w-12 h-12 text-slate-700 mb-3" />
+              <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Dia Inativo</p>
+              <p className="text-xs text-slate-600 mt-1">Nenhum agendamento será permitido</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col sm:flex-row gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-2">
+                <div className="space-y-3 flex-1">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Início</label>
+                  <input 
+                    type="time" 
+                    value={activeSchedule.start}
+                    onChange={(e) => updateDaySchedule('start', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                  />
+                </div>
+                <div className="space-y-3 flex-1">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Término</label>
+                  <input 
+                    type="time" 
+                    value={activeSchedule.end}
+                    onChange={(e) => updateDaySchedule('end', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-800/50 mt-6 flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center justify-between pl-1">
+                  <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest">Horário de Almoço</label>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={activeSchedule.lunchEnabled}
+                      onChange={(e) => updateDaySchedule('lunchEnabled', e.target.checked)}
+                    />
+                    <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+                
+                <div className={`flex flex-col sm:flex-row gap-6 md:gap-8 transition-opacity duration-300 ${activeSchedule.lunchEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                  <div className="space-y-3 flex-1">
+                    <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Início Almoço</label>
+                    <input 
+                      type="time" 
+                      value={activeSchedule.lunchStart}
+                      onChange={(e) => updateDaySchedule('lunchStart', e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                    />
+                  </div>
+                  <div className="space-y-3 flex-1">
+                    <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Fim Almoço</label>
+                    <input 
+                      type="time" 
+                      value={activeSchedule.lunchEnd}
+                      onChange={(e) => updateDaySchedule('lunchEnd', e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-6 pt-6 border-t border-slate-800/50 animate-in fade-in slide-in-from-bottom-2">
+                <div className="space-y-3 w-full">
+                  <div className="flex items-center gap-2 mb-2 pl-1">
+                    <Timer className="text-cyan-500 w-3 h-3 md:w-4 md:h-4" />
+                    <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Duração Padrão</label>
+                  </div>
+                  <div className="relative">
+                    <div className="flex items-center justify-between px-2 mb-3">
+                      <span className="text-2xl font-black text-white">{duration}</span>
+                      <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">min</span>
+                    </div>
+                    <input 
+                      type="range"
+                      min={15} max={120} step={15}
+                      value={duration}
+                      onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
+                      className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-3 w-full">
+                  <div className="flex items-center gap-2 mb-2 pl-1">
+                    <Timer className="text-amber-500 w-3 h-3 md:w-4 md:h-4" />
+                    <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Intervalo</label>
+                  </div>
+                  <div className="relative">
+                    <div className="flex items-center justify-between px-2 mb-3">
+                      <span className="text-2xl font-black text-white">{breakInterval}</span>
+                      <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">min</span>
+                    </div>
+                    <input 
+                      type="range"
+                      min={0} max={60} step={5}
+                      value={breakInterval}
+                      onChange={(e) => setBreakInterval(parseInt(e.target.value) || 0)}
+                      className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Timeline Visual */}
+              {!hasConflict && totalMin > 0 ? (
+                <div className="pt-8 mt-2 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2">
+                    <span>{activeSchedule.start}</span>
+                    <span>{activeSchedule.end}</span>
+                  </div>
+                  <div className="h-2 w-full flex rounded-full overflow-hidden bg-slate-800 shadow-inner">
+                    <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p1}%` }}></div>
+                    {activeSchedule.lunchEnabled && <div className="h-full bg-slate-700 opacity-50" style={{ width: `${pLunch}%` }}></div>}
+                    {activeSchedule.lunchEnabled && <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p2}%` }}></div>}
+                  </div>
+                  <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-2">
+                    <span>Turno 1</span>
+                    {activeSchedule.lunchEnabled && <span className="text-slate-500">Intervalo {activeSchedule.lunchStart} - {activeSchedule.lunchEnd}</span>}
+                    {activeSchedule.lunchEnabled && <span>Turno 2</span>}
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-4 mt-4 border-t border-slate-800/50 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex items-center justify-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400">
+                    <AlertCircle size={16} className="shrink-0" />
+                    <span className="text-xs font-bold uppercase tracking-widest leading-tight">Conflito Operacional Detectado</span>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Tipos de Atendimento */}

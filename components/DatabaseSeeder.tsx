@@ -776,6 +776,12 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_end') THEN
         ALTER TABLE public.agenda_settings ADD COLUMN lunch_end TEXT DEFAULT '13:00';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_enabled') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN lunch_enabled BOOLEAN DEFAULT true;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'day_schedules') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN day_schedules JSONB DEFAULT '{}'::jsonb;
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'blocked_dates') THEN
         ALTER TABLE public.agenda_settings ADD COLUMN blocked_dates TEXT[] DEFAULT ARRAY[]::TEXT[];
     END IF;
