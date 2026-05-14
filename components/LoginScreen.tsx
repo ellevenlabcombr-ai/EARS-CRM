@@ -116,7 +116,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="h-dvh w-full bg-[#050B14] flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+    <div className="w-full h-full flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}

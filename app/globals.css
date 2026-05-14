@@ -125,20 +125,18 @@
   /* Custom Scrollbar */
   .custom-scrollbar {
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
   }
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    display: none; /* Safely hide scrollbar on Chrome/Safari completely */
+    width: 0px;
+    height: 0px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.2);
-    border-radius: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.4);
+    background: transparent;
   }
 
   /* Ultra-glassmorphism */

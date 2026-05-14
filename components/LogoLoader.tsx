@@ -18,8 +18,8 @@ export function LogoLoader({ size = 'md', className = '', showSpinner = false }:
     sm: { width: 40, height: 40 },
     md: { width: 64, height: 64 },
     lg: { width: 96, height: 96 },
-    xl: { width: 220, height: 220 },
-    '2xl': { width: 200, height: 200 },
+    xl: { width: 140, height: 140 },
+    '2xl': { width: 180, height: 180 },
   };
 
   const { width, height } = dimensions[size as keyof typeof dimensions] || dimensions.md;
