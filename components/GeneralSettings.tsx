@@ -132,50 +132,8 @@ export function GeneralSettings() {
         </div>
       </div>
 
-      {/* Quick Actions and Security Banner */}
+      {/* Security and Updates Banner */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl group">
-          <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight mb-4 md:mb-6">Ações Rápidas</h3>
-          <div className="grid grid-cols-2 gap-3 md:gap-4">
-            <button 
-              onClick={() => alert('Atalho: Abrindo formulário de Novo Atleta...')}
-              className="p-3 md:p-4 bg-slate-950 border border-slate-800 hover:border-cyan-500/50 rounded-xl md:rounded-2xl transition-all hover:bg-cyan-500/5 group/btn"
-            >
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-cyan-500/10 text-cyan-400 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 group-hover/btn:scale-110 transition-transform">
-                <Users className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <p className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest text-left">Novo Atleta</p>
-            </button>
-            <button 
-              onClick={() => alert('Atalho: Abrindo Agenda para novo horário...')}
-              className="p-3 md:p-4 bg-slate-950 border border-slate-800 hover:border-indigo-500/50 rounded-xl md:rounded-2xl transition-all hover:bg-indigo-500/5 group/btn"
-            >
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-500/10 text-indigo-400 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 group-hover/btn:scale-110 transition-transform">
-                <Calendar className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <p className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest text-left">Agendar Horário</p>
-            </button>
-            <button 
-              onClick={() => alert('Mostrando Logs de Sistema: \n[19:40] Admin login \n[19:35] Sync complete \n[18:00] DB Backup')}
-              className="p-3 md:p-4 bg-slate-950 border border-slate-800 hover:border-amber-500/50 rounded-xl md:rounded-2xl transition-all hover:bg-amber-500/5 group/btn"
-            >
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500/10 text-amber-400 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 group-hover/btn:scale-110 transition-transform">
-                <ShieldAlert className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <p className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest text-left">Logs de Sistema</p>
-            </button>
-            <button 
-              onClick={() => alert('Health Check Report: \nDatabase: OK \nAuth: OK \nStorage: OK \nLatency: 45ms')}
-              className="p-3 md:p-4 bg-slate-950 border border-slate-800 hover:border-rose-500/50 rounded-xl md:rounded-2xl transition-all hover:bg-rose-500/5 group/btn"
-            >
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-rose-500/10 text-rose-400 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3 group-hover/btn:scale-110 transition-transform">
-                <Activity className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <p className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-widest text-left">Health Check</p>
-            </button>
-          </div>
-        </div>
-
         <div className="bg-amber-500/10 border border-amber-500/20 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none group-hover:opacity-10 transition-opacity">
             <ShieldAlert className="w-32 md:w-48 h-32 md:h-48 text-amber-500" />
@@ -200,27 +158,27 @@ export function GeneralSettings() {
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl">
-        <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Próximas Atualizações</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50">
-            <div className="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Activity className="w-5 h-5" />
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col">
+          <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 mt-1 text-center md:text-left">Próximas Atualizações</h3>
+          <div className="space-y-4 flex-1 flex flex-col justify-center">
+            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 transition-colors hover:border-cyan-500/30">
+              <div className="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Activity className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white uppercase tracking-tight">Sincronização Cloud</p>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">Backup automático em tempo real para múltiplos servidores com redundância global.</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-white uppercase tracking-tight">Sincronização Cloud</p>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">Backup automático em tempo real para múltiplos servidores com redundância global.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 opacity-60">
-            <div className="w-10 h-10 bg-slate-800 text-slate-400 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Settings className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-tight">AI Engine v4</p>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">Novos gráficos de análise biomecânica preditiva e análise de fadiga por sensores IoT.</p>
+            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 opacity-60 transition-opacity hover:opacity-100">
+              <div className="w-10 h-10 bg-slate-800 text-slate-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-400 uppercase tracking-tight">AI Engine v4</p>
+                <p className="text-xs text-slate-600 mt-1 leading-relaxed">Novos gráficos de análise biomecânica preditiva e análise de fadiga por sensores IoT.</p>
+              </div>
             </div>
           </div>
         </div>

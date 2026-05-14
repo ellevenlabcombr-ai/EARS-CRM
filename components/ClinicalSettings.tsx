@@ -189,36 +189,41 @@ export function ClinicalSettings() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="space-y-6 md:space-y-8 pb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         
         {/* Limites Críticos */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <HeartPulse className="text-rose-500 w-5 h-5" />
-            <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest">Limites Críticos (Risco)</h3>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-rose-500/10 text-rose-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <HeartPulse className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Limites Críticos</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Define estado de risco</p>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider ml-1">Prontidão menor que</label>
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Prontidão menor que</label>
               <div className="relative">
                 <input 
                   type="number" 
                   value={criticalReadiness}
                   onChange={(e) => setCriticalReadiness(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500 outline-none transition-colors"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all text-sm md:text-base font-medium"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xxs font-bold text-slate-600">%</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600">%</span>
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider ml-1">Dor maior ou igual a</label>
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Dor maior ou igual a</label>
               <input 
                 type="number" 
                 value={criticalPain}
                 onChange={(e) => setCriticalPain(parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500 outline-none transition-colors"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all text-sm md:text-base font-medium"
                 min="0"
                 max="10"
               />
@@ -227,47 +232,52 @@ export function ClinicalSettings() {
         </div>
 
         {/* Faixa de Atenção */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <AlertTriangle className="text-amber-500 w-5 h-5" />
-            <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest">Faixa de Atenção</h3>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500/10 text-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Faixa de Atenção</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Define estado de alerta leve</p>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider ml-1">Prontidão (Min - Max)</label>
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Prontidão</label>
               <div className="flex items-center gap-2">
                 <input 
                   type="number" 
                   value={attentionReadinessMin}
                   onChange={(e) => setAttentionReadinessMin(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-white focus:border-amber-500 outline-none transition-colors text-center"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-center text-sm md:text-base font-medium"
                 />
-                <span className="text-slate-600">-</span>
+                <span className="text-slate-600 font-bold">-</span>
                 <input 
                   type="number" 
                   value={attentionReadinessMax}
                   onChange={(e) => setAttentionReadinessMax(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-white focus:border-amber-500 outline-none transition-colors text-center"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-center text-sm md:text-base font-medium"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider ml-1">Dor (Min - Max)</label>
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Dor</label>
               <div className="flex items-center gap-2">
                 <input 
                   type="number" 
                   value={attentionPainMin}
                   onChange={(e) => setAttentionPainMin(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-white focus:border-amber-500 outline-none transition-colors text-center"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-center text-sm md:text-base font-medium"
                   min="0" max="10"
                 />
-                <span className="text-slate-600">-</span>
+                <span className="text-slate-600 font-bold">-</span>
                 <input 
                   type="number" 
                   value={attentionPainMax}
                   onChange={(e) => setAttentionPainMax(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-white focus:border-amber-500 outline-none transition-colors text-center"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-center text-sm md:text-base font-medium"
                   min="0" max="10"
                 />
               </div>
@@ -277,42 +287,47 @@ export function ClinicalSettings() {
       </div>
 
       {/* Mensagens Padrão */}
-      <div className="space-y-6 pt-4 border-t border-slate-800/50">
-        <div className="flex items-center gap-3 mb-2">
-          <MessageSquare className="text-cyan-500 w-5 h-5" />
-          <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest">Mensagens Padrão</h3>
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+        <div className="flex items-center gap-3 md:gap-4 mb-2">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+            <MessageSquare className="w-5 h-5 md:w-6 md:h-6" />
+          </div>
+          <div>
+            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Mensagens Padrão</h3>
+            <p className="text-[10px] md:text-xs text-slate-500 font-medium">Textos automáticos na avaliação</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-xxs font-bold text-rose-400 uppercase tracking-wider ml-1">Mensagem de Risco</label>
+            <label className="text-[10px] md:text-xs font-black text-rose-400 uppercase tracking-widest pl-1">Mensagem de Risco</label>
             <textarea 
               value={riskMessage}
               onChange={(e) => setRiskMessage(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500 outline-none transition-colors resize-none h-24 text-sm"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all resize-none h-24 text-sm md:text-base font-medium placeholder:text-slate-600"
               placeholder="Ex: Atleta em risco crítico..."
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xxs font-bold text-amber-400 uppercase tracking-wider ml-1">Mensagem de Atenção</label>
+            <label className="text-[10px] md:text-xs font-black text-amber-400 uppercase tracking-widest pl-1">Mensagem de Atenção</label>
             <textarea 
               value={attentionMessage}
               onChange={(e) => setAttentionMessage(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500 outline-none transition-colors resize-none h-24 text-sm"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all resize-none h-24 text-sm md:text-base font-medium placeholder:text-slate-600"
               placeholder="Ex: Atleta em estado de atenção..."
             />
           </div>
         </div>
       </div>
 
-      <div className="pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex-1">
+      <div className="pt-6 md:pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex-1 w-full">
           {status !== 'idle' && (
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${
               status === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
             }`}>
               {status === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-              <span className="text-xs font-bold">{message}</span>
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-wider">{message}</span>
             </div>
           )}
         </div>
@@ -320,7 +335,7 @@ export function ClinicalSettings() {
         <Button 
           onClick={handleSave}
           disabled={isSaving}
-          className="w-full md:w-auto bg-rose-500 hover:bg-rose-400 text-white font-black uppercase tracking-widest px-10 py-6 rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-95"
+          className="w-full md:w-auto bg-rose-500 hover:bg-rose-400 text-white font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-rose-500/20 transition-all active:scale-95 text-xs md:text-sm"
         >
           {isSaving ? (
             <>
@@ -329,7 +344,7 @@ export function ClinicalSettings() {
             </>
           ) : (
             <>
-              <CheckCircle className="w-4 h-4 mr-2" />
+              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
               Salvar Regras
             </>
           )}

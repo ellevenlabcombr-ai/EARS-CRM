@@ -183,75 +183,85 @@ export function AgendaSettings() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="space-y-6 md:space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         {/* Horários */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Clock className="text-cyan-500 w-5 h-5" />
-            <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest">Horário de Atendimento</h3>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <Clock className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Horário de Atendimento</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Configure seu expediente diário</p>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider ml-1">Início</label>
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Início</label>
               <input 
                 type="time" 
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider ml-1">Término</label>
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Término</label>
               <input 
                 type="time" 
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4">
+          <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Timer className="text-cyan-500 w-4 h-4" />
-                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Duração Padrão</label>
+              <div className="flex items-center gap-2 mb-1 pl-1">
+                <Timer className="text-cyan-500 w-3 h-3 md:w-4 md:h-4" />
+                <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Duração Padrão</label>
               </div>
               <div className="relative">
                 <input 
                   type="number" 
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors pr-12"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xxs font-bold text-slate-600 uppercase">min</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
               </div>
             </div>
             <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Timer className="text-amber-500 w-4 h-4" />
-                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Intervalo</label>
+              <div className="flex items-center gap-2 mb-1 pl-1">
+                <Timer className="text-amber-500 w-3 h-3 md:w-4 md:h-4" />
+                <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Intervalo</label>
               </div>
               <div className="relative">
                 <input 
                   type="number" 
                   value={breakInterval}
                   onChange={(e) => setBreakInterval(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors pr-12"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xxs font-bold text-slate-600 uppercase">min</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Tipos de Atendimento */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Calendar className="text-cyan-500 w-5 h-5" />
-            <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tipos de Atendimento</h3>
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-500/10 text-indigo-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Tipos de Atendimento</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Categorias para agendamento</p>
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -260,47 +270,49 @@ export function AgendaSettings() {
               value={newType}
               onChange={(e) => setNewType(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addType()}
-              placeholder="Novo tipo..."
-              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors text-sm"
+              placeholder="Novo tipo de consulta..."
+              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/10 outline-none transition-all text-sm md:text-base font-medium placeholder:text-slate-600"
             />
             <Button 
               onClick={addType}
-              className="bg-slate-800 hover:bg-slate-700 text-white rounded-xl px-4"
+              className="bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl px-4 py-3 h-auto"
             >
               <Plus size={20} />
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             {appointmentTypes.map((type) => (
               <div 
                 key={type}
-                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 group hover:border-rose-500/50 transition-colors"
+                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 group hover:border-rose-500/30 transition-colors"
               >
-                <span className="text-xs text-slate-300">{type}</span>
+                <span className="text-xs md:text-sm font-medium text-slate-300">{type}</span>
                 <button 
                   onClick={() => removeType(type)}
-                  className="text-slate-600 hover:text-rose-500 transition-colors"
+                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 hover:bg-rose-500/10 p-1.5 rounded-lg"
                 >
                   <Trash2 size={14} />
                 </button>
               </div>
             ))}
             {appointmentTypes.length === 0 && (
-              <p className="text-xxs text-slate-600 italic">Nenhum tipo cadastrado.</p>
+              <div className="w-full text-center py-6 border border-dashed border-slate-800 rounded-xl">
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Nenhum tipo cadastrado.<br/>Adicione acima para começar.</p>
+              </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex-1">
+      <div className="pt-6 md:pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6 pb-10">
+        <div className="flex-1 w-full">
           {status !== 'idle' && (
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${
               status === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
             }`}>
               {status === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-              <span className="text-xs font-bold">{message}</span>
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-wider">{message}</span>
             </div>
           )}
         </div>
@@ -308,16 +320,16 @@ export function AgendaSettings() {
         <Button 
           onClick={handleSave}
           disabled={isSaving}
-          className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-10 py-6 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95"
+          className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 text-xs md:text-sm"
         >
           {isSaving ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin mr-2" />
               Salvando...
             </>
           ) : (
             <>
-              <CheckCircle className="w-4 h-4 mr-2" />
+              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
               Salvar Agenda
             </>
           )}

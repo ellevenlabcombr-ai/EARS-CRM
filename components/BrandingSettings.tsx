@@ -149,110 +149,122 @@ export function BrandingSettings() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Logo Preview */}
-        <div className="flex-shrink-0">
-          <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-4">Logo do Sistema</h3>
-          <div className="relative w-48 h-48 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center overflow-hidden group">
-            {logoUrl ? (
-              <>
-                <Image 
-                  src={logoUrl} 
-                  alt="Logo Preview" 
-                  fill 
-                  className="object-contain p-4"
-                  unoptimized
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
-                    title="Trocar Logo"
-                  >
-                    <Upload size={18} />
-                  </button>
-                  <button 
-                    onClick={handleRemoveLogo}
-                    className="p-2 bg-rose-500/20 hover:bg-rose-500/40 rounded-lg text-rose-400 transition-colors"
-                    title="Remover Logo"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center gap-2 text-slate-600 cursor-pointer hover:text-cyan-500 transition-colors"
-              >
-                <ImageIcon size={48} strokeWidth={1} />
-                <span className="text-xxs font-bold uppercase tracking-widest">Nenhum Logo</span>
-              </div>
-            )}
-            
-            {isUploading && (
-              <div className="absolute inset-0 bg-slate-950/80 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
-              </div>
-            )}
-          </div>
-          
-          <input 
-            type="file" 
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept="image/*"
-          />
-          
-          <p className="text-xxs text-slate-500 mt-4 max-w-[12.5rem]">
-            Recomendado: PNG transparente ou SVG. Tamanho máximo 2MB.
-          </p>
-        </div>
-
-        {/* Form */}
-        <div className="flex-1 space-y-6">
-          <div className="space-y-2">
-            <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Nome da Empresa / App</label>
-            <input 
-              type="text" 
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors"
-              placeholder="Ex: ELLEVEN"
-            />
-          </div>
-
-          <div className="pt-4">
-            <Button 
-              onClick={handleSave}
-              disabled={isSaving || isUploading}
-              className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 py-6 rounded-xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95"
-            >
-              {isSaving ? (
+    <div className="space-y-6 md:space-y-8 pb-10">
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl">
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+          {/* Logo Preview */}
+          <div className="flex-shrink-0 flex flex-col items-center md:items-start">
+            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight mb-4 flex items-center md:justify-start gap-2 justify-center">
+              <ImageIcon className="w-5 h-5 text-cyan-400" />
+              <span>Logo do Sistema</span>
+            </h3>
+            <div className="relative w-48 h-48 md:w-56 md:h-56 bg-slate-950 rounded-2xl md:rounded-3xl border border-slate-800 flex items-center justify-center overflow-hidden group shadow-inner">
+              {logoUrl ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Salvando...
+                  <Image 
+                    src={logoUrl} 
+                    alt="Logo Preview" 
+                    fill 
+                    className="object-contain p-6 md:p-8 transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm">
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-3 bg-white/10 hover:bg-white/20 rounded-xl text-white transition-all hover:scale-110 active:scale-95"
+                      title="Trocar Logo"
+                    >
+                      <Upload size={20} />
+                    </button>
+                    <button 
+                      onClick={handleRemoveLogo}
+                      className="p-3 bg-rose-500/20 hover:bg-rose-500/40 rounded-xl text-rose-400 transition-all hover:scale-110 active:scale-95 border border-rose-500/20 hover:border-rose-500/50"
+                      title="Remover Logo"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </>
               ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Salvar Branding
-                </>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center gap-3 text-slate-600 cursor-pointer hover:text-cyan-400 transition-colors bg-slate-900/50 hover:bg-cyan-500/5 w-full h-full justify-center group-hover:border-cyan-500/30"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-cyan-500/10 flex items-center justify-center transition-colors">
+                    <Upload size={24} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-center px-4">Fazer upload<br/>do logo</span>
+                </div>
               )}
-            </Button>
+              
+              {isUploading && (
+                <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center gap-3 backdrop-blur-md">
+                  <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
+                  <span className="text-[10px] font-black text-cyan-400 uppercase tracking-widest animate-pulse">Enviando...</span>
+                </div>
+              )}
+            </div>
+            
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              accept="image/*"
+            />
+            
+            <div className="mt-4 text-center md:text-left bg-slate-900 border border-slate-800 p-3 rounded-xl max-w-[14rem]">
+              <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                <strong className="text-slate-400">Recomendado:</strong> PNG transparente ou SVG.<br/>Tamanho máximo: <strong>2MB</strong>.
+              </p>
+            </div>
           </div>
 
-          {status !== 'idle' && (
-            <div className={`p-4 rounded-xl border flex items-center gap-3 ${
-              status === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-            }`}>
-              {status === 'success' ? <CheckCircle size={18} /> : <X size={18} />}
-              <span className="text-xs font-bold">{message}</span>
+          {/* Form */}
+          <div className="flex-1 flex flex-col pt-2">
+            <div className="space-y-6 flex-1">
+              <div className="space-y-2">
+                <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Nome da Empresa / App</label>
+                <input 
+                  type="text" 
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium placeholder:text-slate-600"
+                  placeholder="Ex: ELLEVEN"
+                />
+              </div>
+
+              {status !== 'idle' && (
+                <div className={`p-4 rounded-xl border flex items-center gap-3 ${
+                  status === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                }`}>
+                  {status === 'success' ? <CheckCircle size={18} /> : <X size={18} />}
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-wider">{message}</span>
+                </div>
+              )}
             </div>
-          )}
+
+            <div className="pt-8 mt-auto border-t border-slate-800/50 flex justify-end">
+              <Button 
+                onClick={handleSave}
+                disabled={isSaving || isUploading}
+                className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 text-xs md:text-sm"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                    Salvar Identidade
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
