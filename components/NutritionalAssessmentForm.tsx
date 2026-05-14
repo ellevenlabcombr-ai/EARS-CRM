@@ -402,7 +402,7 @@ export function NutritionalAssessmentForm({ athleteId, onCancel, onSave }: Nutri
 
               <div className="p-6">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4  flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Qualidade</span>
                     <span className={`text-base font-black mt-1 ${assessmentResult.metrics.intakeScore >= 75 ? 'text-emerald-400' : assessmentResult.metrics.intakeScore >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{assessmentResult.metrics.intakeScore.toFixed(0)}</span>
                   </div>

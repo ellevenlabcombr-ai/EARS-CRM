@@ -162,7 +162,7 @@ export function GeneralSettings() {
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col">
           <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 mt-1 text-center md:text-left">Próximas Atualizações</h3>
           <div className="space-y-4 flex-1 flex flex-col justify-center">
-            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border  transition-colors hover:border-cyan-500/30">
+            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl  transition-colors hover:border-cyan-500/30">
               <div className="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Activity className="w-5 h-5" />
               </div>

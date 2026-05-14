@@ -268,7 +268,7 @@ export function PsychologicalAssessment({ athleteId, onCancel, onSave }: Psychol
 
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Índice Prontidão</span>
                     <span className={`text-xl font-black ${metrics.readinessIndex > 70 ? 'text-emerald-400' : metrics.readinessIndex > 50 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.readinessIndex}%</span>
                   </div>

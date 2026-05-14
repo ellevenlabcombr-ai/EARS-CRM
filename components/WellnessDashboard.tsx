@@ -970,7 +970,7 @@ ANALYZE check_ins;`}
         {/* Filters and List */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex bg-slate-900/50 p-1 rounded-xl border  w-full sm:w-auto overflow-x-auto no-scrollbar">
+            <div className="flex bg-slate-900/50 p-1 rounded-xl  w-full sm:w-auto overflow-x-auto no-scrollbar">
               {[
                 { id: 'all', label: 'Todos' },
                 { id: 'completed', label: 'Respondidos' },

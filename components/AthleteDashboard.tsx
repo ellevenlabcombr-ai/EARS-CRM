@@ -1909,7 +1909,7 @@ export function AthleteDashboard({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {todayTips.map((tip, i) => (
-                      <div key={i} className="flex items-start gap-3 bg-slate-900/50 p-4 rounded-xl border  hover:border-emerald-500/30 transition-colors">
+                      <div key={i} className="flex items-start gap-3 bg-slate-900/50 p-4 rounded-xl  hover:border-emerald-500/30 transition-colors">
                         <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
                           <span className="text-emerald-400 text-xs font-black">{i + 1}</span>
                         </div>

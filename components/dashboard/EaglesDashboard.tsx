@@ -221,7 +221,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
         {/* Left Column: Alerts & Top Injuries */}
         <div className="lg:col-span-1 space-y-8">
           {/* Group Alerts */}
-          <section className="glass-panel border  rounded-3xl p-6 backdrop-blur-sm">
+          <section className="glass-panel  rounded-3xl p-6 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <AlertCircle size={18} className="text-amber-500" />

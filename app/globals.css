@@ -89,10 +89,10 @@
 
   /* Ultra-glassmorphism */
   .glass-panel {
-    @apply bg-slate-900/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+    @apply bg-slate-900/40 backdrop-blur-2xl border border-slate-800/60 shadow-2xl;
   }
   .glass-button {
-    @apply bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-white/10 transition-all;
+    @apply bg-white/5 hover:bg-white/10 backdrop-blur-xl border border-slate-800/60 transition-all;
   }
 }
 

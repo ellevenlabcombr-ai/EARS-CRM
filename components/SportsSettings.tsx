@@ -250,7 +250,7 @@ export const SportsSettings = () => {
               key={sport.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="glass-panel border  rounded-2xl p-5 hover:border-cyan-500/30 transition-all group"
+              className="glass-panel  rounded-2xl p-5 hover:border-cyan-500/30 transition-all group"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">

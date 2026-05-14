@@ -59,7 +59,7 @@ export function OperationalSummary({
       <CardContent className="p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
           {stats.map((stat) => (
-            <div key={stat.label} className="flex items-center justify-between p-4 bg-slate-800/20 border  rounded-2xl">
+            <div key={stat.label} className="flex items-center justify-between p-4 bg-slate-800/20  rounded-2xl">
               <div className="flex items-center gap-4">
                 <div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
                   <stat.icon size={18} />

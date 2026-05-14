@@ -882,7 +882,7 @@ export function AthleteRegistration({
           {/* Section 1: Dados Pessoais */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.personal")} />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 glass-panel p-6 sm:p-8 rounded-3xl  shadow-xl">
               <div className="col-span-1 flex flex-col items-center justify-start gap-4 mb-8 lg:mb-0">
                 <input
                   type="file"

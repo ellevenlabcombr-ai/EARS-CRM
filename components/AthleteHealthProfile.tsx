@@ -2530,7 +2530,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             )}
 
             {/* Session Mode Toggle Container */}
-            <div className="flex items-center justify-between glass-panel border  p-6 rounded-[2rem] backdrop-blur-md shadow-2xl overflow-hidden relative group">
+            <div className="flex items-center justify-between glass-panel  p-6 rounded-[2rem] backdrop-blur-md shadow-2xl overflow-hidden relative group">
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <BrainCircuit className="w-24 h-24 text-cyan-500" />
               </div>

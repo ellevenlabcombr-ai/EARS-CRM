@@ -40,7 +40,7 @@ const Slider = ({ label, value, onChange, invertColor = false, min = 0, max = 10
 };
 
 const NumberInput = ({ label, value, unit, onChange, step = 1 }: { label: string, value: number, unit: string, onChange: (v: number) => void, step?: number }) => (
-  <div className="bg-slate-900/30 p-4 rounded-xl border  flex flex-col justify-between">
+  <div className="bg-slate-900/30 p-4 rounded-xl  flex flex-col justify-between">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{label}</label>
     <div className="relative">
       <input

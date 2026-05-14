@@ -54,7 +54,7 @@ interface SkinfoldData {
 }
 
 const NumberInput = ({ label, value, unit, onChange }: { label: string, value: number, unit: string, onChange: (v: number) => void }) => (
-  <div className="bg-slate-900/30 p-4 rounded-2xl border  flex flex-col justify-between">
+  <div className="bg-slate-900/30 p-4 rounded-2xl  flex flex-col justify-between">
     <label className="text-xxs font-black text-slate-400 uppercase tracking-widest mb-2">{label}</label>
     <div className="relative">
       <input

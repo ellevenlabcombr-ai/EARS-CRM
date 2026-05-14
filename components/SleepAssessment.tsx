@@ -440,7 +440,7 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
 
               <div className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
-                   <div className="bg-slate-950 rounded-xl p-3 border  flex flex-col justify-center items-center text-center">
+                   <div className="bg-slate-950 rounded-xl p-3  flex flex-col justify-center items-center text-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase">Quantid.</span>
                       <span className={`text-base font-black mt-1 ${getScoreColor(assessmentResult.subscores.quantidade * 10)}`}>{assessmentResult.subscores.quantidade}</span>
                    </div>

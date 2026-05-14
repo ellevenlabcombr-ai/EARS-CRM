@@ -507,10 +507,13 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                       { id: 'hydration-assessment', title: 'Hidratação', icon: Globe, color: 'sky', desc: 'Status hídrico e perda de suor.' },
                     ].map((evalType) => (
                       <TiltCard key={evalType.id} glareEnable={true} tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.03}>
-                        <button
-                          disabled={!selectedAthleteForEval}
-                          onClick={() => setCurrentView(evalType.id as any)}
-                          className={`w-full h-full p-6 glass-panel rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        <div
+                          onClick={() => {
+                            if (selectedAthleteForEval) {
+                              setCurrentView(evalType.id as any);
+                            }
+                          }}
+                          className={`w-full h-full p-6 glass-panel rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                         >
                           <div className={`w-12 h-12 bg-${evalType.color}-500/10 rounded-xl flex items-center justify-center text-${evalType.color}-500 mb-4 group-hover:bg-${evalType.color}-500 group-hover:text-[#050B14] transition-all`}>
                             <evalType.icon size={24} />
@@ -522,7 +525,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                           <div className={`mt-6 flex items-center gap-2 text-${evalType.color}-500 font-bold text-xs uppercase tracking-widest`}>
                             Iniciar Avaliação <ChevronRight size={14} />
                           </div>
-                        </button>
+                        </div>
                       </TiltCard>
                     ))}
                   </div>
@@ -912,7 +915,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
 
           {/* Central Operational Menu */}
           <div className="flex justify-center flex-[2] sm:flex-none mx-2">
-            <div className="flex items-center gap-1 sm:gap-6 bg-slate-950/50 p-1.5 rounded-2xl border  backdrop-blur-md overflow-x-auto no-scrollbar w-full sm:w-auto justify-center">
+            <div className="flex items-center gap-1 sm:gap-6 bg-slate-950/50 p-1.5 rounded-2xl  backdrop-blur-md overflow-x-auto no-scrollbar w-full sm:w-auto justify-center">
               {operationalItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeMode === item.id;

@@ -273,7 +273,7 @@ export function FinanceDashboard() {
           <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
         {/* Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="glass-panel border  rounded-2xl p-5 relative overflow-hidden group">
+          <div className="glass-panel  rounded-2xl p-5 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-5 opacity-10">
               <ArrowUpRight size={80} className="text-emerald-500" />
             </div>

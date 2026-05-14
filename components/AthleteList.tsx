@@ -362,7 +362,7 @@ export function AthleteList({
         <div className="h-6 w-px bg-slate-800 mx-1 hidden sm:block"></div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center bg-slate-900/50 p-1 rounded-xl border  ml-auto sm:ml-0">
+        <div className="flex items-center bg-slate-900/50 p-1 rounded-xl  ml-auto sm:ml-0">
           <button
             onClick={() => setViewMode("grid")}
             className={`p-1.5 rounded-lg transition-all ${

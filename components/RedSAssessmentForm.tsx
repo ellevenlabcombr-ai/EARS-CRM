@@ -390,7 +390,7 @@ export function RedSAssessmentForm({ athleteId, onCancel, onSave }: RedSAssessme
 
               <div className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4  flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Energia</span>
                     <span className={`text-base font-black mt-1 ${metrics.energyDeficit > 60 ? 'text-rose-400' : metrics.energyDeficit > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>{metrics.energyDeficit}%</span>
                   </div>
