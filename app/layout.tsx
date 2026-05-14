@@ -6,8 +6,10 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { AgendaNotifier } from '@/components/AgendaNotifier';
+import { BrandingInjector } from '@/components/BrandingInjector';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+
 
 export const viewport: Viewport = {
   themeColor: '#050B14',
@@ -59,6 +61,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         />
         <ErrorBoundary key="err-boundary">
           <LanguageProvider key="lang-provider">
+            <BrandingInjector />
             {children}
             <AgendaNotifier />
             <ScrollToTop />

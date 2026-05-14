@@ -348,3 +348,65 @@ END $$;
 ALTER TABLE public.agenda_events ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public Access" ON public.agenda_events;
 CREATE POLICY "Public Access" ON public.agenda_events FOR ALL USING (true);
+
+CREATE TABLE IF NOT EXISTS public.branding_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    logo_url TEXT,
+    company_name TEXT,
+    cnpj TEXT,
+    address TEXT,
+    instagram TEXT,
+    phone TEXT,
+    brand_color TEXT DEFAULT '#06b6d4',
+    welcome_message TEXT,
+    signature_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='cnpj') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN cnpj TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='address') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN address TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='instagram') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN instagram TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='phone') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN phone TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='brand_color') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN brand_color TEXT DEFAULT '#06b6d4';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='welcome_message') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN welcome_message TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='signature_url') THEN
+        ALTER TABLE public.branding_settings ADD COLUMN signature_url TEXT;
+    END IF;
+END $$;
+
+ALTER TABLE public.branding_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Access" ON public.branding_settings;
+CREATE POLICY "Public Access" ON public.branding_settings FOR ALL USING (true);
+
+-- Create branding bucket if it doesn't exist
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('branding', 'branding', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Policies for branding bucket
+DROP POLICY IF EXISTS "Public access to branding bucket" ON storage.objects;
+CREATE POLICY "Public access to branding bucket" ON storage.objects FOR SELECT USING (bucket_id = 'branding');
+
+DROP POLICY IF EXISTS "Authenticated users can upload to branding bucket" ON storage.objects;
+CREATE POLICY "Authenticated users can upload to branding bucket" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'branding' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated users can update branding bucket" ON storage.objects;
+CREATE POLICY "Authenticated users can update branding bucket" ON storage.objects FOR UPDATE USING (bucket_id = 'branding' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Authenticated users can delete from branding bucket" ON storage.objects;
+CREATE POLICY "Authenticated users can delete from branding bucket" ON storage.objects FOR DELETE USING (bucket_id = 'branding' AND auth.role() = 'authenticated');
