@@ -26,6 +26,7 @@ export function AgendaSettings() {
   const [breakInterval, setBreakInterval] = useState(0);
   const [lunchStart, setLunchStart] = useState('12:00');
   const [lunchEnd, setLunchEnd] = useState('13:00');
+  const [lunchEnabled, setLunchEnabled] = useState(true);
   const [workingDays, setWorkingDays] = useState<string[]>(['1', '2', '3', '4', '5']);
   const [appointmentTypes, setAppointmentTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState('');
@@ -91,8 +92,27 @@ export function AgendaSettings() {
         setAppointmentTypes(data.appointment_types || []);
         if (data.lunch_start) setLunchStart(data.lunch_start);
         if (data.lunch_end) setLunchEnd(data.lunch_end);
+        if (data.lunch_enabled !== undefined) {
+          setLunchEnabled(data.lunch_enabled);
+        } else if (!data.lunch_start && !data.lunch_end) {
+          setLunchEnabled(false);
+        }
+        
+        // Auto apply current year holidays
+        let loadedDates = data.blocked_dates || [];
+        const currentYear = new Date().getFullYear();
+        const getNationalHolidays = (year: number) => [
+          `${year}-01-01`, `${year}-04-21`, `${year}-05-01`, `${year}-09-07`, 
+          `${year}-10-12`, `${year}-11-02`, `${year}-11-15`, `${year}-11-20`, `${year}-12-25`
+        ];
+        const autoHolidays = getNationalHolidays(currentYear);
+        const newDates = autoHolidays.filter(d => !loadedDates.includes(d));
+        if (newDates.length > 0) {
+          loadedDates = [...loadedDates, ...newDates].sort();
+        }
+        setBlockedDates(loadedDates);
+
         if (data.working_days) setWorkingDays(data.working_days);
-        if (data.blocked_dates) setBlockedDates(data.blocked_dates);
         if (data.reminder_enabled !== undefined) setReminderEnabled(data.reminder_enabled);
         if (data.reminder_template) setReminderTemplate(data.reminder_template);
         if (data.delay_tolerance_minutes !== undefined) setDelayTolerance(data.delay_tolerance_minutes);
@@ -149,6 +169,7 @@ export function AgendaSettings() {
         break_interval_minutes: breakInterval,
         lunch_start: lunchStart,
         lunch_end: lunchEnd,
+        lunch_enabled: lunchEnabled,
         working_days: workingDays,
         appointment_types: appointmentTypes,
         blocked_dates: blockedDates,
@@ -251,15 +272,17 @@ export function AgendaSettings() {
 
   const startMin = getMinutes(startTime);
   const endMin = getMinutes(endTime);
-  const lunchStartMin = getMinutes(lunchStart);
-  const lunchEndMin = getMinutes(lunchEnd);
+  const lunchStartMin = lunchEnabled ? getMinutes(lunchStart) : 0;
+  const lunchEndMin = lunchEnabled ? getMinutes(lunchEnd) : 0;
 
-  const hasConflict = startMin >= endMin || lunchStartMin >= lunchEndMin || lunchStartMin < startMin || lunchEndMin > endMin;
+  const hasConflict = lunchEnabled 
+    ? (startMin >= endMin || lunchStartMin >= lunchEndMin || lunchStartMin < startMin || lunchEndMin > endMin)
+    : (startMin >= endMin);
 
   const totalMin = endMin - startMin;
-  const p1 = totalMin > 0 ? Math.max(0, ((lunchStartMin - startMin) / totalMin)) * 100 : 0;
-  const pLunch = totalMin > 0 ? Math.max(0, ((lunchEndMin - lunchStartMin) / totalMin)) * 100 : 0;
-  const p2 = totalMin > 0 ? Math.max(0, ((endMin - lunchEndMin) / totalMin)) * 100 : 0;
+  const p1 = totalMin > 0 ? (lunchEnabled ? Math.max(0, ((lunchStartMin - startMin) / totalMin)) * 100 : 100) : 0;
+  const pLunch = (totalMin > 0 && lunchEnabled) ? Math.max(0, ((lunchEndMin - lunchStartMin) / totalMin)) * 100 : 0;
+  const p2 = (totalMin > 0 && lunchEnabled) ? Math.max(0, ((endMin - lunchEndMin) / totalMin)) * 100 : 0;
 
   if (isLoading) {
     return (
@@ -272,11 +295,11 @@ export function AgendaSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pb-32">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-32">
         {/* Horários */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
-          <div className="flex items-center gap-3 md:gap-4 mb-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:row-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
               <Clock className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
@@ -285,8 +308,8 @@ export function AgendaSettings() {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+            <div className="space-y-3">
               <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Início</label>
               <input 
                 type="time" 
@@ -295,7 +318,7 @@ export function AgendaSettings() {
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Término</label>
               <input 
                 type="time" 
@@ -306,41 +329,53 @@ export function AgendaSettings() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-800/50 mt-4">
-            <div className="space-y-2">
-              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Início Almoço</label>
-              <input 
-                type="time" 
-                value={lunchStart}
-                onChange={(e) => setLunchStart(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
-              />
+          <div className="pt-6 border-t border-slate-800/50 mt-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between pl-1">
+              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest">Horário de Almoço</label>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={lunchEnabled}
+                  onChange={(e) => setLunchEnabled(e.target.checked)}
+                />
+                <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Fim Almoço</label>
-              <input 
-                type="time" 
-                value={lunchEnd}
-                onChange={(e) => setLunchEnd(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
-              />
+            
+            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-300 ${lunchEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+              <div className="space-y-3">
+                <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Início Almoço</label>
+                <input 
+                  type="time" 
+                  value={lunchStart}
+                  onChange={(e) => setLunchStart(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                />
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Fim Almoço</label>
+                <input 
+                  type="time" 
+                  value={lunchEnd}
+                  onChange={(e) => setLunchEnd(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/50">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-1 pl-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 pt-6 border-t border-slate-800/50">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-2 pl-1">
                 <Timer className="text-cyan-500 w-3 h-3 md:w-4 md:h-4" />
                 <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Duração Padrão</label>
               </div>
               <div className="relative">
-                <input 
-                  type="number" 
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium mb-2"
-                />
-                <span className="absolute right-4 top-4 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+                <div className="flex items-center justify-between px-2 mb-3">
+                  <span className="text-2xl font-black text-white">{duration}</span>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">min</span>
+                </div>
                 <input 
                   type="range"
                   min={15} max={120} step={15}
@@ -350,19 +385,16 @@ export function AgendaSettings() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-1 pl-1">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-2 pl-1">
                 <Timer className="text-amber-500 w-3 h-3 md:w-4 md:h-4" />
                 <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Intervalo</label>
               </div>
               <div className="relative">
-                <input 
-                  type="number" 
-                  value={breakInterval}
-                  onChange={(e) => setBreakInterval(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium mb-2"
-                />
-                <span className="absolute right-4 top-4 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+                <div className="flex items-center justify-between px-2 mb-3">
+                  <span className="text-2xl font-black text-white">{breakInterval}</span>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">min</span>
+                </div>
                 <input 
                   type="range"
                   min={0} max={60} step={5}
@@ -376,20 +408,20 @@ export function AgendaSettings() {
           
           {/* Timeline Visual */}
           {!hasConflict && totalMin > 0 ? (
-            <div className="pt-6 border-t border-slate-800/50 mt-4">
+            <div className="pt-8 mt-2">
               <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2">
                 <span>{startTime}</span>
                 <span>{endTime}</span>
               </div>
               <div className="h-2 w-full flex rounded-full overflow-hidden bg-slate-800 shadow-inner">
                 <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p1}%` }}></div>
-                <div className="h-full bg-slate-700 opacity-50" style={{ width: `${pLunch}%` }}></div>
-                <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p2}%` }}></div>
+                {lunchEnabled && <div className="h-full bg-slate-700 opacity-50" style={{ width: `${pLunch}%` }}></div>}
+                {lunchEnabled && <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p2}%` }}></div>}
               </div>
               <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-2">
                 <span>Turno 1</span>
-                <span className="text-slate-500">Intervalo {lunchStart} - {lunchEnd}</span>
-                <span>Turno 2</span>
+                {lunchEnabled && <span className="text-slate-500">Intervalo {lunchStart} - {lunchEnd}</span>}
+                {lunchEnabled && <span>Turno 2</span>}
               </div>
             </div>
           ) : (
@@ -403,41 +435,43 @@ export function AgendaSettings() {
         </div>
 
         {/* Dias de Funcionamento */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
-          <div className="flex items-center gap-3 md:gap-4 mb-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-400 rounded-xl md:rounded-2xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-3 md:gap-4 mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+                <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Funcionamento Semanal</h3>
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Dias de operação padrão</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Funcionamento Semanal</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Dias de operação padrão</p>
+            
+            <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-4 gap-2 pt-2">
+              {weekDays.map(day => {
+                const isActive = workingDays.includes(day.value);
+                return (
+                  <button
+                    key={day.value}
+                    onClick={() => {
+                      if (isActive) {
+                        setWorkingDays(workingDays.filter(d => d !== day.value));
+                      } else {
+                        setWorkingDays([...workingDays, day.value]);
+                      }
+                    }}
+                    className={`relative overflow-hidden flex items-center justify-center h-12 lg:h-14 rounded-xl text-xs md:text-sm font-black tracking-wider uppercase transition-all duration-300 ${
+                      isActive
+                        ? 'bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]'
+                        : 'bg-slate-950 border border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300 hover:bg-slate-900'
+                    }`}
+                  >
+                    {isActive && <div className="absolute inset-0 bg-emerald-500/5 transition-opacity duration-300"></div>}
+                    <span className="relative z-10">{day.label}</span>
+                  </button>
+                );
+              })}
             </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-2 pt-2">
-            {weekDays.map(day => {
-              const isActive = workingDays.includes(day.value);
-              return (
-                <button
-                  key={day.value}
-                  onClick={() => {
-                    if (isActive) {
-                      setWorkingDays(workingDays.filter(d => d !== day.value));
-                    } else {
-                      setWorkingDays([...workingDays, day.value]);
-                    }
-                  }}
-                  className={`relative overflow-hidden px-5 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all duration-300 ${
-                    isActive
-                      ? 'bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]'
-                      : 'bg-slate-950 border border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300 hover:bg-slate-900'
-                  }`}
-                >
-                  {isActive && <div className="absolute inset-0 bg-emerald-500/5 transition-opacity duration-300"></div>}
-                  <span className="relative z-10">{day.label}</span>
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -515,13 +549,6 @@ export function AgendaSettings() {
               <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Bloqueios Operacionais</h3>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium">Feriados e ausências programadas</p>
             </div>
-            <Button
-              onClick={addNationalHolidays}
-              variant="outline"
-              className="text-xs transition-colors font-bold uppercase tracking-widest border-slate-700 bg-slate-950 text-slate-400 hover:text-rose-400 hover:bg-slate-900 shadow-sm shadow-black"
-            >
-              Popula Feriados
-            </Button>
           </div>
           <div className="flex gap-2 pt-2">
             <input 
@@ -574,7 +601,7 @@ export function AgendaSettings() {
         {/* Políticas de Atendimento */}
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:col-span-2">
           <div className="flex items-center gap-3 md:gap-4 mb-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500/10 text-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500/10 text-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
               <ShieldAlert className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
@@ -625,14 +652,14 @@ export function AgendaSettings() {
         {/* Lembretes e Automação */}
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:col-span-2">
           <div className="flex items-center gap-3 md:gap-4 mb-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
               <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div className="flex-1">
               <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Automação de Comunicação</h3>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium">Lembretes proativos (WhatsApp)</p>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
               <input 
                 type="checkbox" 
                 className="sr-only peer" 
@@ -643,38 +670,47 @@ export function AgendaSettings() {
             </label>
           </div>
           
-          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pt-2 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+          <div className={`flex flex-col gap-6 md:gap-8 pt-2 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
             <div className="space-y-4">
               <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Template da Mensagem</label>
               <textarea 
                 value={reminderTemplate}
                 onChange={(e) => setReminderTemplate(e.target.value)}
-                rows={5}
+                rows={4}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm font-medium resize-none"
               />
-              <div className="flex gap-2 flex-wrap text-xs font-mono text-slate-500">
-                <span>Variáveis Suportadas:</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => setReminderTemplate(prev => prev + '{nome}')}>{`{nome}`}</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => setReminderTemplate(prev => prev + '{data}')}>{`{data}`}</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => setReminderTemplate(prev => prev + '{hora}')}>{`{hora}`}</span>
+              <div className="flex flex-col gap-2">
+                <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Variáveis Suportadas:</span>
+                <div className="flex flex-wrap gap-2 text-xs font-mono">
+                  <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{nome}')}>{`{nome}`}</span>
+                  <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{data}')}>{`{data}`}</span>
+                  <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{hora}')}>{`{hora}`}</span>
+                </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Preview em Tempo Real</label>
-              <div className="bg-[#0b141a] rounded-2xl p-4 border border-[#202c33] shadow-lg flex flex-col gap-3 h-full justify-end min-h-[140px] relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full p-2 bg-[#202c33] border-b border-[#2a3942] flex items-center gap-2">
+              <label className="text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-widest pl-1">Preview em Tempo Real</label>
+              <div className="bg-[#0b141a] rounded-2xl p-4 md:p-6 border border-[#202c33] shadow-xl flex flex-col gap-4 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full px-4 py-2 bg-[#202c33] border-b border-[#2a3942] flex items-center justify-center gap-2 z-10 shadow-md">
                   <Smartphone className="w-4 h-4 text-emerald-500" />
-                  <span className="text-xs font-semibold text-[#e9edef]">Simulação WhatsApp</span>
+                  <span className="text-[10px] font-bold text-[#e9edef] uppercase tracking-widest">Simulação WhatsApp</span>
                 </div>
-                <div className="mt-8 bg-[#005c4b] text-[#e9edef] p-3 rounded-lg rounded-tr-none self-end max-w-[90%] shadow-sm relative text-sm whitespace-pre-wrap font-medium">
-                  {reminderTemplate
-                    .replace('{nome}', 'Mariana')
-                    .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                    .replace('{hora}', '15:00')}
-                  <div className="absolute top-0 right-[-8px] w-0 h-0 border-[8px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
-                  <div className="text-[10px] text-[#e9edef]/70 text-right mt-1 font-sans">
-                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
+                
+                {/* Background Pattern fake for WhatsApp */}
+                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://static.whatsapp.net/rsrc.php/v3/yl/r/rrotdy92T1_.png')] pointer-events-none"></div>
+
+                <div className="mt-8 bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative">
+                  <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                    {reminderTemplate
+                      .replace('{nome}', 'Mariana')
+                      .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                      .replace('{hora}', '15:00')}
+                  </div>
+                  <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                  <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} 
+                    <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
                   </div>
                 </div>
               </div>
