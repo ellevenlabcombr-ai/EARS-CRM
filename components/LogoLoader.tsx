@@ -19,7 +19,7 @@ export function LogoLoader({ size = 'md', className = '', showSpinner = false }:
     md: { width: 64, height: 64 },
     lg: { width: 96, height: 96 },
     xl: { width: 220, height: 220 },
-    '2xl': { width: 300, height: 300 },
+    '2xl': { width: 200, height: 200 },
   };
 
   const { width, height } = dimensions[size as keyof typeof dimensions] || dimensions.md;

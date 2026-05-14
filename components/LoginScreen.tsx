@@ -123,7 +123,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-6 pt-4">
-          <LogoLoader size="2xl" className="mb-4" />
+          <LogoLoader size="xl" className="mb-4" />
           <p className="text-slate-400 text-sm font-medium tracking-widest uppercase">
             GESTÃO DE PERFORMANCE
           </p>

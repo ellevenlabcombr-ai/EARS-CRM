@@ -25,7 +25,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { LogoLoader } from '@/components/LogoLoader';
 
 const LoadingSpinner = () => (
-  <div className="flex-1 flex items-center justify-center h-dvh">
+  <div className="flex-1 flex items-center justify-center h-dvh bg-[#050B14]">
     <LogoLoader size="2xl" showSpinner={false} />
   </div>
 );
@@ -39,11 +39,12 @@ export default function Home() {
   const [pendingAction, setPendingAction] = useState<'logout' | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const [splashFinished, setSplashFinished] = useState(false);
 
   useEffect(() => {
     const savedSession = localStorage.getItem('ears_session');
     
-    const minimumSplashTime = new Promise(resolve => setTimeout(resolve, 1500));
+    const minimumSplashTime = new Promise(resolve => setTimeout(resolve, 2000));
 
     const initializeSession = async () => {
       let activeRole = null;
@@ -99,13 +100,13 @@ export default function Home() {
 
   return (
     <>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" onExitComplete={() => setSplashFinished(true)}>
         {showSplash && (
           <motion.div
             key="splash"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#050B14]"
           >
             <motion.div
@@ -126,35 +127,61 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {!isInitializing && (
-        <AppLayout withSafeTop={false} withSafeBottom={false}>
+      {!isInitializing && splashFinished && (
+        <AnimatePresence mode="wait">
           {!userRole ? (
-            <LoginScreen onLogin={handleLogin} />
+            <motion.div
+              key="login"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="h-dvh w-full"
+            >
+              <AppLayout withSafeTop={false} withSafeBottom={false}>
+                <LoginScreen onLogin={handleLogin} />
+              </AppLayout>
+            </motion.div>
           ) : userRole === 'athlete' ? (
-            <>
-              <AthleteDashboard 
-                onBack={handleLogout} 
-                onDirtyChange={setIsDirty}
-                athleteId={loggedInAthlete?.id}
-                athleteGender={loggedInAthlete?.gender}
-                initialAthleteData={loggedInAthlete}
-              />
-              <ConfirmDialog 
-                isOpen={pendingAction === 'logout'}
-                onConfirm={() => {
-                  setPendingAction(null);
-                  setIsDirty(false);
-                  localStorage.removeItem('ears_session');
-                  setUserRole(null);
-                  setLoggedInAthlete(null);
-                }}
-                onCancel={() => setPendingAction(null)}
-              />
-            </>
+            <motion.div
+              key="athlete"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <AppLayout withSafeTop={false} withSafeBottom={false}>
+                <AthleteDashboard 
+                  onBack={handleLogout} 
+                  onDirtyChange={setIsDirty}
+                  athleteId={loggedInAthlete?.id}
+                  athleteGender={loggedInAthlete?.gender}
+                  initialAthleteData={loggedInAthlete}
+                />
+                <ConfirmDialog 
+                  isOpen={pendingAction === 'logout'}
+                  onConfirm={() => {
+                    setPendingAction(null);
+                    setIsDirty(false);
+                    localStorage.removeItem('ears_session');
+                    setUserRole(null);
+                    setLoggedInAthlete(null);
+                  }}
+                  onCancel={() => setPendingAction(null)}
+                />
+              </AppLayout>
+            </motion.div>
           ) : (
-            <MainDashboard onLogout={handleLogout} />
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <AppLayout withSafeTop={false} withSafeBottom={false}>
+                <MainDashboard onLogout={handleLogout} />
+              </AppLayout>
+            </motion.div>
           )}
-        </AppLayout>
+        </AnimatePresence>
       )}
     </>
   );
