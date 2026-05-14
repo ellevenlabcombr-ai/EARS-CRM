@@ -25,23 +25,8 @@ export function LogoLoader({ size = 'md', className = '', showSpinner = false }:
   const { width, height } = dimensions[size as keyof typeof dimensions] || dimensions.md;
 
   if (!logo_url) {
-    // Fallback if no logo is available
-    return (
-      <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
-        <Loader2 
-          className={`animate-spin text-cyan-500 ${
-            size === 'sm' ? 'w-6 h-6' : 
-            size === 'md' ? 'w-10 h-10' : 
-            size === 'lg' ? 'w-14 h-14' : 'w-20 h-20'
-          }`} 
-        />
-        {showSpinner && (
-          <span className="text-cyan-500 font-bold tracking-widest text-sm uppercase animate-pulse">
-            Loading...
-          </span>
-        )}
-      </div>
-    );
+    // Return an empty container with the same size to avoid layout shift
+    return <div className={`flex flex-col items-center justify-center ${className}`} style={{ width, height }} />;
   }
 
   return (

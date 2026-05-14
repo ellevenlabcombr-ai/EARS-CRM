@@ -5,17 +5,14 @@ import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'motion/react';
 
 const MainDashboard = dynamic(() => import('@/components/MainDashboard').then(mod => mod.MainDashboard), {
-  loading: () => <LoadingSpinner />,
   ssr: false
 });
 
 const AthleteDashboard = dynamic(() => import('@/components/AthleteDashboard').then(mod => mod.AthleteDashboard), {
-  loading: () => <LoadingSpinner />,
   ssr: false
 });
 
 const LoginScreen = dynamic(() => import('@/components/LoginScreen').then(mod => mod.LoginScreen), {
-  loading: () => <LoadingSpinner />,
   ssr: false
 });
 
@@ -26,7 +23,7 @@ import { LogoLoader } from '@/components/LogoLoader';
 
 const LoadingSpinner = () => (
   <div className="flex-1 flex items-center justify-center h-dvh bg-[#050B14]">
-    <LogoLoader size="2xl" showSpinner={false} />
+    <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
   </div>
 );
 
@@ -135,11 +132,9 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="h-dvh w-full"
+              className="h-dvh w-full flex items-center justify-center bg-[#050B14]"
             >
-              <AppLayout withSafeTop={false} withSafeBottom={false}>
-                <LoginScreen onLogin={handleLogin} />
-              </AppLayout>
+              <LoginScreen onLogin={handleLogin} />
             </motion.div>
           ) : userRole === 'athlete' ? (
             <motion.div
