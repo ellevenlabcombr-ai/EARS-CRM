@@ -22,7 +22,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   withSafeBottom = true
 }) => {
   return (
-    <div className={`h-dvh w-full flex flex-col bg-[#050B14] overflow-hidden ${className}`}>
+    <div className={`w-full h-full flex flex-col bg-[#050B14] overflow-hidden relative ${className}`}>
       {/* Fixed/Sticky Header with Safe Area support */}
       {header && (
         <header className="sticky top-0 z-50 w-full bg-[#0A1120]/80 backdrop-blur-xl border-b border-slate-800/50 shadow-lg">
@@ -37,7 +37,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       )}
 
       {/* Main Content Area */}
-      <main className={`flex-1 flex flex-col w-full overflow-y-auto custom-scrollbar ${containerClassName}`}>
+      <main className={`flex-1 min-h-0 flex flex-col w-full overflow-y-auto custom-scrollbar ${containerClassName}`}>
         {/* If no header, we still need safe area top padding */}
         {!header && withSafeTop && (
           <div className="h-[calc(var(--safe-area-inset-top)+16px)] w-full shrink-0" />

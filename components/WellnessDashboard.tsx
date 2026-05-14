@@ -624,7 +624,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
 
   return (
     <SafeRender componentName="WellnessDashboard">
-      <div className="flex-1 flex flex-col min-h-screen bg-[#020617] text-slate-200 font-sans overflow-x-hidden">
+      <div className="flex-1 flex flex-col h-full bg-[#020617] text-slate-200 font-sans overflow-x-hidden">
       {/* Header */}
       <header className="bg-[#0f172a]/60 backdrop-blur-md border-b border-slate-800/50 px-6 py-6 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">

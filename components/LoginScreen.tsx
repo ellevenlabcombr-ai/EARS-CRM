@@ -116,13 +116,12 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="text-center mb-10">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="w-full max-w-md px-6 relative z-10"
+    >
+      <div className="text-center mb-10">
           <LogoLoader size="xl" />
           <p className="text-slate-400 text-xs font-bold tracking-[0.3em] uppercase mt-4">
             GESTÃO DE PERFORMANCE
@@ -299,7 +298,6 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
-    </div>
+    </motion.div>
   );
 }

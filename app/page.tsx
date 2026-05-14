@@ -22,7 +22,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { LogoLoader } from '@/components/LogoLoader';
 
 const LoadingSpinner = () => (
-  <div className="flex-1 flex items-center justify-center h-dvh bg-[#050B14]">
+  <div className="flex-1 flex items-center justify-center h-full bg-[#050B14]">
     <div className="w-10 h-10 border-2 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
   </div>
 );
@@ -142,6 +142,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
+              className="fixed inset-0 w-full h-full overflow-hidden bg-[#050B14]"
             >
               <AppLayout withSafeTop={false} withSafeBottom={false}>
                 <AthleteDashboard 
@@ -170,6 +171,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
+              className="fixed inset-0 w-full h-full overflow-hidden bg-[#050B14]"
             >
               <AppLayout withSafeTop={false} withSafeBottom={false}>
                 <MainDashboard onLogout={handleLogout} />

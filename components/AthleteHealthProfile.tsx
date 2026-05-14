@@ -2163,7 +2163,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const StatusIcon = statusCfg.icon;
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden font-sans">
+    <div className="flex-1 flex flex-col h-full bg-[#020617] text-slate-200 overflow-x-hidden font-sans">
       {/* Notification Toast */}
       <AnimatePresence>
         {notification && (
@@ -3958,7 +3958,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
             {activeAssessment !== 'list' && (
               <div className="fixed inset-0 z-[100] bg-[#020617] overflow-y-auto pointer-events-auto">
-                <div className="p-4 sm:p-6 md:p-8 pt-[calc(max(env(safe-area-inset-top),_2rem)+2rem)] sm:pt-6 w-full max-w-7xl mx-auto space-y-6 min-h-screen">
+                <div className="p-4 sm:p-6 md:p-8 pt-[calc(max(env(safe-area-inset-top),_2rem)+2rem)] sm:pt-6 w-full max-w-7xl mx-auto space-y-6 min-h-full">
 
             {activeAssessment === 'biomechanical' && (
               <BiomechanicalAssessment 

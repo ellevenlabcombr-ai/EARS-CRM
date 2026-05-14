@@ -1114,7 +1114,7 @@ export function AthleteDashboard({
   // FINAL early return after all hooks
   if (!athleteId) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8 text-center bg-[#050B14] min-h-screen">
+      <div className="flex-1 flex items-center justify-center p-8 text-center bg-[#050B14] h-full">
         <div className="max-w-md space-y-4">
           <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-rose-500">
             <AlertCircle size={32} />

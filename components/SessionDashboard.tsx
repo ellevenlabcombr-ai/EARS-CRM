@@ -6,7 +6,7 @@ import { motion } from 'motion/react'
 
 export function SessionDashboard({ onBack }: { onBack?: () => void }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-indigo-500/30 overflow-hidden flex flex-col relative">
+    <div className="h-full bg-slate-950 text-slate-50 font-sans selection:bg-indigo-500/30 overflow-hidden flex flex-col relative">
       {/* Premium Decorative Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full animate-pulse" />

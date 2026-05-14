@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 interface LogoLoaderProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
   showSpinner?: boolean;
 }

@@ -744,7 +744,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               return <SettingsDashboard />;
             default:
               return (
-                <div className="flex-1 flex items-center justify-center min-h-screen text-slate-400">
+                <div className="flex-1 flex items-center justify-center h-full text-slate-400">
                   <div className="text-center space-y-4">
                     <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mx-auto text-3xl">
                       {menuItems.find(m => m.id === currentView)?.emoji}
@@ -763,7 +763,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   };
 
   return (
-    <div className="flex h-dvh bg-[#050B14] overflow-hidden font-sans selection:bg-cyan-500/30">
+    <div className="flex flex-1 w-full h-full bg-[#050B14] overflow-hidden font-sans selection:bg-cyan-500/30">
       <SupabaseStatus />
       {/* Mobile Menu Button */}
       {/* Mobile Menu Toggle */}
@@ -885,7 +885,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className={`flex-1 relative overflow-y-auto custom-scrollbar w-full flex flex-col transition-colors duration-500 ${
+      <main className={`flex-1 min-w-0 h-full relative overflow-y-auto custom-scrollbar w-full flex flex-col transition-colors duration-500 ${
         activeMode === 'clinical' ? 'bg-[#050B14] shadow-[inset_0_0_100px_rgba(59,130,246,0.05)]' :
         activeMode === 'eagles' ? 'bg-[#050B14] shadow-[inset_0_0_100px_rgba(6,182,212,0.05)]' :
         'bg-[#050B14]'
