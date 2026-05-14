@@ -20,6 +20,10 @@ export function BrandingSettings() {
   const [website, setWebsite] = useState('');
   const [phone, setPhone] = useState('');
   const [brandColor, setBrandColor] = useState('#06b6d4');
+  const [secondaryBrandColor, setSecondaryBrandColor] = useState('#10b981');
+  const [backgroundOpacity, setBackgroundOpacity] = useState(0.85);
+  const [cornerRadius, setCornerRadius] = useState('1rem');
+  const [backgroundPattern, setBackgroundPattern] = useState('none');
   const [welcomeMessage, setWelcomeMessage] = useState('');
   
   const [isUploading, setIsUploading] = useState(false);
@@ -59,6 +63,10 @@ export function BrandingSettings() {
         setWebsite(data.website || '');
         setPhone(data.phone || '');
         setBrandColor(data.brand_color || '#06b6d4');
+        setSecondaryBrandColor(data.secondary_brand_color || '#10b981');
+        setBackgroundOpacity(data.background_opacity ?? 0.85);
+        setCornerRadius(data.corner_radius || '1rem');
+        setBackgroundPattern(data.background_pattern || 'none');
         setWelcomeMessage(data.welcome_message || '');
       }
     } catch (err) {
@@ -163,6 +171,10 @@ export function BrandingSettings() {
         website,
         phone,
         brand_color: brandColor,
+        secondary_brand_color: secondaryBrandColor,
+        background_opacity: backgroundOpacity,
+        corner_radius: cornerRadius,
+        background_pattern: backgroundPattern,
         welcome_message: welcomeMessage,
         updated_at: new Date().toISOString()
       };
@@ -552,6 +564,66 @@ export function BrandingSettings() {
                       placeholder="#06b6d4"
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Cor Secundária (Ícones/Destaques)</label>
+                  <div className="flex items-center gap-3 w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/10 transition-all">
+                    <input 
+                      type="color" 
+                      value={secondaryBrandColor}
+                      onChange={(e) => setSecondaryBrandColor(e.target.value)}
+                      className="w-8 h-8 rounded border-none bg-transparent cursor-pointer p-0"
+                    />
+                    <input 
+                      type="text" 
+                      value={secondaryBrandColor}
+                      onChange={(e) => setSecondaryBrandColor(e.target.value)}
+                      className="bg-transparent border-none text-white outline-none flex-1 text-sm md:text-base font-medium placeholder:text-slate-600 uppercase"
+                      placeholder="#10b981"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Visibilidade da Textura ({Math.round((1 - backgroundOpacity) * 100)}%)</label>
+                  <div className="flex items-center gap-4 w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 h-[58px]">
+                    <input 
+                      type="range" 
+                      min="0.1" 
+                      max="1.0" 
+                      step="0.05"
+                      value={backgroundOpacity}
+                      onChange={(e) => setBackgroundOpacity(parseFloat(e.target.value))}
+                      className="flex-1 accent-cyan-500 h-1.5 rounded-lg appearance-none bg-slate-800 cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-500 pl-1">Arraste para ajustar a transparência da imagem de fundo</p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Estilo das Bordas (Radius)</label>
+                  <select 
+                    value={cornerRadius}
+                    onChange={(e) => setCornerRadius(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium appearance-none"
+                  >
+                    <option value="0px">Quadrado (0px)</option>
+                    <option value="0.5rem">Suave (8px)</option>
+                    <option value="1rem">Padrão (16px)</option>
+                    <option value="1.5rem">Arredondado (24px)</option>
+                    <option value="2rem">Muito Arredondado (32px)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Textura de Fundo (Pattern)</label>
+                  <select 
+                    value={backgroundPattern}
+                    onChange={(e) => setBackgroundPattern(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium appearance-none"
+                  >
+                    <option value="none">Nenhum</option>
+                    <option value="dots">Pontilhado (Dots)</option>
+                    <option value="grid">Grade (Grid)</option>
+                    <option value="noise">Ruído Analógico (Noise)</option>
+                  </select>
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Texto de Boas-vindas</label>

@@ -157,9 +157,28 @@ BEGIN
             company_name TEXT DEFAULT 'ELLEVEN',
             logo_url TEXT,
             favicon_url TEXT,
+            brand_color TEXT DEFAULT '#06b6d4',
+            secondary_brand_color TEXT DEFAULT '#10b981',
+            background_opacity NUMERIC DEFAULT 0.85,
+            corner_radius TEXT DEFAULT '1rem',
+            background_pattern TEXT DEFAULT 'none',
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
         INSERT INTO branding_settings (company_name) VALUES ('ELLEVEN');
+    END IF;
+
+    -- Garantir colunas novas na branding_settings
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='secondary_brand_color') THEN
+        ALTER TABLE branding_settings ADD COLUMN secondary_brand_color TEXT DEFAULT '#10b981';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='background_opacity') THEN
+        ALTER TABLE branding_settings ADD COLUMN background_opacity NUMERIC DEFAULT 0.85;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='corner_radius') THEN
+        ALTER TABLE branding_settings ADD COLUMN corner_radius TEXT DEFAULT '1rem';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='branding_settings' AND column_name='background_pattern') THEN
+        ALTER TABLE branding_settings ADD COLUMN background_pattern TEXT DEFAULT 'none';
     END IF;
 
     -- Tabela de Configurações da Agenda
