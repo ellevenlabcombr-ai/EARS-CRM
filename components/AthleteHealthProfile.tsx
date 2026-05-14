@@ -2456,7 +2456,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           </div>
         </div>
 
-        <div className="col-span-full lg:row-start-4 order-4 space-y-10 min-w-0 pb-32">
+        <div className="lg:col-span-3 lg:row-start-4 order-4 space-y-10 min-w-0 pb-32">
         {activeTab === 'overview' && (
           <div className="space-y-10 pb-32">
             {/* Safe Mode Premium Alert Banner */}
@@ -4679,6 +4679,65 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             </div>
           </div>
         )}
+      </div>
+      
+      {/* RIGHT COLUMN: Summary Sidebar */}
+      <div className="space-y-6 lg:col-span-1 lg:row-start-4 order-4 border-l border-slate-800/50 pl-6 sticky top-24 h-max hidden lg:block overflow-visible z-10">
+         {/* Clinical Risk Summary */}
+         <div className={`p-6 rounded-3xl border-2 ${getRiskConfig(athlete.riskLevel || 'Baixo').color.replace('text-', 'border-').replace('400', '500/30')} ${getRiskConfig(athlete.riskLevel || 'Baixo').bg} backdrop-blur-xl shadow-2xl flex flex-col items-center gap-2 w-full`}>
+            <div className={`w-3 h-3 rounded-full ${getRiskConfig(athlete.riskLevel || 'Baixo').color.replace('text-', 'bg-')} animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.5)]`}></div>
+            <p className="text-xxs font-black text-slate-500 uppercase tracking-[0.2em]">{language === 'pt' ? 'Risco Clínico Atual' : 'Current Clinical Risk'}</p>
+            <span className={`text-2xl font-black uppercase tracking-widest ${getRiskConfig(athlete.riskLevel || 'Baixo').color}`}>
+              {getRiskConfig(athlete.riskLevel || 'Baixo').label}
+            </span>
+         </div>
+
+         <div className="grid grid-cols-2 gap-4">
+             <div className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 flex flex-col items-center justify-center text-center">
+                <span className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">{language === 'pt' ? 'Status' : 'Status'}</span>
+                <span className={`text-[10px] font-black uppercase tracking-tighter ${getStatusConfig(athlete.status).color} leading-tight`}>{getStatusConfig(athlete.status).label}</span>
+             </div>
+             <div className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 flex flex-col items-center justify-center text-center">
+                <span className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">{language === 'pt' ? 'Prontidão' : 'Readiness'}</span>
+                <span className={`text-xl font-black ${(clinicalSessionData?.readiness?.score ?? athlete.readiness ?? 0) < 70 ? 'text-rose-500' : 'text-cyan-400'}`}>
+                    {clinicalSessionData?.readiness?.score ?? athlete.readiness ?? 0}%
+                </span>
+             </div>
+         </div>
+
+         {/* Recent Tags */}
+         <div className="bg-slate-900/40 rounded-2xl border border-slate-800 p-5 space-y-4">
+            <h3 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+               <Tag className="w-3.5 h-3.5 text-purple-400" /> {language === 'pt' ? 'Tags Ativas' : 'Active Tags'}
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+               {clinicalTags.length > 0 ? (
+                  clinicalTags.map(tag => (
+                     <span key={tag.id} className="text-[9px] px-2 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase font-black tracking-widest">{tag.tag}</span>
+                  ))
+               ) : (
+                  <span className="text-[10px] text-slate-600 font-bold italic">{language === 'pt' ? 'Nenhuma tag ativa.' : 'No active tags.'}</span>
+               )}
+            </div>
+         </div>
+
+         {/* Focus Action Planner */}
+         <div className="bg-slate-900/40 rounded-2xl border border-slate-800 p-5 space-y-4">
+            <h3 className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+               <Target className="w-3.5 h-3.5 text-rose-500" /> {language === 'pt' ? 'Foco de Recuperação' : 'Recovery Focus'}
+            </h3>
+            <div className="space-y-3">
+               {athleteAlerts.filter(a => a.status === 'active').slice(0, 3).map(alert => (
+                 <div key={alert.id} className="flex gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-300 leading-tight">{alert.message}</span>
+                 </div>
+               ))}
+               {athleteAlerts.filter(a => a.status === 'active').length === 0 && (
+                  <span className="text-[10px] text-slate-600 font-bold italic">{language === 'pt' ? 'Nenhum foco de risco.' : 'No risk focus.'}</span>
+               )}
+            </div>
+         </div>
       </div>
 
       {/* Assessment Detail Modal */}

@@ -3,5 +3,8 @@
   "description": "Sistema de monitoramento de wellness e gestão de atletas da EARS (7 a 19 anos).",
   "requestFramePermissions": [
     "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
 }

@@ -181,6 +181,29 @@ BEGIN
         ALTER TABLE branding_settings ADD COLUMN background_pattern TEXT DEFAULT 'none';
     END IF;
 
+    -- Tabela de Logs do Sistema
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='system_logs') THEN
+        CREATE TABLE system_logs (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            action TEXT NOT NULL,
+            module TEXT NOT NULL,
+            user_id TEXT,
+            details TEXT,
+            ip_address TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        -- Inserir alguns logs iniciais
+        INSERT INTO system_logs (action, module, details) VALUES 
+        ('Sistema Inicializado', 'Core', 'Versão v3.4.2 carregada com sucesso.'),
+        ('Configuração de Branding', 'Settings', 'Logotipo atualizado pelo administrador.'),
+        ('Base de Dados Otimizada', 'Database', 'Índices reconstruídos para performance.');
+    END IF;
+
+    -- Habilitar RLS para system_logs
+    ALTER TABLE IF EXISTS public.system_logs ENABLE ROW LEVEL SECURITY;
+    DROP POLICY IF EXISTS "Permitir tudo" ON public.system_logs;
+    CREATE POLICY "Permitir tudo" ON public.system_logs FOR ALL USING (true) WITH CHECK (true);
+
     -- Tabela de Configurações da Agenda
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
         CREATE TABLE agenda_settings (
