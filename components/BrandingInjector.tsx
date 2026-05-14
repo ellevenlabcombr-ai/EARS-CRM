@@ -108,6 +108,50 @@ export function BrandingInjector() {
             ${cornerRadius ? `--brand-radius: ${cornerRadius};` : '--brand-radius: 1rem;'}
           }
 
+          /* Global Identity Refinements */
+          h1, h2, h3, h4, h5, h6 {
+            letter-spacing: -0.04em !important;
+          }
+
+          .uppercase, [class*="uppercase"] {
+            letter-spacing: 0.15em !important;
+          }
+
+          /* Interactive Highlighting (Suggestion 2) */
+          .card, [class*="rounded-"], button:not([disabled]) {
+             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+
+          button:hover:not([disabled]) {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+          }
+
+          /* Glass Elevation (Suggestion 3) */
+          [class*="backdrop-blur"] {
+            backdrop-filter: blur(24px) saturate(180%) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+          }
+
+          /* Animated Identity Accent (Suggestion 4) */
+          body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, ${color || '#06b6d4'}, transparent);
+            z-index: 100;
+            opacity: 0.4;
+            animation: identity-flow 4s ease-in-out infinite transform;
+          }
+
+          @keyframes identity-flow {
+            0%, 100% { transform: scaleX(0.5); opacity: 0.2; }
+            50% { transform: scaleX(1); opacity: 0.6; }
+          }
+
           ${backgroundPattern && backgroundPattern !== 'none' ? `
             body::before {
               content: "";
