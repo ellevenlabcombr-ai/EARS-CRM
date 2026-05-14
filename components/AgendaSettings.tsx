@@ -10,7 +10,11 @@ import {
   CheckCircle, 
   Loader2, 
   AlertCircle,
-  Timer
+  Timer,
+  MessageCircle,
+  ShieldAlert,
+  Ban,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -24,6 +28,13 @@ export function AgendaSettings() {
   const [workingDays, setWorkingDays] = useState<string[]>(['1', '2', '3', '4', '5']);
   const [appointmentTypes, setAppointmentTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState('');
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [newBlockedDate, setNewBlockedDate] = useState('');
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [reminderTemplate, setReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
+  const [delayTolerance, setDelayTolerance] = useState(15);
+  const [cancelNotice, setCancelNotice] = useState(24);
+  const [appointmentColors, setAppointmentColors] = useState<Record<string, string>>({});
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,6 +91,12 @@ export function AgendaSettings() {
         if (data.lunch_start) setLunchStart(data.lunch_start);
         if (data.lunch_end) setLunchEnd(data.lunch_end);
         if (data.working_days) setWorkingDays(data.working_days);
+        if (data.blocked_dates) setBlockedDates(data.blocked_dates);
+        if (data.reminder_enabled !== undefined) setReminderEnabled(data.reminder_enabled);
+        if (data.reminder_template) setReminderTemplate(data.reminder_template);
+        if (data.delay_tolerance_minutes !== undefined) setDelayTolerance(data.delay_tolerance_minutes);
+        if (data.cancellation_notice_hours !== undefined) setCancelNotice(data.cancellation_notice_hours);
+        if (data.appointment_colors) setAppointmentColors(data.appointment_colors);
       }
     } catch (err: any) {
       console.error("AGENDA SETTINGS CATCH ERROR:", {
@@ -133,6 +150,12 @@ export function AgendaSettings() {
         lunch_end: lunchEnd,
         working_days: workingDays,
         appointment_types: appointmentTypes,
+        blocked_dates: blockedDates,
+        reminder_enabled: reminderEnabled,
+        reminder_template: reminderTemplate,
+        delay_tolerance_minutes: delayTolerance,
+        cancellation_notice_hours: cancelNotice,
+        appointment_colors: appointmentColors,
         updated_at: new Date().toISOString()
       };
 
@@ -190,6 +213,33 @@ export function AgendaSettings() {
 
   const removeType = (typeToRemove: string) => {
     setAppointmentTypes(appointmentTypes.filter(t => t !== typeToRemove));
+  };
+
+  const getNationalHolidays = (year: number) => {
+    return [
+      `${year}-01-01`, // Confraternização Universal
+      `${year}-04-21`, // Tiradentes
+      `${year}-05-01`, // Dia do Trabalho
+      `${year}-09-07`, // Independência
+      `${year}-10-12`, // Nossa Senhora Aparecida
+      `${year}-11-02`, // Finados
+      `${year}-11-15`, // Proclamação da República
+      `${year}-11-20`, // Dia Nacional de Zumbi e da Consciência Negra
+      `${year}-12-25`  // Natal
+    ];
+  };
+
+  const addNationalHolidays = () => {
+    const currentYear = new Date().getFullYear();
+    const holidays = [
+      ...getNationalHolidays(currentYear),
+      ...getNationalHolidays(currentYear + 1)
+    ];
+    
+    const newDates = holidays.filter(d => !blockedDates.includes(d));
+    if (newDates.length > 0) {
+      setBlockedDates([...blockedDates, ...newDates].sort());
+    }
   };
 
   if (isLoading) {
@@ -360,12 +410,24 @@ export function AgendaSettings() {
             {appointmentTypes.map((type) => (
               <div 
                 key={type}
-                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 group hover:border-rose-500/30 transition-colors"
+                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 transition-colors"
               >
+                <div 
+                  className="w-4 h-4 rounded-full overflow-hidden cursor-pointer relative shadow-inner"
+                  style={{ backgroundColor: appointmentColors[type] || '#3b82f6' }}
+                >
+                  <input
+                    type="color"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full block"
+                    value={appointmentColors[type] || '#3b82f6'}
+                    onChange={(e) => setAppointmentColors(prev => ({ ...prev, [type]: e.target.value }))}
+                    title="Alterar cor"
+                  />
+                </div>
                 <span className="text-xs md:text-sm font-medium text-slate-300">{type}</span>
                 <button 
                   onClick={() => removeType(type)}
-                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 hover:bg-rose-500/10 p-1.5 rounded-lg"
+                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 hover:bg-rose-500/10 p-1.5 rounded-lg ml-2"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -376,6 +438,150 @@ export function AgendaSettings() {
                 <p className="text-[10px] md:text-xs text-slate-500 font-medium">Nenhum tipo cadastrado.<br/>Adicione acima para começar.</p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Feriados e Bloqueios */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-rose-500/10 text-rose-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <Ban className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Datas Bloqueadas</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Feriados ou pausas específicas</p>
+            </div>
+            <Button
+              onClick={addNationalHolidays}
+              variant="outline"
+              className="text-xs border-slate-800 bg-slate-950 text-slate-300 hover:text-rose-400 hover:bg-slate-900 hover:border-rose-500/30"
+            >
+              Popula Feriados
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <input 
+              type="date" 
+              value={newBlockedDate}
+              onChange={(e) => setNewBlockedDate(e.target.value)}
+              className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all text-sm font-medium [color-scheme:dark]"
+            />
+            <Button 
+              onClick={() => {
+                if (newBlockedDate && !blockedDates.includes(newBlockedDate)) {
+                  setBlockedDates([...blockedDates, newBlockedDate].sort());
+                  setNewBlockedDate('');
+                }
+              }}
+              className="bg-rose-500 hover:bg-rose-400 text-white rounded-xl px-4 py-3 h-auto"
+            >
+              <Plus size={20} />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 pt-2">
+            {blockedDates.map((date) => (
+              <div 
+                key={date}
+                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2"
+              >
+                <span className="text-xs md:text-sm font-medium text-slate-300">
+                  {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                </span>
+                <button 
+                  onClick={() => setBlockedDates(blockedDates.filter(d => d !== date))}
+                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 hover:bg-rose-500/10 p-1.5 rounded-lg"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+            {blockedDates.length === 0 && (
+              <div className="w-full text-center py-6 border border-dashed border-slate-800 rounded-xl">
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Nenhuma data bloqueada.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Políticas de Atendimento */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500/10 text-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <ShieldAlert className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Políticas da Clínica</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Tolerância de atrasos e aviso prévio</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Aviso Prévio (Cancelamento)</label>
+              <div className="relative">
+                <input 
+                  type="number" 
+                  value={cancelNotice}
+                  onChange={(e) => setCancelNotice(parseInt(e.target.value) || 0)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">horas</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 pl-1">Tempo mínimo para reagendamentos/cancelamentos.</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Tolerância de Atraso</label>
+              <div className="relative">
+                <input 
+                  type="number" 
+                  value={delayTolerance}
+                  onChange={(e) => setDelayTolerance(parseInt(e.target.value) || 0)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 pl-1">Tolerância máxima aceita para atrasos.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Lembretes e Automação */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Lembretes Automáticos</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Textos de confirmação (WhatsApp)</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={reminderEnabled}
+                onChange={(e) => setReminderEnabled(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+            </label>
+          </div>
+          
+          <div className={`space-y-4 pt-2 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Mensagem de Lembrete</label>
+              <textarea 
+                value={reminderTemplate}
+                onChange={(e) => setReminderTemplate(e.target.value)}
+                rows={4}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm font-medium resize-none"
+              />
+              <div className="flex gap-2 flex-wrap text-xs font-mono text-slate-500">
+                <span>Variáveis Suportadas:</span>
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">{`{nome}`}</span>
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">{`{data}`}</span>
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">{`{hora}`}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

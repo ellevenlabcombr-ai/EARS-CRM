@@ -776,6 +776,24 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_end') THEN
         ALTER TABLE public.agenda_settings ADD COLUMN lunch_end TEXT DEFAULT '13:00';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'blocked_dates') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN blocked_dates TEXT[] DEFAULT ARRAY[]::TEXT[];
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'reminder_enabled') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN reminder_enabled BOOLEAN DEFAULT true;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'reminder_template') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'delay_tolerance_minutes') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN delay_tolerance_minutes INTEGER DEFAULT 15;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'cancellation_notice_hours') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN cancellation_notice_hours INTEGER DEFAULT 24;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'appointment_colors') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN appointment_colors JSONB DEFAULT '{}'::jsonb;
+    END IF;
 
     -- Colunas na tabela athletes
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'athletes' AND column_name = 'password') THEN

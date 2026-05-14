@@ -79,7 +79,28 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
         return;
       }
 
-      setEvents(data || []);
+      // Fetch blocked dates
+      let blockedEvents: AgendaEvent[] = [];
+      try {
+        const { data: settings } = await supabase.from('agenda_settings').select('blocked_dates').maybeSingle();
+        if (settings?.blocked_dates && settings.blocked_dates.length > 0) {
+          blockedEvents = settings.blocked_dates.map((date: string) => ({
+            id: `blocked-${date}`,
+            title: 'Feriado / Bloqueado',
+            category: 'block',
+            start_time: `${date}T00:00:00.000Z`,
+            end_time: `${date}T23:59:59.000Z`,
+            is_all_day: true,
+            status: 'confirmed',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })) as AgendaEvent[];
+        }
+      } catch (e) {
+        console.warn("Could not fetch agenda settings blocked dates", e);
+      }
+
+      setEvents([...(data || []), ...blockedEvents]);
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -372,6 +393,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
             events={filteredEvents}
             currentDate={currentDate}
             onEventClick={(event) => {
+              if (event.id && event.id.startsWith('blocked-')) return;
               setSelectedEvent(event);
               setIsEventModalOpen(true);
             }}
@@ -386,6 +408,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
             events={filteredEvents} 
             currentDate={currentDate}
             onEventClick={(event) => {
+              if (event.id && event.id.startsWith('blocked-')) return;
               setSelectedEvent(event);
               setIsEventModalOpen(true);
             }}
@@ -395,6 +418,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
             events={filteredEvents} 
             currentDate={currentDate}
             onEventClick={(event) => {
+              if (event.id && event.id.startsWith('blocked-')) return;
               setSelectedEvent(event);
               setIsEventModalOpen(true);
             }}
