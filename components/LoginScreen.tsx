@@ -119,9 +119,9 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="w-full max-w-md px-6 relative z-10"
+      className="w-full max-w-md px-6 relative z-10 mx-auto flex flex-col items-center justify-center"
     >
-      <div className="text-center mb-10">
+      <div className="text-center mb-10 w-full flex flex-col items-center">
           <LogoLoader size="xl" />
           <p className="text-slate-400 text-xs font-bold tracking-[0.3em] uppercase mt-4">
             GESTÃO DE PERFORMANCE
@@ -135,7 +135,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="space-y-4"
+              className="space-y-4 w-full"
             >
               <h2 className="text-center text-slate-300 font-medium mb-6">Selecione seu tipo de acesso:</h2>
               
@@ -175,7 +175,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="glass-panel rounded-3xl p-8"
+              className="glass-panel rounded-3xl p-8 w-full"
             >
               <button 
                 onClick={() => setSelectedRole(null)}

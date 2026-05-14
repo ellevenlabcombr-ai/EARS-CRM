@@ -30,7 +30,7 @@ export function LogoLoader({ size = 'md', className = '', showSpinner = false }:
   }
 
   return (
-    <div className={`flex flex-col items-center justify-center gap-6 ${className}`}>
+    <div className={`flex flex-col items-center justify-center gap-6 mx-auto ${className}`}>
       <div
         className="relative"
         style={{ width, height }}
