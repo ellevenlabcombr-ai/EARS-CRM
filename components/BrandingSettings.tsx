@@ -574,7 +574,7 @@ export function BrandingSettings() {
               )}
             </div>
 
-            <div className="pt-8 mt-auto border-t border-slate-800/50 flex justify-end">
+            <div className="pt-8 mt-auto border-t  flex justify-end">
               <Button 
                 onClick={handleSave}
                 disabled={isSaving || isUploading || isUploadingFavicon || isUploadingSignature || isUploadingBackground}

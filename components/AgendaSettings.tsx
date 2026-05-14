@@ -305,7 +305,7 @@ export function AgendaSettings() {
         </div>
       </div>
 
-      <div className="pt-6 md:pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6 pb-10">
+      <div className="pt-6 md:pt-8 border-t  flex flex-col md:flex-row items-center justify-between gap-6 pb-10">
         <div className="flex-1 w-full">
           {status !== 'idle' && (
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${

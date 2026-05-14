@@ -229,7 +229,7 @@ export function PendenciesDashboard() {
               key={pendency.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#0A1120] border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all group"
+              className="glass-panel border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-all group"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className={`px-3 py-1 rounded-full border text-xxs font-black uppercase tracking-widest flex items-center gap-2 ${getPriorityColor(pendency.priority)}`}>
@@ -248,7 +248,7 @@ export function PendenciesDashboard() {
                 {pendency.description}
               </p>
 
-              <div className="pt-6 border-t border-slate-800/50 flex items-center justify-between">
+              <div className="pt-6 border-t  flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
                     <User size={16} />

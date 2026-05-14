@@ -53,7 +53,7 @@ export function SessionDashboard({ onBack }: { onBack?: () => void }) {
             {/* Animated Glow Border */}
             <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-sky-500 rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
             
-            <div className="relative bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[30px] p-12 text-center flex flex-col items-center shadow-2xl">
+            <div className="relative glass-panel backdrop-blur-2xl border border-white/10 rounded-[30px] p-12 text-center flex flex-col items-center shadow-2xl">
               <div className="relative mb-10">
                 <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full animate-pulse" />
                 <div className="relative w-24 h-24 rounded-[2rem] bg-slate-950/80 flex items-center justify-center border border-white/5 shadow-inner transform -rotate-3 hover:rotate-0 transition-transform duration-500">

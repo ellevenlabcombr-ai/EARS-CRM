@@ -107,7 +107,7 @@ export function AttachmentVersionHistory({
                     className={`p-4 rounded-2xl border transition-all ${
                       version.is_current_version 
                         ? 'bg-cyan-500/5 border-cyan-500/20' 
-                        : 'bg-slate-950/50 border-slate-800/50 hover:border-slate-700'
+                        : 'bg-slate-950/50  hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-3">
@@ -159,7 +159,7 @@ export function AttachmentVersionHistory({
                       </div>
                     </div>
                     {version.version_note && (
-                      <div className="flex items-start gap-2 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/50">
+                      <div className="flex items-start gap-2 bg-slate-900/50 p-2.5 rounded-xl border ">
                         <Clock size={12} className="text-slate-600 mt-0.5 shrink-0" />
                         <p className="text-xxs text-slate-400 leading-relaxed italic">
                           &quot;{version.version_note}&quot;

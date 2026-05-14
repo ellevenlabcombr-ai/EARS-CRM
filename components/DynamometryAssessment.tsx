@@ -146,11 +146,11 @@ export default function DynamometryAssessment({ athleteId, onCancel, onSave }: D
                 <Zap className="w-4 h-4 text-amber-500" /> Extensão de Joelho (Quadríceps)
               </h3>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                 <div className="bg-slate-900/30 p-4 rounded-xl border ">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">D - Direito (kg)</label>
                     <input type="number" value={measurements.quadricepsR || ''} onChange={(e) => handleValueChange('quadricepsR', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                  </div>
-                 <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                 <div className="bg-slate-900/30 p-4 rounded-xl border ">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">E - Esquerdo (kg)</label>
                     <input type="number" value={measurements.quadricepsL || ''} onChange={(e) => handleValueChange('quadricepsL', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                  </div>
@@ -164,11 +164,11 @@ export default function DynamometryAssessment({ athleteId, onCancel, onSave }: D
                 <ArrowRightLeft className="w-4 h-4 text-amber-500" /> Flexão de Joelho (Isquiotibiais)
               </h3>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                 <div className="bg-slate-900/30 p-4 rounded-xl border ">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">D - Direito (kg)</label>
                     <input type="number" value={measurements.hamstringsR || ''} onChange={(e) => handleValueChange('hamstringsR', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                  </div>
-                 <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                 <div className="bg-slate-900/30 p-4 rounded-xl border ">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">E - Esquerdo (kg)</label>
                     <input type="number" value={measurements.hamstringsL || ''} onChange={(e) => handleValueChange('hamstringsL', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                  </div>
@@ -183,11 +183,11 @@ export default function DynamometryAssessment({ athleteId, onCancel, onSave }: D
                   <Activity className="w-4 h-4 text-amber-500" /> Abdução de Quadril
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                  <div className="bg-slate-900/30 p-4 rounded-xl border ">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">D - Direito (kg)</label>
                       <input type="number" value={measurements.hipAbductorsR || ''} onChange={(e) => handleValueChange('hipAbductorsR', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                   </div>
-                  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                  <div className="bg-slate-900/30 p-4 rounded-xl border ">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">E - Esquerdo (kg)</label>
                       <input type="number" value={measurements.hipAbductorsL || ''} onChange={(e) => handleValueChange('hipAbductorsL', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                   </div>
@@ -198,11 +198,11 @@ export default function DynamometryAssessment({ athleteId, onCancel, onSave }: D
                   <Activity className="w-4 h-4 text-amber-500" /> Adução de Quadril
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                  <div className="bg-slate-900/30 p-4 rounded-xl border ">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">D - Direito (kg)</label>
                       <input type="number" value={measurements.hipAdductorsR || ''} onChange={(e) => handleValueChange('hipAdductorsR', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                   </div>
-                  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                  <div className="bg-slate-900/30 p-4 rounded-xl border ">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">E - Esquerdo (kg)</label>
                       <input type="number" value={measurements.hipAdductorsL || ''} onChange={(e) => handleValueChange('hipAdductorsL', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                   </div>
@@ -217,11 +217,11 @@ export default function DynamometryAssessment({ athleteId, onCancel, onSave }: D
                 <Dumbbell className="w-4 h-4 text-amber-500" /> Preensão Manual (Grip)
               </h3>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                 <div className="bg-slate-900/30 p-4 rounded-xl border ">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">D - Direito (kg)</label>
                     <input type="number" value={measurements.gripR || ''} onChange={(e) => handleValueChange('gripR', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                  </div>
-                 <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+                 <div className="bg-slate-900/30 p-4 rounded-xl border ">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">E - Esquerdo (kg)</label>
                     <input type="number" value={measurements.gripL || ''} onChange={(e) => handleValueChange('gripL', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-white font-black focus:outline-none focus:border-amber-500 transition-colors" />
                  </div>

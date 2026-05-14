@@ -21,7 +21,7 @@ const Slider = ({ label, value, onChange, invertColor = false, min = 0, max = 10
     : (ratio < 0.4 ? 'text-rose-400' : ratio < 0.7 ? 'text-amber-400' : 'text-emerald-400');
 
   return (
-    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border ">
       <div className="flex justify-between items-end">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
         <span className={`text-sm font-black ${valueColor}`}>{value}/{max}</span>
@@ -40,7 +40,7 @@ const Slider = ({ label, value, onChange, invertColor = false, min = 0, max = 10
 };
 
 const NumberInput = ({ label, value, unit, onChange, step = 1 }: { label: string, value: number, unit: string, onChange: (v: number) => void, step?: number }) => (
-  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50 flex flex-col justify-between">
+  <div className="bg-slate-900/30 p-4 rounded-xl border  flex flex-col justify-between">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{label}</label>
     <div className="relative">
       <input
@@ -56,7 +56,7 @@ const NumberInput = ({ label, value, unit, onChange, step = 1 }: { label: string
 );
 
 const Checkbox = ({ label, checked, onChange }: { label: string, checked: boolean, onChange: (v: boolean) => void }) => (
-  <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-800/50 bg-slate-900/30 cursor-pointer hover:bg-slate-800/50 transition-colors">
+  <label className="flex items-center gap-3 p-3 rounded-xl border  bg-slate-900/30 cursor-pointer hover:bg-slate-800/50 transition-colors">
     <div className={`w-4 h-4 rounded flex items-center justify-center border ${checked ? 'bg-rose-500 border-rose-500' : 'border-slate-600'}`}>
       {checked && <div className="w-2 h-2 bg-[#050B14] rounded-sm" />}
     </div>
@@ -272,11 +272,11 @@ export function HydrationAssessmentForm({ athleteId, onCancel, onSave }: Hydrati
 
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Índice de Hidratação</span>
                     <span className={`text-xl font-black ${metrics.hydrationIndex > 70 ? 'text-emerald-400' : metrics.hydrationIndex > 50 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.hydrationIndex}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Estresse Fisiológico</span>
                     <span className={`text-xl font-black ${metrics.physiologicalStress < 30 ? 'text-emerald-400' : metrics.physiologicalStress < 70 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.physiologicalStress}%</span>
                   </div>

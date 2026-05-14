@@ -21,7 +21,7 @@ const Slider = ({ label, value, onChange, invertColor = false, max = 10 }: { lab
     : (ratio < 0.4 ? 'text-rose-400' : ratio < 0.7 ? 'text-amber-400' : 'text-emerald-400');
 
   return (
-    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border ">
       <div className="flex justify-between items-end">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
         <span className={`text-sm font-black ${valueColor}`}>{value}/{max}</span>
@@ -39,7 +39,7 @@ const Slider = ({ label, value, onChange, invertColor = false, max = 10 }: { lab
 };
 
 const SelectGroup = ({ label, value, options, onChange }: { label: string, value: string | boolean, options: {id: string | boolean, label: string}[], onChange: (v: any) => void }) => (
-  <div className="space-y-3 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+  <div className="space-y-3 bg-slate-900/30 p-4 rounded-xl border ">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {options.map(opt => (
@@ -60,7 +60,7 @@ const SelectGroup = ({ label, value, options, onChange }: { label: string, value
 );
 
 const NumberInput = ({ label, value, unit, onChange }: { label: string, value: number, unit: string, onChange: (v: number) => void }) => (
-  <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-800/50 flex flex-col justify-between">
+  <div className="bg-slate-900/30 p-4 rounded-xl border  flex flex-col justify-between">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{label}</label>
     <div className="relative">
       <input
@@ -281,15 +281,15 @@ export function MenstrualAssessmentForm({ athleteId, onCancel, onSave }: Menstru
 
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Regularidade</span>
                     <span className={`text-xl font-black ${metrics.regularityIndex > 70 ? 'text-emerald-400' : metrics.regularityIndex > 50 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.regularityIndex}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Carga Sintomas</span>
                     <span className={`text-xl font-black ${metrics.symptomLoad < 30 ? 'text-emerald-400' : metrics.symptomLoad < 70 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.symptomLoad}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Estabilidade</span>
                     <span className={`text-xl font-black ${metrics.hormonalStability > 70 ? 'text-emerald-400' : metrics.hormonalStability > 50 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.hormonalStability}%</span>
                   </div>

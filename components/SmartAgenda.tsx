@@ -277,7 +277,7 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
         </div>
       </header>
 
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
+      <div className="glass-panel border border-slate-800 rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <button 

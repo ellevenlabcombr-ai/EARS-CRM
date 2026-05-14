@@ -113,7 +113,7 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
             {lang === 'pt' ? 'Carregando eventos...' : 'Loading events...'}
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center p-8 bg-slate-900/30 rounded-2xl border border-slate-800/50">
+          <div className="text-center p-8 bg-slate-900/30 rounded-2xl border ">
             <CalendarIcon className="w-8 h-8 text-slate-600 mx-auto mb-3" />
             <p className="text-slate-400 font-medium">
               {lang === 'pt' ? 'Nenhum evento agendado.' : 'No events scheduled.'}

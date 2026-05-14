@@ -44,8 +44,8 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
   };
 
   return (
-    <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl h-full flex flex-col">
-      <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between space-y-0">
+    <Card className="glass-panel  shadow-xl h-full flex flex-col">
+      <CardHeader className="border-b  bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           {view === 'active' ? (
             <BellRing className="w-4 h-4 text-amber-500" />

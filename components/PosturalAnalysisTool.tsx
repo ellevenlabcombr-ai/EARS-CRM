@@ -198,7 +198,7 @@ export function PosturalAnalysisTool({
             const angleData = segment ? calculateAngleDeviations(segment.points) : null;
             
             return (
-              <div key={def.id} className={`flex items-center justify-between p-2 rounded-lg border ${isActive ? 'bg-slate-800 border-cyan-500/50' : 'bg-slate-900/80 border-slate-800/50'}`}>
+              <div key={def.id} className={`flex items-center justify-between p-2 rounded-lg border ${isActive ? 'bg-slate-800 border-cyan-500/50' : 'bg-slate-900/80 '}`}>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleSegmentActive(def.id)}

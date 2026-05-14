@@ -54,7 +54,7 @@ interface SkinfoldData {
 }
 
 const NumberInput = ({ label, value, unit, onChange }: { label: string, value: number, unit: string, onChange: (v: number) => void }) => (
-  <div className="bg-slate-900/30 p-4 rounded-2xl border border-slate-800/50 flex flex-col justify-between">
+  <div className="bg-slate-900/30 p-4 rounded-2xl border  flex flex-col justify-between">
     <label className="text-xxs font-black text-slate-400 uppercase tracking-widest mb-2">{label}</label>
     <div className="relative">
       <input
@@ -343,7 +343,7 @@ export function AnthropometricAssessmentForm({ athlete, previousAssessments, onC
           {/* TAB 1: Básicos */}
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="bg-slate-900/30 p-6 rounded-2xl border border-slate-800/50 flex flex-col md:flex-row gap-6 mb-6">
+              <div className="bg-slate-900/30 p-6 rounded-2xl border  flex flex-col md:flex-row gap-6 mb-6">
                 <div className="flex-1">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block">Idade Calculada</label>
                   <input type="number" min="6" max="99" value={basicInfo.age} onChange={e => setBasicInfo({ ...basicInfo, age: Number(e.target.value) })} className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-white font-bold focus:outline-none focus:border-indigo-500" />
@@ -383,7 +383,7 @@ export function AnthropometricAssessmentForm({ athlete, previousAssessments, onC
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                  {/* Tronco */}
-                 <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-800/50 space-y-4">
+                 <div className="bg-slate-900/30 p-5 rounded-2xl border  space-y-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-3 mb-4 flex items-center gap-2">
                       <Sigma className="w-4 h-4 text-cyan-500" />
                       Perímetros do Tronco
@@ -399,7 +399,7 @@ export function AnthropometricAssessmentForm({ athlete, previousAssessments, onC
                  </div>
 
                  {/* Membros Superiores */}
-                 <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-800/50 space-y-4">
+                 <div className="bg-slate-900/30 p-5 rounded-2xl border  space-y-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-3 mb-4 flex items-center gap-2">
                        <Ruler className="w-4 h-4 text-amber-500" />
                        Membros Superiores (CM)
@@ -437,7 +437,7 @@ export function AnthropometricAssessmentForm({ athlete, previousAssessments, onC
                  </div>
 
                  {/* Membros Inferiores */}
-                 <div className="bg-slate-900/30 p-5 rounded-2xl border border-slate-800/50 space-y-4">
+                 <div className="bg-slate-900/30 p-5 rounded-2xl border  space-y-4">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-3 mb-4 flex items-center gap-2">
                        <Ruler className="w-4 h-4 text-rose-500" />
                        Membros Inferiores (CM)
@@ -497,19 +497,19 @@ export function AnthropometricAssessmentForm({ athlete, previousAssessments, onC
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 p-8 gap-4 bg-black/20">
-                  <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800/50 text-center flex flex-col justify-center">
+                  <div className="p-4 bg-slate-900/50 rounded-2xl border  text-center flex flex-col justify-center">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Gordura Est.</p>
                     <p className="text-2xl font-black text-cyan-400">{metrics.fatPercentage}%</p>
                   </div>
-                  <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800/50 text-center flex flex-col justify-center">
+                  <div className="p-4 bg-slate-900/50 rounded-2xl border  text-center flex flex-col justify-center">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Massa Magra</p>
                     <p className="text-2xl font-black text-indigo-400">{metrics.muscleMass}kg</p>
                   </div>
-                  <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800/50 text-center flex flex-col justify-center">
+                  <div className="p-4 bg-slate-900/50 rounded-2xl border  text-center flex flex-col justify-center">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Cintura/Altura</p>
                     <p className={`text-2xl font-black ${metrics.whtr < 0.5 ? 'text-emerald-400' : 'text-rose-400'}`}>{metrics.whtr}</p>
                   </div>
-                  <div className="p-4 bg-slate-900/50 rounded-2xl border border-slate-800/50 text-center flex flex-col justify-center">
+                  <div className="p-4 bg-slate-900/50 rounded-2xl border  text-center flex flex-col justify-center">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">RCQ</p>
                     <p className={`text-2xl font-black ${metrics.whr < 0.85 ? 'text-emerald-400' : metrics.whr <= 0.9 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.whr}</p>
                   </div>
@@ -532,19 +532,19 @@ export function AnthropometricAssessmentForm({ athlete, previousAssessments, onC
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {metrics.armAsymmetry > 0 && (
-                        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div className="glass-panel p-4 rounded-xl border  text-center">
                           <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-1">Assimetria Braços</p>
                           <p className={`text-lg font-black ${metrics.armAsymmetry > 5 ? 'text-rose-400' : 'text-slate-300'}`}>{metrics.armAsymmetry}%</p>
                         </div>
                       )}
                       {metrics.thighAsymmetry > 0 && (
-                        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div className="glass-panel p-4 rounded-xl border  text-center">
                           <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-1">Assimetria Coxas</p>
                           <p className={`text-lg font-black ${metrics.thighAsymmetry > 3 ? 'text-rose-400' : 'text-slate-300'}`}>{metrics.thighAsymmetry}%</p>
                         </div>
                       )}
                       {metrics.calfAsymmetry > 0 && (
-                        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 text-center">
+                        <div className="glass-panel p-4 rounded-xl border  text-center">
                           <p className="text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-1">Assimetria Panturrilha</p>
                           <p className={`text-lg font-black ${metrics.calfAsymmetry > 3 ? 'text-rose-400' : 'text-slate-300'}`}>{metrics.calfAsymmetry}%</p>
                         </div>

@@ -58,7 +58,7 @@ export function GeneralSettings() {
               </div>
             </div>
             
-            <div className="flex gap-4 border-t border-slate-800/50 pt-4 md:pt-0 md:border-0">
+            <div className="flex gap-4 border-t  pt-4 md:pt-0 md:border-0">
               <div className="text-right">
                 <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">Servidor</p>
                 <p className="text-white font-mono font-bold text-sm md:text-base">{new Date().toLocaleDateString('pt-BR')}</p>
@@ -86,7 +86,7 @@ export function GeneralSettings() {
             <p className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-1 md:mb-2">{stats.athletesCount}</p>
             <p className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Atletas</p>
           </div>
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-800/50">
+          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t ">
             <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
               <div className="w-3/4 h-full bg-cyan-500 rounded-full"></div>
             </div>
@@ -104,7 +104,7 @@ export function GeneralSettings() {
             <p className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-1 md:mb-2">{stats.checkinsCount}</p>
             <p className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Check-ins</p>
           </div>
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-800/50">
+          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t ">
             <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
               <div className="w-1/2 h-full bg-rose-500 rounded-full animate-pulse"></div>
             </div>
@@ -122,7 +122,7 @@ export function GeneralSettings() {
             <p className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-1 md:mb-2">{stats.appointmentsCount}</p>
             <p className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Consultas</p>
           </div>
-          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-800/50">
+          <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t ">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5, 6].map(i => (
                 <div key={i} className={`h-1 flex-1 rounded-full ${i <= 3 ? 'bg-indigo-500' : 'bg-slate-800'}`}></div>
@@ -162,7 +162,7 @@ export function GeneralSettings() {
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col">
           <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 mt-1 text-center md:text-left">Próximas Atualizações</h3>
           <div className="space-y-4 flex-1 flex flex-col justify-center">
-            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 transition-colors hover:border-cyan-500/30">
+            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border  transition-colors hover:border-cyan-500/30">
               <div className="w-10 h-10 bg-cyan-500/10 text-cyan-400 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Activity className="w-5 h-5" />
               </div>
@@ -171,7 +171,7 @@ export function GeneralSettings() {
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">Backup automático em tempo real para múltiplos servidores com redundância global.</p>
               </div>
             </div>
-            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/50 opacity-60 transition-opacity hover:opacity-100">
+            <div className="flex items-start gap-4 p-4 bg-slate-950/50 rounded-2xl border  opacity-60 transition-opacity hover:opacity-100">
               <div className="w-10 h-10 bg-slate-800 text-slate-400 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>

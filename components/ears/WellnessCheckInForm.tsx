@@ -182,7 +182,7 @@ export const WellnessCheckInForm: React.FC<Props> = ({ athlete, history = [], on
   return (
     <div className="max-w-2xl mx-auto space-y-8 pb-20">
       {/* Header & Score Preview */}
-      <div className="flex items-center justify-between p-6 bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-3xl shadow-2xl">
+      <div className="flex items-center justify-between p-6 glass-panel backdrop-blur-xl border border-white/5 rounded-3xl shadow-2xl">
         <div className="flex items-center gap-4">
           <div className={`p-4 rounded-2xl bg-slate-800/50 border border-white/5 ${getStatusColor()}`}>
             <Zap className="w-8 h-8" />

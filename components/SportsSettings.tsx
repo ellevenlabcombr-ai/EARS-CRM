@@ -242,7 +242,7 @@ export const SportsSettings = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
+            <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border " />
           ))
         ) : (
           sports.map((sport) => (
@@ -250,7 +250,7 @@ export const SportsSettings = () => {
               key={sport.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5 hover:border-cyan-500/30 transition-all group"
+              className="glass-panel border  rounded-2xl p-5 hover:border-cyan-500/30 transition-all group"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">

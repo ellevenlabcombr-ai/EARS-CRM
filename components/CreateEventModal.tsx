@@ -325,7 +325,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                 </div>
 
                 {/* Title & Location */}
-                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border border-slate-800/50">
+                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border ">
                   <div>
                     <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
                        <AlignLeft className="w-4 h-4" /> Título
@@ -461,7 +461,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                 </div>
 
                 {/* Date & Time */}
-                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border border-slate-800/50">
+                <div className="space-y-4 bg-slate-950/30 p-5 rounded-3xl border ">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <Clock className="w-4 h-4 text-cyan-500" />

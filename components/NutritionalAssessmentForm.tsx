@@ -21,7 +21,7 @@ const Slider = ({ label, value, onChange, invertColor = false, max = 10 }: { lab
     : (ratio < 0.4 ? 'text-rose-400' : ratio < 0.7 ? 'text-amber-400' : 'text-emerald-400');
 
   return (
-    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border ">
       <div className="flex justify-between items-end">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
         <span className={`text-sm font-black ${valueColor}`}>{value}/{max}</span>
@@ -39,7 +39,7 @@ const Slider = ({ label, value, onChange, invertColor = false, max = 10 }: { lab
 };
 
 const SelectGroup = ({ label, value, options, onChange }: { label: string, value: string | boolean | undefined, options: {id: string | boolean, label: string}[], onChange: (v: any) => void }) => (
-  <div className="space-y-3 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+  <div className="space-y-3 bg-slate-900/30 p-4 rounded-xl border ">
     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {options.map(opt => (
@@ -402,19 +402,19 @@ export function NutritionalAssessmentForm({ athleteId, onCancel, onSave }: Nutri
 
               <div className="p-6">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Qualidade</span>
                     <span className={`text-base font-black mt-1 ${assessmentResult.metrics.intakeScore >= 75 ? 'text-emerald-400' : assessmentResult.metrics.intakeScore >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{assessmentResult.metrics.intakeScore.toFixed(0)}</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Esporte/Rec.</span>
                     <span className={`text-base font-black mt-1 ${assessmentResult.metrics.sportsScore >= 75 ? 'text-emerald-400' : assessmentResult.metrics.sportsScore >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{assessmentResult.metrics.sportsScore.toFixed(0)}</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Saúde/Sinais</span>
                     <span className={`text-base font-black mt-1 ${assessmentResult.metrics.healthScore >= 75 ? 'text-emerald-400' : assessmentResult.metrics.healthScore >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{assessmentResult.metrics.healthScore.toFixed(0)}</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex flex-col justify-center items-center text-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex flex-col justify-center items-center text-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase">Comp.</span>
                     <span className={`text-base font-black mt-1 ${assessmentResult.metrics.behaviorScore >= 75 ? 'text-emerald-400' : assessmentResult.metrics.behaviorScore >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>{assessmentResult.metrics.behaviorScore.toFixed(0)}</span>
                   </div>

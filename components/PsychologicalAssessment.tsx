@@ -118,7 +118,7 @@ export function PsychologicalAssessment({ athleteId, onCancel, onSave }: Psychol
       : (value < 4 ? 'text-rose-400' : value < 7 ? 'text-amber-400' : 'text-emerald-400');
 
     return (
-      <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+      <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border ">
         <div className="flex justify-between items-end">
           <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
           <span className={`text-sm font-black ${valueColor}`}>{value}/10</span>
@@ -268,15 +268,15 @@ export function PsychologicalAssessment({ athleteId, onCancel, onSave }: Psychol
 
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-4 mb-8">
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Índice Prontidão</span>
                     <span className={`text-xl font-black ${metrics.readinessIndex > 70 ? 'text-emerald-400' : metrics.readinessIndex > 50 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.readinessIndex}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Índice Estresse</span>
                     <span className={`text-xl font-black ${metrics.stressIndex < 40 ? 'text-emerald-400' : metrics.stressIndex < 70 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.stressIndex}%</span>
                   </div>
-                  <div className="bg-slate-950 rounded-xl p-4 border border-slate-800/50 flex justify-between items-center">
+                  <div className="bg-slate-950 rounded-xl p-4 border  flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Índice Fadiga</span>
                     <span className={`text-xl font-black ${metrics.fatigueIndex < 40 ? 'text-emerald-400' : metrics.fatigueIndex < 70 ? 'text-amber-400' : 'text-rose-400'}`}>{metrics.fatigueIndex}%</span>
                   </div>

@@ -59,9 +59,9 @@ export function TestInfoModal({
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-lg bg-[#0A1120] border border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden z-[101] max-h-[90vh] flex flex-col"
+                className="relative w-full max-w-lg glass-panel border border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden z-[101] max-h-[90vh] flex flex-col"
               >
-                <div className="p-6 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/40">
+                <div className="p-6 border-b  flex justify-between items-center glass-panel">
                   <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
                     <Info className="w-5 h-5 text-cyan-500" />
                     {title}

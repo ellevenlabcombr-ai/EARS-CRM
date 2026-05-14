@@ -16,7 +16,7 @@ interface TiltCardProps {
 
 export function TiltCard({
   children,
-  className = "",
+  className = "w-full h-full",
   onClick,
   tiltMaxAngleX = 5,
   tiltMaxAngleY = 5,

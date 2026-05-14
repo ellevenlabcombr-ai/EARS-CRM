@@ -132,7 +132,7 @@ export const AthleteEarsDashboard: React.FC<Props> = ({ athlete, history, perfor
               progress: athlete.gender === 'female' ? 100 : (latest?.clinical_symptoms?.length === 0 ? 100 : 40) 
             },
           ].map((m, i) => (
-            <Card key={i} className="bg-slate-900/50 border-slate-800/50 backdrop-blur-lg overflow-hidden group">
+            <Card key={i} className="bg-slate-900/50  backdrop-blur-lg overflow-hidden group">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className={`p-3 rounded-2xl bg-slate-800/50 border border-white/5 w-fit mb-4 group-hover:scale-110 transition-transform ${m.color}`}>
                   <m.icon className="w-5 h-5" />

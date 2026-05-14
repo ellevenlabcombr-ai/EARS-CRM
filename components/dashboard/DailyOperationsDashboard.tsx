@@ -425,7 +425,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
           </div>
         </div>
 
-        <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden backdrop-blur-sm">
+        <Card className="glass-panel  shadow-2xl overflow-hidden backdrop-blur-sm">
           <CardContent className="p-0">
             <div className="divide-y divide-slate-800/50">
               {fullAgenda.length === 0 ? (

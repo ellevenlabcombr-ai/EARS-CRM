@@ -802,7 +802,7 @@ export function AthleteRegistration({
       className="flex-1 flex flex-col h-screen overflow-y-auto bg-[#050B14] text-slate-200 font-sans selection:bg-cyan-500/30"
     >
       {/* Header */}
-      <header className="h-20 border-b border-slate-800/50 flex items-center justify-between px-4 sm:px-8 bg-[#0A1120]/80 backdrop-blur-xl shrink-0 sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <header className="h-20 border-b  flex items-center justify-between px-4 sm:px-8 glass-panel/80 backdrop-blur-xl shrink-0 sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Button
             variant="ghost"
@@ -882,7 +882,7 @@ export function AthleteRegistration({
           {/* Section 1: Dados Pessoais */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.personal")} />
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl">
               <div className="col-span-1 flex flex-col items-center justify-start gap-4 mb-8 lg:mb-0">
                 <input
                   type="file"
@@ -1009,7 +1009,7 @@ export function AthleteRegistration({
                     }
                   />
                 </div>
-                <div className="sm:col-span-2 pt-4 border-t border-slate-800/50 mt-2">
+                <div className="sm:col-span-2 pt-4 border-t  mt-2">
                   <FormLabel className="flex items-center gap-2 text-cyan-400">
                     <Key className="w-4 h-4" /> {t("reg.portalAccess")}
                   </FormLabel>
@@ -1044,7 +1044,7 @@ export function AthleteRegistration({
                     </button>
                   </div>
                 </div>
-                <div className="sm:col-span-2 pt-4 border-t border-slate-800/50 mt-2">
+                <div className="sm:col-span-2 pt-4 border-t  mt-2">
                   <FormLabel>{t("reg.address")}</FormLabel>
                 </div>
                 <div>
@@ -1118,7 +1118,7 @@ export function AthleteRegistration({
           {/* Section 2: Saúde e Convênio */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.health")} />
-            <div className="bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl space-y-6">
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <FormLabel>{t("reg.insurance")}</FormLabel>
@@ -1159,7 +1159,7 @@ export function AthleteRegistration({
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+              <div className="space-y-4 pt-4 border-t ">
                 <div className="flex items-center gap-4">
                   <FormLabel>{t("reg.allergies")}</FormLabel>
                   <button
@@ -1207,7 +1207,7 @@ export function AthleteRegistration({
           {/* Section 3: Dados Esportivos */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.sports")} />
-            <div className="bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl">
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <FormLabel>{t("reg.sport")}</FormLabel>
@@ -1432,7 +1432,7 @@ export function AthleteRegistration({
           {/* Section 4: Dados do Responsável */}
           <section className="space-y-6">
             <SectionTitle title={t("reg.guardian")} />
-            <div className="bg-slate-900/40 p-6 sm:p-8 rounded-3xl border border-slate-800/50 shadow-xl">
+            <div className="glass-panel p-6 sm:p-8 rounded-3xl border  shadow-xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <FormLabel>{t("reg.guardianName")}</FormLabel>
@@ -1535,7 +1535,7 @@ export function AthleteRegistration({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0A1120] border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
+              className="glass-panel border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
             >
               <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                 <h3 className="text-lg font-black text-white uppercase tracking-widest">

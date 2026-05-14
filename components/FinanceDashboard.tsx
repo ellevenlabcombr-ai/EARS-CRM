@@ -210,7 +210,7 @@ export function FinanceDashboard() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#050B14] relative">
-      <header className="px-6 h-20 border-b border-slate-800/50 flex items-center justify-between shrink-0 bg-[#0A1120] z-10">
+      <header className="px-6 h-20 border-b  flex items-center justify-between shrink-0 glass-panel z-10">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
             <DollarSign size={20} />
@@ -247,7 +247,7 @@ export function FinanceDashboard() {
 
       {activeTab === 'geral' && (
         <>
-          <div className="bg-[#0A1120] px-6 py-3 border-b border-slate-800/50 flex items-center gap-2 overflow-x-auto shrink-0 custom-scrollbar">
+          <div className="glass-panel px-6 py-3 border-b  flex items-center gap-2 overflow-x-auto shrink-0 custom-scrollbar">
             <span className="text-sm font-bold text-slate-500 uppercase tracking-widest mr-2">Forma de Pagamento:</span>
             <button 
               onClick={() => setSelectedAccount('all')}
@@ -273,7 +273,7 @@ export function FinanceDashboard() {
           <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
         {/* Metric Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl p-5 relative overflow-hidden group">
+          <div className="glass-panel border  rounded-2xl p-5 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-5 opacity-10">
               <ArrowUpRight size={80} className="text-emerald-500" />
             </div>
@@ -281,7 +281,7 @@ export function FinanceDashboard() {
             <h2 className="text-2xl font-black text-emerald-400">{formatCurrency(balance.incomes)}</h2>
             {balance.pendingIncomes > 0 && <p className="text-xs text-slate-500 mt-1">+{formatCurrency(balance.pendingIncomes)} pendentes</p>}
           </div>
-          <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl p-5 relative overflow-hidden group">
+          <div className="glass-panel border  rounded-2xl p-5 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-5 opacity-10">
               <ArrowDownRight size={80} className="text-rose-500" />
             </div>
@@ -289,7 +289,7 @@ export function FinanceDashboard() {
             <h2 className="text-2xl font-black text-rose-400">{formatCurrency(balance.expenses)}</h2>
             {balance.pendingExpenses > 0 && <p className="text-xs text-slate-500 mt-1">+{formatCurrency(balance.pendingExpenses)} pendentes</p>}
           </div>
-          <div className="bg-[#0A1120] border border-emerald-500/20 rounded-2xl p-5 relative overflow-hidden group col-span-1 md:col-span-2 flex items-center justify-between">
+          <div className="glass-panel border border-emerald-500/20 rounded-2xl p-5 relative overflow-hidden group col-span-1 md:col-span-2 flex items-center justify-between">
             <div className="absolute top-0 right-0 p-5 opacity-5">
               <DollarSign size={80} className="text-white" />
             </div>
@@ -306,7 +306,7 @@ export function FinanceDashboard() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl p-5">
+          <div className="glass-panel border  rounded-2xl p-5">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Fluxo de Caixa (Mensal)</h3>
             <div className="h-64">
               {monthlyFlowData.length > 0 ? (
@@ -331,7 +331,7 @@ export function FinanceDashboard() {
             </div>
           </div>
           
-          <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl p-5 flex flex-col">
+          <div className="glass-panel border  rounded-2xl p-5 flex flex-col">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Despesas por Categoria (Pagas)</h3>
             <div className="h-64 flex-1">
               {expensesByCategory.length > 0 ? (
@@ -371,8 +371,8 @@ export function FinanceDashboard() {
         </div>
 
         {/* Filters and List */}
-        <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl flex flex-col">
-          <div className="p-4 border-b border-slate-800/50 flex flex-wrap gap-4 items-center justify-between">
+        <div className="glass-panel border  rounded-2xl flex flex-col">
+          <div className="p-4 border-b  flex flex-wrap gap-4 items-center justify-between">
             <h3 className="font-bold text-white uppercase tracking-wider flex items-center gap-2">
               Histórico de Transações 
               <span className="bg-slate-800 text-slate-400 py-0.5 px-2 rounded-full text-xs">{filteredTransactions.length}</span>
@@ -406,7 +406,7 @@ export function FinanceDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-800/50">
+                    <tr className="text-slate-500 text-xs uppercase tracking-wider border-b ">
                       <th className="p-4 font-semibold">Descrição</th>
                       <th className="p-4 font-semibold">Categoria / Forma de Pag.</th>
                       <th className="p-4 font-semibold">Data</th>
@@ -616,9 +616,9 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed top-0 right-0 bottom-0 w-full md:w-[480px] bg-[#0A1120] border-l border-slate-800/50 shadow-2xl z-[110] flex flex-col"
+        className="fixed top-0 right-0 bottom-0 w-full md:w-[480px] glass-panel border-l  shadow-2xl z-[110] flex flex-col"
       >
-        <div className="p-6 border-b border-slate-800/50 flex items-center justify-between">
+        <div className="p-6 border-b  flex items-center justify-between">
           <h2 className="text-xl font-bold text-white uppercase tracking-tight">{initialData ? 'Editar Transação' : 'Nova Transação'}</h2>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-lg bg-slate-800/50">
             <ArrowUpRight className="rotate-45" size={16} />
@@ -626,7 +626,7 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
         </div>
         
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex bg-[#050B14] p-1 rounded-xl border border-slate-800/50">
+          <div className="flex bg-[#050B14] p-1 rounded-xl border ">
             <button 
               type="button"
               onClick={() => {setType('income'); setCategory('')}}
@@ -745,7 +745,7 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
                 />
                 
                 {receiptFile ? (
-                  <div className="flex items-center justify-between bg-[#0A1120] border border-slate-800 p-3 rounded-lg">
+                  <div className="flex items-center justify-between glass-panel border border-slate-800 p-3 rounded-lg">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <Paperclip size={14} className="text-emerald-500 shrink-0" />
                       <span className="text-sm text-slate-300 truncate">{receiptFile.name}</span>
@@ -756,7 +756,7 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
                   <button 
                     type="button" 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex items-center justify-center gap-2 bg-[#0A1120] border border-slate-800 border-dashed p-4 rounded-lg text-slate-400 hover:text-white hover:border-slate-600 hover:bg-slate-800/50 transition-all text-sm"
+                    className="w-full flex items-center justify-center gap-2 glass-panel border border-slate-800 border-dashed p-4 rounded-lg text-slate-400 hover:text-white hover:border-slate-600 hover:bg-slate-800/50 transition-all text-sm"
                   >
                     <Plus size={16} /> Adicionar Arquivo
                   </button>
@@ -891,13 +891,13 @@ function FinanceGoals({ goals, transactions }: { goals: any[], transactions: Tra
     <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {goals.length === 0 ? (
-          <div className="bg-[#0A1120] border border-slate-800 rounded-xl p-8 col-span-full text-center text-slate-500 font-bold">
+          <div className="glass-panel border border-slate-800 rounded-xl p-8 col-span-full text-center text-slate-500 font-bold">
              Nenhuma meta customizada. Crie nas configurações financeiras!
           </div>
         ) : goals.map(g => {
           const progress = Math.min(100, Math.round((g.current_amount / g.target_amount) * 100));
           return (
-            <div key={g.id} className="bg-[#0A1120] border border-amber-500/30 rounded-2xl p-6 relative overflow-hidden flex flex-col group">
+            <div key={g.id} className="glass-panel border border-amber-500/30 rounded-2xl p-6 relative overflow-hidden flex flex-col group">
               <div className="absolute top-0 right-0 p-5 opacity-5 pointer-events-none">
                 <Target size={80} className="text-amber-500" />
               </div>
@@ -921,7 +921,7 @@ function FinanceGoals({ goals, transactions }: { goals: any[], transactions: Tra
 
       {addingAmountForGoal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl z-[110]">
+          <div className="glass-panel border  rounded-2xl w-full max-w-sm p-6 relative shadow-2xl z-[110]">
              <h2 className="text-lg font-black text-white mb-4">Aporte para {addingAmountForGoal.name}</h2>
              <form onSubmit={handleAddAmount} className="space-y-4">
                 <div>
@@ -965,7 +965,7 @@ function LatePayments({ athletes, transactions }: { athletes: any[], transaction
 
   return (
     <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
-      <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl flex flex-col p-6 shadow-xl">
+      <div className="glass-panel border  rounded-2xl flex flex-col p-6 shadow-xl">
          <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
@@ -1009,7 +1009,7 @@ function LatePayments({ athletes, transactions }: { athletes: any[], transaction
 function SubscriptionsTab({ athletes, transactions }: { athletes: any[], transactions: Transaction[] }) {
   return (
     <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
-      <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl flex flex-col p-6 shadow-xl">
+      <div className="glass-panel border  rounded-2xl flex flex-col p-6 shadow-xl">
          <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
                <Repeat size={20} />
@@ -1062,7 +1062,7 @@ function DREReport({ transactions }: { transactions: Transaction[] }) {
 
   return (
     <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
-      <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl flex flex-col p-6 shadow-xl">
+      <div className="glass-panel border  rounded-2xl flex flex-col p-6 shadow-xl">
          <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                <TrendingUp size={20} />

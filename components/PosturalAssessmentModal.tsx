@@ -429,7 +429,7 @@ export function PosturalAssessmentModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-slate-950/95 backdrop-blur-xl">
-      <div className="bg-[#0A1120] border border-slate-800 w-full h-full max-w-6xl rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      <div className="glass-panel border border-slate-800 w-full h-full max-w-6xl rounded-3xl overflow-hidden flex flex-col shadow-2xl">
         {/* Header */}
         <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-800 bg-slate-900/50">
           <div className="flex items-center gap-4">

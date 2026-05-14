@@ -132,7 +132,7 @@ export function SettingsDashboard() {
 
       <div className="flex flex-col gap-6 w-full items-start">
         {/* Main Content */}
-        <main className="flex-1 w-full bg-slate-900/40 border border-slate-800/80 rounded-3xl relative">
+        <main className="flex-1 w-full glass-panel border border-slate-800/80 rounded-3xl relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
@@ -142,7 +142,7 @@ export function SettingsDashboard() {
               transition={{ duration: 0.2 }}
               className="p-6 lg:p-8"
             >
-              <div className="mb-8 pb-4 border-b border-slate-800/50 flex flex-col gap-2">
+              <div className="mb-8 pb-4 border-b  flex flex-col gap-2">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl bg-opacity-20 flex items-center justify-center ${activeComponent?.color} ${activeComponent?.textColor}`}>
                     {activeComponent && <activeComponent.icon size={26} />}

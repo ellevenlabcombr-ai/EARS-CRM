@@ -181,7 +181,7 @@ export function ClinicalSettings() {
 
   if (isLoading) {
     return (
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-12 flex flex-col items-center justify-center gap-4">
+      <div className="glass-panel border border-slate-800 rounded-3xl p-12 flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Carregando regras clínicas...</p>
       </div>
@@ -320,7 +320,7 @@ export function ClinicalSettings() {
         </div>
       </div>
 
-      <div className="pt-6 md:pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="pt-6 md:pt-8 border-t  flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex-1 w-full">
           {status !== 'idle' && (
             <div className={`p-4 rounded-xl border flex items-center gap-3 ${

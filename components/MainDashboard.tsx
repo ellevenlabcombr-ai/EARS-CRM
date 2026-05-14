@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import Image from "next/image";
 import { 
   Home, 
@@ -92,7 +93,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   const [editingAthlete, setEditingAthlete] = useState<any>(null);
   const [selectedAthleteForEval, setSelectedAthleteForEval] = useState<any>(null);
   const [athletesList, setAthletesList] = useState<any[]>([]);
-  const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [branding, setBranding] = useState<{logo_url: string | null, company_name: string}>({ logo_url: null, company_name: 'ELLEVEN' });
   const [userProfile, setUserProfile] = useState<{avatar_url: string | null, name: string}>({ avatar_url: null, name: 'Usuário' });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -152,13 +152,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
       window.removeEventListener('nav-to-agenda', handleNavToAgenda);
     };
   }, [fetchBranding, fetchUserProfile]);
-
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => setNotification(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -238,10 +231,26 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         });
 
       if (error) throw error;
-      setNotification({ message: 'Avaliação salva com sucesso!', type: 'success' });
+      
+      toast.success('Avaliação salva com sucesso!');
+      
+      // If there are high risk alerts, show them prominently
+      if (alerts && Array.isArray(alerts) && alerts.length > 0) {
+        alerts.forEach(alert => {
+          if (alert.toLowerCase().includes('risco')) {
+            toast.error(`Atenção: ${alert}`, { 
+              icon: '🚨',
+              duration: 8000,
+            });
+          } else {
+            toast.warning(alert);
+          }
+        });
+      }
+
     } catch (error: any) {
       console.error(`Error saving to ${table}:`, error);
-      setNotification({ message: error.message || 'Erro ao salvar avaliação.', type: 'error' });
+      toast.error(error.message || 'Erro ao salvar avaliação.');
       throw error;
     }
   };
@@ -456,7 +465,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                   </header>
 
                   {/* Athlete Selector for Evaluations */}
-                  <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 mb-8">
+                  <div className="glass-panel border border-slate-800 rounded-3xl p-6 mb-8">
                     <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-3">Atleta Selecionado</label>
                     <div className="flex flex-wrap gap-3">
                       <select 
@@ -501,7 +510,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                         <button
                           disabled={!selectedAthleteForEval}
                           onClick={() => setCurrentView(evalType.id as any)}
-                          className={`w-full p-6 glass-panel rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          className={`w-full h-full p-6 glass-panel rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           <div className={`w-12 h-12 bg-${evalType.color}-500/10 rounded-xl flex items-center justify-center text-${evalType.color}-500 mb-4 group-hover:bg-${evalType.color}-500 group-hover:text-[#050B14] transition-all`}>
                             <evalType.icon size={24} />
@@ -785,10 +794,10 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed lg:static inset-y-0 left-0 z-[90] w-[5.5rem] bg-[#0A1120] border-r border-slate-800/50 flex flex-col pt-safe pb-safe transition-transform duration-300 lg:translate-x-0 ${!isDesktop && !isMobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}`}
+        className={`fixed lg:static inset-y-0 left-0 z-[90] w-[5.5rem] glass-panel border-r  flex flex-col pt-safe pb-safe transition-transform duration-300 lg:translate-x-0 ${!isDesktop && !isMobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}`}
       >
         {/* Logo */}
-        <div className="h-20 flex items-center justify-center border-b border-slate-800/50 shrink-0">
+        <div className="h-20 flex items-center justify-center border-b  shrink-0">
           {branding.logo_url ? (
             <div className="relative w-12 h-12">
               <Image 
@@ -839,7 +848,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         </nav>
 
         {/* User / Logout */}
-        <div className="py-4 border-t border-slate-800/50 shrink-0 flex flex-col items-center gap-4">
+        <div className="py-4 border-t  shrink-0 flex flex-col items-center gap-4">
           <div className="relative group shrink-0">
             <button 
               onClick={() => setLanguage(language === 'pt' ? 'en' : 'pt')}
@@ -866,25 +875,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         </div>
       </aside>
 
-      {/* Notification Toast */}
-      <AnimatePresence>
-        {notification && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, x: 20 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
-            exit={{ opacity: 0, y: -20, x: 20 }}
-            className={`fixed top-4 right-4 z-[100] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 ${
-              notification.type === 'success' 
-                ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
-                : 'bg-red-500/10 border-red-500/50 text-red-400'
-            }`}
-          >
-            {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-            <span className="font-bold">{notification.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Main Content */}
       <main className={`flex-1 relative overflow-y-auto custom-scrollbar w-full flex flex-col transition-colors duration-500 ${
         activeMode === 'clinical' ? 'bg-[#050B14] shadow-[inset_0_0_100px_rgba(59,130,246,0.05)]' :
@@ -892,10 +882,10 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
         'bg-[#050B14]'
       }`}>
         {/* Global Header */}
-        <header className={`sticky top-0 z-40 h-[calc(80px+env(safe-area-inset-top))] pt-safe backdrop-blur-xl border-b border-slate-800/50 flex items-center px-5 lg:px-8 shrink-0 transition-colors duration-500 ${
+        <header className={`sticky top-0 z-40 h-[calc(80px+env(safe-area-inset-top))] pt-safe backdrop-blur-xl border-b  flex items-center px-5 lg:px-8 shrink-0 transition-colors duration-500 ${
           activeMode === 'clinical' ? 'bg-blue-950/20' :
           activeMode === 'eagles' ? 'bg-cyan-950/20' :
-          'bg-[#0A1120]/80'
+          'glass-panel/80'
         }`}>
           {/* Left Area */}
           <div className="flex flex-1 items-center gap-4 justify-start overflow-hidden">
@@ -922,7 +912,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
 
           {/* Central Operational Menu */}
           <div className="flex justify-center flex-[2] sm:flex-none mx-2">
-            <div className="flex items-center gap-1 sm:gap-6 bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800/50 backdrop-blur-md overflow-x-auto no-scrollbar w-full sm:w-auto justify-center">
+            <div className="flex items-center gap-1 sm:gap-6 bg-slate-950/50 p-1.5 rounded-2xl border  backdrop-blur-md overflow-x-auto no-scrollbar w-full sm:w-auto justify-center">
               {operationalItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeMode === item.id;

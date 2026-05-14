@@ -210,7 +210,7 @@ interface AthleteHealthProfileProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#0A1120] border border-slate-800 p-3 rounded-xl shadow-2xl">
+      <div className="glass-panel border border-slate-800 p-3 rounded-xl shadow-2xl">
         <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1">
@@ -2530,7 +2530,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             )}
 
             {/* Session Mode Toggle Container */}
-            <div className="flex items-center justify-between bg-slate-900/40 border border-slate-800/50 p-6 rounded-[2rem] backdrop-blur-md shadow-2xl overflow-hidden relative group">
+            <div className="flex items-center justify-between glass-panel border  p-6 rounded-[2rem] backdrop-blur-md shadow-2xl overflow-hidden relative group">
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <BrainCircuit className="w-24 h-24 text-cyan-500" />
               </div>
@@ -2668,7 +2668,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               trend: 'stable'
             }] : [])
           ].map((card, i) => (
-            <Card key={i} className={`bg-slate-900/40 border-slate-800/50 shadow-lg group hover:border-slate-700 transition-all active:scale-[0.98] cursor-pointer relative overflow-hidden ${card.alert ? 'ring-1 ring-rose-500/30' : ''}`}>
+            <Card key={i} className={`glass-panel  shadow-lg group hover:border-slate-700 transition-all active:scale-[0.98] cursor-pointer relative overflow-hidden ${card.alert ? 'ring-1 ring-rose-500/30' : ''}`}>
               {card.alert && (
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-rose-500 animate-pulse" />
               )}
@@ -2684,7 +2684,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                     <span className="text-xxs font-black text-rose-500 uppercase tracking-widest animate-pulse">{card.alert}</span>
                   </div>
                 ) : (
-                  <div className="mt-1.5 w-full pt-1.5 border-t border-slate-800/50 flex flex-col items-center gap-0.5">
+                  <div className="mt-1.5 w-full pt-1.5 border-t  flex flex-col items-center gap-0.5">
                     <div className="flex items-center gap-1">
                       {card.trend === 'up' && <ArrowUpRight className="w-2 h-2 text-emerald-500" />}
                       {card.trend === 'down' && <ArrowDownRight className="w-2 h-2 text-rose-500" />}
@@ -2707,7 +2707,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             {clinicalSessionData.masterScore.domains && (
               <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                 {clinicalSessionData.masterScore.domains.map((domain: any) => (
-                  <Card key={domain.id} className="bg-slate-900/60 border-slate-800/50 p-4 shadow-xl">
+                  <Card key={domain.id} className="bg-slate-900/60  p-4 shadow-xl">
                      <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{domain.label}</span>
@@ -2865,7 +2865,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             Painel Clínico & Diagnóstico
           </h2>
           
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl">
+          <Card className="glass-panel  shadow-2xl">
             <CardContent className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div className="flex flex-col items-center">
@@ -2959,7 +2959,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                 <button
                                   key={region.id}
                                   onClick={() => setSelectedClinicalRegion({ id: region.id, label: region.label })}
-                                  className="flex items-center justify-between p-2.5 bg-slate-900/50 rounded-lg border border-slate-800/50 hover:border-slate-700 transition-all group"
+                                  className="flex items-center justify-between p-2.5 bg-slate-900/50 rounded-lg border  hover:border-slate-700 transition-all group"
                                 >
                                   <div className="flex flex-col items-start">
                                     <span className="text-xxs font-bold text-slate-300 uppercase group-hover:text-white transition-colors">{region.label}</span>
@@ -2983,13 +2983,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                             <span className="text-xxs text-slate-500 font-bold">Geral</span>
                           </div>
                           <div className="space-y-3">
-                            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded-lg border ">
                               <span className="text-xxs font-bold text-slate-400 uppercase">Status de Dor</span>
                               <span className="text-xs font-black text-emerald-400 flex items-center gap-1">
                                 <TrendingDown className="w-3 h-3" /> -15% esta semana
                               </span>
                             </div>
-                            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded-lg border border-slate-800/50">
+                            <div className="flex items-center justify-between p-2 bg-slate-900/50 rounded-lg border ">
                               <span className="text-xxs font-bold text-slate-400 uppercase">Ganho de Força</span>
                               <span className="text-xs font-black text-cyan-400 flex items-center gap-1">
                                 <TrendingUp className="w-3 h-3" /> +8% esta semana
@@ -3148,7 +3148,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-slate-900/20 border-slate-800/50 border-dashed shadow-xl flex flex-col items-center justify-center p-12 text-center h-full">
+            <Card className="bg-slate-900/20  border-dashed shadow-xl flex flex-col items-center justify-center p-12 text-center h-full">
               <BrainCircuit className="w-12 h-12 text-slate-800 mb-4" />
               <h3 className="text-xxs font-black text-slate-600 uppercase tracking-widest mb-2">Aguardando Dados</h3>
               <p className="text-xs text-slate-500 max-w-[12.5rem]">Inicie o monitoramento wellness para gerar insights inteligentes.</p>
@@ -3156,8 +3156,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           )}
 
           {athlete.gender === 'F' ? (
-            <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden">
-              <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+            <Card className="glass-panel  shadow-2xl overflow-hidden">
+              <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
                 <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Droplets className="w-4 h-4 text-pink-500" />
                   Monitoramento de Ciclo Menstrual
@@ -3204,8 +3204,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
         {/* 4. Monitoring trends */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+          <Card className="glass-panel  shadow-2xl overflow-hidden">
+            <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
               <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-cyan-500" />
                 Evolução Wellness & Prontidão
@@ -3236,8 +3236,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           </CardContent>
           </Card>
 
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+          <Card className="glass-panel  shadow-2xl overflow-hidden">
+            <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
               <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Activity className="w-4 h-4 text-rose-500" />
                 Evolução da Dor (NPS)
@@ -3276,8 +3276,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         {/* 4. Advanced Metrics Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Readiness Gauge & ACWR */}
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between">
+          <Card className="glass-panel  shadow-2xl overflow-hidden">
+            <CardHeader className="border-b  bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between">
               <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-500" />
                 Carga de Trabalho & Prontidão
@@ -3371,8 +3371,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           </Card>
 
           {/* 5. Performance Evolution */}
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between">
+          <Card className="glass-panel  shadow-2xl overflow-hidden">
+            <CardHeader className="border-b  bg-slate-900/20 px-6 py-4 flex flex-row items-center justify-between">
               <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-cyan-500" />
                 Evolução de Performance
@@ -3427,7 +3427,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         </div>
 
         {/* AI Alerts and Condutas */}
-        <Card className="bg-slate-900/40 border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)] overflow-hidden mt-6">
+        <Card className="glass-panel border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.05)] overflow-hidden mt-6">
           <CardHeader className="border-b border-rose-500/20 bg-rose-500/5 px-6 py-4">
             <CardTitle className="text-xs font-black text-rose-400 uppercase tracking-widest flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
@@ -3507,8 +3507,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Dados Pessoais */}
-              <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
-                <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+              <Card className="glass-panel  shadow-xl">
+                <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
                   <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <User className="w-4 h-4 text-cyan-500" />
                     Dados Pessoais
@@ -3564,8 +3564,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </Card>
 
               {/* Dados Esportivos */}
-              <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
-                <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+              <Card className="glass-panel  shadow-xl">
+                <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
                   <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-cyan-500" />
                     Dados Esportivos
@@ -3612,8 +3612,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </Card>
 
               {/* Dados de Contato */}
-              <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
-                <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+              <Card className="glass-panel  shadow-xl">
+                <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
                   <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <Phone className="w-4 h-4 text-cyan-500" />
                     Dados de Contato
@@ -3634,8 +3634,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </Card>
 
               {/* Endereço */}
-              <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
-                <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+              <Card className="glass-panel  shadow-xl">
+                <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
                   <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-cyan-500" />
                     Endereço
@@ -3661,8 +3661,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </Card>
 
               {/* Acesso ao Sistema */}
-              <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl border-cyan-500/20">
-                <CardHeader className="border-b border-slate-800/50 bg-cyan-500/5 px-6 py-4">
+              <Card className="glass-panel  shadow-xl border-cyan-500/20">
+                <CardHeader className="border-b  bg-cyan-500/5 px-6 py-4">
                   <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <Key className="w-4 h-4 text-cyan-500" />
                     Acesso ao Sistema (Wellness)
@@ -3702,8 +3702,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </Card>
 
               {/* Informações Médicas & Emergência */}
-              <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl md:col-span-2 lg:col-span-3">
-                <CardHeader className="border-b border-slate-800/50 bg-slate-900/20 px-6 py-4">
+              <Card className="glass-panel  shadow-xl md:col-span-2 lg:col-span-3">
+                <CardHeader className="border-b  bg-slate-900/20 px-6 py-4">
                   <CardTitle className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 text-rose-500" />
                     Informações Médicas & Emergência
@@ -3781,7 +3781,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center shadow-2xl relative overflow-hidden">
                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <div className="flex flex-col items-center justify-center shrink-0 space-y-3 p-6 bg-slate-900/80 rounded-[2rem] border border-slate-800/50 shadow-inner min-w-[200px]">
+                <div className="flex flex-col items-center justify-center shrink-0 space-y-3 p-6 bg-slate-900/80 rounded-[2rem] border  shadow-inner min-w-[200px]">
                   <p className="text-xs font-black text-slate-500 uppercase tracking-widest text-center">Score Geral<br/>de Avaliações</p>
                   <div className="relative flex items-center justify-center w-32 h-32">
                     <svg className="w-full h-full transform -rotate-90">
@@ -3849,7 +3849,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   </div>
                 ) : (
                   athleteAlerts.filter(a => a.status === 'active').map(alert => (
-                    <Card key={alert.id} className={`bg-slate-900/40 border-slate-800/50 shadow-xl ${alert.severity === 'high' ? 'border-l-4 border-l-rose-500' : alert.severity === 'medium' ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-blue-500'}`}>
+                    <Card key={alert.id} className={`glass-panel  shadow-xl ${alert.severity === 'high' ? 'border-l-4 border-l-rose-500' : alert.severity === 'medium' ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-blue-500'}`}>
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-start gap-3">
                           <div className={`mt-1 p-2 rounded-lg ${alert.severity === 'high' ? 'bg-rose-500/10 text-rose-500' : alert.severity === 'medium' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'}`}>
@@ -3884,7 +3884,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 )}
 
                 {athleteAlerts.filter(a => a.status === 'resolved').length > 0 && (
-                  <div className="pt-4 border-t border-slate-800/50">
+                  <div className="pt-4 border-t ">
                     <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                       <History className="w-3 h-3" />
                       Histórico Resolvido
@@ -3907,7 +3907,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
+            <div className="flex items-center justify-between pt-4 border-t ">
               <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Stethoscope className="w-5 h-5 text-cyan-500" />
                 Avaliações & Testes
@@ -3936,7 +3936,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   <Card 
                     key={item.id} 
                     onClick={() => (item.id === 'postural' ? setShowPosturalModal(true) : setActiveAssessment(item.id as any))}
-                    className="bg-slate-900/40 border-slate-800/50 shadow-xl group hover:border-slate-700 transition-all active:scale-[0.98] cursor-pointer"
+                    className="glass-panel  shadow-xl group hover:border-slate-700 transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <CardContent className="p-6">
                       <div className={`w-12 h-12 rounded-2xl ${item.bg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
@@ -4293,7 +4293,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                       return matchesSearch && matchesCategory;
                     })
                     .map(file => (
-                      <Card key={file.id} className="bg-slate-900/40 border-slate-800/50 shadow-xl group hover:border-cyan-500/30 transition-all">
+                      <Card key={file.id} className="glass-panel  shadow-xl group hover:border-cyan-500/30 transition-all">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-cyan-500 group-hover:bg-cyan-500 group-hover:text-[#050B14] transition-all">
@@ -4349,7 +4349,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                             {file.mime_type?.split('/')[1]?.toUpperCase() || file.file_type?.toUpperCase() || 'ARQUIVO'} • {(file.file_size / 1024 / 1024).toFixed(2)} MB
                           </p>
 
-                          <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800/50">
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t ">
                             <span className="text-xxs text-slate-500 uppercase tracking-widest">
                               {new Date(file.created_at).toLocaleDateString('pt-BR')}
                             </span>
@@ -4437,7 +4437,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
             <div className="space-y-4">
               {prontuarioNotes.map(note => (
-                <Card key={note.id} className={`bg-slate-900/40 border-slate-800/50 shadow-xl transition-all ${selectedNotes.includes(note.id) ? 'ring-2 ring-cyan-500/50 border-cyan-500/30' : ''}`}>
+                <Card key={note.id} className={`glass-panel  shadow-xl transition-all ${selectedNotes.includes(note.id) ? 'ring-2 ring-cyan-500/50 border-cyan-500/30' : ''}`}>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
@@ -4484,7 +4484,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                       </div>
                     </div>
                     <p className="text-sm text-slate-300 leading-relaxed mb-6 whitespace-pre-wrap">{note.text}</p>
-                    <div className="border-t border-slate-800/50 pt-4 flex items-center gap-3">
+                    <div className="border-t  pt-4 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
                         {note.isEvent ? <Calendar className="w-4 h-4 text-cyan-500" /> : <PenTool className="w-4 h-4 text-slate-500" />}
                       </div>
@@ -4497,7 +4497,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 </Card>
               ))}
               {prontuarioNotes.length === 0 && (
-                <div className="text-center py-12 bg-slate-900/20 border border-slate-800/50 rounded-3xl">
+                <div className="text-center py-12 bg-slate-900/20 border  rounded-3xl">
                   <FileText className="w-12 h-12 text-slate-700 mx-auto mb-4" />
                   <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Nenhum registro encontrado</p>
                 </div>
@@ -4513,7 +4513,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 <Calendar className="w-5 h-5 text-cyan-500" />Agenda do Atleta
               </h2>
             </div>
-            <div className="bg-slate-900/40 border border-slate-800/50 rounded-3xl p-4 sm:p-6 shadow-xl relative mt-4">
+            <div className="glass-panel border  rounded-3xl p-4 sm:p-6 shadow-xl relative mt-4">
               <AthleteAgendaList 
                 athleteId={athlete.id} 
                 lang={language as "pt" | "en"} 
@@ -4538,10 +4538,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-slate-800/50 bg-slate-900/20 shadow-2xl">
+            <div className="overflow-hidden rounded-3xl border  bg-slate-900/20 shadow-2xl">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/60 border-b border-slate-800/50">
+                  <tr className="bg-slate-900/60 border-b ">
                     <th className="px-6 py-4 w-12">
                        <input 
                          type="checkbox" 
@@ -4689,7 +4689,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0A1120] border border-slate-800 w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+              className="glass-panel border border-slate-800 w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
             >
               {/* Header */}
               <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
@@ -4731,7 +4731,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    <div className="space-y-6">
                 {/* Info Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50">
+                  <div className="p-4 rounded-2xl bg-slate-900/50 border ">
                     <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">{language === "pt" ? "Tipo" : "Type"}</p>
                     <p className="text-sm font-bold text-white uppercase">
                       {language === "pt" ? (
@@ -4767,7 +4767,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                       )}
                     </p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800/50">
+                  <div className="p-4 rounded-2xl bg-slate-900/50 border ">
                     <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">{language === "pt" ? "Classificação" : "Classification"}</p>
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
@@ -5061,7 +5061,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="bg-[#050B18] border border-slate-800/60 w-full max-w-4xl rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl max-h-[90vh]"
             >
-              <div className="p-6 border-b border-slate-800/50 flex items-center justify-between bg-slate-900/20">
+              <div className="p-6 border-b  flex items-center justify-between bg-slate-900/20">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
                     <ClipboardList className="w-5 h-5 text-cyan-400" />
@@ -5260,7 +5260,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                     <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest pl-2">Observações & Evolução Técnica</h3>
                     <div className="relative group">
                       <textarea 
-                        className="w-full bg-slate-900/30 border-2 border-slate-800/50 rounded-[2rem] p-6 text-white font-medium text-sm min-h-[150px] outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
+                        className="w-full bg-slate-900/30 border-2  rounded-[2rem] p-6 text-white font-medium text-sm min-h-[150px] outline-none focus:border-cyan-500/50 transition-all placeholder:text-slate-600"
                         placeholder="Descreva detalhes específicos da sessão..."
                         value={noteForm.obs}
                         onChange={(e) => setNoteForm({...noteForm, obs: e.target.value})}
@@ -5280,7 +5280,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 </div>
               </div>
 
-              <div className="p-6 bg-slate-900/50 border-t border-slate-800/50 flex flex-col sm:flex-row items-center gap-4">
+              <div className="p-6 bg-slate-900/50 border-t  flex flex-col sm:flex-row items-center gap-4">
                 <div className="flex-1 flex items-center gap-4 p-4 bg-slate-950 rounded-2xl border border-white/5 w-full">
                   <PenTool className="w-5 h-5 text-slate-500" />
                   <div className="flex-1">
@@ -5324,9 +5324,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-sm bg-[#0A1120] border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden"
+              className="relative w-full max-w-sm glass-panel border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b border-slate-800/50 flex items-center justify-between bg-slate-900/20">
+              <div className="p-6 border-b  flex items-center justify-between bg-slate-900/20">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
                     <QrCode className="w-5 h-5 text-amber-500" />
@@ -5345,7 +5345,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </div>
 
               <div className="p-8 flex flex-col items-center justify-center space-y-6">
-                <div className="bg-slate-900/50 p-4 rounded-2xl shadow-inner border border-slate-800/50">
+                <div className="bg-slate-900/50 p-4 rounded-2xl shadow-inner border ">
                   <QRCodeSVG 
                     value={JSON.stringify({
                       id: athlete.id,
@@ -5378,7 +5378,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       </AnimatePresence>
 
       {/* Footer Info */}
-      <footer className="bg-[#0A1120]/80 border-t border-slate-800/50 p-6 text-center">
+      <footer className="glass-panel/80 border-t  p-6 text-center">
         <p className="text-xxs font-bold text-slate-600 uppercase tracking-[0.3em]">
           EARS High Performance Clinical Monitoring • v2.0
         </p>
@@ -5542,7 +5542,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0A1120] border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+              className="glass-panel border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden flex flex-col shadow-2xl"
             >
               <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                 <div className="flex items-center gap-3">

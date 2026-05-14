@@ -392,7 +392,7 @@ export default function FunctionalScreening({ athleteId, onCancel, onSave }: Fun
           {step !== 4 && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                {currentTests.map((test) => (
-                 <Card key={test.id} className="bg-slate-900/40 border-slate-800/50 overflow-hidden">
+                 <Card key={test.id} className="glass-panel  overflow-hidden">
                    <CardContent className="p-6">
                      <div className="flex flex-col md:flex-row gap-6">
                        {/* Test Info & Scoring */}
@@ -513,7 +513,7 @@ export default function FunctionalScreening({ athleteId, onCancel, onSave }: Fun
 
           {step === 4 && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-               <Card className="bg-slate-900/40 border-slate-800/50">
+               <Card className="glass-panel ">
                  <CardHeader>
                    <CardTitle className="text-sm font-black text-white uppercase tracking-widest">Observações Finais</CardTitle>
                  </CardHeader>

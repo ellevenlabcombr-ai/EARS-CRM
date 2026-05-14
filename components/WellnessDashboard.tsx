@@ -626,7 +626,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
     <SafeRender componentName="WellnessDashboard">
       <div className="flex-1 flex flex-col min-h-screen bg-[#020617] text-slate-200 font-sans overflow-x-hidden">
       {/* Header */}
-      <header className="bg-[#0f172a]/60 backdrop-blur-md border-b border-slate-800/50 px-6 py-6 sticky top-0 z-40">
+      <header className="bg-[#0f172a]/60 backdrop-blur-md border-b  px-6 py-6 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
@@ -917,7 +917,7 @@ ANALYZE check_ins;`}
           <>
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
+          <Card className="glass-panel  shadow-xl">
             <CardContent className="p-4 sm:p-6 flex items-center gap-4">
               <div className="p-4 bg-cyan-500/10 rounded-2xl border border-cyan-500/20">
                 <CheckCircle2 className="w-8 h-8 text-cyan-400" />
@@ -932,7 +932,7 @@ ANALYZE check_ins;`}
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-900/40 border-slate-800/50 shadow-xl">
+          <Card className="glass-panel  shadow-xl">
             <CardContent className="p-4 sm:p-6 flex items-center gap-4">
               <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
                 <Activity className="w-8 h-8 text-emerald-400" />
@@ -951,7 +951,7 @@ ANALYZE check_ins;`}
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-900/40 border-rose-500/30 shadow-[0_0_30px_rgba(244,63,94,0.1)]">
+          <Card className="glass-panel border-rose-500/30 shadow-[0_0_30px_rgba(244,63,94,0.1)]">
             <CardContent className="p-4 sm:p-6 flex items-center gap-4">
               <div className="p-4 bg-rose-500/20 rounded-2xl border border-rose-500/30">
                 <AlertCircle className="w-8 h-8 text-rose-400" />
@@ -970,7 +970,7 @@ ANALYZE check_ins;`}
         {/* Filters and List */}
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800/50 w-full sm:w-auto overflow-x-auto no-scrollbar">
+            <div className="flex bg-slate-900/50 p-1 rounded-xl border  w-full sm:w-auto overflow-x-auto no-scrollbar">
               {[
                 { id: 'all', label: 'Todos' },
                 { id: 'completed', label: 'Respondidos' },
@@ -1003,7 +1003,7 @@ ANALYZE check_ins;`}
             </div>
           </div>
 
-          <div className="bg-slate-900/40 border border-slate-800/50 rounded-2xl overflow-hidden shadow-2xl">
+          <div className="glass-panel border  rounded-2xl overflow-hidden shadow-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -1181,10 +1181,10 @@ ANALYZE check_ins;`}
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="bg-[#0f172a] w-full max-w-2xl rounded-3xl border border-slate-800/50 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            className="bg-[#0f172a] w-full max-w-2xl rounded-3xl border  shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
           >
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-800/50 flex items-start justify-between bg-slate-900/50">
+            <div className="p-6 border-b  flex items-start justify-between bg-slate-900/50">
               <div className="flex items-center gap-4">
                 <div 
                   className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-700 cursor-pointer hover:border-cyan-500 transition-colors"
@@ -1230,7 +1230,7 @@ ANALYZE check_ins;`}
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
               {/* Readiness Score */}
-              <div className="flex items-center justify-between p-6 bg-slate-900/50 rounded-2xl border border-slate-800/50">
+              <div className="flex items-center justify-between p-6 bg-slate-900/50 rounded-2xl border ">
                 <div>
                   <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-1">Score de Prontidão</p>
                   <p className="text-sm font-medium text-slate-400">Calculado com base nas respostas diárias</p>
@@ -1263,7 +1263,7 @@ ANALYZE check_ins;`}
               {/* Grid of Answers */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Sleep */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-indigo-500/10 rounded-lg">
                       <Moon className="w-5 h-5 text-indigo-400" />
@@ -1283,7 +1283,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Fatigue */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-amber-500/10 rounded-lg">
                       <Battery className="w-5 h-5 text-amber-400" />
@@ -1301,7 +1301,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Soreness */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50 sm:col-span-2">
+                <div className="p-5 glass-panel rounded-2xl border  sm:col-span-2">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 bg-rose-500/10 rounded-lg">
                       <Activity className="w-5 h-5 text-rose-400" />
@@ -1357,7 +1357,7 @@ ANALYZE check_ins;`}
                     </div>
                     
                     <div className="lg:col-span-5 space-y-8 w-full">
-                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 space-y-4">
+                      <div className="bg-slate-950/50 p-4 rounded-xl border  space-y-4">
                         <div className="flex justify-between items-end">
                           <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Intensidade Geral</p>
                           <p className={`text-2xl font-black ${Math.max(selectedAnswers.soreness || 0, ...Object.values(getPainMap(selectedAnswers)).map(p => p.level)) > 4 ? 'text-rose-400' : 'text-emerald-400'}`}>
@@ -1445,7 +1445,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Symptoms */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-amber-500/10 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-amber-400" />
@@ -1500,7 +1500,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Stress */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-purple-500/10 rounded-lg">
                       <Brain className="w-5 h-5 text-purple-400" />
@@ -1522,7 +1522,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Mood */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-pink-500/10 rounded-lg">
                       <Smile className="w-5 h-5 text-pink-400" />
@@ -1544,7 +1544,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Hydration & Urine */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-cyan-500/10 rounded-lg">
                       <Droplets className="w-5 h-5 text-cyan-400" />
@@ -1576,7 +1576,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Training Load & RPE */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50 sm:col-span-2">
+                <div className="p-5 glass-panel rounded-2xl border  sm:col-span-2">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-blue-500/10 rounded-lg">
                       <Activity className="w-5 h-5 text-blue-400" />
@@ -1616,7 +1616,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Nutrition & Pre-Training */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-emerald-500/10 rounded-lg">
                       <Apple className="w-5 h-5 text-emerald-400" />
@@ -1648,7 +1648,7 @@ ANALYZE check_ins;`}
                 </div>
 
                 {/* Additional Metrics */}
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-orange-500/10 rounded-lg">
                       <RefreshCcw className="w-5 h-5 text-orange-400" />
@@ -1669,7 +1669,7 @@ ANALYZE check_ins;`}
                   </div>
                 </div>
 
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-blue-500/10 rounded-lg">
                       <Target className="w-5 h-5 text-blue-400" />
@@ -1690,7 +1690,7 @@ ANALYZE check_ins;`}
                   </div>
                 </div>
 
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-emerald-500/10 rounded-lg">
                       <Heart className="w-5 h-5 text-emerald-400" />
@@ -1711,7 +1711,7 @@ ANALYZE check_ins;`}
                   </div>
                 </div>
 
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-rose-500/10 rounded-lg">
                       <Activity className="w-5 h-5 text-rose-400" />
@@ -1734,7 +1734,7 @@ ANALYZE check_ins;`}
 
                 {/* Menstrual Cycle (If applicable) */}
                 {selectedAnswers.gender === 'F' && (
-                  <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                  <div className="p-5 glass-panel rounded-2xl border ">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="p-2 bg-pink-500/10 rounded-lg">
                         <Droplets className="w-5 h-5 text-pink-400" />
@@ -1769,7 +1769,7 @@ ANALYZE check_ins;`}
 
               {/* Comments */}
               {selectedAnswers.comments && (
-                <div className="p-5 bg-slate-900/40 rounded-2xl border border-slate-800/50">
+                <div className="p-5 glass-panel rounded-2xl border ">
                   <div className="flex items-center gap-3 mb-3">
                     <FileText className="w-4 h-4 text-slate-500" />
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Comentários do Atleta</p>
@@ -1780,7 +1780,7 @@ ANALYZE check_ins;`}
             </div>
             
             {/* Modal Footer */}
-            <div className="p-6 border-t border-slate-800/50 bg-slate-900/80 flex justify-end gap-3">
+            <div className="p-6 border-t  bg-slate-900/80 flex justify-end gap-3">
               <Button 
                 variant="ghost" 
                 onClick={() => setSelectedAnswers(null)}

@@ -137,7 +137,7 @@ export function FinanceSettings() {
 
       {/* Caixinhas de Metas */}
       <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl">
-        <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+        <div className="flex items-center gap-3 md:gap-4 mb-6 border-b  pb-4">
           <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500/10 text-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center"><Target className="w-5 h-5 md:w-6 md:h-6" /></div>
           <div>
             <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Metas & Vaquinhas</h3>
@@ -176,7 +176,7 @@ export function FinanceSettings() {
 
       {/* Regras e Fechamento */}
       <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl">
-        <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+        <div className="flex items-center gap-3 md:gap-4 mb-6 border-b  pb-4">
           <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-500/10 text-indigo-500 rounded-xl md:rounded-2xl flex items-center justify-center"><Lock className="w-5 h-5 md:w-6 md:h-6" /></div>
           <div>
             <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Fechamento Mensal</h3>
@@ -208,7 +208,7 @@ export function FinanceSettings() {
 
       {/* Categorias Customizadas */}
       <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl">
-        <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+        <div className="flex items-center gap-3 md:gap-4 mb-6 border-b  pb-4">
           <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-500 rounded-xl md:rounded-2xl flex items-center justify-center"><TrendingUp className="w-5 h-5 md:w-6 md:h-6" /></div>
           <div>
             <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Categorias</h3>

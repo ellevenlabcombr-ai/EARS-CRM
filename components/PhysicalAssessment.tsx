@@ -147,7 +147,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
       <div className="grid grid-cols-1 gap-6">
         {step === 1 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800/50">
+            <Card className="glass-panel ">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Zap className="w-4 h-4 text-indigo-400" /> Força Máxima & Potência
@@ -177,7 +177,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
 
         {step === 2 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800/50">
+            <Card className="glass-panel ">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Timer className="w-4 h-4 text-indigo-400" /> Velocidade e Agilidade
@@ -207,7 +207,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
 
         {step === 3 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800/50">
+            <Card className="glass-panel ">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Heart className="w-4 h-4 text-indigo-400" /> Cardiorrespiratório
@@ -237,7 +237,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
 
         {step === 4 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800/50">
+            <Card className="glass-panel ">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <Target className="w-4 h-4 text-indigo-400" /> Capacidades Coordenativas & Equilíbrio
@@ -290,7 +290,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
 
         {step === 5 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Card className="bg-slate-900/40 border-slate-800/50">
+            <Card className="glass-panel ">
               <CardHeader>
                 <CardTitle className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 text-indigo-400" /> Observações Finais
@@ -309,7 +309,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-6 border-t border-slate-800/50">
+      <div className="flex items-center justify-between pt-6 border-t ">
         <Button 
           variant="ghost" 
           onClick={() => step > 1 ? setStep(step - 1) : onCancel()}
