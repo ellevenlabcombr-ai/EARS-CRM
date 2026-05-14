@@ -5463,7 +5463,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               className="w-full max-w-5xl bg-[#050B14] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex-1 overflow-y-auto relative">
+              <div className="flex-1 overflow-y-auto relative custom-scrollbar">
                 <AthleteRegistration 
                   initialData={athlete}
                   onDirtyChange={setIsDirty}
