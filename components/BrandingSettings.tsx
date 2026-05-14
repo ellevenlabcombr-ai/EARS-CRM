@@ -15,6 +15,7 @@ export function BrandingSettings() {
   const [instagram, setInstagram] = useState('');
   const [phone, setPhone] = useState('');
   const [brandColor, setBrandColor] = useState('#06b6d4');
+  const [backgroundColor, setBackgroundColor] = useState('#050B14');
   const [welcomeMessage, setWelcomeMessage] = useState('');
   
   const [isUploading, setIsUploading] = useState(false);
@@ -46,6 +47,7 @@ export function BrandingSettings() {
         setInstagram(data.instagram || '');
         setPhone(data.phone || '');
         setBrandColor(data.brand_color || '#06b6d4');
+        setBackgroundColor(data.background_color || '#050B14');
         setWelcomeMessage(data.welcome_message || '');
       }
     } catch (err) {
@@ -136,6 +138,7 @@ export function BrandingSettings() {
         instagram,
         phone,
         brand_color: brandColor,
+        background_color: backgroundColor,
         welcome_message: welcomeMessage,
         updated_at: new Date().toISOString()
       };
@@ -378,6 +381,24 @@ export function BrandingSettings() {
                       onChange={(e) => setBrandColor(e.target.value)}
                       className="bg-transparent border-none text-white outline-none flex-1 text-sm md:text-base font-medium placeholder:text-slate-600 uppercase"
                       placeholder="#06b6d4"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Cor do Fundo (Background)</label>
+                  <div className="flex items-center gap-3 w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus-within:border-cyan-500/50 focus-within:ring-2 focus-within:ring-cyan-500/10 transition-all">
+                    <input 
+                      type="color" 
+                      value={backgroundColor}
+                      onChange={(e) => setBackgroundColor(e.target.value)}
+                      className="w-8 h-8 rounded border-none bg-transparent cursor-pointer p-0"
+                    />
+                    <input 
+                      type="text" 
+                      value={backgroundColor}
+                      onChange={(e) => setBackgroundColor(e.target.value)}
+                      className="bg-transparent border-none text-white outline-none flex-1 text-sm md:text-base font-medium placeholder:text-slate-600 uppercase"
+                      placeholder="#050B14"
                     />
                   </div>
                 </div>
