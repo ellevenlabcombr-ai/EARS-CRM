@@ -262,7 +262,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            <div className="hidden md:flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
+            <div className="hidden md:flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-full border-slate-800">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-xs font-bold text-slate-300">Sistema Online</span>
             </div>
@@ -356,7 +356,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
                     key={`alert-${athlete.id}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="glass-panel border border-slate-800 hover:border-rose-500/30 rounded-3xl p-6 shadow-2xl transition-all group relative overflow-hidden"
+                    className="glass-panel border-slate-800 hover:border-rose-500/30 rounded-3xl p-6 shadow-2xl transition-all group relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                       <AlertCircle className="w-16 h-16 text-rose-500" />

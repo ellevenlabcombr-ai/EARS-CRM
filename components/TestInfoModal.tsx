@@ -59,7 +59,7 @@ export function TestInfoModal({
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-lg glass-panel border border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden z-[101] max-h-[90vh] flex flex-col"
+                className="relative w-full max-w-lg glass-panel border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden z-[101] max-h-[90vh] flex flex-col"
               >
                 <div className="p-6 border-b  flex justify-between items-center glass-panel">
                   <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-2">
@@ -88,7 +88,7 @@ export function TestInfoModal({
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {positiveIndicators && positiveIndicators.length > 0 && (
-                      <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                      <div className="p-4 bg-emerald-500/5 border-emerald-500/10 rounded-2xl">
                         <h4 className="text-xxs font-black text-emerald-500 uppercase tracking-widest mb-3">Indicadores Positivos</h4>
                         <ul className="space-y-2">
                           {positiveIndicators.map((item, idx) => (

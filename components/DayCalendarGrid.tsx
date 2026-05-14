@@ -19,7 +19,7 @@ export function DayCalendarGrid({ events, currentDate, onEventClick, onTimeSlotC
   const dayEvents = events.filter(e => isSameDay(new Date(e.start_time), currentDate));
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+    <div className="bg-slate-900 border-slate-800 rounded-2xl overflow-hidden flex flex-col">
       <div className="flex-1 overflow-y-auto relative min-h-[600px]">
         {/* Pass lines */}
         {hours.map((hour, i) => (

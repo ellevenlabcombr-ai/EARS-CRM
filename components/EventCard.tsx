@@ -28,7 +28,7 @@ export function EventCard({ event, onClick, isMultiDay }: EventCardProps) {
     return (
       <div 
         onClick={() => onClick(event)}
-        className={`px-2 py-1 rounded border text-left cursor-pointer transition-all hover:brightness-110 active:scale-95 ${colorClass} h-full overflow-hidden flex items-center shrink-0`}
+        className={`px-2 py-1 rounded text-left cursor-pointer transition-all hover:brightness-110 active:scale-95 ${colorClass} h-full overflow-hidden flex items-center shrink-0`}
       >
         {getStatusIcon()}
         <span className={`text-[10px] font-black leading-none truncate block w-full ${getStatusIcon() ? 'ml-1' : ''}`}>{event.title}</span>

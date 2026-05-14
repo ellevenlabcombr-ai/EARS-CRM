@@ -210,7 +210,7 @@ interface AthleteHealthProfileProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-panel border border-slate-800 p-3 rounded-xl shadow-2xl">
+      <div className="glass-panel border-slate-800 p-3 rounded-xl shadow-2xl">
         <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1">
@@ -236,7 +236,7 @@ const renderDataNode = (key: string, value: any, lang: string, depth = 0): React
 
   if (typeof value === 'object' && !Array.isArray(value)) {
     return (
-      <div key={key} className={`mt-2 ${depth > 0 ? 'ml-4 border-l border-slate-700/50 pl-3' : 'p-3 rounded-xl bg-slate-900/30 border border-slate-800/30'}`}>
+      <div key={key} className={`mt-2 ${depth > 0 ? 'ml-4 border-l border-slate-700/50 pl-3' : 'p-3 rounded-xl bg-slate-900/30 border-slate-800/30'}`}>
         <span className="text-xxs font-bold text-slate-400 uppercase tracking-tight block mb-2">{translatedKey}</span>
         <div className="space-y-2">
           {Object.entries(value).map(([subKey, subValue]) => renderDataNode(subKey, subValue, lang, depth + 1))}

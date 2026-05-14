@@ -130,7 +130,7 @@ export function FinanceSettings() {
   return (
     <div className="space-y-6 md:space-y-8 pb-10 text-white">
       {message && (
-        <div className={`p-4 rounded-xl flex items-center gap-2 font-bold ${message.type === 'error' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
+        <div className={`p-4 rounded-xl flex items-center gap-2 font-bold ${message.type === 'error' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'}`}>
           <CheckCircle2 size={16} /> {message.text}
         </div>
       )}

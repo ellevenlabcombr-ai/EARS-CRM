@@ -279,7 +279,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                  application="O atleta deve graduar cada sintoma baseado em como se sente AGORA (0 = Nenhum, 6 = Severo)."
                  referenceValues={["Sintomas leves: Score 0-2 dependendo do sintoma", "Sintomas severos: Valores altos (4+) em qualquer sintoma", "Red Flags: Dor de cabeça severa, perda de consciência (ver Red Flags no último passo)"]}
                >
-                 <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl cursor-pointer hover:border-slate-500 transition-colors">
+                 <div className="bg-slate-800/30 border-slate-700/50 p-4 rounded-xl cursor-pointer hover:border-slate-500 transition-colors">
                    <p className="text-xs text-slate-400 font-bold flex items-center justify-between">
                      <span>Gradue cada sintoma baseando-se em como o atleta se sente AGORA. (0 = Nenhum, 6 = Severo)</span>
                      <FileQuestion className="w-4 h-4 text-cyan-500 shrink-0" />
@@ -313,7 +313,7 @@ export function NeurologicalAssessment({ athleteId, onCancel, onSave }: Neurolog
                    };
                    const val = symptoms[key as keyof typeof symptoms];
                    return (
-                     <div key={key} className="glass-panel border border-slate-800 p-4 rounded-2xl flex flex-col space-y-3 shrink-0">
+                     <div key={key} className="glass-panel border-slate-800 p-4 rounded-2xl flex flex-col space-y-3 shrink-0">
                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">{sympLabels[key]}</span>
                        <div className="flex justify-between items-center bg-slate-950 p-1 rounded-xl">
                          {[0,1,2,3,4,5,6].map(i => (

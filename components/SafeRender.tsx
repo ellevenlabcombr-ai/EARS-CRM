@@ -41,7 +41,7 @@ export class SafeRender extends Component<Props, State> {
       }
 
       return (
-        <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 flex flex-col items-center justify-center text-center space-y-2 min-h-[6.25rem]">
+        <div className="p-4 rounded-xl border-rose-500/20 bg-rose-500/5 flex flex-col items-center justify-center text-center space-y-2 min-h-[6.25rem]">
           <AlertCircle className="w-6 h-6 text-rose-500" />
           <p className="text-xs font-bold text-rose-400 uppercase tracking-widest">
             Erro no Componente: {this.props.componentName || "Indisponível"}

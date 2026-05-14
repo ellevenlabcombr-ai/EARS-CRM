@@ -1599,7 +1599,7 @@ export function AthleteDashboard({
             </div>
             
             <div className="text-center space-y-4">
-               <div className="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto border border-rose-500/30">
+               <div className="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto border-rose-500/30">
                  <CalendarDays className="w-10 h-10 text-rose-500" />
                </div>
                <h2 className="text-3xl font-black text-white uppercase tracking-tight">Monitoramento do Ciclo</h2>
@@ -2464,7 +2464,7 @@ export function AthleteDashboard({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="glass-panel border border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col"
+              className="glass-panel border-slate-800 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden flex flex-col"
             >
               <div className="flex justify-between items-center p-6 border-b border-slate-800">
                 <div>

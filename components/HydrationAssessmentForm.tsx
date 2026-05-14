@@ -21,7 +21,7 @@ const Slider = ({ label, value, onChange, invertColor = false, min = 0, max = 10
     : (ratio < 0.4 ? 'text-rose-400' : ratio < 0.7 ? 'text-amber-400' : 'text-emerald-400');
 
   return (
-    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl border ">
+    <div className="space-y-2 bg-slate-900/30 p-4 rounded-xl ">
       <div className="flex justify-between items-end">
         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</label>
         <span className={`text-sm font-black ${valueColor}`}>{value}/{max}</span>

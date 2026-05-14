@@ -465,11 +465,11 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                   </header>
 
                   {/* Athlete Selector for Evaluations */}
-                  <div className="glass-panel border border-slate-800 rounded-3xl p-6 mb-8">
+                  <div className="glass-panel border-slate-800 rounded-3xl p-6 mb-8">
                     <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-3">Atleta Selecionado</label>
                     <div className="flex flex-wrap gap-3">
                       <select 
-                        className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors min-w-[15.625rem]"
+                        className="bg-slate-950 border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none transition-colors min-w-[15.625rem]"
                         onChange={(e) => {
                           const athlete = athletesList.find(a => a.id === e.target.value);
                           setSelectedAthleteForEval(athlete);
@@ -506,23 +506,23 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                       { id: 'menstrual-assessment', title: 'Menstrual', icon: Heart, color: 'pink', desc: 'Ciclo e impactos na performance.' },
                       { id: 'hydration-assessment', title: 'Hidratação', icon: Globe, color: 'sky', desc: 'Status hídrico e perda de suor.' },
                     ].map((evalType) => (
-                      <TiltCard key={evalType.id} glareEnable={true} tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.03}>
+                      <TiltCard key={evalType.id} tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.03}>
                         <div
                           onClick={() => {
                             if (selectedAthleteForEval) {
                               setCurrentView(evalType.id as any);
                             }
                           }}
-                          className={`w-full h-full p-6 glass-panel rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          className={`w-full h-full p-6 glass-panel rounded-2xl text-left group transition-all cursor-pointer ${!selectedAthleteForEval ? 'opacity-50 hover:opacity-100' : ''}`}
                         >
-                          <div className={`w-12 h-12 bg-${evalType.color}-500/10 rounded-xl flex items-center justify-center text-${evalType.color}-500 mb-4 group-hover:bg-${evalType.color}-500 group-hover:text-[#050B14] transition-all`}>
+                          <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-400 mb-4 group-hover:bg-cyan-500 group-hover:text-[#050B14] transition-all">
                             <evalType.icon size={24} />
                           </div>
                           <h3 className="text-xl font-bold text-white uppercase tracking-tight mb-2">Avaliação {evalType.title}</h3>
                           <p className="text-slate-400 text-sm leading-relaxed">
                             {evalType.desc}
                           </p>
-                          <div className={`mt-6 flex items-center gap-2 text-${evalType.color}-500 font-bold text-xs uppercase tracking-widest`}>
+                          <div className="mt-6 flex items-center gap-2 text-cyan-400 font-bold text-xs uppercase tracking-widest">
                             Iniciar Avaliação <ChevronRight size={14} />
                           </div>
                         </div>

@@ -196,7 +196,7 @@ export const SessionModePanel: React.FC<SessionModePanelProps> = ({
                     Confiança: {masterScore.confidence === 'high' ? 'Alta' : masterScore.confidence === 'medium' ? 'Média' : 'Baixa'}
                   </p>
                   {safeMode?.active && !overrideSafeMode && (
-                    <div className={`px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
+                    <div className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
                       safeMode.level === 'high' ? 'bg-red-500/10 border-red-500/30 text-red-500' : 
                       safeMode.level === 'moderate' ? 'bg-orange-500/10 border-orange-500/30 text-orange-500' : 
                       'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'

@@ -179,7 +179,7 @@ export const ReportsDashboard: React.FC<ReportsDashboardProps> = ({ athletes = [
 
     return (
       <div className="flex flex-col pb-12">
-        <div className="flex items-center justify-between bg-slate-900/50 p-6 xl:p-8 rounded-[2rem] border border-slate-800 backdrop-blur-xl shrink-0 mb-6 w-full max-w-5xl mx-auto">
+        <div className="flex items-center justify-between bg-slate-900/50 p-6 xl:p-8 rounded-[2rem] border-slate-800 backdrop-blur-xl shrink-0 mb-6 w-full max-w-5xl mx-auto">
           <button 
             onClick={() => setIsPreview(false)}
             className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors uppercase tracking-widest font-bold text-xs"

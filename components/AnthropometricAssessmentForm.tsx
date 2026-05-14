@@ -61,7 +61,7 @@ const NumberInput = ({ label, value, unit, onChange }: { label: string, value: n
         type="number"
         value={value || ''}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-white font-bold focus:outline-none focus:border-indigo-500 transition-colors"
+        className="w-full bg-slate-950 border-slate-800 rounded-xl py-2 px-3 text-white font-bold focus:outline-none focus:border-indigo-500 transition-colors"
       />
       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 uppercase">{unit}</span>
     </div>

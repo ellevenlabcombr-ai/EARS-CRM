@@ -181,7 +181,7 @@ export function ClinicalSettings() {
 
   if (isLoading) {
     return (
-      <div className="glass-panel border border-slate-800 rounded-3xl p-12 flex flex-col items-center justify-center gap-4">
+      <div className="glass-panel border-slate-800 rounded-3xl p-12 flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-8 h-8 text-rose-500 animate-spin" />
         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Carregando regras clínicas...</p>
       </div>
@@ -193,7 +193,7 @@ export function ClinicalSettings() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         
         {/* Limites Críticos */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+        <div className="bg-slate-900 border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
           <div className="flex items-center gap-3 md:gap-4 mb-2">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-rose-500/10 text-rose-500 rounded-xl md:rounded-2xl flex items-center justify-center">
               <HeartPulse className="w-5 h-5 md:w-6 md:h-6" />

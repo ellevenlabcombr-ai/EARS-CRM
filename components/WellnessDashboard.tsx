@@ -680,7 +680,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <h3 className="text-xxs font-black text-slate-500 uppercase tracking-widest">Configuração Supabase</h3>
-                  <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xxs font-mono space-y-1">
+                  <div className="bg-slate-950 p-3 rounded-lg border-slate-800 text-xxs font-mono space-y-1">
                     <p><span className="text-slate-500">URL Presente:</span> <span className={supabaseDebugInfo.hasUrl ? "text-emerald-400" : "text-rose-400"}>{supabaseDebugInfo.hasUrl ? "Sim" : "Não"}</span></p>
                     <p><span className="text-slate-500">Key Presente:</span> <span className={supabaseDebugInfo.hasKey ? "text-emerald-400" : "text-rose-400"}>{supabaseDebugInfo.hasKey ? "Sim" : "Não"}</span></p>
                     <p><span className="text-slate-500">URL Válida:</span> <span className={supabaseDebugInfo.isUrlValid ? "text-emerald-400" : "text-rose-400"}>{supabaseDebugInfo.isUrlValid ? "Sim" : "Não"}</span></p>
@@ -1003,7 +1003,7 @@ ANALYZE check_ins;`}
             </div>
           </div>
 
-          <div className="glass-panel border  rounded-2xl overflow-hidden shadow-2xl">
+          <div className="glass-panel  rounded-2xl overflow-hidden shadow-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>

@@ -30,7 +30,7 @@ export function CalendarGrid({ events, onEventClick, currentDate }: CalendarGrid
   const hours = Array.from({ length: 14 }, (_, i) => i + 7); // 07:00 to 20:00
 
   return (
-    <div className="bg-slate-900/30 border border-slate-800 rounded-2xl md:rounded-3xl overflow-hidden">
+    <div className="bg-slate-900/30 border-slate-800 rounded-2xl md:rounded-3xl overflow-hidden">
       {/* Header */}
       <div className="grid grid-cols-7 border-b border-slate-800">
         {weekDays.map((day, i) => (

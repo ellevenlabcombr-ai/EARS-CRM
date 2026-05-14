@@ -256,7 +256,7 @@ export function AthleteList({
       {/* Header */}
       <header className="h-20 border-b  flex items-center justify-between px-4 sm:px-8 glass-panel/80 backdrop-blur-xl shrink-0 z-10">
         <div className="flex items-center gap-2 sm:gap-3 pl-12 lg:pl-0 min-w-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border-cyan-500/20 shrink-0">
             <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-500" />
           </div>
           <div className="min-w-0">
@@ -447,7 +447,7 @@ export function AthleteList({
                   return (
                     <div
                       key={athlete.id}
-                      className="group relative glass-panel border  rounded-2xl hover:border-cyan-500/50 transition-all shadow-xl overflow-hidden flex"
+                      className="group relative glass-panel  rounded-2xl hover:border-cyan-500/50 transition-all shadow-xl overflow-hidden flex"
                     >
                       {/* Photo Section */}
                       <div
@@ -567,7 +567,7 @@ export function AthleteList({
                 }
 
                 return (
-                  <TiltCard key={athlete.id} glareEnable={true} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.02}>
+                  <TiltCard key={athlete.id} tiltMaxAngleX={12} tiltMaxAngleY={12} scale={1.02}>
                     <div
                       className="glass-panel group relative rounded-3xl hover:border-cyan-500/50 transition-all shadow-2xl overflow-hidden flex flex-col h-full"
                     >

@@ -92,7 +92,7 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
+      <div className="flex justify-between items-center bg-slate-900/50 p-4 rounded-2xl border-slate-800">
         <div>
           <h3 className="text-sm font-black text-white uppercase tracking-widest">
             {lang === 'pt' ? 'Próximos Eventos' : 'Upcoming Events'}

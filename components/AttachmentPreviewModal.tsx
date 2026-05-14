@@ -44,7 +44,7 @@ export function AttachmentPreviewModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-5xl h-[90vh] shadow-2xl overflow-hidden flex flex-col"
+            className="bg-slate-900 border-slate-800 rounded-3xl w-full max-w-5xl h-[90vh] shadow-2xl overflow-hidden flex flex-col"
           >
             {/* Header */}
             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50 shrink-0">

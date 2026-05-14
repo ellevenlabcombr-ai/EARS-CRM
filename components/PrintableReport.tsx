@@ -70,7 +70,7 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ athlete, repor
       </div>
 
       {/* Athlete Info */}
-      <div className="bg-slate-50/80 rounded-2xl p-6 mb-8 border border-slate-100 flex items-center gap-6 relative z-10 backdrop-blur-sm">
+      <div className="bg-slate-50/80 rounded-2xl p-6 mb-8 border-slate-100 flex items-center gap-6 relative z-10 backdrop-blur-sm">
         <div className="w-20 h-20 bg-slate-200 rounded-full overflow-hidden flex items-center justify-center text-3xl font-bold text-slate-400 shrink-0 shadow-inner">
           {athlete?.avatar_url || athlete?.photo ? (
             <img src={athlete.avatar_url || athlete.photo} crossOrigin="anonymous" alt={athlete.name} className="w-full h-full object-cover" />

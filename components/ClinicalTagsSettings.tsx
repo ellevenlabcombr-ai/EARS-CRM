@@ -49,7 +49,7 @@ export function ClinicalTagsSettings() {
       <div className="space-y-4">
         <div className="flex flex-wrap gap-2 p-4 bg-slate-900/50 rounded-xl  min-h-[100px]">
           {tags.map((tag) => (
-            <div key={tag.id} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border shadow-sm ${tag.source === 'field_observation' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'}`}>
+            <div key={tag.id} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shadow-sm ${tag.source === 'field_observation' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'}`}>
                <span className="text-[10px] font-black uppercase tracking-widest">{tag.tag}</span>
                <button onClick={() => handleRemove(tag.id)} className="hover:text-rose-400 hover:bg-rose-500/10 p-1 rounded transition-colors ml-1 focus:outline-none">
                  <X className="w-3 h-3" />

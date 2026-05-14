@@ -130,7 +130,7 @@ export const SportsSettings = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-500/30">
+          <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center border-cyan-500/30">
             <Trophy className="w-5 h-5 text-cyan-400" />
           </div>
           <div>

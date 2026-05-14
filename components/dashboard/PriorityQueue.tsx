@@ -111,7 +111,7 @@ export function PriorityQueue({ athletes, onViewAthlete, section = 'all' }: Prio
     const hoverBgClass = isRisk ? 'hover:bg-rose-500/5' : isMissing ? 'hover:bg-slate-800/30' : 'hover:bg-amber-500/5';
 
     return (
-      <div key={athlete.id} className={`p-6 flex flex-col gap-4 rounded-2xl border shadow-sm ${borderClass} ${bgClass} ${hoverBgClass} transition-all relative overflow-hidden group`}>
+      <div key={athlete.id} className={`p-6 flex flex-col gap-4 rounded-2xl shadow-sm ${borderClass} ${bgClass} ${hoverBgClass} transition-all relative overflow-hidden group`}>
         {/* Subtle accent border on left */}
         <div className={`absolute top-0 left-0 w-1 h-full ${isRisk ? 'bg-rose-500/50' : isMissing ? 'bg-slate-700/50' : 'bg-amber-500/50'}`}></div>
         

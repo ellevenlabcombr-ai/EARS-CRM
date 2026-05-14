@@ -43,7 +43,7 @@ export function GeneralSettings() {
       {/* Header Section */}
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-        <div className="relative bg-slate-950 border border-slate-800 p-5 md:p-8 rounded-2xl">
+        <div className="relative bg-slate-950 border-slate-800 p-5 md:p-8 rounded-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-1 italic">

@@ -121,7 +121,7 @@ const FormInput = ({
   <div className="space-y-1 w-full">
     <input
       {...props}
-      className={`w-full bg-slate-900/50 border ${error ? "border-rose-500" : "border-slate-700"} rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 transition-colors ${props.className || ""}`}
+      className={`w-full bg-slate-900/50 ${error ? "border-rose-500" : "border-slate-700"} rounded-xl px-4 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 transition-colors ${props.className || ""}`}
     />
     {error && (
       <motion.p
@@ -1535,7 +1535,7 @@ export function AthleteRegistration({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-panel border border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
+              className="glass-panel border-slate-800 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col"
             >
               <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                 <h3 className="text-lg font-black text-white uppercase tracking-widest">

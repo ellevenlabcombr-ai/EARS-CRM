@@ -73,7 +73,7 @@ const getRehabPhase = (last: EvolutionData): { phase: RehabPhase; color: string;
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-panel border border-slate-800 p-3 rounded-xl shadow-2xl backdrop-blur-md">
+      <div className="glass-panel border-slate-800 p-3 rounded-xl shadow-2xl backdrop-blur-md">
         <p className="text-xxs font-black text-slate-500 uppercase tracking-widest mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1">
@@ -124,7 +124,7 @@ export function ClinicalEvolutionPanel({ regionName, data, riskScore, lang = "pt
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+          <div className="p-2 bg-cyan-500/10 rounded-lg border-cyan-500/20">
             <Activity className="w-5 h-5 text-cyan-400" />
           </div>
           <div>

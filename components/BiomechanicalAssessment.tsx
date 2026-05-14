@@ -371,7 +371,7 @@ export default function BiomechanicalAssessment({
                     <h4 className="text-xs font-black tracking-widest uppercase text-slate-400 flex items-center gap-2 mb-3">
                       {l.clinicalInterpretation}
                     </h4>
-                    <p className="text-sm text-slate-300 leading-relaxed font-medium bg-slate-950 p-4 rounded-xl border ">
+                    <p className="text-sm text-slate-300 leading-relaxed font-medium bg-slate-950 p-4 rounded-xl ">
                       {riskLevel === 'high' ? l.highRiskDesc : 
                        riskLevel === 'moderate' ? l.modRiskDesc : l.lowRiskDesc}
                     </p>

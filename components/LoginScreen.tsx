@@ -143,7 +143,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               
               <button
                 onClick={() => setSelectedRole('athlete')}
-                className="w-full group relative bg-slate-900/50 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-6 text-left overflow-hidden transition-all duration-300 flex items-center gap-6"
+                className="w-full group relative bg-slate-900/50 border-slate-800 hover:border-cyan-500/50 rounded-2xl p-6 text-left overflow-hidden transition-all duration-300 flex items-center gap-6"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="w-14 h-14 bg-[#050B14] rounded-xl flex items-center justify-center border border-slate-800 group-hover:border-cyan-500/30 transition-colors shrink-0">

@@ -1548,7 +1548,7 @@ END $storage$;`;
           <button
             onClick={fixPerformance}
             disabled={isSeeding || isFixing}
-            className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-cyan-500 font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2 border border-cyan-500/20"
+            className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-cyan-500 font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2 border-cyan-500/20"
           >
             <Zap className="w-5 h-5" />
             Otimizar Performance (Fix Timeout)

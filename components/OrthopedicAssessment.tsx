@@ -210,7 +210,7 @@ export function OrthopedicAssessment({ athleteId, athleteName, onBack, onSave }:
         {TABS.map((t) => {
           const isActive = activeTab === t.id;
           return (
-            <div key={t.id} onClick={() => setActiveTab(t.id)} className={`cursor-pointer shrink-0 flex items-center gap-2 px-4 py-2 rounded-full border transition-colors ${isActive ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'}`}>
+            <div key={t.id} onClick={() => setActiveTab(t.id)} className={`cursor-pointer shrink-0 flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isActive ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'}`}>
               <t.icon className="w-4 h-4" />
               <span className="text-xs font-black uppercase tracking-widest">{t.label}</span>
             </div>

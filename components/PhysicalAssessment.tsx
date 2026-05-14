@@ -156,7 +156,7 @@ export default function PhysicalAssessment({ athleteId, athleteAge = 25, athlete
               <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Agachamento (kg)</label>
-                  <input type="number" value={formData.squat} onChange={(e) => handleChange('squat', e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition-colors" placeholder="000" />
+                  <input type="number" value={formData.squat} onChange={(e) => handleChange('squat', e.target.value)} className="w-full bg-slate-950 border-slate-800 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition-colors" placeholder="000" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Supino (kg)</label>

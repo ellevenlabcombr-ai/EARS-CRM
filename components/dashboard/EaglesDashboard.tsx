@@ -179,7 +179,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
               placeholder="Buscar atleta..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2.5 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 w-64 transition-all"
+              className="pl-10 pr-4 py-2.5 bg-slate-900/50 border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 w-64 transition-all"
             />
           </div>
         </div>
@@ -253,7 +253,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
           </section>
 
           {/* Top Injuries */}
-          <section className="glass-panel border  rounded-3xl p-6 backdrop-blur-sm">
+          <section className="glass-panel  rounded-3xl p-6 backdrop-blur-sm">
             <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2 mb-6">
               <Activity size={18} className="text-cyan-500" />
               Top Lesões / Queixas

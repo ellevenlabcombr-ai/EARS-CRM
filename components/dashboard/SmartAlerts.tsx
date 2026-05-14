@@ -87,7 +87,7 @@ export function SmartAlerts({ alerts, onRefresh }: SmartAlertsProps) {
           ) : (
             displayAlerts.map((alert) => (
               <div key={alert.id} className={`p-4 flex items-start gap-3 hover:bg-slate-800/30 transition-colors relative group ${alert.severity === 'high' ? 'bg-rose-500/5' : ''}`}>
-                <div className={`mt-0.5 p-1.5 rounded-md bg-slate-800/50 shrink-0 border ${
+                <div className={`mt-0.5 p-1.5 rounded-md bg-slate-800/50 shrink-0 ${
                   alert.severity === 'high' ? 'border-rose-500/20' : 
                   alert.severity === 'medium' ? 'border-amber-500/20' : 'border-blue-500/20'
                 }`}>

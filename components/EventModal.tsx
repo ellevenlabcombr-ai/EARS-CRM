@@ -123,7 +123,7 @@ export function EventModal({ event, isOpen, onClose, onDelete, onEdit }: EventMo
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      className="absolute top-12 right-2 z-10 w-64 bg-white border border-gray-200 rounded-xl shadow-xl p-3 space-y-2 overflow-hidden"
+                      className="absolute top-12 right-2 z-10 w-64 bg-white border-gray-200 rounded-xl shadow-xl p-3 space-y-2 overflow-hidden"
                     >
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 px-1">Este evento é recorrente</p>
                       <button 

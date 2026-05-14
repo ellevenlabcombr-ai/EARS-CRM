@@ -95,7 +95,7 @@ export const CoachEarsDashboard: React.FC<Props> = ({ data, sport = 'Toda a Equi
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="group flex flex-col md:flex-row md:items-center justify-between p-4 glass-panel hover:bg-slate-800/60 border border-white/5 rounded-3xl transition-all h-full"
+                className="group flex flex-col md:flex-row md:items-center justify-between p-4 glass-panel hover:bg-slate-800/60 border-white/5 rounded-3xl transition-all h-full"
               >
                 <div className="flex items-center gap-4">
                   <div className="relative">

@@ -120,7 +120,7 @@ export function PosturalAnalysisTool({
         <h4 className="text-sm font-bold text-white uppercase tracking-widest">{label}</h4>
       </div>
 
-      <div className="relative aspect-[3/4] w-full bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden group">
+      <div className="relative aspect-[3/4] w-full bg-slate-900/50 border-slate-800 rounded-xl overflow-hidden group">
         {!imageUrl ? (
           <label className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-800/50 transition-colors">
             <Upload className="w-8 h-8 text-slate-600 mb-3" />

@@ -251,7 +251,7 @@ export function SleepAssessment({ athleteId, athleteName, onBack, onSave }: Slee
                     type="time" 
                     value={formData.bedtime}
                     onChange={(e) => setFormData({...formData, bedtime: e.target.value})}
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                    className="w-full bg-slate-900 border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
                   />
                 </div>
                 <div className="space-y-2">

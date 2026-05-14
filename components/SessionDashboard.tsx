@@ -23,7 +23,7 @@ export function SessionDashboard({ onBack }: { onBack?: () => void }) {
         <div className="max-w-screen-xl mx-auto flex items-center justify-between">
           <button 
             onClick={onBack}
-            className="group flex items-center gap-3 py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border border-white/10 active:scale-95"
+            className="group flex items-center gap-3 py-2 px-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all border-white/10 active:scale-95"
             aria-label="Voltar"
           >
             <ArrowLeft size={18} className="text-slate-400 group-hover:text-white transition-colors" />

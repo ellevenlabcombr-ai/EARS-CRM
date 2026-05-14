@@ -251,7 +251,7 @@ export function FinanceDashboard() {
             <span className="text-sm font-bold text-slate-500 uppercase tracking-widest mr-2">Forma de Pagamento:</span>
             <button 
               onClick={() => setSelectedAccount('all')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${selectedAccount === 'all' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800 border border-transparent'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${selectedAccount === 'all' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800 border border-transparent'}`}
             >
               Visão Geral
             </button>
@@ -281,7 +281,7 @@ export function FinanceDashboard() {
             <h2 className="text-2xl font-black text-emerald-400">{formatCurrency(balance.incomes)}</h2>
             {balance.pendingIncomes > 0 && <p className="text-xs text-slate-500 mt-1">+{formatCurrency(balance.pendingIncomes)} pendentes</p>}
           </div>
-          <div className="glass-panel border  rounded-2xl p-5 relative overflow-hidden group">
+          <div className="glass-panel  rounded-2xl p-5 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-5 opacity-10">
               <ArrowDownRight size={80} className="text-rose-500" />
             </div>

@@ -139,7 +139,7 @@ export function AgendaNotifier() {
             initial={{ opacity: 0, x: 50, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className="w-full sm:w-80 bg-slate-900 border border-cyan-500/30 rounded-2xl shadow-xl shadow-cyan-500/10 p-4 flex gap-3 items-start overflow-hidden relative"
+            className="w-full sm:w-80 bg-slate-900 border-cyan-500/30 rounded-2xl shadow-xl shadow-cyan-500/10 p-4 flex gap-3 items-start overflow-hidden relative"
           >
             <div className="absolute top-0 left-0 bottom-0 w-1 bg-cyan-500"></div>
             <div className="bg-cyan-500/20 text-cyan-400 p-2 rounded-xl shrink-0">

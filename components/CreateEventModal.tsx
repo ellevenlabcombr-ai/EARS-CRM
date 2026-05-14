@@ -274,7 +274,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl flex flex-col h-full max-h-[90vh] overflow-hidden"
+            className="w-full max-w-xl bg-slate-900 border-slate-800 rounded-3xl shadow-2xl flex flex-col h-full max-h-[90vh] overflow-hidden"
           >
             {/* Header - Fixed */}
             <div className="p-6 sm:p-8 border-b border-slate-800 flex justify-between items-start shrink-0">
