@@ -14,7 +14,8 @@ import {
   MessageCircle,
   ShieldAlert,
   Ban,
-  Palette
+  Palette,
+  Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -185,7 +186,7 @@ export function AgendaSettings() {
       }
 
       setStatus('success');
-      setMessage('Configurações da agenda salvas com sucesso!');
+      setMessage('Configurações sincronizadas ao núcleo operacional.');
     } catch (err: any) {
       console.error("AGENDA SETTINGS SAVE CATCH ERROR:", {
         message: err?.message,
@@ -198,7 +199,7 @@ export function AgendaSettings() {
       
       // Handle Supabase error objects which might not have a direct .message property in all cases
       const errorMessage = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-      setMessage(`Erro ao salvar: ${errorMessage}`);
+      setMessage(`Inconsistência temporal detectada: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }
@@ -242,6 +243,24 @@ export function AgendaSettings() {
     }
   };
 
+  const getMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return (h * 60) + m;
+  };
+
+  const startMin = getMinutes(startTime);
+  const endMin = getMinutes(endTime);
+  const lunchStartMin = getMinutes(lunchStart);
+  const lunchEndMin = getMinutes(lunchEnd);
+
+  const hasConflict = startMin >= endMin || lunchStartMin >= lunchEndMin || lunchStartMin < startMin || lunchEndMin > endMin;
+
+  const totalMin = endMin - startMin;
+  const p1 = totalMin > 0 ? Math.max(0, ((lunchStartMin - startMin) / totalMin)) * 100 : 0;
+  const pLunch = totalMin > 0 ? Math.max(0, ((lunchEndMin - lunchStartMin) / totalMin)) * 100 : 0;
+  const p2 = totalMin > 0 ? Math.max(0, ((endMin - lunchEndMin) / totalMin)) * 100 : 0;
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-8">
@@ -253,7 +272,7 @@ export function AgendaSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pb-32">
         {/* Horários */}
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
           <div className="flex items-center gap-3 md:gap-4 mb-2">
@@ -261,7 +280,7 @@ export function AgendaSettings() {
               <Clock className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Horário de Atendimento</h3>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Janela Operacional</h3>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium">Configure seu expediente diário</p>
             </div>
           </div>
@@ -319,9 +338,16 @@ export function AgendaSettings() {
                   type="number" 
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium mb-2"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+                <span className="absolute right-4 top-4 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+                <input 
+                  type="range"
+                  min={15} max={120} step={15}
+                  value={duration}
+                  onChange={(e) => setDuration(parseInt(e.target.value) || 0)}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                />
               </div>
             </div>
             <div className="space-y-2">
@@ -334,12 +360,46 @@ export function AgendaSettings() {
                   type="number" 
                   value={breakInterval}
                   onChange={(e) => setBreakInterval(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium mb-2"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+                <span className="absolute right-4 top-4 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
+                <input 
+                  type="range"
+                  min={0} max={60} step={5}
+                  value={breakInterval}
+                  onChange={(e) => setBreakInterval(parseInt(e.target.value) || 0)}
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                />
               </div>
             </div>
           </div>
+          
+          {/* Timeline Visual */}
+          {!hasConflict && totalMin > 0 ? (
+            <div className="pt-6 border-t border-slate-800/50 mt-4">
+              <div className="flex justify-between text-[10px] text-slate-500 font-mono mb-2">
+                <span>{startTime}</span>
+                <span>{endTime}</span>
+              </div>
+              <div className="h-2 w-full flex rounded-full overflow-hidden bg-slate-800 shadow-inner">
+                <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p1}%` }}></div>
+                <div className="h-full bg-slate-700 opacity-50" style={{ width: `${pLunch}%` }}></div>
+                <div className="h-full bg-cyan-500 transition-all duration-500" style={{ width: `${p2}%` }}></div>
+              </div>
+              <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-2">
+                <span>Turno 1</span>
+                <span className="text-slate-500">Intervalo {lunchStart} - {lunchEnd}</span>
+                <span>Turno 2</span>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-4 mt-4 border-t border-slate-800/50">
+              <div className="flex items-center justify-center gap-2 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400">
+                <AlertCircle size={16} className="shrink-0" />
+                <span className="text-xs font-bold uppercase tracking-widest leading-tight">Conflito Operacional Detectado</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Dias de Funcionamento */}
@@ -349,31 +409,35 @@ export function AgendaSettings() {
               <Calendar className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Dias de Funcionamento</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Selecione os dias da semana</p>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Funcionamento Semanal</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Dias de operação padrão</p>
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2">
-            {weekDays.map(day => (
-              <button
-                key={day.value}
-                onClick={() => {
-                  if (workingDays.includes(day.value)) {
-                    setWorkingDays(workingDays.filter(d => d !== day.value));
-                  } else {
-                    setWorkingDays([...workingDays, day.value]);
-                  }
-                }}
-                className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
-                  workingDays.includes(day.value)
-                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                    : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'
-                }`}
-              >
-                {day.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {weekDays.map(day => {
+              const isActive = workingDays.includes(day.value);
+              return (
+                <button
+                  key={day.value}
+                  onClick={() => {
+                    if (isActive) {
+                      setWorkingDays(workingDays.filter(d => d !== day.value));
+                    } else {
+                      setWorkingDays([...workingDays, day.value]);
+                    }
+                  }}
+                  className={`relative overflow-hidden px-5 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all duration-300 ${
+                    isActive
+                      ? 'bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]'
+                      : 'bg-slate-950 border border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300 hover:bg-slate-900'
+                  }`}
+                >
+                  {isActive && <div className="absolute inset-0 bg-emerald-500/5 transition-opacity duration-300"></div>}
+                  <span className="relative z-10">{day.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -384,8 +448,8 @@ export function AgendaSettings() {
               <Calendar className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Tipos de Atendimento</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Categorias para agendamento</p>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Protocolos de Sessão</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Categorias operacionais para agendamento</p>
             </div>
           </div>
 
@@ -410,11 +474,11 @@ export function AgendaSettings() {
             {appointmentTypes.map((type) => (
               <div 
                 key={type}
-                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 transition-colors"
+                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 hover:border-slate-700 transition-colors group"
               >
                 <div 
-                  className="w-4 h-4 rounded-full overflow-hidden cursor-pointer relative shadow-inner"
-                  style={{ backgroundColor: appointmentColors[type] || '#3b82f6' }}
+                  className="w-3 h-3 rounded-full cursor-pointer relative shadow-[0_0_8px_rgba(0,0,0,0.5)] shrink-0"
+                  style={{ backgroundColor: appointmentColors[type] || '#3b82f6', boxShadow: `0 0 10px ${appointmentColors[type] || '#3b82f6'}40` }}
                 >
                   <input
                     type="color"
@@ -424,10 +488,10 @@ export function AgendaSettings() {
                     title="Alterar cor"
                   />
                 </div>
-                <span className="text-xs md:text-sm font-medium text-slate-300">{type}</span>
+                <span className="text-xs md:text-sm font-bold text-slate-300 tracking-wide uppercase px-1">{type}</span>
                 <button 
                   onClick={() => removeType(type)}
-                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 hover:bg-rose-500/10 p-1.5 rounded-lg ml-2"
+                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 group-hover:bg-rose-500/10 p-1.5 rounded-lg ml-2"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -448,18 +512,18 @@ export function AgendaSettings() {
               <Ban className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div className="flex-1">
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Datas Bloqueadas</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Feriados ou pausas específicas</p>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Bloqueios Operacionais</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Feriados e ausências programadas</p>
             </div>
             <Button
               onClick={addNationalHolidays}
               variant="outline"
-              className="text-xs border-slate-800 bg-slate-950 text-slate-300 hover:text-rose-400 hover:bg-slate-900 hover:border-rose-500/30"
+              className="text-xs transition-colors font-bold uppercase tracking-widest border-slate-700 bg-slate-950 text-slate-400 hover:text-rose-400 hover:bg-slate-900 shadow-sm shadow-black"
             >
               Popula Feriados
             </Button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <input 
               type="date" 
               value={newBlockedDate}
@@ -478,26 +542,30 @@ export function AgendaSettings() {
               <Plus size={20} />
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2 pt-2">
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 pt-2">
             {blockedDates.map((date) => (
               <div 
                 key={date}
-                className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2"
+                className="flex items-center justify-between gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 group hover:border-slate-700 transition-colors"
               >
-                <span className="text-xs md:text-sm font-medium text-slate-300">
-                  {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 text-rose-500/70" />
+                  <span className="text-xs md:text-sm font-bold text-slate-300">
+                    {new Date(date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                  </span>
+                </div>
                 <button 
                   onClick={() => setBlockedDates(blockedDates.filter(d => d !== date))}
-                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 hover:bg-rose-500/10 p-1.5 rounded-lg"
+                  className="text-slate-600 hover:text-rose-500 transition-colors bg-slate-900 group-hover:bg-rose-500/10 p-1 rounded-lg"
                 >
                   <Trash2 size={14} />
                 </button>
               </div>
             ))}
             {blockedDates.length === 0 && (
-              <div className="w-full text-center py-6 border border-dashed border-slate-800 rounded-xl">
-                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Nenhuma data bloqueada.</p>
+              <div className="col-span-full w-full text-center py-8 border border-dashed border-slate-800 rounded-xl text-slate-500">
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-widest">A agenda está limpa</span>
               </div>
             )}
           </div>
@@ -510,37 +578,46 @@ export function AgendaSettings() {
               <ShieldAlert className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Políticas da Clínica</h3>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Diretrizes Operacionais</h3>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium">Tolerância de atrasos e aviso prévio</p>
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pt-2">
+            <div className="space-y-4">
               <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Aviso Prévio (Cancelamento)</label>
-              <div className="relative">
+              <div className="relative pt-2">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-2xl font-black text-white">{cancelNotice}</span>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase pb-1">horas</span>
+                </div>
                 <input 
-                  type="number" 
+                  type="range"
+                  min={1} max={72} step={1}
                   value={cancelNotice}
                   onChange={(e) => setCancelNotice(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">horas</span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 pl-1">Tempo mínimo para reagendamentos/cancelamentos.</p>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium pl-1">Tempo exigido para reagendamentos gratuitos.</p>
             </div>
-            <div className="space-y-2">
+            
+            <div className="space-y-4">
               <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Tolerância de Atraso</label>
-              <div className="relative">
+              <div className="relative pt-2">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-2xl font-black text-white">{delayTolerance}</span>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase pb-1">min</span>
+                </div>
                 <input 
-                  type="number" 
+                  type="range" 
+                  min={0} max={30} step={5}
                   value={delayTolerance}
                   onChange={(e) => setDelayTolerance(parseInt(e.target.value) || 0)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all pr-12 text-sm md:text-base font-medium"
+                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 pl-1">Tolerância máxima aceita para atrasos.</p>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium pl-1">Tolerância máxima de chegada na recepção.</p>
             </div>
           </div>
         </div>
@@ -552,8 +629,8 @@ export function AgendaSettings() {
               <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div className="flex-1">
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Lembretes Automáticos</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Textos de confirmação (WhatsApp)</p>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Automação de Comunicação</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Lembretes proativos (WhatsApp)</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input 
@@ -566,52 +643,72 @@ export function AgendaSettings() {
             </label>
           </div>
           
-          <div className={`space-y-4 pt-2 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-            <div className="space-y-2">
-              <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Mensagem de Lembrete</label>
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pt-2 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+            <div className="space-y-4">
+              <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Template da Mensagem</label>
               <textarea 
                 value={reminderTemplate}
                 onChange={(e) => setReminderTemplate(e.target.value)}
-                rows={4}
+                rows={5}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm font-medium resize-none"
               />
               <div className="flex gap-2 flex-wrap text-xs font-mono text-slate-500">
                 <span>Variáveis Suportadas:</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">{`{nome}`}</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">{`{data}`}</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">{`{hora}`}</span>
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => setReminderTemplate(prev => prev + '{nome}')}>{`{nome}`}</span>
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => setReminderTemplate(prev => prev + '{data}')}>{`{data}`}</span>
+                <span className="text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded cursor-pointer hover:bg-cyan-500/20 transition-colors" onClick={() => setReminderTemplate(prev => prev + '{hora}')}>{`{hora}`}</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Preview em Tempo Real</label>
+              <div className="bg-[#0b141a] rounded-2xl p-4 border border-[#202c33] shadow-lg flex flex-col gap-3 h-full justify-end min-h-[140px] relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full p-2 bg-[#202c33] border-b border-[#2a3942] flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-emerald-500" />
+                  <span className="text-xs font-semibold text-[#e9edef]">Simulação WhatsApp</span>
+                </div>
+                <div className="mt-8 bg-[#005c4b] text-[#e9edef] p-3 rounded-lg rounded-tr-none self-end max-w-[90%] shadow-sm relative text-sm whitespace-pre-wrap font-medium">
+                  {reminderTemplate
+                    .replace('{nome}', 'Mariana')
+                    .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                    .replace('{hora}', '15:00')}
+                  <div className="absolute top-0 right-[-8px] w-0 h-0 border-[8px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                  <div className="text-[10px] text-[#e9edef]/70 text-right mt-1 font-sans">
+                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="pt-6 md:pt-8 border-t border-slate-800/50 flex flex-col md:flex-row items-center justify-between gap-6 pb-10">
-        <div className="flex-1 w-full">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#050B14]/80 backdrop-blur-xl border-t border-slate-800 p-4 md:p-6 lg:pl-72 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex-1 w-full max-w-2xl">
           {status !== 'idle' && (
-            <div className={`p-4 rounded-xl border flex items-center gap-3 ${
+            <div className={`p-3 md:p-4 rounded-xl border flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 ${
               status === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
             }`}>
-              {status === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-wider">{message}</span>
+              {status === 'success' ? <CheckCircle size={18} className="shrink-0" /> : <AlertCircle size={18} className="shrink-0" />}
+              <span className="text-[10px] md:text-sm font-black uppercase tracking-wider leading-tight">{message}</span>
             </div>
           )}
         </div>
 
         <Button 
           onClick={handleSave}
-          disabled={isSaving}
-          className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-10 py-5 md:py-6 rounded-xl md:rounded-2xl shadow-lg shadow-cyan-500/20 transition-all active:scale-95 text-xs md:text-sm"
+          disabled={isSaving || hasConflict}
+          className="w-full md:w-auto bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-800 disabled:text-slate-500 text-[#050B14] font-black uppercase tracking-widest px-8 md:px-12 py-6 rounded-xl md:rounded-2xl shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all active:scale-95 text-xs md:text-sm whitespace-nowrap"
         >
           {isSaving ? (
             <>
-              <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin mr-2" />
-              Salvando...
+              <Loader2 className="w-5 h-5 animate-spin mr-3" />
+              Sincronizando...
             </>
           ) : (
             <>
-              <CheckCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              Salvar Agenda
+              <CheckCircle className="w-5 h-5 mr-3" />
+              Sincronizar Configurações
             </>
           )}
         </Button>
