@@ -2,12 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MessageCircle, Smartphone, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { MessageCircle, Smartphone, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function AutomationSettings() {
-  const [reminderEnabled, setReminderEnabled] = useState(true);
-  const [reminderTemplate, setReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
+  const [whatsappEnabled, setWhatsappEnabled] = useState(true);
+  const [whatsappReminderTemplate, setWhatsappReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
+  const [whatsappFollowupTemplate, setWhatsappFollowupTemplate] = useState('Olá {nome}! Como você está se sentindo após o nosso atendimento?');
+  
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [emailReminderTemplate, setEmailReminderTemplate] = useState('Seu atendimento está marcado para {data} às {hora}.');
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -22,12 +27,12 @@ export function AutomationSettings() {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from('agenda_settings')
+        .from('automation_settings')
         .select('*')
         .maybeSingle();
       
       if (error) {
-        if (error.message?.includes('relation "agenda_settings" does not exist')) {
+        if (error.message?.includes('relation "automation_settings" does not exist')) {
           return;
         } else {
           throw error;
@@ -35,8 +40,11 @@ export function AutomationSettings() {
       }
       
       if (data) {
-        if (data.reminder_enabled !== undefined) setReminderEnabled(data.reminder_enabled);
-        if (data.reminder_template) setReminderTemplate(data.reminder_template);
+        if (data.whatsapp_enabled !== undefined) setWhatsappEnabled(data.whatsapp_enabled);
+        if (data.whatsapp_reminder_template) setWhatsappReminderTemplate(data.whatsapp_reminder_template);
+        if (data.whatsapp_followup_template) setWhatsappFollowupTemplate(data.whatsapp_followup_template);
+        if (data.email_enabled !== undefined) setEmailEnabled(data.email_enabled);
+        if (data.email_reminder_template) setEmailReminderTemplate(data.email_reminder_template);
       }
     } catch (err: any) {
       console.error(err);
@@ -54,28 +62,33 @@ export function AutomationSettings() {
 
     try {
       const { data: existing, error: selectError } = await supabase
-        .from('agenda_settings')
+        .from('automation_settings')
         .select('id')
         .maybeSingle();
 
-      if (selectError) throw selectError;
+      if (selectError && !selectError.message?.includes('relation "automation_settings" does not exist')) {
+        throw selectError;
+      }
 
       const payload = {
-        reminder_enabled: reminderEnabled,
-        reminder_template: reminderTemplate,
+        whatsapp_enabled: whatsappEnabled,
+        whatsapp_reminder_template: whatsappReminderTemplate,
+        whatsapp_followup_template: whatsappFollowupTemplate,
+        email_enabled: emailEnabled,
+        email_reminder_template: emailReminderTemplate,
         updated_at: new Date().toISOString()
       };
 
       let error;
       if (existing) {
         const { error: updateError } = await supabase
-          .from('agenda_settings')
+          .from('automation_settings')
           .update(payload)
           .eq('id', existing.id);
         error = updateError;
       } else {
         const { error: insertError } = await supabase
-          .from('agenda_settings')
+          .from('automation_settings')
           .insert([payload]);
         error = insertError;
       }
@@ -104,70 +117,139 @@ export function AutomationSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8 pb-32">
+      {/* WhatsApp Automation Section */}
       <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
         <div className="flex items-center gap-3 md:gap-4 mb-2">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-[#25D366]/10 text-[#25D366] rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
             <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Automação de Comunicação</h3>
-            <p className="text-[10px] md:text-xs text-slate-500 font-medium">Lembretes proativos (WhatsApp)</p>
+            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Automação WhatsApp</h3>
+            <p className="text-[10px] md:text-xs text-slate-500 font-medium">Lembretes e acompanhamento via WhatsApp</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer shrink-0">
             <input 
               type="checkbox" 
               className="sr-only peer" 
-              checked={reminderEnabled}
-              onChange={(e) => setReminderEnabled(e.target.checked)}
+              checked={whatsappEnabled}
+              onChange={(e) => setWhatsappEnabled(e.target.checked)}
             />
-            <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+            <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
           </label>
         </div>
         
-        <div className={`flex flex-col gap-8 pt-6 border-t border-slate-800/50 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-          <div className="space-y-4">
-            <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Template da Mensagem</label>
-            <textarea 
-              value={reminderTemplate}
-              onChange={(e) => setReminderTemplate(e.target.value)}
-              rows={4}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm font-medium resize-none"
-            />
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Variáveis Suportadas:</span>
-              <div className="flex flex-wrap gap-2 text-xs font-mono">
-                <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{nome}')}>{`{nome}`}</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{data}')}>{`{data}`}</span>
-                <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{hora}')}>{`{hora}`}</span>
+        <div className={`flex flex-col gap-8 pt-6 border-t border-slate-800/50 transition-opacity duration-300 ${whatsappEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Template: Lembrete de Agendamento</label>
+                <textarea 
+                  value={whatsappReminderTemplate}
+                  onChange={(e) => setWhatsappReminderTemplate(e.target.value)}
+                  rows={4}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Template: Follow-up Pós-consulta</label>
+                <textarea 
+                  value={whatsappFollowupTemplate}
+                  onChange={(e) => setWhatsappFollowupTemplate(e.target.value)}
+                  rows={4}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Variáveis Suportadas:</span>
+                <div className="flex flex-wrap gap-2 text-xs font-mono">
+                  <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{nome}`}</span>
+                  <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{data}`}</span>
+                  <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{hora}`}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="text-[10px] md:text-xs font-black text-slate-400 border-b border-slate-800 pb-2 uppercase tracking-widest pl-1 flex items-center justify-between">
+                <span>Preview em Tempo Real</span>
+                <Smartphone className="w-3 h-3 md:w-4 md:h-4" />
+              </label>
+              <div className="bg-[#0b141a] rounded-2xl p-4 md:p-6 border border-[#202c33] shadow-xl flex flex-col gap-4 relative overflow-hidden h-full min-h-[300px]">
+                <div className="absolute top-0 left-0 w-full px-4 py-2 bg-[#202c33] border-b border-[#2a3942] flex items-center justify-center gap-2 z-10 shadow-md">
+                  <span className="text-[10px] font-bold text-[#e9edef] uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#25D366]"></span> WhatsApp
+                  </span>
+                </div>
+                
+                {/* Background Pattern fake for WhatsApp */}
+                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://static.whatsapp.net/rsrc.php/v3/yl/r/rrotdy92T1_.png')] pointer-events-none"></div>
+
+                <div className="mt-8 flex flex-col gap-4">
+                  <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative">
+                    <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                      {whatsappReminderTemplate
+                        .replace('{nome}', 'Mariana')
+                        .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                        .replace('{hora}', '15:00')}
+                    </div>
+                    <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                    <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                      {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} 
+                      <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-80 mt-4">
+                    <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                      {whatsappFollowupTemplate
+                        .replace('{nome}', 'Mariana')
+                        .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                        .replace('{hora}', '15:00')}
+                    </div>
+                    <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                    <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                      +1 dia <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Email Automation Section */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+        <div className="flex items-center gap-3 md:gap-4 mb-2">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-sky-500/10 text-sky-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+            <Mail className="w-5 h-5 md:w-6 md:h-6" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Automação de Email</h3>
+            <p className="text-[10px] md:text-xs text-slate-500 font-medium">Lembretes proativos e atualizações via Email</p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer shrink-0">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={emailEnabled}
+              onChange={(e) => setEmailEnabled(e.target.checked)}
+            />
+            <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
+          </label>
+        </div>
+        
+        <div className={`flex flex-col gap-8 pt-6 border-t border-slate-800/50 transition-opacity duration-300 ${emailEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
           <div className="space-y-4">
-            <label className="text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-widest pl-1">Preview em Tempo Real</label>
-            <div className="bg-[#0b141a] rounded-2xl p-4 md:p-6 border border-[#202c33] shadow-xl flex flex-col gap-4 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full px-4 py-2 bg-[#202c33] border-b border-[#2a3942] flex items-center justify-center gap-2 z-10 shadow-md">
-                <Smartphone className="w-4 h-4 text-emerald-500" />
-                <span className="text-[10px] font-bold text-[#e9edef] uppercase tracking-widest">Simulação WhatsApp</span>
-              </div>
-              
-              {/* Background Pattern fake for WhatsApp */}
-              <div className="absolute inset-0 opacity-[0.03] bg-[url('https://static.whatsapp.net/rsrc.php/v3/yl/r/rrotdy92T1_.png')] pointer-events-none"></div>
-
-              <div className="mt-8 bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative">
-                <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
-                  {reminderTemplate
-                    .replace('{nome}', 'Mariana')
-                    .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                    .replace('{hora}', '15:00')}
-                </div>
-                <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
-                <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
-                  {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} 
-                  <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
-                </div>
-              </div>
-            </div>
+            <label className="text-[10px] md:text-xs font-black text-sky-500 uppercase tracking-widest pl-1">Template de Lembrete</label>
+            <textarea 
+              value={emailReminderTemplate}
+              onChange={(e) => setEmailReminderTemplate(e.target.value)}
+              rows={4}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none transition-all text-sm font-medium resize-none"
+            />
           </div>
         </div>
       </div>
@@ -205,3 +287,4 @@ export function AutomationSettings() {
     </div>
   );
 }
+

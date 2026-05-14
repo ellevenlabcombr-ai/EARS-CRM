@@ -223,6 +223,24 @@ BEGIN
         VALUES ('08:00', '18:00', 30, 0, ARRAY['Avaliação', 'Tratamento', 'Revisão', 'Recuperação']);
     END IF;
 
+    -- Tabela de Configurações de Automação
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='automation_settings') THEN
+        CREATE TABLE automation_settings (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            whatsapp_enabled BOOLEAN DEFAULT true,
+            whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.',
+            whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?',
+            email_enabled BOOLEAN DEFAULT false,
+            email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.',
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+    END IF;
+
+    -- Garantir que existe um registro de configuração de automação
+    IF NOT EXISTS (SELECT 1 FROM automation_settings) THEN
+        INSERT INTO automation_settings (whatsapp_enabled) VALUES (true);
+    END IF;
+
     -- Tabela de Configurações Clínicas
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='clinical_settings') THEN
         CREATE TABLE clinical_settings (
@@ -717,6 +735,7 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE billings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE branding_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agenda_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE automation_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clinical_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profile_settings ENABLE ROW LEVEL SECURITY;
 
@@ -759,6 +778,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'billings' AND policyname = 'Permitir tudo') THEN CREATE POLICY "Permitir tudo" ON billings FOR ALL USING (true) WITH CHECK (true); END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'branding_settings' AND policyname = 'Permitir tudo') THEN CREATE POLICY "Permitir tudo" ON branding_settings FOR ALL USING (true) WITH CHECK (true); END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'agenda_settings' AND policyname = 'Permitir tudo') THEN CREATE POLICY "Permitir tudo" ON agenda_settings FOR ALL USING (true) WITH CHECK (true); END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'automation_settings' AND policyname = 'Permitir tudo') THEN CREATE POLICY "Permitir tudo" ON automation_settings FOR ALL USING (true) WITH CHECK (true); END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'clinical_settings' AND policyname = 'Permitir tudo') THEN CREATE POLICY "Permitir tudo" ON clinical_settings FOR ALL USING (true) WITH CHECK (true); END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'user_profile_settings' AND policyname = 'Permitir tudo') THEN CREATE POLICY "Permitir tudo" ON user_profile_settings FOR ALL USING (true) WITH CHECK (true); END IF;
 END $$;
