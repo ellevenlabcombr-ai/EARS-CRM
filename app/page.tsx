@@ -25,8 +25,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { LogoLoader } from '@/components/LogoLoader';
 
 const LoadingSpinner = () => (
-  <div className="flex-1 flex items-center justify-center min-h-dvh">
-    <LogoLoader size="lg" showSpinner={false} />
+  <div className="flex-1 flex items-center justify-center h-dvh">
+    <LogoLoader size="2xl" showSpinner={false} />
   </div>
 );
 
@@ -114,7 +114,7 @@ export default function Home() {
               transition={{ duration: 1, ease: 'easeOut' }}
               className="flex flex-col items-center justify-center"
             >
-              <LogoLoader size="xl" />
+              <LogoLoader size="2xl" />
               <motion.div 
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: "200px" }}

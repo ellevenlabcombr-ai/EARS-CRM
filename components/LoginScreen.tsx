@@ -116,14 +116,14 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="min-h-dvh bg-[#050B14] flex flex-col items-center justify-center p-6 pt-safe font-sans relative overflow-hidden selection:bg-cyan-500/30">
+    <div className="h-dvh w-full bg-[#050B14] flex flex-col items-center justify-center p-6 pt-safe font-sans relative overflow-hidden selection:bg-cyan-500/30">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="text-center mb-10 pt-4">
-          <LogoLoader size="xl" className="mb-4" />
+        <div className="text-center mb-6 pt-4">
+          <LogoLoader size="2xl" className="mb-4" />
           <p className="text-slate-400 text-sm font-medium tracking-widest uppercase">
             GESTÃO DE PERFORMANCE
           </p>
