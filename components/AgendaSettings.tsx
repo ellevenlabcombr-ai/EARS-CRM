@@ -19,6 +19,9 @@ export function AgendaSettings() {
   const [endTime, setEndTime] = useState('18:00');
   const [duration, setDuration] = useState(30);
   const [breakInterval, setBreakInterval] = useState(0);
+  const [lunchStart, setLunchStart] = useState('12:00');
+  const [lunchEnd, setLunchEnd] = useState('13:00');
+  const [workingDays, setWorkingDays] = useState<string[]>(['1', '2', '3', '4', '5']);
   const [appointmentTypes, setAppointmentTypes] = useState<string[]>([]);
   const [newType, setNewType] = useState('');
   
@@ -26,6 +29,16 @@ export function AgendaSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+
+  const weekDays = [
+    { value: '1', label: 'Seg' },
+    { value: '2', label: 'Ter' },
+    { value: '3', label: 'Qua' },
+    { value: '4', label: 'Qui' },
+    { value: '5', label: 'Sex' },
+    { value: '6', label: 'Sáb' },
+    { value: '0', label: 'Dom' },
+  ];
 
   useEffect(() => {
     fetchSettings();
@@ -64,6 +77,9 @@ export function AgendaSettings() {
         setDuration(data.default_duration_minutes || 30);
         setBreakInterval(data.break_interval_minutes || 0);
         setAppointmentTypes(data.appointment_types || []);
+        if (data.lunch_start) setLunchStart(data.lunch_start);
+        if (data.lunch_end) setLunchEnd(data.lunch_end);
+        if (data.working_days) setWorkingDays(data.working_days);
       }
     } catch (err: any) {
       console.error("AGENDA SETTINGS CATCH ERROR:", {
@@ -113,6 +129,9 @@ export function AgendaSettings() {
         end_time: endTime,
         default_duration_minutes: duration,
         break_interval_minutes: breakInterval,
+        lunch_start: lunchStart,
+        lunch_end: lunchEnd,
+        working_days: workingDays,
         appointment_types: appointmentTypes,
         updated_at: new Date().toISOString()
       };
@@ -218,7 +237,28 @@ export function AgendaSettings() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-800/50 mt-4">
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Início Almoço</label>
+              <input 
+                type="time" 
+                value={lunchStart}
+                onChange={(e) => setLunchStart(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-widest pl-1">Fim Almoço</label>
+              <input 
+                type="time" 
+                value={lunchEnd}
+                onChange={(e) => setLunchEnd(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/50">
             <div className="space-y-2">
               <div className="flex items-center gap-2 mb-1 pl-1">
                 <Timer className="text-cyan-500 w-3 h-3 md:w-4 md:h-4" />
@@ -249,6 +289,41 @@ export function AgendaSettings() {
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-black text-slate-600 uppercase">min</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Dias de Funcionamento */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-400 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Dias de Funcionamento</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Selecione os dias da semana</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {weekDays.map(day => (
+              <button
+                key={day.value}
+                onClick={() => {
+                  if (workingDays.includes(day.value)) {
+                    setWorkingDays(workingDays.filter(d => d !== day.value));
+                  } else {
+                    setWorkingDays([...workingDays, day.value]);
+                  }
+                }}
+                className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
+                  workingDays.includes(day.value)
+                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                    : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'
+                }`}
+              >
+                {day.label}
+              </button>
+            ))}
           </div>
         </div>
 

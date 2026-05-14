@@ -766,6 +766,17 @@ END $$;
 -- 8. Adicionar colunas faltantes se as tabelas já existirem
 DO $$ 
 BEGIN
+    -- Colunas na tabela agenda_settings
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'working_days') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN working_days TEXT[] DEFAULT ARRAY['1', '2', '3', '4', '5'];
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_start') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN lunch_start TEXT DEFAULT '12:00';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_end') THEN
+        ALTER TABLE public.agenda_settings ADD COLUMN lunch_end TEXT DEFAULT '13:00';
+    END IF;
+
     -- Colunas na tabela athletes
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'athletes' AND column_name = 'password') THEN
         ALTER TABLE public.athletes ADD COLUMN password TEXT;
