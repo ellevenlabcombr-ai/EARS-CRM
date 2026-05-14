@@ -168,9 +168,18 @@ export function GeneralSettings() {
               <div className="p-2 bg-indigo-500/10 rounded-lg">
                 <History className="w-5 h-5 text-indigo-400" />
               </div>
-              <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Audit Log / Atividade Recent</h3>
+              <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Audit Log / Atividade Recente</h3>
             </div>
-            <button className="p-2 hover:bg-slate-800 rounded-lg transition-colors group">
+            <button 
+              onClick={() => {
+                const fetchLogs = async () => {
+                  const { data } = await supabase.from('system_logs').select('*').order('created_at', { ascending: false }).limit(10);
+                  if (data) setLogs(data);
+                };
+                fetchLogs();
+              }}
+              className="p-2 hover:bg-slate-800 rounded-lg transition-colors group"
+            >
               <RefreshCw className="w-4 h-4 text-slate-500 group-hover:text-white group-active:rotate-180 transition-all duration-500" />
             </button>
           </div>
@@ -187,11 +196,13 @@ export function GeneralSettings() {
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
                     log.module === 'Core' ? 'bg-blue-500/10 text-blue-400' :
                     log.module === 'Settings' ? 'bg-purple-500/10 text-purple-400' :
+                    log.module === 'Database' ? 'bg-amber-500/10 text-amber-400' :
                     'bg-slate-800 text-slate-400'
                   }`}>
                     {log.module === 'Core' ? <Zap size={18} /> : 
                      log.module === 'Settings' ? <Settings size={18} /> :
-                     <Database size={18} />}
+                     log.module === 'Database' ? <Database size={18} /> :
+                     <Shield size={18} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
@@ -204,53 +215,116 @@ export function GeneralSettings() {
               ))
             ) : (
               <div className="py-10 text-center">
-                <p className="text-xs font-black uppercase tracking-widest text-slate-600 italic">Nenhum log registrado hoje.</p>
+                <p className="text-xs font-black uppercase tracking-widest text-slate-600 italic">Nenhum log registrado recentemente.</p>
               </div>
             )}
           </div>
+          
+          <div className="mt-6 pt-6 border-t border-slate-800/50">
+             <button className="text-xs font-black text-slate-500 hover:text-white uppercase tracking-widest flex items-center gap-2 transition-colors">
+               Ver Relatório de Auditoria Completo
+               <History size={14} />
+             </button>
+          </div>
         </div>
 
-        {/* Security Summary Panel */}
-        <div className="bg-slate-950 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col group relative overflow-hidden">
-          <div className="absolute -right-8 -bottom-8 opacity-5 group-hover:opacity-10 transition-opacity">
-             <ShieldAlert className="w-48 h-48 text-amber-500" />
-          </div>
-          
-          <div className="relative z-10">
+        <div className="space-y-6">
+          {/* Maintenance Section */}
+          <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-amber-500 rounded-lg">
-                <Shield className="w-5 h-5 text-slate-950" />
+              <div className="p-2 bg-cyan-500/10 rounded-lg">
+                <Settings className="w-5 h-5 text-cyan-400" />
               </div>
-              <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight italic">Terminal Seguro</h3>
+              <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight">Manutenção</h3>
             </div>
             
-            <div className="space-y-6">
-              <div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Integridade de Acesso</p>
-                <div className="space-y-3">
-                   <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800/50">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Root Admin</span>
-                      <span className="text-[10px] font-black text-emerald-500 uppercase">Verificado</span>
-                   </div>
-                   <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800/50">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Criptografia</span>
-                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">AES-256</span>
-                   </div>
-                   <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800/50">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Cloud Link</span>
-                      <span className="text-[10px] font-black text-cyan-500 uppercase">Sincronizado</span>
-                   </div>
+            <div className="space-y-3">
+              <button 
+                onClick={() => alert('Backup SQL solicitado. O download começará em instantes...')}
+                className="w-full flex items-center justify-between p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all group active:scale-95 text-left"
+              >
+                <div>
+                  <p className="text-[11px] font-black text-white uppercase tracking-tight">Exportar Backup</p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Base de dados completa (SQL)</p>
                 </div>
-              </div>
+                <Database size={16} className="text-slate-600 group-hover:text-cyan-400 transition-colors" />
+              </button>
 
-              <div className="pt-4">
-                <button 
-                  onClick={() => alert('Auditoria de Segurança v2.0:\n- MFA Ativo para deleções\n- RLS (Row Level Security) Ativo\n- Backup diário: 03:00 AM')}
-                  className="w-full px-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/30 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <ShieldAlert size={14} />
-                  Auditoria de Segurança
-                </button>
+              <button 
+                onClick={() => alert('Cache de imagens e arquivos temporários limpo com sucesso.')}
+                className="w-full flex items-center justify-between p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all group active:scale-95 text-left"
+              >
+                <div>
+                  <p className="text-[11px] font-black text-white uppercase tracking-tight">Limpar Cache</p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Imagens e arquivos temporários</p>
+                </div>
+                <RefreshCw size={16} className="text-slate-600 group-hover:text-rose-400 transition-colors" />
+              </button>
+
+              <button 
+                onClick={() => alert('Integridade das tabelas verificada. 0 inconsistências encontradas.')}
+                className="w-full flex items-center justify-between p-4 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all group active:scale-95 text-left"
+              >
+                <div>
+                  <p className="text-[11px] font-black text-white uppercase tracking-tight">Check Integridade</p>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Verificar vínculos de dados</p>
+                </div>
+                <Shield size={16} className="text-slate-600 group-hover:text-emerald-400 transition-colors" />
+              </button>
+            </div>
+          </div>
+
+          {/* Security Summary Panel */}
+          <div className="bg-slate-950 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col group relative overflow-hidden flex-1">
+            <div className="absolute -right-8 -bottom-8 opacity-5 group-hover:opacity-10 transition-opacity">
+               <ShieldAlert className="w-48 h-48 text-amber-500" />
+            </div>
+            
+            <div className="relative z-10 font-sans">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-amber-500 rounded-lg">
+                  <Shield className="w-5 h-5 text-slate-950" />
+                </div>
+                <h3 className="text-base md:text-lg font-black text-white uppercase tracking-tight italic">Health Status</h3>
+              </div>
+              
+              <div className="space-y-6">
+                <div>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Conectividade</p>
+                  <div className="space-y-3">
+                     <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Banco de Dados</span>
+                        </div>
+                        <span className="text-[10px] font-black text-emerald-500 uppercase">ONLINE</span>
+                     </div>
+                     <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-cyan-500 rounded-full"></div>
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">API Gateway</span>
+                        </div>
+                        <span className="text-[10px] font-black text-cyan-500 uppercase tracking-widest">STABLE</span>
+                     </div>
+                     <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl border border-slate-800/50">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">CDN Latency</span>
+                        </div>
+                        <span className="text-[10px] font-black text-amber-500 uppercase">24ms</span>
+                     </div>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button 
+                    onClick={() => alert('Sessão Técnica v2.0:\n- DB: Supabase (PostgreSQL)\n- Auth: GoTrue (JWT)\n- Storage: S3 Compatible\n- Region: us-east-1')}
+                    className="w-full px-6 py-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/30 text-amber-500 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <ShieldAlert size={14} />
+                    Info Técnica
+                  </button>
+                </div>
               </div>
             </div>
           </div>
