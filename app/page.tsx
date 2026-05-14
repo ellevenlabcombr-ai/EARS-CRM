@@ -114,9 +114,7 @@ export default function Home() {
               transition={{ duration: 1, ease: 'easeOut' }}
               className="flex flex-col items-center justify-center"
             >
-              <h1 className="text-5xl md:text-6xl font-normal text-white tracking-tighter flex items-center justify-center gap-3" style={{ fontFamily: 'Ghanes, sans-serif' }}>
-                ELLEVEN <span className="text-cyan-500">/</span> EARS
-              </h1>
+              <LogoLoader size="xl" />
               <motion.div 
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: "200px" }}

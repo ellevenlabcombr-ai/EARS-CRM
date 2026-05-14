@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Activity, Stethoscope, ArrowRight, Lock, Mail, ChevronRight, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { LogoLoader } from '@/components/LogoLoader';
 import { supabase } from '@/lib/supabase';
 
 type Role = 'admin' | 'athlete';
@@ -121,10 +122,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md relative z-10"
       >
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-normal text-white tracking-tighter mb-2 flex items-center justify-center gap-3" style={{ fontFamily: 'Ghanes, sans-serif' }}>
-            ELLEVEN <span className="text-cyan-500">/</span> EARS
-          </h1>
+        <div className="text-center mb-10 pt-4">
+          <LogoLoader size="xl" className="mb-4" />
           <p className="text-slate-400 text-sm font-medium tracking-widest uppercase">
             GESTÃO DE PERFORMANCE
           </p>
