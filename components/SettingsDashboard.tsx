@@ -11,8 +11,10 @@ import { ClinicalTagsSettings } from './ClinicalTagsSettings';
 import { SportsSettings } from './SportsSettings';
 import { DatabaseSeeder } from './DatabaseSeeder';
 import { FinanceSettings } from './FinanceSettings';
+import { AutomationSettings } from './AutomationSettings';
+import { MessageCircle } from 'lucide-react';
 
-type SettingsSection = 'general' | 'finance' | 'branding' | 'agenda' | 'clinical' | 'tags' | 'data' | 'dev';
+type SettingsSection = 'general' | 'finance' | 'branding' | 'agenda' | 'clinical' | 'tags' | 'data' | 'dev' | 'automation';
 
 export function SettingsDashboard() {
   const [activeSection, setActiveSection] = useState<SettingsSection>('general');
@@ -33,6 +35,14 @@ export function SettingsDashboard() {
       color: 'bg-indigo-500',
       textColor: 'text-indigo-500',
       component: <AgendaSettings />
+    },
+    {
+      id: 'automation' as const,
+      title: 'Comunicação\ne Automação',
+      icon: MessageCircle,
+      color: 'bg-cyan-500',
+      textColor: 'text-cyan-500',
+      component: <AutomationSettings />
     },
     {
       id: 'dev' as const,

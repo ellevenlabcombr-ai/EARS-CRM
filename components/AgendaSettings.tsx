@@ -32,8 +32,6 @@ export function AgendaSettings() {
   const [newType, setNewType] = useState('');
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [newBlockedDate, setNewBlockedDate] = useState('');
-  const [reminderEnabled, setReminderEnabled] = useState(true);
-  const [reminderTemplate, setReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
   const [delayTolerance, setDelayTolerance] = useState(15);
   const [cancelNotice, setCancelNotice] = useState(24);
   const [appointmentColors, setAppointmentColors] = useState<Record<string, string>>({});
@@ -113,8 +111,6 @@ export function AgendaSettings() {
         setBlockedDates(loadedDates);
 
         if (data.working_days) setWorkingDays(data.working_days);
-        if (data.reminder_enabled !== undefined) setReminderEnabled(data.reminder_enabled);
-        if (data.reminder_template) setReminderTemplate(data.reminder_template);
         if (data.delay_tolerance_minutes !== undefined) setDelayTolerance(data.delay_tolerance_minutes);
         if (data.cancellation_notice_hours !== undefined) setCancelNotice(data.cancellation_notice_hours);
         if (data.appointment_colors) setAppointmentColors(data.appointment_colors);
@@ -173,8 +169,6 @@ export function AgendaSettings() {
         working_days: workingDays,
         appointment_types: appointmentTypes,
         blocked_dates: blockedDates,
-        reminder_enabled: reminderEnabled,
-        reminder_template: reminderTemplate,
         delay_tolerance_minutes: delayTolerance,
         cancellation_notice_hours: cancelNotice,
         appointment_colors: appointmentColors,
@@ -308,8 +302,8 @@ export function AgendaSettings() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
-            <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-6 md:gap-8">
+            <div className="space-y-3 flex-1">
               <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Início</label>
               <input 
                 type="time" 
@@ -318,7 +312,7 @@ export function AgendaSettings() {
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm md:text-base font-medium"
               />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1">
               <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Término</label>
               <input 
                 type="time" 
@@ -343,8 +337,8 @@ export function AgendaSettings() {
               </label>
             </div>
             
-            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 transition-opacity duration-300 ${lunchEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-              <div className="space-y-3">
+            <div className={`flex flex-col sm:flex-row gap-6 md:gap-8 transition-opacity duration-300 ${lunchEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+              <div className="space-y-3 flex-1">
                 <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Início Almoço</label>
                 <input 
                   type="time" 
@@ -353,7 +347,7 @@ export function AgendaSettings() {
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all text-sm md:text-base font-medium"
                 />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 flex-1">
                 <label className="text-[10px] md:text-xs font-black text-amber-500/70 uppercase tracking-widest pl-1">Fim Almoço</label>
                 <input 
                   type="time" 
@@ -365,8 +359,8 @@ export function AgendaSettings() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 pt-6 border-t border-slate-800/50">
-            <div className="space-y-3">
+          <div className="flex flex-col gap-6 pt-6 border-t border-slate-800/50">
+            <div className="space-y-3 w-full">
               <div className="flex items-center gap-2 mb-2 pl-1">
                 <Timer className="text-cyan-500 w-3 h-3 md:w-4 md:h-4" />
                 <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Duração Padrão</label>
@@ -385,7 +379,7 @@ export function AgendaSettings() {
                 />
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 w-full">
               <div className="flex items-center gap-2 mb-2 pl-1">
                 <Timer className="text-amber-500 w-3 h-3 md:w-4 md:h-4" />
                 <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">Intervalo</label>
@@ -435,9 +429,8 @@ export function AgendaSettings() {
         </div>
 
         {/* Dias de Funcionamento */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-3 md:gap-4 mb-4">
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-4">
               <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
                 <Calendar className="w-5 h-5 md:w-6 md:h-6" />
               </div>
@@ -447,7 +440,7 @@ export function AgendaSettings() {
               </div>
             </div>
             
-            <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-4 gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               {weekDays.map(day => {
                 const isActive = workingDays.includes(day.value);
                 return (
@@ -460,7 +453,7 @@ export function AgendaSettings() {
                         setWorkingDays([...workingDays, day.value]);
                       }
                     }}
-                    className={`relative overflow-hidden flex items-center justify-center h-12 lg:h-14 rounded-xl text-xs md:text-sm font-black tracking-wider uppercase transition-all duration-300 ${
+                    className={`relative overflow-hidden flex items-center justify-center h-12 lg:h-14 px-4 min-w-[3rem] flex-1 sm:flex-none rounded-xl text-xs md:text-sm font-black tracking-wider uppercase transition-all duration-300 ${
                       isActive
                         ? 'bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] scale-[1.02]'
                         : 'bg-slate-950 border border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300 hover:bg-slate-900'
@@ -472,7 +465,6 @@ export function AgendaSettings() {
                 );
               })}
             </div>
-          </div>
         </div>
 
         {/* Tipos de Atendimento */}
@@ -645,75 +637,6 @@ export function AgendaSettings() {
                 />
               </div>
               <p className="text-[10px] md:text-xs text-slate-500 font-medium pl-1">Tolerância máxima de chegada na recepção.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Lembretes e Automação */}
-        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:col-span-2">
-          <div className="flex items-center gap-3 md:gap-4 mb-2">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
-              <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Automação de Comunicação</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Lembretes proativos (WhatsApp)</p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer shrink-0">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={reminderEnabled}
-                onChange={(e) => setReminderEnabled(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-            </label>
-          </div>
-          
-          <div className={`flex flex-col gap-6 md:gap-8 pt-2 transition-opacity duration-300 ${reminderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-            <div className="space-y-4">
-              <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1">Template da Mensagem</label>
-              <textarea 
-                value={reminderTemplate}
-                onChange={(e) => setReminderTemplate(e.target.value)}
-                rows={4}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 outline-none transition-all text-sm font-medium resize-none"
-              />
-              <div className="flex flex-col gap-2">
-                <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Variáveis Suportadas:</span>
-                <div className="flex flex-wrap gap-2 text-xs font-mono">
-                  <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{nome}')}>{`{nome}`}</span>
-                  <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{data}')}>{`{data}`}</span>
-                  <span className="text-cyan-400 bg-cyan-500/10 px-2 py-1.5 rounded-lg cursor-pointer hover:bg-cyan-500/20 hover:text-cyan-300 transition-colors border border-cyan-500/20" onClick={() => setReminderTemplate(prev => prev + '{hora}')}>{`{hora}`}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="text-[10px] md:text-xs font-black text-emerald-500 uppercase tracking-widest pl-1">Preview em Tempo Real</label>
-              <div className="bg-[#0b141a] rounded-2xl p-4 md:p-6 border border-[#202c33] shadow-xl flex flex-col gap-4 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full px-4 py-2 bg-[#202c33] border-b border-[#2a3942] flex items-center justify-center gap-2 z-10 shadow-md">
-                  <Smartphone className="w-4 h-4 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-[#e9edef] uppercase tracking-widest">Simulação WhatsApp</span>
-                </div>
-                
-                {/* Background Pattern fake for WhatsApp */}
-                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://static.whatsapp.net/rsrc.php/v3/yl/r/rrotdy92T1_.png')] pointer-events-none"></div>
-
-                <div className="mt-8 bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative">
-                  <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
-                    {reminderTemplate
-                      .replace('{nome}', 'Mariana')
-                      .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                      .replace('{hora}', '15:00')}
-                  </div>
-                  <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
-                  <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
-                    {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} 
-                    <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
