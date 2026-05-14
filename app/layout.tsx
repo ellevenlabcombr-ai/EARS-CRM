@@ -7,6 +7,7 @@ import { ScrollToTop } from '@/components/ScrollToTop';
 import { InstallPrompt } from '@/components/InstallPrompt';
 import { AgendaNotifier } from '@/components/AgendaNotifier';
 import { BrandingInjector } from '@/components/BrandingInjector';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' });
@@ -64,6 +65,13 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           <LanguageProvider key="lang-provider">
             <BrandingInjector />
             {children}
+            <Toaster 
+              theme="dark" 
+              position="bottom-right" 
+              toastOptions={{
+                className: 'glass-panel border-white/10 text-white rounded-2xl shadow-xl backdrop-blur-xl',
+              }}
+            />
             <AgendaNotifier />
             <ScrollToTop />
             <InstallPrompt />

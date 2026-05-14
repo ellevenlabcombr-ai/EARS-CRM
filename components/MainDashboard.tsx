@@ -74,6 +74,8 @@ interface MainDashboardProps {
   onLogout?: () => void;
 }
 
+import { TiltCard } from "@/components/ui/TiltCard";
+
 export function MainDashboard({ onLogout }: MainDashboardProps) {
   const { t, language, setLanguage } = useLanguage();
   const [currentView, setCurrentView] = useState<View>('home');
@@ -495,25 +497,24 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                       { id: 'menstrual-assessment', title: 'Menstrual', icon: Heart, color: 'pink', desc: 'Ciclo e impactos na performance.' },
                       { id: 'hydration-assessment', title: 'Hidratação', icon: Globe, color: 'sky', desc: 'Status hídrico e perda de suor.' },
                     ].map((evalType) => (
-                      <motion.button
-                        key={evalType.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        disabled={!selectedAthleteForEval}
-                        onClick={() => setCurrentView(evalType.id as any)}
-                        className={`p-6 bg-[#0A1120] border border-slate-800 rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <div className={`w-12 h-12 bg-${evalType.color}-500/10 rounded-xl flex items-center justify-center text-${evalType.color}-500 mb-4 group-hover:bg-${evalType.color}-500 group-hover:text-[#050B14] transition-all`}>
-                          <evalType.icon size={24} />
-                        </div>
-                        <h3 className="text-xl font-bold text-white uppercase tracking-tight mb-2">Avaliação {evalType.title}</h3>
-                        <p className="text-slate-400 text-sm leading-relaxed">
-                          {evalType.desc}
-                        </p>
-                        <div className={`mt-6 flex items-center gap-2 text-${evalType.color}-500 font-bold text-xs uppercase tracking-widest`}>
-                          Iniciar Avaliação <ChevronRight size={14} />
-                        </div>
-                      </motion.button>
+                      <TiltCard key={evalType.id} glareEnable={true} tiltMaxAngleX={10} tiltMaxAngleY={10} scale={1.03}>
+                        <button
+                          disabled={!selectedAthleteForEval}
+                          onClick={() => setCurrentView(evalType.id as any)}
+                          className={`w-full p-6 glass-panel rounded-2xl text-left group hover:border-${evalType.color}-500/50 transition-all ${!selectedAthleteForEval ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <div className={`w-12 h-12 bg-${evalType.color}-500/10 rounded-xl flex items-center justify-center text-${evalType.color}-500 mb-4 group-hover:bg-${evalType.color}-500 group-hover:text-[#050B14] transition-all`}>
+                            <evalType.icon size={24} />
+                          </div>
+                          <h3 className="text-xl font-bold text-white uppercase tracking-tight mb-2">Avaliação {evalType.title}</h3>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            {evalType.desc}
+                          </p>
+                          <div className={`mt-6 flex items-center gap-2 text-${evalType.color}-500 font-bold text-xs uppercase tracking-widest`}>
+                            Iniciar Avaliação <ChevronRight size={14} />
+                          </div>
+                        </button>
+                      </TiltCard>
                     ))}
                   </div>
                 </div>

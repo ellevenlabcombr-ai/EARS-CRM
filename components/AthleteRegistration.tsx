@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import Image from "next/image";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "@/lib/cropImage";
@@ -446,7 +447,7 @@ export function AthleteRegistration({
     if (file) {
       // Limit to 5MB for avatars
       if (file.size > 5 * 1024 * 1024) {
-        alert("A foto deve ter no máximo 5MB");
+        toast.error("A foto deve ter no máximo 5MB");
         return;
       }
       const reader = new FileReader();
@@ -734,12 +735,12 @@ export function AthleteRegistration({
           }
         }
 
-        alert(`Erro ao salvar atleta: ${errorMsg}`);
+        toast.error(`Erro ao salvar atleta: ${errorMsg}`);
         setUploading(false);
         return; // Stop execution if error
       }
     } else {
-      alert(
+      toast.error(
         "Erro: Supabase não configurado. Verifique as variáveis de ambiente (NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY).",
       );
       setUploading(false);
@@ -786,7 +787,7 @@ export function AthleteRegistration({
       onBack();
     } catch (error) {
       console.error("Error deleting athlete:", error);
-      alert("Erro ao excluir atleta. Tente novamente.");
+      toast.error("Erro ao excluir atleta. Tente novamente.");
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);

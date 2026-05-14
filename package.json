@@ -24,7 +24,9 @@
     "react": "latest",
     "react-dom": "latest",
     "react-easy-crop": "^5.5.7",
+    "react-parallax-tilt": "^1.7.327",
     "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
     "tailwind-merge": "latest",
     "zustand": "^5.0.13"
   },
