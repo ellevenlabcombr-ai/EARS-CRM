@@ -1297,6 +1297,9 @@ END $storage$;`;
                 ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_enabled BOOLEAN DEFAULT false;
                 ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_template TEXT DEFAULT 'Olá {nome}! Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente.';
             END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
+            END IF;
         END $$;
 
         -- RLS para Agenda e Automação

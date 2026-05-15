@@ -59,7 +59,9 @@ export function AutomationSettings() {
         .maybeSingle();
       
       if (error) {
-        if (error.message?.includes('relation "automation_settings" does not exist')) {
+        if (error.message?.includes('relation "automation_settings" does not exist') || error.message?.includes('SCHEMA CACHE') || error.message?.includes('column')) {
+          setStatus('error');
+          setMessage('O banco de dados precisa ser atualizado. Por favor, vá na aba "Dados" (ou "Configuração Inicial") e clique em "Ativar Tabelas / Atualizar Banco" para sincronizar a estrutura das tabelas.');
           return;
         } else {
           throw error;
@@ -158,7 +160,12 @@ export function AutomationSettings() {
         error = insertError;
       }
 
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes('SCHEMA CACHE') || error.message?.includes('column')) {
+           throw new Error('Atualize a estrutura do Banco de Dados primeiro, acessando a aba "Dados" e clicando em "Ativar Tabelas / Atualizar Banco".');
+        }
+        throw error;
+      }
 
       setStatus('success');
       setMessage('Automações sincronizadas ao núcleo operacional.');
