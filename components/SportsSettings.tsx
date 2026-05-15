@@ -289,19 +289,23 @@ export const SportsSettings = () => {
     if (!confirm(language === 'pt' ? 'Isso irá adicionar as modalidades padrão à sua lista. Deseja continuar?' : 'This will add default sports to your list. Continue?')) return;
 
     try {
-      let { error } = await supabase.from("sports").insert(defaults);
+      setLoading(true);
+      let { error } = await supabase.from("sports").upsert(defaults, { onConflict: 'name' });
       
-      if (error && (error.code === '42703' || error.message?.includes('order_index') || error.message?.includes('is_active'))) {
+      if (error && (error.code === '42703' || error.message?.includes('column'))) {
         const cleanDefaults = defaults.map(({ order_index, is_active, ...rest }) => rest);
-        const retry = await supabase.from("sports").insert(cleanDefaults);
+        const retry = await supabase.from("sports").upsert(cleanDefaults, { onConflict: 'name' });
         error = retry.error;
       }
 
       if (error) throw error;
-      fetchSports();
+      await fetchSports();
       alert(language === 'pt' ? 'Lista restaurada com sucesso!' : 'List restored successfully!');
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error seeding sports:", err);
+      alert(language === 'pt' ? `Erro: ${err.message || err}` : `Error: ${err.message || err}`);
+    } finally {
+      setLoading(false);
     }
   };
 

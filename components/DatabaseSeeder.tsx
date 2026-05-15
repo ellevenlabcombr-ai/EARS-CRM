@@ -1409,7 +1409,25 @@ END $storage$;`;
                 ('Futsal', '⚽', '#06b6d4', ARRAY['Goleiro', 'Fixo', 'Ala', 'Pivô'], 12, 1, true),
                 ('Vôlei', '🏐', '#6366f1', ARRAY['Levantador', 'Ponteiro', 'Central', 'Oposto', 'Líbero'], 12, 2, true),
                 ('Basquete', '🏀', '#f59e0b', ARRAY['Armador', 'Ala', 'Ala-Pivô', 'Pivô'], 12, 3, true),
-                ('Handebol', '🤾', '#f43f5e', ARRAY['Goleiro', 'Armador Central', 'Armador Lateral', 'Ponta', 'Pivô'], 14, 4, true)
+                ('Handebol', '🤾', '#f43f5e', ARRAY['Goleiro', 'Armador Central', 'Armador Lateral', 'Ponta', 'Pivô'], 14, 4, true),
+                ('Natação', '🏊', '#0ea5e9', ARRAY['Velocista', 'Fundo', 'Medley', 'Revezamento'], 20, 5, true),
+                ('Judô', '🥋', '#f8fafc', ARRAY['Atleta'], 20, 6, true),
+                ('Jiu-Jitsu', '🥋', '#4f46e5', ARRAY['Atleta'], 20, 7, true),
+                ('Karatê', '🥋', '#dc2626', ARRAY['Atleta'], 20, 8, true),
+                ('Boxe', '🥊', '#ef4444', ARRAY['Atleta'], 10, 9, true),
+                ('Muay Thai', '🥊', '#b91c1c', ARRAY['Atleta'], 15, 10, true),
+                ('Tênis', '🎾', '#84cc16', ARRAY['Simples', 'Duplas'], 8, 11, true),
+                ('Beach Tennis', '🏖️', '#fcd34d', ARRAY['Simples', 'Duplas'], 8, 12, true),
+                ('Surf', '🏄', '#06b6d4', ARRAY['Surfista'], 10, 13, true),
+                ('Skate', '🛹', '#64748b', ARRAY['Street', 'Park'], 10, 14, true),
+                ('Atletismo', '🏃', '#fb923c', ARRAY['Velocista', 'Fundo', 'Salto', 'Arremesso'], 15, 15, true),
+                ('Crossfit', '🏋️', '#f97316', ARRAY['RX', 'Scalad', 'Amador'], 30, 16, true),
+                ('Musculação', '💪', '#475569', ARRAY['Aluno'], 103, 17, true),
+                ('Ciclismo', '🚴', '#10b981', ARRAY['Estrada', 'MTB'], 10, 18, true),
+                ('Futebol Americano', '🏈', '#1e3a8a', ARRAY['QB', 'WR', 'RB', 'Linha', 'Defesa'], 45, 19, true),
+                ('Rugby', '🏉', '#166534', ARRAY['Avançado', 'Linha'], 20, 20, true),
+                ('Tênis de Mesa', '🏓', '#dc2626', ARRAY['Atleta'], 10, 21, true),
+                ('Triathlon', '🏊', '#0ea5e9', ARRAY['Atleta'], 5, 22, true)
             ON CONFLICT (name) DO NOTHING;
 
             -- Colunas na tabela agenda_settings
