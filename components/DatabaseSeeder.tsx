@@ -213,6 +213,12 @@ BEGIN
             default_duration_minutes INTEGER DEFAULT 30,
             break_interval_minutes INTEGER DEFAULT 0,
             appointment_types TEXT[] DEFAULT ARRAY['Avaliação', 'Tratamento', 'Revisão', 'Recuperação'],
+            appointment_colors JSONB DEFAULT '{}'::jsonb,
+            blocked_dates TEXT[] DEFAULT ARRAY[]::TEXT[],
+            day_schedules JSONB DEFAULT '{}'::jsonb,
+            working_days TEXT[] DEFAULT ARRAY['1', '2', '3', '4', '5'],
+            reminder_enabled BOOLEAN DEFAULT true,
+            reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.',
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
     END IF;
@@ -228,9 +234,19 @@ BEGIN
         CREATE TABLE automation_settings (
             id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
             whatsapp_enabled BOOLEAN DEFAULT true,
+            whatsapp_provider TEXT DEFAULT 'evolution',
+            evolution_api_url TEXT,
+            evolution_api_key TEXT,
+            evolution_instance_id TEXT,
             whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.',
             whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?',
+            whatsapp_reminder_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[],
+            whatsapp_birthday_enabled BOOLEAN DEFAULT false,
+            whatsapp_birthday_template TEXT DEFAULT 'Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!',
+            whatsapp_absence_enabled BOOLEAN DEFAULT false,
+            whatsapp_absence_template TEXT DEFAULT 'Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?',
             email_enabled BOOLEAN DEFAULT false,
+            resend_api_key TEXT,
             email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.',
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
@@ -1189,6 +1205,95 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.user_profile_settings ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.user_profile_settings;
         CREATE POLICY "Permitir tudo" ON public.user_profile_settings FOR ALL USING (true) WITH CHECK (true);
+
+        -- Garantir Tabelas de Agenda e Automação
+        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
+            CREATE TABLE agenda_settings (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                start_time TEXT DEFAULT '08:00',
+                end_time TEXT DEFAULT '18:00',
+                default_duration_minutes INTEGER DEFAULT 30,
+                break_interval_minutes INTEGER DEFAULT 0,
+                appointment_types TEXT[] DEFAULT ARRAY['Avaliação', 'Tratamento', 'Revisão', 'Recuperação'],
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='automation_settings') THEN
+            CREATE TABLE automation_settings (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                whatsapp_provider TEXT DEFAULT 'evolution',
+                whatsapp_reminder_enabled BOOLEAN DEFAULT true,
+                email_reminder_enabled BOOLEAN DEFAULT true,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        END IF;
+
+        -- Adicionar colunas faltantes se as tabelas já existirem
+        DO $$ 
+        BEGIN
+            -- Colunas na tabela agenda_settings
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'working_days') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN working_days TEXT[] DEFAULT ARRAY['1', '2', '3', '4', '5'];
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'day_schedules') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN day_schedules JSONB DEFAULT '{}'::jsonb;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'blocked_dates') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN blocked_dates TEXT[] DEFAULT ARRAY[]::TEXT[];
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'appointment_colors') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN appointment_colors JSONB DEFAULT '{}'::jsonb;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'reminder_template') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
+            END IF;
+            
+            -- Colunas na tabela automation_settings
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_api_url') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN evolution_api_url TEXT;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_api_key') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN evolution_api_key TEXT;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_instance_id') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN evolution_instance_id TEXT;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'resend_api_key') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN resend_api_key TEXT;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_timing') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_birthday_enabled') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_birthday_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_birthday_template') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_birthday_template TEXT DEFAULT 'Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_absence_enabled') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_absence_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_absence_template') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_absence_template TEXT DEFAULT 'Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?';
+            END IF;
+        END $$;
+
+        -- RLS para Agenda e Automação
+        ALTER TABLE IF EXISTS public.agenda_settings ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.automation_settings ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.agenda_settings;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.automation_settings;
+        CREATE POLICY "Permitir tudo" ON public.agenda_settings FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.automation_settings FOR ALL USING (true) WITH CHECK (true);
+
+        -- Políticas para Clinical Notes e Assessments
+        ALTER TABLE IF EXISTS public.clinical_notes ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.clinical_assessments ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.clinical_notes;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.clinical_assessments;
+        CREATE POLICY "Permitir tudo" ON public.clinical_notes FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.clinical_assessments FOR ALL USING (true) WITH CHECK (true);
 
         -- Atualizar estatísticas para o planejador de consultas
         ANALYZE public.athletes;

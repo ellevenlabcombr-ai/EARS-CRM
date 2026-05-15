@@ -82,8 +82,10 @@ export function SmartAgenda({ athleteId }: SmartAgendaProps = {}) {
       // Fetch blocked dates
       let blockedEvents: AgendaEvent[] = [];
       try {
-        const { data: settings } = await supabase.from('agenda_settings').select('blocked_dates').maybeSingle();
-        if (settings?.blocked_dates && settings.blocked_dates.length > 0) {
+        const { data: settings, error: settingsError } = await supabase.from('agenda_settings').select('blocked_dates').maybeSingle();
+        if (settingsError) {
+          console.warn("Could not fetch agenda settings:", settingsError.message);
+        } else if (settings?.blocked_dates && Array.isArray(settings.blocked_dates)) {
           blockedEvents = settings.blocked_dates.map((date: string) => ({
             id: `blocked-${date}`,
             title: 'Feriado / Bloqueado',

@@ -13,11 +13,21 @@ export function AutomationSettings() {
   const [evolutionInstanceId, setEvolutionInstanceId] = useState('');
   const [whatsappReminderTemplate, setWhatsappReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
   const [whatsappFollowupTemplate, setWhatsappFollowupTemplate] = useState('Olá {nome}! Como você está se sentindo após o nosso atendimento?');
+  const [whatsappReminderTiming, setWhatsappReminderTiming] = useState<string[]>(['24h']);
+  const [whatsappBirthdayEnabled, setWhatsappBirthdayEnabled] = useState(false);
+  const [whatsappBirthdayTemplate, setWhatsappBirthdayTemplate] = useState('Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!');
+  const [whatsappAbsenceEnabled, setWhatsappAbsenceEnabled] = useState(false);
+  const [whatsappAbsenceTemplate, setWhatsappAbsenceTemplate] = useState('Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?');
   
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [resendApiKey, setResendApiKey] = useState('');
   const [emailReminderTemplate, setEmailReminderTemplate] = useState('Seu atendimento está marcado para {data} às {hora}.');
   
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [isSimulatingEmail, setIsSimulatingEmail] = useState(false);
+  const [testPhone, setTestPhone] = useState('');
+  const [isSimulatingWpp, setIsSimulatingWpp] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -52,6 +62,11 @@ export function AutomationSettings() {
         if (data.evolution_instance_id) setEvolutionInstanceId(data.evolution_instance_id);
         if (data.whatsapp_reminder_template) setWhatsappReminderTemplate(data.whatsapp_reminder_template);
         if (data.whatsapp_followup_template) setWhatsappFollowupTemplate(data.whatsapp_followup_template);
+        if (data.whatsapp_reminder_timing) setWhatsappReminderTiming(data.whatsapp_reminder_timing);
+        if (data.whatsapp_birthday_enabled !== undefined) setWhatsappBirthdayEnabled(data.whatsapp_birthday_enabled);
+        if (data.whatsapp_birthday_template) setWhatsappBirthdayTemplate(data.whatsapp_birthday_template);
+        if (data.whatsapp_absence_enabled !== undefined) setWhatsappAbsenceEnabled(data.whatsapp_absence_enabled);
+        if (data.whatsapp_absence_template) setWhatsappAbsenceTemplate(data.whatsapp_absence_template);
         if (data.email_enabled !== undefined) setEmailEnabled(data.email_enabled);
         if (data.resend_api_key) setResendApiKey(data.resend_api_key);
         if (data.email_reminder_template) setEmailReminderTemplate(data.email_reminder_template);
@@ -88,6 +103,11 @@ export function AutomationSettings() {
         evolution_instance_id: evolutionInstanceId,
         whatsapp_reminder_template: whatsappReminderTemplate,
         whatsapp_followup_template: whatsappFollowupTemplate,
+        whatsapp_reminder_timing: whatsappReminderTiming,
+        whatsapp_birthday_enabled: whatsappBirthdayEnabled,
+        whatsapp_birthday_template: whatsappBirthdayTemplate,
+        whatsapp_absence_enabled: whatsappAbsenceEnabled,
+        whatsapp_absence_template: whatsappAbsenceTemplate,
         email_enabled: emailEnabled,
         resend_api_key: resendApiKey,
         email_reminder_template: emailReminderTemplate,
@@ -118,6 +138,73 @@ export function AutomationSettings() {
       setMessage(`Erro: ${err.message || String(err)}`);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSimulateWpp = async () => {
+    if (!evolutionApiUrl || !evolutionInstanceId || !testPhone) {
+      setStatus('error');
+      setMessage('Preencha a URL da Evolution, o Nome da Instância e o Telefone de Destino para testar o WhatsApp.');
+      return;
+    }
+
+    try {
+      setIsSimulatingWpp(true);
+      const res = await fetch('/api/simulate-whatsapp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url: evolutionApiUrl,
+          apiKey: evolutionApiKey,
+          instanceId: evolutionInstanceId,
+          phone: testPhone,
+          message: whatsappReminderTemplate.replace('{nome}', 'Usuário Teste').replace('{data}', new Date().toLocaleDateString('pt-BR')).replace('{hora}', '15:00')
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao simular');
+      setStatus('success');
+      setMessage('Mensagem de teste enviada para WhatsApp com sucesso!');
+    } catch (err: any) {
+      setStatus('error');
+      setMessage(`Erro ao testar WhatsApp: ${err.message}`);
+    } finally {
+      setIsSimulatingWpp(false);
+    }
+  };
+
+  const handleSimulateEmail = async () => {
+    if (!resendApiKey || !testEmailAddress) {
+      setStatus('error');
+      setMessage('Preencha a API Key do Resend e o Email de Destino para testar.');
+      return;
+    }
+
+    try {
+      setIsSimulatingEmail(true);
+      const res = await fetch('/api/simulate-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          apiKey: resendApiKey,
+          to: testEmailAddress,
+          subject: 'Lembrete de Agendamento (Teste)',
+          html: `<div style="font-family:sans-serif;padding:20px;"><h2>Olá Usuário Teste,</h2><p>${emailReminderTemplate.replace('{data}', new Date().toLocaleDateString('pt-BR')).replace('{hora}', '15:00')}</p></div>`
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ao simular email');
+      setStatus('success');
+      setMessage('E-mail de teste enviado com sucesso!');
+    } catch (err: any) {
+      setStatus('error');
+      setMessage(`Erro ao testar Email: ${err.message}`);
+    } finally {
+      setIsSimulatingEmail(false);
     }
   };
 
@@ -158,6 +245,24 @@ export function AutomationSettings() {
             <div className="space-y-6">
               <div className="space-y-4">
                 <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Template: Lembrete de Agendamento</label>
+                
+                <div className="flex gap-2 pb-2">
+                  {['24h', '2h', '1h'].map((time) => (
+                    <label key={time} className={`cursor-pointer px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${whatsappReminderTiming.includes(time) ? 'bg-[#25D366]/20 border-[#25D366] text-[#25D366]' : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-600'}`}>
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={whatsappReminderTiming.includes(time)}
+                        onChange={(e) => {
+                          if (e.target.checked) setWhatsappReminderTiming([...whatsappReminderTiming, time]);
+                          else setWhatsappReminderTiming(whatsappReminderTiming.filter(t => t !== time));
+                        }}
+                      />
+                      {time} Antes
+                    </label>
+                  ))}
+                </div>
+
                 <textarea 
                   value={whatsappReminderTemplate}
                   onChange={(e) => setWhatsappReminderTemplate(e.target.value)}
@@ -174,6 +279,54 @@ export function AutomationSettings() {
                   rows={4}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
                 />
+              </div>
+
+              {/* Birthday automation */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Mensagem de Aniversário</label>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={whatsappBirthdayEnabled}
+                      onChange={(e) => setWhatsappBirthdayEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                  </label>
+                </div>
+                {whatsappBirthdayEnabled && (
+                  <textarea 
+                    value={whatsappBirthdayTemplate}
+                    onChange={(e) => setWhatsappBirthdayTemplate(e.target.value)}
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                  />
+                )}
+              </div>
+
+              {/* Absence automation */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Lembrete de Inatividade (30 dias)</label>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={whatsappAbsenceEnabled}
+                      onChange={(e) => setWhatsappAbsenceEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                  </label>
+                </div>
+                {whatsappAbsenceEnabled && (
+                  <textarea 
+                    value={whatsappAbsenceTemplate}
+                    onChange={(e) => setWhatsappAbsenceTemplate(e.target.value)}
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                  />
+                )}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -255,15 +408,52 @@ export function AutomationSettings() {
                       +1 dia <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
                     </div>
                   </div>
+
+                  {whatsappBirthdayEnabled && (
+                    <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
+                      <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                        {whatsappBirthdayTemplate
+                          .replace('{nome}', 'Mariana')
+                          .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                          .replace('{hora}', '15:00')}
+                      </div>
+                      <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                      <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                        Aniversário <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {whatsappAbsenceEnabled && (
+                    <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
+                      <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                        {whatsappAbsenceTemplate
+                          .replace('{nome}', 'Mariana')
+                          .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                          .replace('{hora}', '15:00')}
+                      </div>
+                      <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                      <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                        +30 dias inativa <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-8 space-y-3">
+                  <input
+                    type="text"
+                    value={testPhone}
+                    onChange={(e) => setTestPhone(e.target.value)}
+                    placeholder="Número para Teste (ex: 5511999999999)"
+                    className="w-full bg-[#202c33] border border-[#2a3942] rounded-xl px-4 py-3 text-[#e9edef] focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
+                  />
                   <Button
-                    onClick={() => {
-                        alert("Simulação Iniciada!\nNa versão final, iremos buscar um agendamento real e disparar o webhook/API para a Evolution.")
-                    }}
+                    onClick={handleSimulateWpp}
+                    disabled={isSimulatingWpp}
                     className="w-full bg-slate-800 hover:bg-[#25D366] text-white font-black uppercase tracking-widest transition-colors py-6 rounded-2xl text-xs md:text-sm shadow-xl"
                   >
+                    {isSimulatingWpp ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                     Simular Disparo
                   </Button>
                 </div>
@@ -318,13 +508,20 @@ export function AutomationSettings() {
             />
           </div>
 
-          <div className="max-w-xs">
+          <div className="max-w-xs space-y-3">
+            <input
+              type="email"
+              value={testEmailAddress}
+              onChange={(e) => setTestEmailAddress(e.target.value)}
+              placeholder="Email para Teste"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-sky-500/50 focus:ring-2 focus:ring-sky-500/10 outline-none text-sm transition-all"
+            />
             <Button
-              onClick={() => {
-                  alert("Simulação Iniciada!\nNa versão final, enviaremos um e-mail de teste usando a chave do Resend configurada.")
-              }}
+              onClick={handleSimulateEmail}
+              disabled={isSimulatingEmail}
               className="w-full bg-slate-800 hover:bg-sky-500 text-white font-black uppercase tracking-widest transition-colors py-6 rounded-2xl text-xs md:text-sm shadow-xl"
             >
+              {isSimulatingEmail ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Simular Envio
             </Button>
           </div>

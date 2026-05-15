@@ -102,7 +102,7 @@ export function AgendaSettings() {
       }
       
       if (data) {
-        if (data.day_schedules && Object.keys(data.day_schedules).length > 0) {
+        if (data.day_schedules && typeof data.day_schedules === 'object' && Object.keys(data.day_schedules).length > 0) {
           setDaySchedules(data.day_schedules);
         } else {
           // migrate from old structure
@@ -138,7 +138,13 @@ export function AgendaSettings() {
 
         if (data.delay_tolerance_minutes !== undefined) setDelayTolerance(data.delay_tolerance_minutes);
         if (data.cancellation_notice_hours !== undefined) setCancelNotice(data.cancellation_notice_hours);
-        if (data.appointment_colors) setAppointmentColors(data.appointment_colors);
+        
+        // Robust color loading
+        if (data.appointment_colors && typeof data.appointment_colors === 'object') {
+          setAppointmentColors(data.appointment_colors);
+        } else {
+          setAppointmentColors({});
+        }
       }
     } catch (err: any) {
       console.error("AGENDA SETTINGS CATCH ERROR:", {
@@ -150,7 +156,12 @@ export function AgendaSettings() {
       });
       setStatus('error');
       const errorMessage = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-      setMessage(`Erro ao carregar: ${errorMessage}`);
+      
+      if (errorMessage.includes('column') && errorMessage.includes('schema cache')) {
+        setMessage('O Supabase ainda não reconheceu as novas colunas. Por favor, vá em Configurações > Desenvolvimento e clique em "Otimizar Banco (Auto-Fix)" e aguarde alguns segundos.');
+      } else {
+        setMessage(`Erro ao carregar: ${errorMessage}`);
+      }
     } finally {
       setIsLoading(false);
     }
