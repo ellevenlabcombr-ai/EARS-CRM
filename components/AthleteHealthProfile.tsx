@@ -196,6 +196,7 @@ interface Athlete {
   guardianPhone?: string;
   guardianEmail?: string;
   group_name?: string;
+  custom_fields_data?: Record<string, any>;
 }
 
 type AssessmentType = 'list' | 'biomechanical' | 'sleep' | 'orthopedic' | 'physical' | 'functional' | 'dynamometry' | 'strength' | 'neurological' | 'psychological' | 'nutritional' | 'reds' | 'anthropometric' | 'maturation' | 'menstrual' | 'hydration';
@@ -281,6 +282,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
+  const [sportConfig, setSportConfig] = useState<any>(null);
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
     { id: '1', tag: 'Posterior chain vulnerability', created_at: new Date().toISOString(), weight: 1.5, source: 'clinical' },
     { id: '2', tag: 'Load intolerance', created_at: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(), weight: 2.0, source: 'field_observation' }
@@ -488,6 +490,28 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const athleteAge = calculateAge(athlete.birth_date || athlete.birthDate);
 
   const initialSessionHandled = useRef(false);
+
+  useEffect(() => {
+    async function fetchSportConfig() {
+      if (!supabase || (!athlete.sport && !(athlete as any).modalidade)) return;
+      
+      const sportName = athlete.sport || (athlete as any).modalidade;
+      try {
+        const { data, error } = await supabase
+          .from('sports')
+          .select('*')
+          .eq('name', sportName)
+          .maybeSingle();
+          
+        if (data) {
+          setSportConfig(data);
+        }
+      } catch (err) {
+        console.error("Error fetching sport config:", err);
+      }
+    }
+    fetchSportConfig();
+  }, [athlete.sport, (athlete as any).modalidade]);
 
   // 3. EFFECTS
   useEffect(() => {
@@ -2139,6 +2163,21 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     }
   };
 
+  const getSportEmoji = (sportName: string) => {
+    const s = sportName?.toLowerCase() || '';
+    if (s.includes('basquete') || s.includes('basketball')) return "🏀";
+    if (s.includes('futebol') || s.includes('soccer') || s.includes('football')) return "⚽";
+    if (s.includes('vôlei') || s.includes('volleyball')) return "🏐";
+    if (s.includes('tênis') || s.includes('tennis')) return "🎾";
+    if (s.includes('american')) return "🏈";
+    if (s.includes('baseball')) return "⚾";
+    if (s.includes('rugby')) return "🏉";
+    if (s.includes('lut') || s.includes('fight') || s.includes('mma') || s.includes('juddho') || s.includes('karate')) return "🥊";
+    if (s.includes('nat') || s.includes('swim')) return "🏊";
+    if (s.includes('corr') || s.includes('run')) return "🏃";
+    return "🏆";
+  };
+
   const latestAssessmentsByType = useMemo(() => {
     return clinicalAssessments.reduce((acc, curr) => {
       // clinicalAssessments sorted by date desc, so the first one we find for a type is the latest
@@ -2308,10 +2347,19 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </div>
 
               {/* Athlete Specs Grid */}
-              <div className="grid grid-cols-2 md:flex md:flex-row md:flex-wrap items-center justify-center md:justify-start gap-y-6 gap-x-4 md:gap-x-8 lg:gap-x-12 w-full mt-4 lg:mt-0">
-                <div className="flex flex-col gap-1.5 items-center md:items-start">
-                  <span className="text-[9px] lg:text-[8px] uppercase font-bold tracking-[0.2em] text-slate-500 flex items-center justify-center gap-1.5"><Globe className="w-3 h-3 lg:w-2.5 lg:h-2.5" /> {language === 'pt' ? 'Modalidade' : 'Sport'}</span>
-                  <span className="text-sm lg:text-sm font-black text-slate-200 uppercase tracking-wider text-center">{athlete.sport || (athlete as any).modalidade || '-'}</span>
+              <div className="grid grid-cols-2 md:flex md:flex-row md:flex-wrap items-center justify-center md:justify-start gap-y-6 gap-x-4 md:gap-x-12 w-full mt-4 lg:mt-0">
+                <div className="flex items-center gap-3">
+                  {athlete.sport && (
+                    <div className={`w-12 h-12 flex items-center justify-center text-2xl bg-slate-900/50 border border-slate-800/50 shadow-xl ${
+                      ["⚽", "🏀", "🏈", "⚾", "🎾", "🏐", "🏉", "🎱"].includes(getSportEmoji(athlete.sport)) ? "rounded-full" : "rounded-xl"
+                    }`}>
+                      {getSportEmoji(athlete.sport)}
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] lg:text-[8px] uppercase font-bold tracking-[0.2em] text-slate-500 flex items-center gap-1.5"><Globe className="w-3 h-3 lg:w-2.5 lg:h-2.5" /> {language === 'pt' ? 'Modalidade' : 'Sport'}</span>
+                    <span className="text-sm lg:text-sm font-black text-slate-200 uppercase tracking-wider">{athlete.sport || (athlete as any).modalidade || '-'}</span>
+                  </div>
                 </div>
                 {athlete.position && (
                   <div className="flex flex-col gap-1.5 items-center md:items-start md:border-l md:border-slate-800/70 md:pl-8 lg:pl-12">
@@ -2848,7 +2896,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    <div className="h-20 w-full mt-2">
                      <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={wellnessHistory.slice(-7)}>
-                          <Line type="monotone" dataKey="readiness" stroke="#06b6d4" strokeWidth={2} dot={{ r: 2, fill: '#06b6d4' }} />
+                          <Line type="monotone" dataKey="readiness" stroke={sportConfig?.color || "#06b6d4"} strokeWidth={2} dot={{ r: 2, fill: sportConfig?.color || '#06b6d4' }} />
                         </LineChart>
                      </ResponsiveContainer>
                    </div>
@@ -3218,15 +3266,15 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   <AreaChart data={wellnessHistory}>
                     <defs>
                       <linearGradient id="colorReadiness" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                        <stop offset="5%" stopColor={sportConfig?.color || "#22d3ee"} stopOpacity={0.2}/>
+                        <stop offset="95%" stopColor={sportConfig?.color || "#22d3ee"} stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
                     <XAxis dataKey="date" stroke="#475569" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
                     <YAxis stroke="#475569" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} domain={[0, 100]} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="readiness" name="Prontidão" stroke="#22d3ee" strokeWidth={3} fill="url(#colorReadiness)" />
+                    <Area type="monotone" dataKey="readiness" name="Prontidão" stroke={sportConfig?.color || "#22d3ee"} strokeWidth={3} fill="url(#colorReadiness)" />
                     <Line type="monotone" dataKey="sleep" name="Sono" stroke="#10b981" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="fatigue" name="Fadiga" stroke="#f59e0b" strokeWidth={2} dot={false} />
                   </AreaChart>
@@ -3313,7 +3361,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         strokeDasharray={339.3}
                         strokeDashoffset={339.3 - (339.3 * (athlete.readiness || 0)) / 100}
                         strokeLinecap="round"
-                        className="text-cyan-500 transition-all duration-1000 ease-out"
+                        style={{ color: sportConfig?.color || '#06b6d4' }}
+                        className="transition-all duration-1000 ease-out"
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -3358,7 +3407,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '0.75rem' }}
                             itemStyle={{ fontSize: '0.625rem', fontWeight: 'bold' }}
                           />
-                          <Bar yAxisId="left" dataKey="acute" name="Carga Aguda" fill="#22d3ee" radius={[4, 4, 0, 0]} barSize={15} />
+                          <Bar yAxisId="left" dataKey="acute" name="Carga Aguda" fill={sportConfig?.color || "#22d3ee"} radius={[4, 4, 0, 0]} barSize={15} />
                           <Line yAxisId="right" type="monotone" dataKey="ratio" name="ACWR" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3, fill: '#f59e0b' }} />
                         </>
                       ) : null}
@@ -3392,8 +3441,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         <>
                           <defs>
                             <linearGradient id="colorPerf" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.2}/>
-                              <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                              <stop offset="5%" stopColor={sportConfig?.color || "#22d3ee"} stopOpacity={0.2}/>
+                              <stop offset="95%" stopColor={sportConfig?.color || "#22d3ee"} stopOpacity={0}/>
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
@@ -3403,7 +3452,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                             contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '0.75rem' }}
                             itemStyle={{ fontSize: '0.625rem', fontWeight: 'bold' }}
                           />
-                          <Area type="monotone" dataKey="value" name="CMJ (cm)" stroke="#22d3ee" strokeWidth={3} fill="url(#colorPerf)" />
+                          <Area type="monotone" dataKey="value" name="CMJ (cm)" stroke={sportConfig?.color || "#22d3ee"} strokeWidth={3} fill="url(#colorPerf)" />
                         </>
                       ) : null}
                     </AreaChart>

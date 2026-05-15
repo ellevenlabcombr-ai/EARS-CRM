@@ -60,6 +60,7 @@ export interface Athlete {
   
   created_at?: string;
   updated_at?: string;
+  custom_fields_data?: Record<string, any>;
 }
 
 export interface Sport {
@@ -67,6 +68,14 @@ export interface Sport {
   name: string;
   icon?: string;
   positions: string[];
+  color?: string;
+  target_athletes?: number;
+  custom_fields?: Array<{
+    id: string;
+    name: string;
+    type: 'text' | 'number' | 'select' | 'boolean';
+    options?: string[];
+  }>;
   created_at?: string;
 }
 

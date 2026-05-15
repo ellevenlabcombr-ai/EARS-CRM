@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SportTargetsBar } from "./SportTargetsBar";
 
 interface AthleteListProps {
   onAddAthlete: () => void;
@@ -86,12 +87,15 @@ export function AthleteList({
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sportsConfig, setSportsConfig] = useState<any[]>([]);
   const [sportsIcons, setSportsIcons] = useState<Record<string, string>>({});
 
-  const fetchSportsIcons = useCallback(async () => {
+  const fetchSportsConfig = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from("sports").select("name, icon");
+      if (!supabase) return;
+      const { data, error } = await supabase.from("sports").select("*");
       if (data) {
+        setSportsConfig(data);
         const iconMap: Record<string, string> = {};
         data.forEach(s => {
           if (s.icon) iconMap[s.name] = s.icon;
@@ -99,7 +103,7 @@ export function AthleteList({
         setSportsIcons(iconMap);
       }
     } catch (err) {
-      console.error("Error fetching sports icons:", err);
+      console.error("Error fetching sports config:", err);
     }
   }, []);
 
@@ -181,9 +185,9 @@ export function AthleteList({
 
   useEffect(() => {
     fetchAthletes();
-    fetchSportsIcons();
+    fetchSportsConfig();
     setIsClient(true);
-  }, [fetchAthletes, fetchSportsIcons]);
+  }, [fetchAthletes, fetchSportsConfig]);
 
   const filteredAthletes = athletes.filter((athlete) => {
     const normalizedSearch = searchTerm.toLowerCase();
@@ -318,7 +322,6 @@ export function AthleteList({
         </div>
       </header>
 
-      {/* Filters Bar */}
       <div className="px-6 py-4 bg-[#0A1120]/40 border-b border-slate-800/30 flex flex-wrap items-center gap-4 shrink-0">
         <div className="flex items-center gap-2 bg-slate-900/50 p-1 rounded-xl border border-slate-800/50">
           {["all", "Apto", "Transição", "DM"].map((status) => (
@@ -421,6 +424,8 @@ export function AthleteList({
           </button>
         )}
       </div>
+
+      <SportTargetsBar sports={sportsConfig} athletes={athletes} />
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
@@ -678,9 +683,9 @@ export function AthleteList({
                     <div className="p-3 sm:p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
                       <div className="flex flex-col gap-1 mb-4 sm:mb-5">
                         {athlete.modalidade && (
-                          <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight flex items-center gap-1.5">
+                          <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight flex items-center gap-2">
                             {sportsIcons[athlete.modalidade] && (
-                              <span className="text-base leading-none">
+                              <span className="text-lg leading-none select-none">
                                 {sportsIcons[athlete.modalidade]}
                               </span>
                             )}

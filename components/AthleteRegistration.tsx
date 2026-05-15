@@ -35,7 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Athlete } from "@/types/database";
+import { Athlete, Sport } from "@/types/database";
 
 const CONVENIOS = [
   "SUS",
@@ -235,6 +235,8 @@ export function AthleteRegistration({
   const [dynamicSports, setDynamicSports] =
     useState<Record<string, string[]>>(MODALIDADES_DATA);
   const [sportsIcons, setSportsIcons] = useState<Record<string, string>>({});
+  const [allSportsConfig, setAllSportsConfig] = useState<Record<string, Sport>>({});
+  const [customFieldsValues, setCustomFieldsValues] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const fetchSports = async () => {
@@ -242,15 +244,17 @@ export function AthleteRegistration({
       try {
         const { data, error } = await supabase
           .from("sports")
-          .select("name, positions, icon")
+          .select("*")
           .order("name");
 
         if (data && data.length > 0) {
           const sportsMap: Record<string, string[]> = {};
           const iconsMap: Record<string, string> = {};
+          const configMap: Record<string, Sport> = {};
           
           data.forEach((s) => {
             sportsMap[s.name] = s.positions;
+            configMap[s.name] = s as Sport;
             if (s.icon) iconsMap[s.name] = s.icon;
           });
           // Ensure "Outro..." is always there
@@ -259,6 +263,7 @@ export function AthleteRegistration({
           }
           setDynamicSports(sportsMap);
           setSportsIcons(iconsMap);
+          setAllSportsConfig(configMap);
         }
       } catch (err: any) {
         console.error(
@@ -393,6 +398,8 @@ export function AthleteRegistration({
             if (athleteData.address_zip) setCep(athleteData.address_zip);
             if (athleteData.athlete_code)
               setAthleteCode(athleteData.athlete_code);
+            if (athleteData.custom_fields_data) 
+              setCustomFieldsValues(athleteData.custom_fields_data);
             if (
               athleteData.address_street ||
               athleteData.address_neighborhood ||
@@ -439,6 +446,7 @@ export function AthleteRegistration({
     status,
     hasAllergy,
     photo,
+    customFieldsValues,
     onDirtyChange,
   ]);
 
@@ -616,6 +624,7 @@ export function AthleteRegistration({
       categoria,
       status,
       hasAllergy,
+      custom_fields_data: customFieldsValues,
     };
 
     console.log("Payload being sent to Supabase:", finalData);
@@ -681,6 +690,7 @@ export function AthleteRegistration({
           clube_anterior: finalData.club || null,
           posicao: finalData.position || null,
           status: finalData.status || null,
+          custom_fields_data: finalData.custom_fields_data || {},
           guardian_name: finalData.guardianName || null,
           guardian_phone: finalData.guardianPhone || null,
           guardian_cpf: finalData.guardianCpf || null,
@@ -1300,6 +1310,65 @@ export function AthleteRegistration({
                       </div>
                     )}
                 </div>
+                {/* Custom Fields Rendering */}
+                {modalidade && allSportsConfig[modalidade]?.custom_fields?.map((field) => (
+                  <div key={field.id} className="space-y-1.5">
+                    <FormLabel>{field.name}</FormLabel>
+                    {field.type === 'text' && (
+                      <FormInput
+                        value={customFieldsValues[field.id] || ''}
+                        onChange={(e) => setCustomFieldsValues({ ...customFieldsValues, [field.id]: e.target.value })}
+                        placeholder={`${language === 'pt' ? 'Digite' : 'Enter'} ${field.name.toLowerCase()}`}
+                      />
+                    )}
+                    {field.type === 'number' && (
+                      <FormInput
+                        type="number"
+                        value={customFieldsValues[field.id] || ''}
+                        onChange={(e) => setCustomFieldsValues({ ...customFieldsValues, [field.id]: e.target.value })}
+                        placeholder="0"
+                      />
+                    )}
+                    {field.type === 'select' && (
+                      <FormSelect
+                        value={customFieldsValues[field.id] || ''}
+                        onChange={(e) => setCustomFieldsValues({ ...customFieldsValues, [field.id]: e.target.value })}
+                      >
+                        <option value="">{t("reg.select")}</option>
+                        {field.options?.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </FormSelect>
+                    )}
+                    {field.type === 'boolean' && (
+                      <div className="flex gap-2 h-10 items-center">
+                        <button
+                          type="button"
+                          onClick={() => setCustomFieldsValues({ ...customFieldsValues, [field.id]: true })}
+                          className={`flex-1 h-full rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                            customFieldsValues[field.id] === true
+                              ? "bg-emerald-500/10 border-emerald-500 text-emerald-400"
+                              : "bg-slate-900/50 border-slate-700 text-slate-500 hover:border-slate-600"
+                          }`}
+                        >
+                          {language === 'pt' ? 'Sim' : 'Yes'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCustomFieldsValues({ ...customFieldsValues, [field.id]: false })}
+                          className={`flex-1 h-full rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                            customFieldsValues[field.id] === false
+                              ? "bg-rose-500/10 border-rose-500 text-rose-400"
+                              : "bg-slate-900/50 border-slate-700 text-slate-500 hover:border-slate-600"
+                          }`}
+                        >
+                          {language === 'pt' ? 'Não' : 'No'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <FormLabel>{t("reg.category")}</FormLabel>

@@ -590,6 +590,7 @@ export function AthleteDashboard({
 
   // Athlete profile state
   const [athleteData, setAthleteData] = useState<Athlete | null>(initialAthleteData || null);
+  const [sportConfig, setSportConfig] = useState<any>(null);
   const [loadingAthlete, setLoadingAthlete] = useState(true);
   const [athleteCode, setAthleteCode] = useState<string | null>(null);
 
@@ -712,6 +713,29 @@ export function AthleteDashboard({
       storeFetchCheckins(athleteId, athleteData?.sport);
     }
   }, [athleteId, athleteData?.sport, storeFetchCheckins]);
+
+  useEffect(() => {
+    async function fetchSportConfig() {
+      if (!supabase || (!athleteData?.sport)) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('sports')
+          .select('*')
+          .eq('name', athleteData.sport)
+          .maybeSingle();
+          
+        if (data) {
+          setSportConfig(data);
+        }
+      } catch (err) {
+        console.error("Error fetching sport config:", err);
+      }
+    }
+    if (athleteData?.sport) {
+      fetchSportConfig();
+    }
+  }, [athleteData?.sport]);
 
   // Gamification & Insights Logic
   const latestCheckIn = checkins[0];
@@ -2118,18 +2142,15 @@ export function AthleteDashboard({
                   </span>
                 </h2>
                 {athleteData?.sport && (
-                  <div className="mt-4 flex items-center justify-center lg:justify-start gap-3">
-                    <div className="w-10 h-10 bg-slate-900/80 rounded-xl flex items-center justify-center border border-white/10 shadow-lg backdrop-blur-md">
-                      <span className="text-2xl leading-none">
-                        {/* We would need to fetch the icon here too or use a hardcoded map if not fetched */}
-                        {/* Since I already added icon to athletes in many places, I should fetch it here too or pass it */}
-                        {/* For simplicity in this massive file, I'll use a hardcoded emoji map for common sports as fallback */}
-                        {athleteData.icon || "🏆"}
-                      </span>
+                  <div className="mt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-3xl sm:text-4xl leading-none select-none drop-shadow-xl bg-slate-900/50 border border-slate-800/50 ${
+                      ["⚽", "🏀", "🏈", "⚾", "🎾", "🏐", "🏉", "🎱"].includes(athleteData.icon || "") ? "rounded-full" : "rounded-2xl"
+                    }`}>
+                      {athleteData.icon || "🏆"}
                     </div>
-                    <div className="flex flex-col text-left">
-                      <span className="text-xxs font-black text-slate-500 uppercase tracking-[0.3em] leading-tight">Modalidade</span>
-                      <span className="text-sm font-bold text-cyan-400/90 uppercase tracking-widest leading-tight">
+                    <div className="flex flex-col text-center sm:text-left">
+                      <span className="text-[10px] sm:text-xxs font-black text-slate-500 uppercase tracking-[0.3em] leading-tight">Modalidade</span>
+                      <span className="text-base sm:text-lg font-bold text-cyan-400/90 uppercase tracking-widest leading-tight">
                         {athleteData.sport}
                       </span>
                     </div>
@@ -2228,7 +2249,7 @@ export function AthleteDashboard({
                         contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: '0.75rem' }}
                         itemStyle={{ fontWeight: "bold" }}
                       />
-                      <Line type="monotone" dataKey="score" name="Prontidão" stroke="#6366f1" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="score" name="Prontidão" stroke={sportConfig?.color || "#6366f1"} strokeWidth={3} dot={{ r: 4, fill: sportConfig?.color || "#6366f1" }} activeDot={{ r: 6 }} />
                       <Line type="monotone" dataKey="sleep" name="Sono" stroke="#3b82f6" strokeWidth={2} strokeDasharray="5 5" dot={false} />
                       <Line type="monotone" dataKey="fatigue" name="Fadiga" stroke="#f59e0b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
                     </LineChart>
@@ -2253,7 +2274,7 @@ export function AthleteDashboard({
                         <XAxis dataKey="date" stroke="#475569" fontSize={10} tickMargin={10} />
                         <YAxis stroke="#475569" fontSize={10} domain={[0, 10]} />
                         <Tooltip contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155", borderRadius: '0.75rem' }} />
-                        <Line type="stepAfter" dataKey="level" name="Dor" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4 }} />
+                        <Line type="stepAfter" dataKey="level" name="Dor" stroke="#f43f5e" strokeWidth={3} dot={{ r: 4, fill: sportConfig?.color || '#f43f5e' }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </SafeRender>

@@ -1,18 +1,40 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+interface CustomField {
+  id: string;
+  name: string;
+  type: 'text' | 'number' | 'select' | 'boolean';
+  options?: string[];
+}
+
 interface Sport {
   id: string;
   name: string;
   icon?: string;
+  color?: string;
+  target_athletes?: number;
+  custom_fields?: CustomField[];
   positions: string[];
+  athleteCount?: number;
 }
+
+const SPORT_COLORS = [
+  { name: 'Emerald', hex: '#10b981', bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  { name: 'Cyan', hex: '#06b6d4', bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+  { name: 'Indigo', hex: '#6366f1', bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/30' },
+  { name: 'Violet', hex: '#8b5cf6', bg: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500/30' },
+  { name: 'Rose', hex: '#f43f5e', bg: 'bg-rose-500', text: 'text-rose-400', border: 'border-rose-500/30' },
+  { name: 'Amber', hex: '#f59e0b', bg: 'bg-amber-500', text: 'text-amber-400', border: 'border-amber-500/30' },
+  { name: 'Orange', hex: '#f97316', bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/30' },
+  { name: 'Slate', hex: '#64748b', bg: 'bg-slate-500', text: 'text-slate-400', border: 'border-slate-500/30' },
+];
 
 export const SportsSettings = () => {
   const { lang } = useLanguage();
@@ -20,134 +42,106 @@ export const SportsSettings = () => {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingSportId, setEditingSportId] = useState<string | null>(null);
+  
+  // New Sport State
   const [newSportName, setNewSportName] = useState("");
   const [newSportIcon, setNewSportIcon] = useState("🏆");
+  const [newSportColor, setNewSportColor] = useState(SPORT_COLORS[1].hex);
+  const [newSportTarget, setNewSportTarget] = useState<number>(20);
+  const [newSportCustomFields, setNewSportCustomFields] = useState<CustomField[]>([]);
   const [newSportPositions, setNewSportPositions] = useState<string[]>([]);
+  
+  // Auxiliary UI state
   const [newPosition, setNewPosition] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  const filteredSports = sports.filter(s => 
-    s.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  useEffect(() => {
-    fetchSports();
-  }, []);
-
-  const fetchSports = async () => {
+  const fetchSports = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("sports")
-        .select("id, name, icon, positions")
+        .select("*")
         .order("name");
       
-      if (error) {
-        // If column doesn't exist, try to create it
-        if (error.code === '42703') { // undefined_column
-          try {
-            await supabase.rpc('exec_sql', { sql: 'ALTER TABLE sports ADD COLUMN IF NOT EXISTS icon TEXT;' });
-            // Retry fetch
-            const { data: retryData, error: retryError } = await supabase
-              .from("sports")
-              .select("id, name, icon, positions")
-              .order("name");
-            if (retryError) throw retryError;
-            setSports(retryData || []);
-          } catch (sqlErr) {
-            console.error("Failed to add icon column:", sqlErr);
-            // Fallback: try without icon
-            const { data: fallbackData } = await supabase.from("sports").select("id, name, positions").order("name");
-            setSports(fallbackData || []);
-          }
-        } else {
-          throw error;
-        }
-      } else {
-        setSports(data || []);
-      }
-    } catch (error: any) {
-      console.error("Caught error fetching sports:", error);
+      if (error) throw error;
+      
+      const { data: athletesData } = await supabase.from("athletes").select("modalidade");
+      const countsMap: Record<string, number> = {};
+      athletesData?.forEach(a => { if (a.modalidade) countsMap[a.modalidade] = (countsMap[a.modalidade] || 0) + 1; });
+
+      setSports((data || []).map(s => ({ ...s, athleteCount: countsMap[s.name] || 0 })));
+    } catch (error) {
+      console.error("Error fetching sports:", error);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchSports(); }, [fetchSports]);
+
+  const handleAddSport = async () => {
+    if (!newSportName.trim()) return;
+    
+    const payload = {
+      name: newSportName,
+      icon: newSportIcon,
+      color: newSportColor,
+      target_athletes: newSportTarget,
+      custom_fields: newSportCustomFields,
+      positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"]
+    };
+
+    try {
+      let error;
+      if (editingSportId) {
+        ({ error } = await supabase.from("sports").update(payload).eq("id", editingSportId));
+      } else {
+        ({ error } = await supabase.from("sports").insert([payload]));
+      }
+      
+      if (error) throw error;
+      
+      setIsAdding(false);
+      resetForm();
+      fetchSports();
+    } catch (error) {
+      console.error("Error saving sport:", error);
     }
   };
 
-  const handleSeedSports = async () => {
-    const defaultSports = [
-      { name: 'Atletismo', icon: '🏃', positions: ['Velocidade', 'Fundo', 'Saltos', 'Arremessos', 'Marcha'] },
-      { name: 'Basquete', icon: '🏀', positions: ['Armador', 'Ala-Armador', 'Ala', 'Ala-Pivô', 'Pivô'] },
-      { name: 'Futsal', icon: '⚽', positions: ['Goleiro', 'Fixo', 'Ala Direito', 'Ala Esquerdo', 'Pivô'] },
-      { name: 'Futebol de Campo', icon: '🏟️', positions: ['Goleiro', 'Lateral Direito', 'Lateral Esquerdo', 'Zagueiro', 'Volante', 'Meia', 'Atacante', 'Centroavante'] },
-      { name: 'Handebol', icon: '🤾', positions: ['Goleiro', 'Ponta Esquerda', 'Ponta Direita', 'Armador Esquerdo', 'Armador Central', 'Armador Direito', 'Pivô'] },
-      { name: 'Judô', icon: '🥋', positions: ['Ligeiro', 'Meio-Leve', 'Leve', 'Meio-Médio', 'Médio', 'Meio-Pesado', 'Pesado'] },
-      { name: 'Natação', icon: '🏊', positions: ['Crawl', 'Costas', 'Peito', 'Borboleta', 'Medley'] },
-      { name: 'Tênis', icon: '🎾', positions: ['Simples', 'Duplas'] },
-      { name: 'Volleyball', icon: '🏐', positions: ['Levantador', 'Oposto', 'Ponteiro', 'Central', 'Líbero'] },
-      { name: 'Vôlei de Praia', icon: '🏖️', positions: ['Defesa', 'Bloqueio'] }
-    ];
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("sports")
-        .upsert(defaultSports, { onConflict: 'name' });
-      
-      if (error) throw error;
-      fetchSports();
-    } catch (error: any) {
-      console.error("Error seeding sports:", error.message);
-      alert("Erro ao popular esportes: " + error.message);
-    } finally {
-      setLoading(false);
-    }
+  const resetForm = () => {
+    setEditingSportId(null);
+    setNewSportName("");
+    setNewSportIcon("🏆");
+    setNewSportColor(SPORT_COLORS[1].hex);
+    setNewSportTarget(20);
+    setNewSportCustomFields([]);
+    setNewSportPositions([]);
   };
 
   const handleEditClick = (sport: Sport) => {
     setEditingSportId(sport.id);
     setNewSportName(sport.name);
     setNewSportIcon(sport.icon || "🏆");
+    setNewSportColor(sport.color || SPORT_COLORS[1].hex);
+    setNewSportTarget(sport.target_athletes || 20);
+    setNewSportCustomFields(sport.custom_fields || []);
     setNewSportPositions(sport.positions || []);
     setIsAdding(true);
   };
 
-  const handleAddSport = async () => {
-    if (!newSportName.trim()) return;
-    
-    try {
-      if (editingSportId) {
-        const { error } = await supabase
-          .from("sports")
-          .update({ 
-            name: newSportName, 
-            icon: newSportIcon,
-            positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
-          })
-          .eq("id", editingSportId);
-        
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("sports")
-          .insert([{ 
-            name: newSportName, 
-            icon: newSportIcon,
-            positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
-          }]);
-        
-        if (error) throw error;
-      }
-      
-      setNewSportName("");
-      setNewSportIcon("🏆");
-      setNewSportPositions([]);
-      setIsAdding(false);
-      setEditingSportId(null);
-      fetchSports();
-    } catch (error) {
-      console.error("Error adding/updating sport:", error);
-      alert(lang === "pt" ? "Erro ao salvar esporte. Verifique se já existe." : "Error saving sport. Check if it already exists.");
-    }
+  const addCustomField = () => {
+    const newField: CustomField = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: "",
+      type: 'text'
+    };
+    setNewSportCustomFields([...newSportCustomFields, newField]);
+  };
+
+  const updateCustomField = (id: string, updates: Partial<CustomField>) => {
+    setNewSportCustomFields(newSportCustomFields.map(f => f.id === id ? { ...f, ...updates } : f));
   };
 
   const handleDeleteSport = async (id: string) => {
@@ -263,7 +257,7 @@ export const SportsSettings = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="bg-slate-900/50 border border-cyan-500/30 rounded-2xl p-6 space-y-4"
+            className="bg-slate-900/50 border border-cyan-500/30 rounded-2xl p-6 space-y-4 shadow-2xl"
           >
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
@@ -274,8 +268,8 @@ export const SportsSettings = () => {
               </h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
                     {lang === "pt" ? "Nome da Modalidade" : "Sport Name"}
@@ -291,84 +285,146 @@ export const SportsSettings = () => {
 
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                    {lang === "pt" ? "Ícone (Emoji)" : "Icon (Emoji)"}
+                    {lang === "pt" ? "Cor da Modalidade" : "Sport Color"}
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newSportIcon}
-                      onChange={(e) => setNewSportIcon(e.target.value)}
-                      placeholder="🏆"
-                      className="w-16 text-center bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xl focus:outline-none focus:border-cyan-500 transition-colors"
-                    />
-                    <div className="flex-1 bg-slate-800/10 border border-slate-700/30 rounded-xl px-4 py-2 flex items-center text-[10px] text-slate-500 italic leading-tight">
-                      {lang === 'pt' ? 'Use um emoji que represente o esporte' : 'Use an emoji for the sport'}
-                    </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {SPORT_COLORS.map(c => (
+                      <button
+                        key={c.hex}
+                        onClick={() => setNewSportColor(c.hex)}
+                        className={`h-10 rounded-lg border-2 transition-all ${newSportColor === c.hex ? 'border-white scale-105 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'} ${c.bg}`}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest flex justify-between">
+                    {lang === "pt" ? "Meta de Atletas" : "Athlete Target"}
+                    <span className="text-cyan-400">{newSportTarget}</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="100"
+                    step="5"
+                    value={newSportTarget}
+                    onChange={(e) => setNewSportTarget(parseInt(e.target.value))}
+                    className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                    {lang === "pt" ? "Ícone Sugerido" : "Suggested Icon"}
+                  </label>
+                  <div className="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 grid grid-cols-5 gap-3">
+                    {["⚽", "🏀", "🏐", "🎾", "🏊", "🏃", "🥋", "🤾", "🏋️", "🥊", "🏇", "🚣", "🏹", "🏌️", "⛸️"].map(icon => {
+                      const isBall = ["⚽", "🏀", "🏈", "⚾", "🎾", "🏐", "🏉", "🎱"].includes(icon);
+                      return (
+                        <button
+                          key={icon}
+                          onClick={() => setNewSportIcon(icon)}
+                          className={`w-10 h-10 flex items-center justify-center text-xl hover:bg-slate-800 transition-all hover:scale-110 active:scale-95 ${
+                            isBall ? "rounded-full" : "rounded-xl"
+                          } ${newSportIcon === icon ? 'bg-cyan-500/20 ring-2 ring-cyan-500/50' : 'bg-slate-900/40 border border-slate-800/50'}`}
+                        >
+                          {icon}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                  {lang === "pt" ? "Adicionar Posição" : "Add Position"}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newPosition}
-                    onChange={(e) => setNewPosition(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addPosition()}
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                    placeholder={lang === "pt" ? "Ex: Armador" : "Ex: Point Guard"}
-                  />
-                  <Button onClick={addPosition} variant="outline" className="border-slate-700 text-slate-400 hover:text-white">
-                    <Plus className="w-4 h-4" />
-                  </Button>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                      {lang === "pt" ? "Posições" : "Positions"}
+                    </label>
+                    <span className="text-[10px] text-slate-500 font-bold">{newSportPositions.length}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newPosition}
+                      onChange={(e) => setNewPosition(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addPosition()}
+                      className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                      placeholder={lang === "pt" ? "Ex: Armador" : "Ex: Point Guard"}
+                    />
+                    <Button onClick={addPosition} size="sm" className="bg-slate-800 hover:bg-slate-700">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="max-h-[300px] overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                    {newSportPositions.map((pos, i) => (
+                      <div key={i} className="flex items-center justify-between p-2 bg-slate-950/40 border border-slate-800/50 rounded-lg group">
+                        <span className="text-xs font-bold text-slate-300">{pos}</span>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => movePosition(i, 'up')} className="p-1 hover:text-cyan-400"><ChevronUp size={14} /></button>
+                          <button onClick={() => removePosition(pos)} className="p-1 hover:text-rose-400"><Trash2 size={14} /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                      {lang === "pt" ? "Campos Personalizados" : "Custom Fields"}
+                    </label>
+                    <Button onClick={addCustomField} size="sm" variant="outline" className="h-7 border-dashed border-slate-700 text-[10px] uppercase font-black tracking-widest hover:border-cyan-500/50">
+                      <Plus className="w-3 h-3 mr-1" /> {lang === 'pt' ? 'Adicionar' : 'Add'}
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                    {newSportCustomFields.map((field) => (
+                      <div key={field.id} className="p-3 bg-slate-950/50 border border-slate-800 rounded-xl space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={field.name}
+                            onChange={(e) => updateCustomField(field.id, { name: e.target.value })}
+                            className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white"
+                            placeholder={lang === 'pt' ? 'Nome do campo' : 'Field name'}
+                          />
+                          <button onClick={() => setNewSportCustomFields(prev => prev.filter(f => f.id !== field.id))} className="text-slate-600 hover:text-rose-400 transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <select
+                          value={field.type}
+                          onChange={(e) => updateCustomField(field.id, { type: e.target.value as any })}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400"
+                        >
+                          <option value="text">Texto</option>
+                          <option value="number">Número</option>
+                          <option value="select">Seleção</option>
+                          <option value="boolean">Sim/Não</option>
+                        </select>
+                        {field.type === 'select' && (
+                          <input
+                            type="text"
+                            value={field.options?.join(', ') || ''}
+                            onChange={(e) => updateCustomField(field.id, { options: e.target.value.split(',').map(s => s.trim()) })}
+                            className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 italic"
+                            placeholder={lang === 'pt' ? 'Opções separadas por vírgula' : 'Options separated by comma'}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
-
-            {newSportPositions.length > 0 && (
-              <div className="flex flex-col gap-2 pt-2">
-                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                  {lang === "pt" ? "Ordem das Posições" : "Positions Order"}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {newSportPositions.map((pos, i) => (
-                    <span 
-                      key={i}
-                      className="px-3 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-bold flex items-center gap-2"
-                    >
-                      {pos}
-                      <div className="flex items-center gap-1 border-l border-slate-700 pl-2 ml-1">
-                        <button 
-                          onClick={() => movePosition(i, 'up')} 
-                          disabled={i === 0}
-                          className="text-slate-500 disabled:opacity-30 hover:text-white transition-colors"
-                          title="Subir na lista"
-                        >
-                          <ChevronUp className="w-3 h-3" />
-                        </button>
-                        <button 
-                          onClick={() => movePosition(i, 'down')} 
-                          disabled={i === newSportPositions.length - 1}
-                          className="text-slate-500 disabled:opacity-30 hover:text-white transition-colors"
-                          title="Descer na lista"
-                        >
-                          <ChevronDown className="w-3 h-3" />
-                        </button>
-                        <button 
-                          onClick={() => removePosition(pos)} 
-                          className="text-slate-500 hover:text-rose-400 ml-1 transition-colors"
-                          title="Remover"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
               <Button 
@@ -407,54 +463,89 @@ export const SportsSettings = () => {
             <p className="text-slate-400 font-medium">Nenhum esporte encontrado.</p>
           </div>
         ) : (
-          filteredSports.map((sport) => (
-            <motion.div
-              key={sport.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-slate-900/40 border border-slate-800/50 rounded-2xl p-5 hover:border-cyan-500/30 transition-all group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 group-hover:border-cyan-500/30 transition-colors shadow-lg">
-                    <span className="text-[28px] leading-none select-none">
-                      {sport.icon || "🏆"}
-                    </span>
+          filteredSports.map((sport) => {
+            const colorCfg = SPORT_COLORS.find(c => c.hex === sport.color) || SPORT_COLORS[7];
+            const progress = Math.min(((sport.athleteCount || 0) / (sport.target_athletes || 20)) * 100, 100);
+
+            return (
+              <motion.div
+                key={sport.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`bg-slate-900/40 border ${colorCfg.border} rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden`}
+              >
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-14 h-14 rounded-2xl ${colorCfg.bg} bg-opacity-20 flex items-center justify-center border ${colorCfg.border} group-hover:scale-105 transition-transform`}>
+                      <span className="text-3xl leading-none select-none">
+                        {sport.icon || "🏆"}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className={`font-black text-white uppercase tracking-tight group-hover:${colorCfg.text} transition-colors`}>
+                        {sport.name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Users className="w-3 h-3 text-slate-500" />
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          {sport.athleteCount || 0} / {sport.target_athletes || 20} {lang === 'pt' ? 'Atletas' : 'Athletes'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-black text-white uppercase tracking-tight">{sport.name}</h3>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => handleEditClick(sport)}
+                      className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteSport(sport.id)}
+                      className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  {/* Buttons visible on hover on desktop, always visible on mobile */}
-                  <button 
-                    onClick={() => handleEditClick(sport)}
-                    className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                    title={lang === 'pt' ? 'Editar' : 'Edit'}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => handleDeleteSport(sport.id)}
-                    className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
-                    title={lang === 'pt' ? 'Excluir' : 'Delete'}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+
+                {/* Target Progress Bar */}
+                <div className="space-y-1.5 mb-4 relative z-10">
+                  <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
+                    <span>{lang === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
+                    <span className={colorCfg.text}>{Math.round(progress)}%</span>
+                  </div>
+                  <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      className={`h-full ${colorCfg.bg} rounded-full`}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {sport.positions.slice(0, 4).map((pos, i) => (
-                  <span key={i} className="text-xxs font-black px-2 py-0.5 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md uppercase tracking-widest">
-                    {pos}
+                
+                <div className="flex flex-wrap gap-1.5 relative z-10">
+                  {sport.positions.slice(0, 3).map((pos, i) => (
+                    <span key={i} className="text-[9px] font-black px-2 py-1 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md uppercase tracking-widest group-hover:text-slate-300 transition-colors">
+                      {pos}
+                    </span>
+                  ))}
+                  {sport.custom_fields && sport.custom_fields.length > 0 && (
+                    <span className={`text-[9px] font-black px-2 py-1 bg-slate-900 border ${colorCfg.border} ${colorCfg.text} rounded-md uppercase tracking-widest`}>
+                      +{sport.custom_fields.length} {lang === 'pt' ? 'CAMPOS' : 'FIELDS'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Background Decoration */}
+                <div className="absolute -right-4 -bottom-4 opacity-[0.02] group-hover:opacity-[0.05] transition-opacity pointer-events-none">
+                  <span className="text-[100px] leading-none select-none rotate-12">
+                    {sport.icon || "🏆"}
                   </span>
-                ))}
-                {sport.positions.length > 4 && (
-                  <span className="text-xxs font-black px-2 py-0.5 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md uppercase tracking-widest">
-                    +{sport.positions.length - 4}
-                  </span>
-                )}
-              </div>
-            </motion.div>
-          ))
+                </div>
+              </motion.div>
+            );
+          })
         )}
       </div>
     </div>
