@@ -245,6 +245,15 @@ BEGIN
             whatsapp_birthday_template TEXT DEFAULT 'Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!',
             whatsapp_absence_enabled BOOLEAN DEFAULT false,
             whatsapp_absence_template TEXT DEFAULT 'Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?',
+            finance_reminder_enabled BOOLEAN DEFAULT false,
+            finance_reminder_template TEXT DEFAULT 'Olá {nome}! Lembramos que seu pacote/mensalidade vence no dia {data}.',
+            finance_receipt_enabled BOOLEAN DEFAULT false,
+            finance_receipt_template TEXT DEFAULT 'Olá {nome}! Confirmamos o recebimento do seu pagamento no valor de R$ {valor}. Obrigado!',
+            prof_morning_resume_enabled BOOLEAN DEFAULT false,
+            prof_morning_resume_time TEXT DEFAULT '07:00',
+            prof_new_appointment_enabled BOOLEAN DEFAULT false,
+            prep_instructions_enabled BOOLEAN DEFAULT false,
+            prep_instructions_template TEXT DEFAULT 'Olá {nome}! Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente.',
             email_enabled BOOLEAN DEFAULT false,
             resend_api_key TEXT,
             email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.',
@@ -1276,6 +1285,17 @@ END $storage$;`;
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_absence_template') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN whatsapp_absence_template TEXT DEFAULT 'Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_reminder_enabled') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN finance_reminder_enabled BOOLEAN DEFAULT false;
+                ALTER TABLE public.automation_settings ADD COLUMN finance_reminder_template TEXT DEFAULT 'Olá {nome}! Lembramos que seu pacote/mensalidade vence no dia {data}.';
+                ALTER TABLE public.automation_settings ADD COLUMN finance_receipt_enabled BOOLEAN DEFAULT false;
+                ALTER TABLE public.automation_settings ADD COLUMN finance_receipt_template TEXT DEFAULT 'Olá {nome}! Confirmamos o recebimento do seu pagamento no valor de R$ {valor}. Obrigado!';
+                ALTER TABLE public.automation_settings ADD COLUMN prof_morning_resume_enabled BOOLEAN DEFAULT false;
+                ALTER TABLE public.automation_settings ADD COLUMN prof_morning_resume_time TEXT DEFAULT '07:00';
+                ALTER TABLE public.automation_settings ADD COLUMN prof_new_appointment_enabled BOOLEAN DEFAULT false;
+                ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_enabled BOOLEAN DEFAULT false;
+                ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_template TEXT DEFAULT 'Olá {nome}! Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente.';
             END IF;
         END $$;
 

@@ -19,6 +19,18 @@ export function AutomationSettings() {
   const [whatsappAbsenceEnabled, setWhatsappAbsenceEnabled] = useState(false);
   const [whatsappAbsenceTemplate, setWhatsappAbsenceTemplate] = useState('Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?');
   
+  const [financeReminderEnabled, setFinanceReminderEnabled] = useState(false);
+  const [financeReminderTemplate, setFinanceReminderTemplate] = useState('Olá {nome}! Lembramos que seu pacote/mensalidade vence no dia {data}.');
+  const [financeReceiptEnabled, setFinanceReceiptEnabled] = useState(false);
+  const [financeReceiptTemplate, setFinanceReceiptTemplate] = useState('Olá {nome}! Confirmamos o recebimento do seu pagamento no valor de R$ {valor}. Obrigado!');
+  
+  const [profMorningResumeEnabled, setProfMorningResumeEnabled] = useState(false);
+  const [profMorningResumeTime, setProfMorningResumeTime] = useState('07:00');
+  const [profNewAppointmentEnabled, setProfNewAppointmentEnabled] = useState(false);
+  
+  const [prepInstructionsEnabled, setPrepInstructionsEnabled] = useState(false);
+  const [prepInstructionsTemplate, setPrepInstructionsTemplate] = useState('Olá {nome}! Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente.');
+
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [resendApiKey, setResendApiKey] = useState('');
   const [emailReminderTemplate, setEmailReminderTemplate] = useState('Seu atendimento está marcado para {data} às {hora}.');
@@ -67,6 +79,15 @@ export function AutomationSettings() {
         if (data.whatsapp_birthday_template) setWhatsappBirthdayTemplate(data.whatsapp_birthday_template);
         if (data.whatsapp_absence_enabled !== undefined) setWhatsappAbsenceEnabled(data.whatsapp_absence_enabled);
         if (data.whatsapp_absence_template) setWhatsappAbsenceTemplate(data.whatsapp_absence_template);
+        if (data.finance_reminder_enabled !== undefined) setFinanceReminderEnabled(data.finance_reminder_enabled);
+        if (data.finance_reminder_template) setFinanceReminderTemplate(data.finance_reminder_template);
+        if (data.finance_receipt_enabled !== undefined) setFinanceReceiptEnabled(data.finance_receipt_enabled);
+        if (data.finance_receipt_template) setFinanceReceiptTemplate(data.finance_receipt_template);
+        if (data.prof_morning_resume_enabled !== undefined) setProfMorningResumeEnabled(data.prof_morning_resume_enabled);
+        if (data.prof_morning_resume_time) setProfMorningResumeTime(data.prof_morning_resume_time);
+        if (data.prof_new_appointment_enabled !== undefined) setProfNewAppointmentEnabled(data.prof_new_appointment_enabled);
+        if (data.prep_instructions_enabled !== undefined) setPrepInstructionsEnabled(data.prep_instructions_enabled);
+        if (data.prep_instructions_template) setPrepInstructionsTemplate(data.prep_instructions_template);
         if (data.email_enabled !== undefined) setEmailEnabled(data.email_enabled);
         if (data.resend_api_key) setResendApiKey(data.resend_api_key);
         if (data.email_reminder_template) setEmailReminderTemplate(data.email_reminder_template);
@@ -108,6 +129,15 @@ export function AutomationSettings() {
         whatsapp_birthday_template: whatsappBirthdayTemplate,
         whatsapp_absence_enabled: whatsappAbsenceEnabled,
         whatsapp_absence_template: whatsappAbsenceTemplate,
+        finance_reminder_enabled: financeReminderEnabled,
+        finance_reminder_template: financeReminderTemplate,
+        finance_receipt_enabled: financeReceiptEnabled,
+        finance_receipt_template: financeReceiptTemplate,
+        prof_morning_resume_enabled: profMorningResumeEnabled,
+        prof_morning_resume_time: profMorningResumeTime,
+        prof_new_appointment_enabled: profNewAppointmentEnabled,
+        prep_instructions_enabled: prepInstructionsEnabled,
+        prep_instructions_template: prepInstructionsTemplate,
         email_enabled: emailEnabled,
         resend_api_key: resendApiKey,
         email_reminder_template: emailReminderTemplate,
@@ -329,6 +359,129 @@ export function AutomationSettings() {
                 )}
               </div>
 
+              {/* Finance Reminder */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Lembrete Financeiro de Vencimento</label>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={financeReminderEnabled}
+                      onChange={(e) => setFinanceReminderEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                  </label>
+                </div>
+                {financeReminderEnabled && (
+                  <textarea 
+                    value={financeReminderTemplate}
+                    onChange={(e) => setFinanceReminderTemplate(e.target.value)}
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                    placeholder="Olá {nome}! Lembramos que seu pacote/mensalidade vence no dia {data}."
+                  />
+                )}
+              </div>
+
+              {/* Finance Receipt */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Agradecimento de Pagamento (Recibo)</label>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={financeReceiptEnabled}
+                      onChange={(e) => setFinanceReceiptEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                  </label>
+                </div>
+                {financeReceiptEnabled && (
+                  <textarea 
+                    value={financeReceiptTemplate}
+                    onChange={(e) => setFinanceReceiptTemplate(e.target.value)}
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                    placeholder="Olá {nome}! Confirmamos o recebimento do seu pagamento no valor de R$ {valor}. Obrigado!"
+                  />
+                )}
+              </div>
+
+              {/* Pre assessment instructions */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Envio de Anexos/Orientações (Primeira Consulta)</label>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={prepInstructionsEnabled}
+                      onChange={(e) => setPrepInstructionsEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                  </label>
+                </div>
+                {prepInstructionsEnabled && (
+                  <textarea 
+                    value={prepInstructionsTemplate}
+                    onChange={(e) => setPrepInstructionsTemplate(e.target.value)}
+                    rows={3}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none transition-all text-sm font-medium resize-none"
+                    placeholder="Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente."
+                  />
+                )}
+              </div>
+
+              {/* Professional Morning Resumo */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Resumo Matinal para Profissional (Para Mim)</label>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={profMorningResumeEnabled}
+                        onChange={(e) => setProfMorningResumeEnabled(e.target.checked)}
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                    </label>
+                  </div>
+                  {profMorningResumeEnabled && (
+                    <div className="flex items-center gap-4 px-1">
+                      <label className="text-xs text-slate-400 font-medium">Horário do disparo:</label>
+                      <input
+                        type="time"
+                        value={profMorningResumeTime}
+                        onChange={(e) => setProfMorningResumeTime(e.target.value)}
+                        className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:border-[#25D366]/50 outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Professional New Appointment Alert */}
+              <div className="space-y-4 pt-4 border-t border-slate-800/50 pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Alerta: Novo Agendamento (Para Mim)</label>
+                    <span className="text-[10px] text-slate-500 pl-1 mt-1 font-medium">Você será notificado imediatamente ao receber novos agendamentos no futuro.</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer" 
+                      checked={profNewAppointmentEnabled}
+                      onChange={(e) => setProfNewAppointmentEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#25D366]"></div>
+                  </label>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Configuração da API (Evolution)</span>
                 <div className="space-y-3">
@@ -362,6 +515,8 @@ export function AutomationSettings() {
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{nome}`}</span>
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{data}`}</span>
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{hora}`}</span>
+                  <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20" title="Valor do Financeiro">{`{valor}`}</span>
+                  <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20" title="Link da Orientacao">{`{link_anexo}`}</span>
                 </div>
               </div>
             </div>
@@ -435,6 +590,67 @@ export function AutomationSettings() {
                       <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                       <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
                         +30 dias inativa <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {financeReminderEnabled && (
+                    <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
+                      <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                        {financeReminderTemplate
+                          .replace('{nome}', 'Mariana')
+                          .replace('{data}', new Date(Date.now() + 86400000 * 2).toLocaleDateString('pt-BR'))
+                          .replace('{hora}', '15:00')}
+                      </div>
+                      <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                      <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                        Fin. Lembrete <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {financeReceiptEnabled && (
+                    <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
+                      <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                        {financeReceiptTemplate
+                          .replace('{nome}', 'Mariana')
+                          .replace('{data}', new Date().toLocaleDateString('pt-BR'))
+                          .replace('{valor}', '250,00')}
+                      </div>
+                      <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                      <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                        Fin. Pagamento <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {prepInstructionsEnabled && (
+                    <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
+                      <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                        {prepInstructionsTemplate
+                          .replace('{nome}', 'Mariana')}
+                      </div>
+                      <div className="mt-3 p-3 bg-slate-900/50 rounded-lg text-xs text-[#e9edef]/90 flex items-center gap-2 border border-slate-700/50">
+                        <svg className="w-4 h-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                        <span className="truncate">orientacoes_primeira_consulta.pdf</span>
+                      </div>
+                      <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
+                      <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                        Instruções (1ª vez) <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {profMorningResumeEnabled && (
+                    <div className="bg-[#202c33] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tl-none self-start w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4 border border-slate-700/50">
+                      <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
+                        Bom dia! Aqui está sua agenda de hoje ({new Date().toLocaleDateString('pt-BR')}):<br/><br/>
+                        - 08:00 - João Silva (Avaliação)<br/>
+                        - 09:30 - Mariana Souza (Tratamento)
+                      </div>
+                      <div className="absolute top-0 left-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#202c33] border-r-[#202c33]"></div>
+                      <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
+                         Notificação Interna (Para Mim) <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
                       </div>
                     </div>
                   )}
