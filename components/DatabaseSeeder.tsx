@@ -210,6 +210,7 @@ BEGIN
             custom_fields JSONB DEFAULT '[]'::jsonb,
             positions TEXT[] DEFAULT ARRAY[]::TEXT[],
             order_index INTEGER DEFAULT 0,
+            is_active BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
@@ -1345,6 +1346,7 @@ END $storage$;`;
                 custom_fields JSONB DEFAULT '[]'::jsonb,
                 positions TEXT[] DEFAULT ARRAY[]::TEXT[],
                 order_index INTEGER DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );
@@ -1402,6 +1404,9 @@ END $storage$;`;
             -- Colunas na tabela sports
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'order_index') THEN
                 ALTER TABLE public.sports ADD COLUMN order_index INTEGER DEFAULT 0;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'is_active') THEN
+                ALTER TABLE public.sports ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
             END IF;
 
             -- Colunas na tabela agenda_settings

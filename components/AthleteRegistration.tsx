@@ -253,9 +253,15 @@ export function AthleteRegistration({
           const configMap: Record<string, Sport> = {};
           
           data.forEach((s) => {
-            sportsMap[s.name] = s.positions;
-            configMap[s.name] = s as Sport;
-            if (s.icon) iconsMap[s.name] = s.icon;
+            // Only add if active OR if it's the current athlete's sport (to keep it visible/selected)
+            const isActive = s.is_active !== false;
+            const isCurrentSport = s.name === modalidade;
+            
+            if (isActive || isCurrentSport) {
+              sportsMap[s.name] = s.positions;
+              configMap[s.name] = s as Sport;
+              if (s.icon) iconsMap[s.name] = s.icon;
+            }
           });
           // Ensure "Outro..." is always there
           if (!sportsMap["Outro..."]) {
@@ -273,7 +279,7 @@ export function AthleteRegistration({
       }
     };
     fetchSports();
-  }, []);
+  }, [modalidade]);
 
   const calculateCategory = (dateStr: string) => {
     if (!dateStr) return "Master";
@@ -1243,6 +1249,7 @@ export function AthleteRegistration({
                           {m === "Volleyball" && language === "pt"
                             ? "Vôlei"
                             : m}
+                          {allSportsConfig[m] && allSportsConfig[m].is_active === false ? " (Inativo)" : ""}
                         </option>
                       ))}
                   </FormSelect>

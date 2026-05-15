@@ -95,7 +95,9 @@ export function AthleteList({
       if (!supabase) return;
       const { data, error } = await supabase.from("sports").select("*");
       if (data) {
-        setSportsConfig(data);
+        // Only show active sports in the targets bar
+        setSportsConfig(data.filter(s => s.is_active !== false));
+        
         const iconMap: Record<string, string> = {};
         data.forEach(s => {
           if (s.icon) iconMap[s.name] = s.icon;

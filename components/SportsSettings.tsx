@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown, GripVertical, Zap } from "lucide-react";
 import { motion, AnimatePresence, Reorder } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -24,27 +24,14 @@ interface Sport {
   positions: string[];
   athleteCount?: number;
   order_index?: number;
+  is_active?: boolean;
 }
 
 // Helper to generate gradient from hex
 const getGradientState = (hex: string) => {
-  // Simple check for hex format
-  if (!hex || !hex.startsWith('#')) return 'from-slate-900/40 to-slate-950/60';
-  
-  // Convert hex to semi-transparent variations
-  return `linear-gradient(135deg, ${hex}15 0%, #050B14 100%)`;
+  if (!hex || !hex.startsWith('#')) return 'linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, #050B14 100%)';
+  return `linear-gradient(135deg, ${hex}20 0%, #050B14 100%)`;
 };
-
-const SPORT_COLORS = [
-  { name: 'Emerald', hex: '#10b981', bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-  { name: 'Cyan', hex: '#06b6d4', bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  { name: 'Indigo', hex: '#6366f1', bg: 'bg-indigo-500', text: 'text-indigo-400', border: 'border-indigo-500/30' },
-  { name: 'Violet', hex: '#8b5cf6', bg: 'bg-violet-500', text: 'text-violet-400', border: 'border-violet-500/30' },
-  { name: 'Rose', hex: '#f43f5e', bg: 'bg-rose-500', text: 'text-rose-400', border: 'border-rose-500/30' },
-  { name: 'Amber', hex: '#f59e0b', bg: 'bg-amber-500', text: 'text-amber-400', border: 'border-amber-500/30' },
-  { name: 'Orange', hex: '#f97316', bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/30' },
-  { name: 'Slate', hex: '#64748b', bg: 'bg-slate-500', text: 'text-slate-400', border: 'border-slate-500/30' },
-];
 
 export const SportsSettings = () => {
   const { language } = useLanguage();
@@ -56,10 +43,11 @@ export const SportsSettings = () => {
   // New Sport State
   const [newSportName, setNewSportName] = useState("");
   const [newSportIcon, setNewSportIcon] = useState("🏆");
-  const [newSportColor, setNewSportColor] = useState(SPORT_COLORS[1].hex);
+  const [newSportColor, setNewSportColor] = useState("#06b6d4");
   const [newSportTarget, setNewSportTarget] = useState<number>(20);
   const [newSportCustomFields, setNewSportCustomFields] = useState<CustomField[]>([]);
   const [newSportPositions, setNewSportPositions] = useState<string[]>([]);
+  const [newSportIsActive, setNewSportIsActive] = useState<boolean>(true);
   
   // Auxiliary UI state
   const [newPosition, setNewPosition] = useState("");
@@ -113,13 +101,14 @@ export const SportsSettings = () => {
     if (!newSportName.trim()) return;
     
     setLoading(true);
-    const payload = {
+    let payload: any = {
       name: newSportName,
       icon: newSportIcon,
       color: newSportColor,
       target_athletes: newSportTarget,
       custom_fields: newSportCustomFields,
       positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"],
+      is_active: newSportIsActive,
       updated_at: new Date().toISOString(),
       order_index: editingSportId 
         ? sports.find(s => s.id === editingSportId)?.order_index || 0 
@@ -127,11 +116,25 @@ export const SportsSettings = () => {
     };
 
     try {
-      let error;
+      let result;
       if (editingSportId) {
-        ({ error } = await supabase.from("sports").update(payload).eq("id", editingSportId));
+        result = await supabase.from("sports").update(payload).eq("id", editingSportId);
       } else {
-        ({ error } = await supabase.from("sports").insert([payload]));
+        result = await supabase.from("sports").insert([payload]);
+      }
+      
+      let error = result.error;
+
+      // Fallback if order_index column is missing
+      if (error && (error.code === '42703' || error.message?.includes('order_index'))) {
+        console.warn("Column order_index missing, retrying save without it");
+        const { order_index, ...payloadWithoutOrder } = payload;
+        if (editingSportId) {
+          result = await supabase.from("sports").update(payloadWithoutOrder).eq("id", editingSportId);
+        } else {
+          result = await supabase.from("sports").insert([payloadWithoutOrder]);
+        }
+        error = result.error;
       }
       
       if (error) {
@@ -159,20 +162,22 @@ export const SportsSettings = () => {
     setEditingSportId(null);
     setNewSportName("");
     setNewSportIcon("🏆");
-    setNewSportColor(SPORT_COLORS[1].hex);
+    setNewSportColor("#06b6d4");
     setNewSportTarget(20);
     setNewSportCustomFields([]);
     setNewSportPositions([]);
+    setNewSportIsActive(true);
   };
 
   const handleEditClick = (sport: Sport) => {
     setEditingSportId(sport.id);
     setNewSportName(sport.name);
     setNewSportIcon(sport.icon || "🏆");
-    setNewSportColor(sport.color || SPORT_COLORS[1].hex);
+    setNewSportColor(sport.color || "#06b6d4");
     setNewSportTarget(sport.target_athletes || 20);
     setNewSportCustomFields(sport.custom_fields || []);
     setNewSportPositions(sport.positions || []);
+    setNewSportIsActive(sport.is_active ?? true);
     setIsAdding(true);
   };
 
@@ -248,17 +253,51 @@ export const SportsSettings = () => {
 
   const handleSeedSports = async () => {
     const defaults = [
-      { name: "Futebol", icon: "⚽", color: SPORT_COLORS[0].hex, positions: ["Goleiro", "Zagueiro", "Lateral", "Meia", "Atacante"], target_athletes: 22, order_index: 0 },
-      { name: "Basquete", icon: "🏀", color: SPORT_COLORS[5].hex, positions: ["Armador", "Ala", "Ala-Pivô", "Pivô"], target_athletes: 12, order_index: 1 },
-      { name: "Vôlei", icon: "🏐", color: SPORT_COLORS[1].hex, positions: ["Levantador", "Ponteiro", "Central", "Oposto", "Líbero"], target_athletes: 14, order_index: 2 }
+      { name: "Futebol", icon: "⚽", color: "#10b981", positions: ["Goleiro", "Zagueiro", "Lateral", "Volante", "Meia", "Atacante", "Ponta"], target_athletes: 22, order_index: 0, is_active: true },
+      { name: "Futsal", icon: "⚽", color: "#06b6d4", positions: ["Goleiro", "Fixo", "Ala", "Pivô"], target_athletes: 12, order_index: 1, is_active: true },
+      { name: "Vôlei", icon: "🏐", color: "#6366f1", positions: ["Levantador", "Ponteiro", "Central", "Oposto", "Líbero"], target_athletes: 12, order_index: 2, is_active: true },
+      { name: "Basquete", icon: "🏀", color: "#f59e0b", positions: ["Armador", "Ala", "Ala-Pivô", "Pivô"], target_athletes: 12, order_index: 3, is_active: true },
+      { name: "Handebol", icon: "🤾", color: "#f43f5e", positions: ["Goleiro", "Ponta", "Meia", "Central", "Pivô"], target_athletes: 14, order_index: 4, is_active: true },
+      { name: "Tênis", icon: "🎾", color: "#10b981", positions: ["Jogador de Simples", "Jogador de Duplas"], target_athletes: 4, order_index: 5, is_active: true },
+      { name: "Beach Tennis", icon: "🏖️", color: "#f59e0b", positions: ["Jogador"], target_athletes: 4, order_index: 6, is_active: true },
+      { name: "Natação", icon: "🏊", color: "#06b6d4", positions: ["Nadador"], target_athletes: 10, order_index: 7, is_active: true },
+      { name: "Artes Marciais", icon: "🥋", color: "#6366f1", positions: ["Atleta"], target_athletes: 20, order_index: 8, is_active: true },
+      { name: "Crossfit", icon: "🏋️", color: "#f97316", positions: ["Atleta"], target_athletes: 30, order_index: 9, is_active: true },
+      { name: "Musculação", icon: "💪", color: "#64748b", positions: ["Aluno"], target_athletes: 50, order_index: 10, is_active: true },
+      { name: "Atletismo", icon: "🏃", color: "#f43f5e", positions: ["Velocista", "Saltador", "Arremessador", "Maratonista"], target_athletes: 10, order_index: 11, is_active: true },
+      { name: "Surf", icon: "🏄", color: "#06b6d4", positions: ["Surfista"], target_athletes: 5, order_index: 12, is_active: true },
+      { name: "Ciclismo", icon: "🚴", color: "#10b981", positions: ["Ciclista"], target_athletes: 5, order_index: 13, is_active: true }
     ];
 
     try {
-      const { error } = await supabase.from("sports").insert(defaults);
+      let { error } = await supabase.from("sports").insert(defaults);
+      
+      // Fallback if order_index column is missing
+      if (error && (error.code === '42703' || error.message?.includes('order_index') || error.message?.includes('is_active'))) {
+        const cleanDefaults = defaults.map(({ order_index, is_active, ...rest }) => rest);
+        const retry = await supabase.from("sports").insert(cleanDefaults);
+        error = retry.error;
+      }
+
       if (error) throw error;
       fetchSports();
     } catch (err) {
       console.error("Error seeding sports:", err);
+    }
+  };
+
+  const toggleSportStatus = async (sport: Sport) => {
+    const newStatus = !sport.is_active;
+    try {
+      const { error } = await supabase
+        .from("sports")
+        .update({ is_active: newStatus, updated_at: new Date().toISOString() })
+        .eq("id", sport.id);
+      
+      if (error) throw error;
+      setSports(sports.map(s => s.id === sport.id ? { ...s, is_active: newStatus } : s));
+    } catch (error) {
+      console.error("Error toggling sport status:", error);
     }
   };
 
@@ -276,6 +315,13 @@ export const SportsSettings = () => {
 
     try {
       const { error } = await supabase.from("sports").upsert(updates, { onConflict: 'id' });
+      
+      // If column is missing, we can't save order, so we just log it
+      if (error && (error.code === '42703' || error.message?.includes('order_index'))) {
+        console.warn("Column order_index missing, cannot save sort order");
+        return;
+      }
+
       if (error) throw error;
     } catch (error) {
       console.error("Error saving new order:", error);
@@ -355,11 +401,35 @@ export const SportsSettings = () => {
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                    {language === "pt" ? "Nome da Modalidade" : "Sport Name"}
-                  </label>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                      {language === "pt" ? "Status da Modalidade" : "Sport Status"}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setNewSportIsActive(!newSportIsActive)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
+                        newSportIsActive 
+                          ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400' 
+                          : 'bg-slate-900 border-slate-700 text-slate-500'
+                      }`}
+                    >
+                      <span className="text-xs font-black uppercase tracking-widest">
+                        {newSportIsActive 
+                          ? (language === 'pt' ? 'Ativo' : 'Active') 
+                          : (language === 'pt' ? 'Inativo' : 'Inactive')}
+                      </span>
+                      <div className={`w-10 h-5 rounded-full relative transition-colors ${newSportIsActive ? 'bg-cyan-500' : 'bg-slate-700'}`}>
+                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${newSportIsActive ? 'right-1' : 'left-1'}`} />
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                      {language === "pt" ? "Nome da Modalidade" : "Sport Name"}
+                    </label>
                   <input
                     type="text"
                     value={newSportName}
@@ -610,16 +680,19 @@ export const SportsSettings = () => {
             </div>
           ) : (
             filteredSports.map((sport) => {
-              const colorCfg = SPORT_COLORS.find(c => c.hex.toLowerCase() === sport.color?.toLowerCase()) || SPORT_COLORS[7];
+              const sportColor = sport.color || '#06b6d4';
               const progress = Math.min(((sport.athleteCount || 0) / (sport.target_athletes || 20)) * 100, 100);
-              const gradientStyle = getGradientState(sport.color || colorCfg.hex);
+              const gradientStyle = getGradientState(sportColor);
 
               return (
                 <Reorder.Item
                   key={sport.id}
                   value={sport}
-                  className={`bg-slate-900/40 border ${colorCfg.border} rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden cursor-grab active:cursor-grabbing`}
-                  style={{ background: gradientStyle }}
+                  className="bg-slate-900/40 border rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden cursor-grab active:cursor-grabbing border-slate-800/50"
+                  style={{ 
+                    background: gradientStyle,
+                    borderColor: `${sportColor}40`
+                  }}
                 >
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
                     <GripVertical className="w-4 h-4 text-white" />
@@ -631,8 +704,16 @@ export const SportsSettings = () => {
                         {sport.icon || "🏆"}
                       </span>
                       <div>
-                        <h3 className={`font-black text-white uppercase tracking-tight group-hover:${colorCfg.text} transition-colors`}>
+                        <h3 
+                          className="font-black text-white uppercase tracking-tight transition-colors flex items-center gap-2"
+                          style={{ color: sport.is_active ? 'white' : '#64748b' }}
+                        >
                           {sport.name}
+                          {!sport.is_active && (
+                            <span className="text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded border border-slate-700">
+                              {language === 'pt' ? 'INATIVO' : 'INACTIVE'}
+                            </span>
+                          )}
                         </h3>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Users className="w-3 h-3 text-slate-500" />
@@ -643,6 +724,17 @@ export const SportsSettings = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSportStatus(sport);
+                        }}
+                        className="p-2 transition-colors bg-slate-800/50 rounded-lg"
+                        style={{ color: sport.is_active ? sportColor : '#64748b' }}
+                        title={sport.is_active ? 'Desativar' : 'Ativar'}
+                      >
+                        <Zap className="w-3.5 h-3.5" fill={sport.is_active ? sportColor : 'transparent'} />
+                      </button>
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -668,13 +760,14 @@ export const SportsSettings = () => {
                   <div className="space-y-1.5 mb-4 relative z-10">
                     <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
                       <span>{language === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
-                      <span className={colorCfg.text}>{Math.round(progress)}%</span>
+                      <span style={{ color: sportColor }}>{Math.round(progress)}%</span>
                     </div>
                     <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${progress}%` }}
-                        className={`h-full ${colorCfg.bg} rounded-full`}
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: sportColor }}
                       />
                     </div>
                   </div>
@@ -686,7 +779,10 @@ export const SportsSettings = () => {
                       </span>
                     ))}
                     {sport.custom_fields && sport.custom_fields.length > 0 && (
-                      <span className={`text-[9px] font-black px-2 py-1 bg-slate-950/40 border ${colorCfg.border} ${colorCfg.text} rounded-md uppercase tracking-widest`}>
+                      <span 
+                        className="text-[9px] font-black px-2 py-1 bg-slate-950/40 border rounded-md uppercase tracking-widest"
+                        style={{ borderColor: `${sportColor}40`, color: sportColor }}
+                      >
                         +{sport.custom_fields.length} {language === 'pt' ? 'CAMPOS' : 'FIELDS'}
                       </span>
                     )}
@@ -715,17 +811,20 @@ export const SportsSettings = () => {
           </div>
         ) : (
           filteredSports.map((sport) => {
-            const colorCfg = SPORT_COLORS.find(c => c.hex.toLowerCase() === sport.color?.toLowerCase()) || SPORT_COLORS[7];
+            const sportColor = sport.color || '#06b6d4';
             const progress = Math.min(((sport.athleteCount || 0) / (sport.target_athletes || 20)) * 100, 100);
-            const gradientStyle = getGradientState(sport.color || colorCfg.hex);
+            const gradientStyle = getGradientState(sportColor);
 
             return (
               <motion.div
                 key={sport.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`bg-slate-900/40 border ${colorCfg.border} rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden`}
-                style={{ background: gradientStyle }}
+                className="bg-slate-900/40 border rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden border-slate-800/50"
+                style={{ 
+                  background: gradientStyle,
+                  borderColor: `${sportColor}40`
+                }}
               >
                 <div className="flex justify-between items-start mb-4 relative z-10">
                   <div className="flex items-center gap-3">
@@ -733,8 +832,16 @@ export const SportsSettings = () => {
                       {sport.icon || "🏆"}
                     </span>
                     <div>
-                      <h3 className={`font-black text-white uppercase tracking-tight group-hover:${colorCfg.text} transition-colors`}>
+                      <h3 
+                        className="font-black text-white uppercase tracking-tight transition-colors flex items-center gap-2"
+                        style={{ color: sport.is_active ? 'white' : '#64748b' }}
+                      >
                         {sport.name}
+                        {!sport.is_active && (
+                          <span className="text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded border border-slate-700">
+                            {language === 'pt' ? 'INATIVO' : 'INACTIVE'}
+                          </span>
+                        )}
                       </h3>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Users className="w-3 h-3 text-slate-500" />
@@ -745,6 +852,17 @@ export const SportsSettings = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSportStatus(sport);
+                      }}
+                      className="p-2 transition-colors bg-slate-800/50 rounded-lg"
+                      style={{ color: sport.is_active ? sportColor : '#64748b' }}
+                      title={sport.is_active ? 'Desativar' : 'Ativar'}
+                    >
+                      <Zap className="w-3.5 h-3.5" fill={sport.is_active ? sportColor : 'transparent'} />
+                    </button>
                     <button 
                       onClick={() => handleEditClick(sport)}
                       className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
@@ -764,13 +882,14 @@ export const SportsSettings = () => {
                 <div className="space-y-1.5 mb-4 relative z-10">
                   <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
                     <span>{language === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
-                    <span className={colorCfg.text}>{Math.round(progress)}%</span>
+                    <span style={{ color: sportColor }}>{Math.round(progress)}%</span>
                   </div>
                   <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
-                      className={`h-full ${colorCfg.bg} rounded-full`}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: sportColor }}
                     />
                   </div>
                 </div>
@@ -782,7 +901,10 @@ export const SportsSettings = () => {
                     </span>
                   ))}
                   {sport.custom_fields && sport.custom_fields.length > 0 && (
-                    <span className={`text-[9px] font-black px-2 py-1 bg-slate-950/40 border ${colorCfg.border} ${colorCfg.text} rounded-md uppercase tracking-widest`}>
+                    <span 
+                      className="text-[9px] font-black px-2 py-1 bg-slate-950/40 border rounded-md uppercase tracking-widest"
+                      style={{ borderColor: `${sportColor}40`, color: sportColor }}
+                    >
                       +{sport.custom_fields.length} {language === 'pt' ? 'CAMPOS' : 'FIELDS'}
                     </span>
                   )}
