@@ -1413,6 +1413,15 @@ END $storage$;`;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'is_active') THEN
                 ALTER TABLE public.sports ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
             END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'icon') THEN
+                ALTER TABLE public.sports ADD COLUMN icon TEXT DEFAULT '🏆';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'created_at') THEN
+                ALTER TABLE public.sports ADD COLUMN created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'updated_at') THEN
+                ALTER TABLE public.sports ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+            END IF;
 
             -- Inserir modalidades básicas se a tabela estiver vazia (Requisito 5)
             INSERT INTO public.sports (name, icon, color, positions, target_athletes, order_index, is_active)
