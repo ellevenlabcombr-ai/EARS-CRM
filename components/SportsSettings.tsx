@@ -352,16 +352,20 @@ export const SportsSettings = () => {
                   </div>
                   
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center text-3xl shadow-inner cursor-pointer hover:border-cyan-500/50 transition-all" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+                    <button 
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="text-4xl hover:scale-110 active:scale-95 transition-transform"
+                    >
                       {newSportIcon}
-                    </div>
+                    </button>
                     <div className="flex-1 space-y-2">
                        <input 
                         type="text" 
                         value={newSportIcon}
-                        onChange={(e) => setNewSportIcon(e.target.value.substring(0, 4))}
+                        onChange={(e) => setNewSportIcon(e.target.value)}
                         placeholder="Emoji"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 outline-none transition-all text-sm font-black text-center"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors text-sm font-bold"
                       />
                       <p className="text-[9px] text-slate-500 font-medium leading-relaxed px-1">
                         {language === "pt" 
@@ -542,24 +546,10 @@ export const SportsSettings = () => {
               >
                 <div className="flex justify-between items-start mb-4 relative z-10">
                   <div className="flex items-center gap-3">
-                    <div className="relative group/emoji">
-                      <div className={`w-14 h-14 rounded-2xl ${colorCfg.bg} bg-opacity-20 flex items-center justify-center border ${colorCfg.border} group-hover:scale-105 transition-transform`}>
-                        <span className="text-3xl leading-none select-none">
-                          {sport.icon || "🏆"}
-                        </span>
-                      </div>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSport(sport.id);
-                        }}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/emoji:opacity-100 transition-opacity shadow-lg hover:bg-rose-600 z-20"
-                        title={language === 'pt' ? 'Excluir Esporte' : 'Delete Sport'}
-                      >
-                        <X size={14} strokeWidth={3} />
-                      </button>
-                    </div>
-                    <div className="cursor-pointer" onClick={() => handleEditClick(sport)}>
+                    <span className="text-4xl leading-none select-none group-hover:scale-110 transition-transform duration-300">
+                      {sport.icon || "🏆"}
+                    </span>
+                    <div>
                       <h3 className={`font-black text-white uppercase tracking-tight group-hover:${colorCfg.text} transition-colors`}>
                         {sport.name}
                       </h3>
@@ -570,6 +560,20 @@ export const SportsSettings = () => {
                         </span>
                       </div>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => handleEditClick(sport)}
+                      className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteSport(sport.id)}
+                      className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
