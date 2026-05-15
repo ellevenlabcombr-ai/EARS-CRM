@@ -241,6 +241,7 @@ BEGIN
             whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.',
             whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?',
             whatsapp_reminder_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[],
+            whatsapp_followup_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[],
             whatsapp_birthday_enabled BOOLEAN DEFAULT false,
             whatsapp_birthday_template TEXT DEFAULT 'Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!',
             whatsapp_absence_enabled BOOLEAN DEFAULT false,
@@ -874,6 +875,9 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_timing') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_timing') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_birthday_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_birthday_enabled BOOLEAN DEFAULT false;
     END IF;
@@ -1342,6 +1346,9 @@ END $storage$;`;
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_timing') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_timing') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_birthday_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN whatsapp_birthday_enabled BOOLEAN DEFAULT false;

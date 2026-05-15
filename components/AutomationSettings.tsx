@@ -14,6 +14,7 @@ export function AutomationSettings() {
   const [whatsappReminderTemplate, setWhatsappReminderTemplate] = useState('Olá {nome}! Seu atendimento está marcado para {data} às {hora}.');
   const [whatsappFollowupTemplate, setWhatsappFollowupTemplate] = useState('Olá {nome}! Como você está se sentindo após o nosso atendimento?');
   const [whatsappReminderTiming, setWhatsappReminderTiming] = useState<string[]>(['24h']);
+  const [whatsappFollowupTiming, setWhatsappFollowupTiming] = useState<string[]>(['24h']);
   const [whatsappBirthdayEnabled, setWhatsappBirthdayEnabled] = useState(false);
   const [whatsappBirthdayTemplate, setWhatsappBirthdayTemplate] = useState('Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!');
   const [whatsappAbsenceEnabled, setWhatsappAbsenceEnabled] = useState(false);
@@ -84,6 +85,9 @@ export function AutomationSettings() {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_timing') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
+                END IF;
             END $$;
             NOTIFY pgrst, 'reload schema';
            `;
@@ -111,6 +115,7 @@ export function AutomationSettings() {
         if (data.whatsapp_reminder_template) setWhatsappReminderTemplate(data.whatsapp_reminder_template);
         if (data.whatsapp_followup_template) setWhatsappFollowupTemplate(data.whatsapp_followup_template);
         if (data.whatsapp_reminder_timing) setWhatsappReminderTiming(data.whatsapp_reminder_timing);
+        if (data.whatsapp_followup_timing) setWhatsappFollowupTiming(data.whatsapp_followup_timing);
         if (data.whatsapp_birthday_enabled !== undefined) setWhatsappBirthdayEnabled(data.whatsapp_birthday_enabled);
         if (data.whatsapp_birthday_template) setWhatsappBirthdayTemplate(data.whatsapp_birthday_template);
         if (data.whatsapp_absence_enabled !== undefined) setWhatsappAbsenceEnabled(data.whatsapp_absence_enabled);
@@ -161,6 +166,7 @@ export function AutomationSettings() {
         whatsapp_reminder_template: whatsappReminderTemplate,
         whatsapp_followup_template: whatsappFollowupTemplate,
         whatsapp_reminder_timing: whatsappReminderTiming,
+        whatsapp_followup_timing: whatsappFollowupTiming,
         whatsapp_birthday_enabled: whatsappBirthdayEnabled,
         whatsapp_birthday_template: whatsappBirthdayTemplate,
         whatsapp_absence_enabled: whatsappAbsenceEnabled,
@@ -220,6 +226,9 @@ export function AutomationSettings() {
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_timing') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
+                END IF;
             END $$;
             NOTIFY pgrst, 'reload schema';
            `;
@@ -259,7 +268,7 @@ export function AutomationSettings() {
           apiKey: evolutionApiKey,
           instanceId: evolutionInstanceId,
           phone: testPhone,
-          message: whatsappReminderTemplate.replace('{nome}', 'Usuário Teste').replace('{data}', new Date().toLocaleDateString('pt-BR')).replace('{hora}', '15:00')
+          message: whatsappReminderTemplate.replace('{nome}', 'Usuário Teste').replace('{apelido}', 'Teste').replace('{data}', new Date().toLocaleDateString('pt-BR')).replace('{hora}', '15:00')
         })
       });
       const data = await res.json();
@@ -292,7 +301,7 @@ export function AutomationSettings() {
           apiKey: resendApiKey,
           to: testEmailAddress,
           subject: 'Lembrete de Agendamento (Teste)',
-          html: `<div style="font-family:sans-serif;padding:20px;"><h2>Olá Usuário Teste,</h2><p>${emailReminderTemplate.replace('{data}', new Date().toLocaleDateString('pt-BR')).replace('{hora}', '15:00')}</p></div>`
+          html: `<div style="font-family:sans-serif;padding:20px;"><h2>Olá Usuário Teste,</h2><p>${emailReminderTemplate.replace(/{nome}/g, 'Usuário Teste').replace(/{apelido}/g, 'Teste').replace(/{data}/g, new Date().toLocaleDateString('pt-BR')).replace(/{hora}/g, '15:00').replace(/{valor}/g, '250,00').replace(/{link_anexo}/g, 'https://elleven.app/...')}</p></div>`
         })
       });
       const data = await res.json();
@@ -372,6 +381,24 @@ export function AutomationSettings() {
 
               <div className="space-y-4">
                 <label className="text-[10px] md:text-xs font-black text-[#25D366] uppercase tracking-widest pl-1">Template: Follow-up Pós-consulta</label>
+                
+                <div className="flex gap-2 pb-2">
+                  {['1h', '2h', '24h', '48h'].map((time) => (
+                    <label key={time} className={`cursor-pointer px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${whatsappFollowupTiming.includes(time) ? 'bg-[#25D366]/20 border-[#25D366] text-[#25D366]' : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-600'}`}>
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={whatsappFollowupTiming.includes(time)}
+                        onChange={(e) => {
+                          if (e.target.checked) setWhatsappFollowupTiming([...whatsappFollowupTiming, time]);
+                          else setWhatsappFollowupTiming(whatsappFollowupTiming.filter(t => t !== time));
+                        }}
+                      />
+                      {time} Depois
+                    </label>
+                  ))}
+                </div>
+
                 <textarea 
                   value={whatsappFollowupTemplate}
                   onChange={(e) => setWhatsappFollowupTemplate(e.target.value)}
@@ -581,6 +608,7 @@ export function AutomationSettings() {
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Variáveis Suportadas:</span>
                 <div className="flex flex-wrap gap-2 text-xs font-mono">
+                  <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{apelido}`}</span>
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{nome}`}</span>
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{data}`}</span>
                   <span className="text-[#25D366] bg-[#25D366]/10 px-2 py-1.5 rounded-lg border border-[#25D366]/20">{`{hora}`}</span>
@@ -609,9 +637,12 @@ export function AutomationSettings() {
                   <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative">
                     <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                       {whatsappReminderTemplate
-                        .replace('{nome}', 'Mariana')
-                        .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                        .replace('{hora}', '15:00')}
+                        .replace(/{nome}/g, 'Mariana')
+                        .replace(/{apelido}/g, 'Mari')
+                        .replace(/{data}/g, new Date().toLocaleDateString('pt-BR'))
+                        .replace(/{hora}/g, '15:00')
+                        .replace(/{valor}/g, '250,00')
+                        .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                     </div>
                     <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                     <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
@@ -623,13 +654,16 @@ export function AutomationSettings() {
                   <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-80 mt-4">
                     <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                       {whatsappFollowupTemplate
-                        .replace('{nome}', 'Mariana')
-                        .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                        .replace('{hora}', '15:00')}
+                        .replace(/{nome}/g, 'Mariana')
+                        .replace(/{apelido}/g, 'Mari')
+                        .replace(/{data}/g, new Date().toLocaleDateString('pt-BR'))
+                        .replace(/{hora}/g, '15:00')
+                        .replace(/{valor}/g, '250,00')
+                        .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                     </div>
                     <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                     <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
-                      +1 dia <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
+                      +{whatsappFollowupTiming[0] || '24h'} <span className="text-[#53bdeb] tracking-tighter ml-1">✓✓</span>
                     </div>
                   </div>
 
@@ -637,9 +671,12 @@ export function AutomationSettings() {
                     <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
                       <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                         {whatsappBirthdayTemplate
-                          .replace('{nome}', 'Mariana')
-                          .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                          .replace('{hora}', '15:00')}
+                          .replace(/{nome}/g, 'Mariana')
+                          .replace(/{apelido}/g, 'Mari')
+                          .replace(/{data}/g, new Date().toLocaleDateString('pt-BR'))
+                          .replace(/{hora}/g, '15:00')
+                          .replace(/{valor}/g, '250,00')
+                          .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                       </div>
                       <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                       <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
@@ -652,9 +689,12 @@ export function AutomationSettings() {
                     <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
                       <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                         {whatsappAbsenceTemplate
-                          .replace('{nome}', 'Mariana')
-                          .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                          .replace('{hora}', '15:00')}
+                          .replace(/{nome}/g, 'Mariana')
+                          .replace(/{apelido}/g, 'Mari')
+                          .replace(/{data}/g, new Date().toLocaleDateString('pt-BR'))
+                          .replace(/{hora}/g, '15:00')
+                          .replace(/{valor}/g, '250,00')
+                          .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                       </div>
                       <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                       <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
@@ -667,9 +707,12 @@ export function AutomationSettings() {
                     <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
                       <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                         {financeReminderTemplate
-                          .replace('{nome}', 'Mariana')
-                          .replace('{data}', new Date(Date.now() + 86400000 * 2).toLocaleDateString('pt-BR'))
-                          .replace('{hora}', '15:00')}
+                          .replace(/{nome}/g, 'Mariana')
+                          .replace(/{apelido}/g, 'Mari')
+                          .replace(/{data}/g, new Date(Date.now() + 86400000 * 2).toLocaleDateString('pt-BR'))
+                          .replace(/{hora}/g, '15:00')
+                          .replace(/{valor}/g, '250,00')
+                          .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                       </div>
                       <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                       <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
@@ -682,9 +725,12 @@ export function AutomationSettings() {
                     <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
                       <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                         {financeReceiptTemplate
-                          .replace('{nome}', 'Mariana')
-                          .replace('{data}', new Date().toLocaleDateString('pt-BR'))
-                          .replace('{valor}', '250,00')}
+                          .replace(/{nome}/g, 'Mariana')
+                          .replace(/{apelido}/g, 'Mari')
+                          .replace(/{data}/g, new Date().toLocaleDateString('pt-BR'))
+                          .replace(/{valor}/g, '250,00')
+                          .replace(/{hora}/g, '15:00')
+                          .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                       </div>
                       <div className="absolute top-0 right-[-10px] w-0 h-0 border-[10px] border-transparent border-t-[#005c4b] border-l-[#005c4b]"></div>
                       <div className="text-[10px] md:text-xs text-[#e9edef]/70 text-right mt-2 flex justify-end items-center gap-1 font-sans">
@@ -697,7 +743,12 @@ export function AutomationSettings() {
                     <div className="bg-[#005c4b] text-[#e9edef] p-3 md:p-4 rounded-xl rounded-tr-none self-end w-full sm:max-w-[80%] md:max-w-[70%] shadow-lg shadow-black/20 relative opacity-90 mt-4">
                       <div className="text-sm md:text-base whitespace-pre-wrap font-medium leading-relaxed">
                         {prepInstructionsTemplate
-                          .replace('{nome}', 'Mariana')}
+                          .replace(/{nome}/g, 'Mariana')
+                          .replace(/{apelido}/g, 'Mari')
+                          .replace(/{data}/g, new Date().toLocaleDateString('pt-BR'))
+                          .replace(/{hora}/g, '15:00')
+                          .replace(/{valor}/g, '250,00')
+                          .replace(/{link_anexo}/g, 'https://elleven.app/...')}
                       </div>
                       <div className="mt-3 p-3 bg-slate-900/50 rounded-lg text-xs text-[#e9edef]/90 flex items-center gap-2 border border-slate-700/50">
                         <svg className="w-4 h-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
