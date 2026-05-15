@@ -69,17 +69,35 @@ export const SportsSettings = () => {
   const fetchSports = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Try to fetch with order_index
+      let { data, error } = await supabase
         .from("sports")
         .select("*")
         .order("order_index", { ascending: true })
         .order("name", { ascending: true });
       
+      // Fallback if column doesn't exist
+      if (error && (error.code === 'PGRST100' || error.code === '42703' || error.message?.includes('order_index'))) {
+        console.warn("order_index column might be missing, falling back to name order");
+        const fallback = await supabase
+          .from("sports")
+          .select("*")
+          .order("name", { ascending: true });
+        data = fallback.data;
+        error = fallback.error;
+      }
+      
       if (error) throw error;
       
-      const { data: athletesData } = await supabase.from("athletes").select("modalidade");
+      const { data: athletesData, error: athletesError } = await supabase.from("athletes").select("modalidade");
+      if (athletesError) console.error("Error fetching athlete counts:", athletesError);
+
       const countsMap: Record<string, number> = {};
-      athletesData?.forEach(a => { if (a.modalidade) countsMap[a.modalidade] = (countsMap[a.modalidade] || 0) + 1; });
+      athletesData?.forEach(a => { 
+        if (a.modalidade) {
+          countsMap[a.modalidade] = (countsMap[a.modalidade] || 0) + 1; 
+        }
+      });
 
       setSports((data || []).map(s => ({ ...s, athleteCount: countsMap[s.name] || 0 })));
     } catch (error) {
@@ -355,31 +373,18 @@ export const SportsSettings = () => {
                   <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
                     {language === "pt" ? "Cor da Modalidade" : "Sport Color"}
                   </label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {SPORT_COLORS.map(c => (
-                      <button
-                        key={c.hex}
-                        type="button"
-                        onClick={() => setNewSportColor(c.hex)}
-                        className={`h-10 rounded-lg border-2 transition-all ${newSportColor.toLowerCase() === c.hex.toLowerCase() ? 'border-white scale-105 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'} ${c.bg}`}
-                        title={c.name}
-                      />
-                    ))}
-                  </div>
-                  <div className="pt-2">
-                    <div className="relative">
-                      <div 
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-slate-700 pointer-events-none"
-                        style={{ backgroundColor: newSportColor }}
-                      />
-                      <input
-                        type="text"
-                        value={newSportColor}
-                        onChange={(e) => setNewSportColor(e.target.value)}
-                        placeholder="#000000"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 transition-colors font-mono"
-                      />
-                    </div>
+                  <div className="relative">
+                    <div 
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-slate-700 pointer-events-none"
+                      style={{ backgroundColor: newSportColor }}
+                    />
+                    <input
+                      type="text"
+                      value={newSportColor}
+                      onChange={(e) => setNewSportColor(e.target.value)}
+                      placeholder="#000000"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 transition-colors font-mono"
+                    />
                   </div>
                 </div>
  
@@ -586,17 +591,120 @@ export const SportsSettings = () => {
         )}
       </AnimatePresence>
 
-      <Reorder.Group 
-        axis="y" 
-        values={filteredSports} 
-        onReorder={(newOrder) => {
-          if (!searchTerm) {
-            handleReorder(newOrder);
-          }
-        }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-      >
-        {loading ? (
+      <div className={searchTerm ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : ""}>
+      {!searchTerm ? (
+        <Reorder.Group 
+          axis="y" 
+          values={filteredSports} 
+          onReorder={(newOrder) => handleReorder(newOrder)}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
+            ))
+          ) : filteredSports.length === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center p-8 bg-slate-900/20 border border-slate-800/50 rounded-2xl">
+              <Search className="w-8 h-8 text-slate-600 mb-3" />
+              <p className="text-slate-400 font-medium">Nenhum esporte encontrado.</p>
+            </div>
+          ) : (
+            filteredSports.map((sport) => {
+              const colorCfg = SPORT_COLORS.find(c => c.hex.toLowerCase() === sport.color?.toLowerCase()) || SPORT_COLORS[7];
+              const progress = Math.min(((sport.athleteCount || 0) / (sport.target_athletes || 20)) * 100, 100);
+              const gradientStyle = getGradientState(sport.color || colorCfg.hex);
+
+              return (
+                <Reorder.Item
+                  key={sport.id}
+                  value={sport}
+                  className={`bg-slate-900/40 border ${colorCfg.border} rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden cursor-grab active:cursor-grabbing`}
+                  style={{ background: gradientStyle }}
+                >
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
+                    <GripVertical className="w-4 h-4 text-white" />
+                  </div>
+
+                  <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="flex items-center gap-3">
+                      <span className="text-4xl leading-none select-none group-hover:scale-110 transition-transform duration-300">
+                        {sport.icon || "🏆"}
+                      </span>
+                      <div>
+                        <h3 className={`font-black text-white uppercase tracking-tight group-hover:${colorCfg.text} transition-colors`}>
+                          {sport.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <Users className="w-3 h-3 text-slate-500" />
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            {sport.athleteCount || 0} / {sport.target_athletes || 20} {language === 'pt' ? 'Atletas' : 'Athletes'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(sport);
+                        }}
+                        className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg pointer-events-auto"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSport(sport.id);
+                        }}
+                        className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg pointer-events-auto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Target Progress Bar */}
+                  <div className="space-y-1.5 mb-4 relative z-10">
+                    <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
+                      <span>{language === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
+                      <span className={colorCfg.text}>{Math.round(progress)}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className={`h-full ${colorCfg.bg} rounded-full`}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1.5 relative z-10">
+                    {(sport.positions || []).slice(0, 3).map((pos, i) => (
+                      <span key={i} className="text-[9px] font-black px-2 py-1 bg-slate-800/20 border border-slate-700/20 text-slate-500 rounded-md uppercase tracking-widest group-hover:text-slate-300 transition-colors">
+                        {pos}
+                      </span>
+                    ))}
+                    {sport.custom_fields && sport.custom_fields.length > 0 && (
+                      <span className={`text-[9px] font-black px-2 py-1 bg-slate-950/40 border ${colorCfg.border} ${colorCfg.text} rounded-md uppercase tracking-widest`}>
+                        +{sport.custom_fields.length} {language === 'pt' ? 'CAMPOS' : 'FIELDS'}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Background Decoration */}
+                  <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                    <span className="text-[100px] leading-none select-none rotate-12">
+                      {sport.icon || "🏆"}
+                    </span>
+                  </div>
+                </Reorder.Item>
+              );
+            })
+          )}
+        </Reorder.Group>
+      ) : (
+        loading ? (
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
           ))
@@ -612,19 +720,13 @@ export const SportsSettings = () => {
             const gradientStyle = getGradientState(sport.color || colorCfg.hex);
 
             return (
-              <Reorder.Item
+              <motion.div
                 key={sport.id}
-                value={sport}
-                dragListener={!searchTerm}
-                className={`bg-slate-900/40 border ${colorCfg.border} rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden ${!searchTerm ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className={`bg-slate-900/40 border ${colorCfg.border} rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden`}
                 style={{ background: gradientStyle }}
               >
-                {!searchTerm && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
-                    <GripVertical className="w-4 h-4 text-white" />
-                  </div>
-                )}
-
                 <div className="flex justify-between items-start mb-4 relative z-10">
                   <div className="flex items-center gap-3">
                     <span className="text-4xl leading-none select-none group-hover:scale-110 transition-transform duration-300">
@@ -644,20 +746,14 @@ export const SportsSettings = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(sport);
-                      }}
-                      className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg pointer-events-auto"
+                      onClick={() => handleEditClick(sport)}
+                      className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSport(sport.id);
-                      }}
-                      className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg pointer-events-auto"
+                      onClick={() => handleDeleteSport(sport.id)}
+                      className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -698,11 +794,12 @@ export const SportsSettings = () => {
                     {sport.icon || "🏆"}
                   </span>
                 </div>
-              </Reorder.Item>
+              </motion.div>
             );
           })
-        )}
-      </Reorder.Group>
+        )
+      )}
+      </div>
     </div>
   );
 };
