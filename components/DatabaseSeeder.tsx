@@ -1208,6 +1208,7 @@ END $storage$;`;
       setIsClearing(true);
       setStatus('loading');
       setMessage('Verificando credenciais...');
+      console.log('Iniciando processo de limpeza do banco de dados...');
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !user.email) throw new Error('Usuário não autenticado.');

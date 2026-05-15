@@ -375,16 +375,17 @@ export const SportsSettings = () => {
                   <h3 className="font-black text-white uppercase tracking-tight">{sport.name}</h3>
                 </div>
                 <div className="flex items-center">
+                  {/* Buttons visible on hover on desktop, always visible on mobile */}
                   <button 
                     onClick={() => handleEditClick(sport)}
-                    className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     title={lang === 'pt' ? 'Editar' : 'Edit'}
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => handleDeleteSport(sport.id)}
-                    className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
                     title={lang === 'pt' ? 'Excluir' : 'Delete'}
                   >
                     <Trash2 className="w-4 h-4" />
