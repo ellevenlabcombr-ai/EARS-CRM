@@ -882,7 +882,6 @@ BEGIN
         ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
         ALTER TABLE public.automation_settings ADD COLUMN email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.';
     END IF;
-    UPDATE automation_settings SET resend_api_key = 're_2QHHzqPE_5U5b28kv2sB97kGqZfvFvyRE' WHERE resend_api_key IS NULL OR resend_api_key = '';
 
     -- Colunas na tabela athletes
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'athletes' AND column_name = 'password') THEN
@@ -1322,9 +1321,6 @@ END $storage$;`;
                 ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
                 ALTER TABLE public.automation_settings ADD COLUMN email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.';
             END IF;
-            
-            -- Aplicamos a API do Resend como padrão, caso ainda não tenha (Update)
-            UPDATE automation_settings SET resend_api_key = 're_2QHHzqPE_5U5b28kv2sB97kGqZfvFvyRE' WHERE resend_api_key IS NULL OR resend_api_key = '';
         END $$;
 
         -- RLS para Agenda e Automação
