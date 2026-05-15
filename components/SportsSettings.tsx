@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown, GripVertical, Zap } from "lucide-react";
+import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown, GripVertical, Zap, RefreshCcw } from "lucide-react";
 import { motion, AnimatePresence, Reorder } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -257,22 +257,34 @@ export const SportsSettings = () => {
       { name: "Futsal", icon: "⚽", color: "#06b6d4", positions: ["Goleiro", "Fixo", "Ala", "Pivô"], target_athletes: 12, order_index: 1, is_active: true },
       { name: "Vôlei", icon: "🏐", color: "#6366f1", positions: ["Levantador", "Ponteiro", "Central", "Oposto", "Líbero"], target_athletes: 12, order_index: 2, is_active: true },
       { name: "Basquete", icon: "🏀", color: "#f59e0b", positions: ["Armador", "Ala", "Ala-Pivô", "Pivô"], target_athletes: 12, order_index: 3, is_active: true },
-      { name: "Handebol", icon: "🤾", color: "#f43f5e", positions: ["Goleiro", "Ponta", "Meia", "Central", "Pivô"], target_athletes: 14, order_index: 4, is_active: true },
-      { name: "Tênis", icon: "🎾", color: "#10b981", positions: ["Jogador de Simples", "Jogador de Duplas"], target_athletes: 4, order_index: 5, is_active: true },
-      { name: "Beach Tennis", icon: "🏖️", color: "#f59e0b", positions: ["Jogador"], target_athletes: 4, order_index: 6, is_active: true },
-      { name: "Natação", icon: "🏊", color: "#06b6d4", positions: ["Nadador"], target_athletes: 10, order_index: 7, is_active: true },
-      { name: "Artes Marciais", icon: "🥋", color: "#6366f1", positions: ["Atleta"], target_athletes: 20, order_index: 8, is_active: true },
-      { name: "Crossfit", icon: "🏋️", color: "#f97316", positions: ["Atleta"], target_athletes: 30, order_index: 9, is_active: true },
-      { name: "Musculação", icon: "💪", color: "#64748b", positions: ["Aluno"], target_athletes: 50, order_index: 10, is_active: true },
-      { name: "Atletismo", icon: "🏃", color: "#f43f5e", positions: ["Velocista", "Saltador", "Arremessador", "Maratonista"], target_athletes: 10, order_index: 11, is_active: true },
-      { name: "Surf", icon: "🏄", color: "#06b6d4", positions: ["Surfista"], target_athletes: 5, order_index: 12, is_active: true },
-      { name: "Ciclismo", icon: "🚴", color: "#10b981", positions: ["Ciclista"], target_athletes: 5, order_index: 13, is_active: true }
+      { name: "Handebol", icon: "🤾", color: "#f43f5e", positions: ["Goleiro", "Armador Central", "Armador Lateral", "Ponta", "Pivô"], target_athletes: 14, order_index: 4, is_active: true },
+      { name: "Natação", icon: "🏊", color: "#0ea5e9", positions: ["Velocista", "Fundo", "Medley", "Revezamento"], target_athletes: 20, order_index: 5, is_active: true },
+      { name: "Judô", icon: "🥋", color: "#f8fafc", positions: ["Atleta"], target_athletes: 20, order_index: 6, is_active: true },
+      { name: "Jiu-Jitsu", icon: "🥋", color: "#4f46e5", positions: ["Atleta"], target_athletes: 20, order_index: 7, is_active: true },
+      { name: "Karatê", icon: "🥋", color: "#dc2626", positions: ["Atleta"], target_athletes: 20, order_index: 8, is_active: true },
+      { name: "Boxe", icon: "🥊", color: "#ef4444", positions: ["Atleta"], target_athletes: 10, order_index: 9, is_active: true },
+      { name: "Muay Thai", icon: "🥊", color: "#b91c1c", positions: ["Atleta"], target_athletes: 15, order_index: 10, is_active: true },
+      { name: "Tênis", icon: "🎾", color: "#84cc16", positions: ["Simples", "Duplas"], target_athletes: 8, order_index: 11, is_active: true },
+      { name: "Beach Tennis", icon: "🏖️", color: "#fcd34d", positions: ["Simples", "Duplas"], target_athletes: 8, order_index: 12, is_active: true },
+      { name: "Surf", icon: "🏄", color: "#06b6d4", positions: ["Surfista"], target_athletes: 10, order_index: 13, is_active: true },
+      { name: "Skate", icon: "🛹", color: "#64748b", positions: ["Street", "Park"], target_athletes: 10, order_index: 14, is_active: true },
+      { name: "Atletismo", icon: "🏃", color: "#fb923c", positions: ["Velocista", "Fundo", "Salto", "Arremesso"], target_athletes: 15, order_index: 15, is_active: true },
+      { name: "Crossfit", icon: "🏋️", color: "#f97316", positions: ["RX", "Scalad", "Amador"], target_athletes: 30, order_index: 16, is_active: true },
+      { name: "Musculação", icon: "💪", color: "#475569", positions: ["Aluno"], target_athletes: 100, order_index: 17, is_active: true },
+      { name: "Ciclismo", icon: "🚴", color: "#10b981", positions: ["Estrada", "MTB"], target_athletes: 10, order_index: 18, is_active: true },
+      { name: "Futebol Americano", icon: "🏈", color: "#1e3a8a", positions: ["QB", "WR", "RB", "Linha", "Defesa"], target_athletes: 45, order_index: 19, is_active: true },
+      { name: "Rugby", icon: "🏉", color: "#166534", positions: ["Avançado", "Linha"], target_athletes: 20, order_index: 20, is_active: true },
+      { name: "Tênis de Mesa", icon: "🏓", color: "#dc2626", positions: ["Atleta"], target_athletes: 10, order_index: 21, is_active: true },
+      { name: "Triathlon", icon: "🏊", color: "#0ea5e9", positions: ["Atleta"], target_athletes: 5, order_index: 22, is_active: true },
+      { name: "Padel", icon: "🎾", color: "#10b981", positions: ["Simples", "Duplas"], target_athletes: 8, order_index: 23, is_active: true },
+      { name: "Ginástica", icon: "🤸", color: "#d946ef", positions: ["Atleta"], target_athletes: 10, order_index: 24, is_active: true }
     ];
+
+    if (!confirm(language === 'pt' ? 'Isso irá adicionar as modalidades padrão à sua lista. Deseja continuar?' : 'This will add default sports to your list. Continue?')) return;
 
     try {
       let { error } = await supabase.from("sports").insert(defaults);
       
-      // Fallback if order_index column is missing
       if (error && (error.code === '42703' || error.message?.includes('order_index') || error.message?.includes('is_active'))) {
         const cleanDefaults = defaults.map(({ order_index, is_active, ...rest }) => rest);
         const retry = await supabase.from("sports").insert(cleanDefaults);
@@ -281,6 +293,7 @@ export const SportsSettings = () => {
 
       if (error) throw error;
       fetchSports();
+      alert(language === 'pt' ? 'Lista restaurada com sucesso!' : 'List restored successfully!');
     } catch (err) {
       console.error("Error seeding sports:", err);
     }
@@ -361,18 +374,20 @@ export const SportsSettings = () => {
           <Button 
             onClick={handleSeedSports}
             variant="outline"
-            className="border-slate-700 text-slate-400 hover:text-white hover:border-cyan-500/50 font-black uppercase tracking-widest rounded-xl"
+            className="border-slate-700 text-slate-400 hover:text-white hover:border-cyan-500/50 font-black uppercase tracking-widest rounded-xl transition-all"
             disabled={loading}
           >
-            <Save className="w-4 h-4 mr-2" />
-            {language === "pt" ? "Popular Padrão" : "Seed Defaults"}
+            <RefreshCcw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {language === "pt" ? "Restaurar Padrão" : "Restore Defaults"}
           </Button>
           <Button 
             onClick={() => {
               setEditingSportId(null);
               setNewSportName("");
               setNewSportIcon("🏆");
+              setNewSportColor("#06b6d4");
               setNewSportPositions([]);
+              setNewSportIsActive(true);
               setIsAdding(true);
             }}
             className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-6 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)]"
