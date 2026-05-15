@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { getLocalDateString } from '@/lib/utils';
-import { Database, Loader2, CheckCircle, AlertCircle, Zap } from 'lucide-react';
+import { Database, Loader2, CheckCircle, AlertCircle, Zap, Settings2, Lock, X } from 'lucide-react';
 
 export function DatabaseSeeder() {
   const [isSeeding, setIsSeeding] = useState(false);
@@ -1188,15 +1188,40 @@ END $storage$;`;
 
   const [isFixing, setIsFixing] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
 
   const clearDatabase = async () => {
+    if (!window.confirm('ATENÇÃO: Você tem certeza absoluta que deseja apagar TODOS os dados do sistema? (Atletas, registros clínicos, eventos, avaliações, etc.) Isso não pode ser desfeito.')) {
+      return;
+    }
+    setShowPasswordPrompt(true);
+  };
+
+  const confirmClearDatabase = async () => {
     try {
-      if (!window.confirm('ATENÇÃO: Você tem certeza absoluta que deseja apagar TODOS os dados do sistema? (Atletas, registros clínicos, eventos, avaliações, etc.) Isso não pode ser desfeito.')) {
+      if (!deletePassword) {
+        alert('Por favor, digite sua senha.');
         return;
       }
-      
+
       setIsClearing(true);
       setStatus('loading');
+      setMessage('Verificando credenciais...');
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !user.email) throw new Error('Usuário não autenticado.');
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: deletePassword,
+      });
+
+      if (signInError) throw new Error('Senha incorreta. Ação cancelada.');
+
+      setShowPasswordPrompt(false);
+      setDeletePassword('');
+      
       setMessage('Limpando Banco de Dados... Excluindo eventos e tarefas.');
 
       await supabase.from('appointments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
@@ -1211,6 +1236,8 @@ END $storage$;`;
       console.error('Erro ao limpar banco:', error);
       setStatus('error');
       setMessage(`Erro ao limpar banco: ${error?.message || String(error)}`);
+      setShowPasswordPrompt(false);
+      setDeletePassword('');
     } finally {
       setIsClearing(false);
     }
@@ -1894,8 +1921,48 @@ END $storage$;`;
           <Database className="w-6 h-6 text-cyan-400" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-white uppercase tracking-widest">Popular Banco de Dados</h2>
-          <p className="text-sm text-slate-400">Insere dados de teste (Atletas, Wellness, Prontuários) no Supabase.</p>
+          <h2 className="text-lg font-black text-white uppercase tracking-widest">Opções de Desenvolvedor e Banco de Dados</h2>
+          <p className="text-sm text-slate-400">Gerenciamento de dados teste, otimização e limpeza do sistema.</p>
+        </div>
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 p-4 md:p-6 rounded-xl space-y-4 mb-6 text-sm text-slate-300 leading-relaxed">
+        <h3 className="text-base font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+          <Settings2 className="w-5 h-5 text-cyan-400" />
+          Manual de Uso da Sessão
+        </h3>
+        
+        <p>Esta aba de configurações é destinada <strong className="text-white">exclusivamente a desenvolvedores ou administradores de sistema</strong> com conhecimento técnico. Aqui você tem controle total sob a infraestrutura e a integridade do banco de dados (Supabase).</p>
+        
+        <div className="space-y-4 mt-6">
+          <div className="space-y-1">
+            <h4 className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
+              <Database className="w-4 h-4" /> 1. Inserir Dados de Teste
+            </h4>
+            <p className="pl-6 text-slate-400">Ação que preenche o sistema com perfis de atletas fictícios, registros de bem-estar (wellness), ocorrências médicas e agendamentos nas próximas semanas. Útil para <span className="text-amber-400 font-medium">testar lógicas de renderização, visualização de gráficos e testar os alertas (automações) da agenda</span> sem afetar pacientes reais.</p>
+          </div>
+
+          <div className="space-y-1">
+            <h4 className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
+              <Zap className="w-4 h-4" /> 2. Otimizar Performance (Fix Timeout)
+            </h4>
+            <p className="pl-6 text-slate-400">Roda uma série de instruções SQL assíncronas projetadas para <span className="text-emerald-400 font-medium">limpar caches obsoletos, criar índices vitais perdidos ou corrigir eventuais timeouts</span> provenientes de tabelas com estrutura deficiente. Esta função também atua de forma proativa criando colunas ou tabelas que possam não existir e estejam bloqueando novas funcionalidades do UI do sistema.</p>
+          </div>
+
+          <div className="space-y-1">
+            <h4 className="font-bold text-rose-500 uppercase tracking-wider text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" /> 3. Apagar Todos os Dados
+            </h4>
+            <p className="pl-6 text-slate-400">Essa é uma ação <strong className="text-rose-400 underline underline-offset-4 decoration-rose-500/30">irreversível</strong> (destructive). Ele limpa completamente todas as tabelas (cascade delete) que armazenam métricas dinâmicas, como atletas, relatórios, tarefas e eventos. É recomendado usar somente em ambientes de desenvolvimento ou caso o usuário queira resetar o sistema do zero voltando de um período de testes massivos.</p>
+          </div>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mt-6 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-500/90 leading-relaxed font-medium">
+            <strong className="text-amber-500 block mb-1">Boas Práticas de Segurança:</strong>
+            Nunca clique no botão "Apagar Todos os Dados" sem antes ter certeza de que exportou relatórios necessários. Após utilizar o Inserir Dados de Teste, recomendamos que sempre navegue pelas agendas para ver se a distribuição foi correta.
+          </p>
         </div>
       </div>
 
@@ -1987,6 +2054,52 @@ END $storage$;`;
           >
             Tentar Novamente
           </button>
+        </div>
+      )}
+
+      {showPasswordPrompt && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#050B14]/80 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
+            <button
+              onClick={() => {
+                setShowPasswordPrompt(false);
+                setDeletePassword('');
+              }}
+              className="absolute top-4 right-4 text-slate-500 hover:text-slate-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-3 text-rose-500 mb-2">
+              <AlertCircle className="w-6 h-6" />
+              <h3 className="text-lg font-black uppercase tracking-wider">Ação Irreversível</h3>
+            </div>
+            <p className="text-sm text-slate-400 mb-6">
+              Para confirmar a exclusão de <strong>TODOS</strong> os dados, informe sua senha de login.
+            </p>
+            <div className="space-y-4">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-slate-500" />
+                </div>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 outline-none transition-all placeholder:text-slate-600 font-medium"
+                  placeholder="Sua senha"
+                  onKeyDown={(e) => e.key === 'Enter' && confirmClearDatabase()}
+                  autoFocus
+                />
+              </div>
+              <button
+                onClick={confirmClearDatabase}
+                disabled={isClearing || !deletePassword}
+                className="w-full py-3 bg-rose-500 hover:bg-rose-400 disabled:opacity-50 text-[#050B14] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {isClearing ? 'Apagando...' : 'Confirmar Exclusão'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
