@@ -1187,6 +1187,34 @@ BEGIN
 END $storage$;`;
 
   const [isFixing, setIsFixing] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
+  const clearDatabase = async () => {
+    try {
+      if (!window.confirm('ATENÇÃO: Você tem certeza absoluta que deseja apagar TODOS os dados do sistema? (Atletas, registros clínicos, eventos, avaliações, etc.) Isso não pode ser desfeito.')) {
+        return;
+      }
+      
+      setIsClearing(true);
+      setStatus('loading');
+      setMessage('Limpando Banco de Dados... Excluindo eventos e tarefas.');
+
+      await supabase.from('appointments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('daily_tasks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      
+      setMessage('Limpando Atletas e registros associados (cascade)...');
+      await supabase.from('athletes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+      setStatus('success');
+      setMessage('Banco de dados limpo com sucesso! Nenhuma informação de teste (Atletas/Agenda/Wellness) restou no sistema.');
+    } catch (error: any) {
+      console.error('Erro ao limpar banco:', error);
+      setStatus('error');
+      setMessage(`Erro ao limpar banco: ${error?.message || String(error)}`);
+    } finally {
+      setIsClearing(false);
+    }
+  };
 
   const fixPerformance = async () => {
     try {
@@ -1875,7 +1903,7 @@ END $storage$;`;
         <div className="space-y-3">
           <button
             onClick={seedDatabase}
-            disabled={isSeeding || isFixing}
+            disabled={isSeeding || isFixing || isClearing}
             className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <Database className="w-5 h-5" />
@@ -1884,11 +1912,20 @@ END $storage$;`;
           
           <button
             onClick={fixPerformance}
-            disabled={isSeeding || isFixing}
+            disabled={isSeeding || isFixing || isClearing}
             className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-cyan-500 font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2 border border-cyan-500/20"
           >
             <Zap className="w-5 h-5" />
             Otimizar Performance (Fix Timeout)
+          </button>
+
+          <button
+            onClick={clearDatabase}
+            disabled={isSeeding || isFixing || isClearing}
+            className="w-full py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2 border border-rose-500/20"
+          >
+            <AlertCircle className="w-5 h-5" />
+            Apagar Todos os Dados
           </button>
         </div>
       )}
