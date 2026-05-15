@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Save, Trophy, Users, Edit2, X } from "lucide-react";
+import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,11 @@ export const SportsSettings = () => {
   const [newSportName, setNewSportName] = useState("");
   const [newSportPositions, setNewSportPositions] = useState<string[]>([]);
   const [newPosition, setNewPosition] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredSports = sports.filter(s => 
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     fetchSports();
@@ -124,6 +129,22 @@ export const SportsSettings = () => {
     if (!confirm(lang === "pt" ? "Tem certeza que deseja excluir este esporte?" : "Are you sure you want to delete this sport?")) return;
     
     try {
+      // Safety Validation: Check if sport is in use before deleting
+      const sportToRemove = sports.find(s => s.id === id);
+      if (sportToRemove) {
+        const { count, error: countError } = await supabase
+          .from("athletes")
+          .select("*", { count: "exact", head: true })
+          .eq("sport", sportToRemove.name);
+          
+        if (countError && countError.code !== 'PGRST116') {
+            console.error("Error checking athlete sport usage", countError);
+        } else if (count && count > 0) {
+            alert(lang === "pt" ? `Exclusão bloqueada: Existem ${count} atletas usando '${sportToRemove.name}'.` : `Delete blocked: There are ${count} athletes using '${sportToRemove.name}'.`);
+            return;
+        }
+      }
+
       const { error } = await supabase
         .from("sports")
         .delete()
@@ -147,9 +168,19 @@ export const SportsSettings = () => {
     setNewSportPositions(newSportPositions.filter(p => p !== pos));
   };
 
+  const movePosition = (index: number, direction: 'up' | 'down') => {
+    const newPositions = [...newSportPositions];
+    if (direction === 'up' && index > 0) {
+      [newPositions[index - 1], newPositions[index]] = [newPositions[index], newPositions[index - 1]];
+    } else if (direction === 'down' && index < newPositions.length - 1) {
+      [newPositions[index + 1], newPositions[index]] = [newPositions[index], newPositions[index + 1]];
+    }
+    setNewSportPositions(newPositions);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-500/30">
             <Trophy className="w-5 h-5 text-cyan-400" />
@@ -163,11 +194,23 @@ export const SportsSettings = () => {
             </p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-slate-500" />
+            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={lang === "pt" ? "Buscar esporte..." : "Search sport..."}
+              className="bg-slate-900 border border-slate-700/50 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 transition-colors w-full sm:w-48"
+            />
+          </div>
           <Button 
             onClick={handleSeedSports}
             variant="outline"
-            className="border-slate-700 text-slate-400 hover:text-white hover:border-cyan-500/50 font-black uppercase tracking-widest px-6 rounded-xl"
+            className="border-slate-700 text-slate-400 hover:text-white hover:border-cyan-500/50 font-black uppercase tracking-widest rounded-xl"
             disabled={loading}
           >
             <Save className="w-4 h-4 mr-2" />
@@ -239,18 +282,45 @@ export const SportsSettings = () => {
             </div>
 
             {newSportPositions.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2">
-                {newSportPositions.map((pos, i) => (
-                  <span 
-                    key={i}
-                    className="px-3 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-full text-xs font-bold flex items-center gap-2"
-                  >
-                    {pos}
-                    <button onClick={() => removePosition(pos)} className="text-slate-500 hover:text-rose-400">
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
+              <div className="flex flex-col gap-2 pt-2">
+                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                  {lang === "pt" ? "Ordem das Posições" : "Positions Order"}
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {newSportPositions.map((pos, i) => (
+                    <span 
+                      key={i}
+                      className="px-3 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs font-bold flex items-center gap-2"
+                    >
+                      {pos}
+                      <div className="flex items-center gap-1 border-l border-slate-700 pl-2 ml-1">
+                        <button 
+                          onClick={() => movePosition(i, 'up')} 
+                          disabled={i === 0}
+                          className="text-slate-500 disabled:opacity-30 hover:text-white transition-colors"
+                          title="Subir na lista"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                        <button 
+                          onClick={() => movePosition(i, 'down')} 
+                          disabled={i === newSportPositions.length - 1}
+                          className="text-slate-500 disabled:opacity-30 hover:text-white transition-colors"
+                          title="Descer na lista"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                        <button 
+                          onClick={() => removePosition(pos)} 
+                          className="text-slate-500 hover:text-rose-400 ml-1 transition-colors"
+                          title="Remover"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -284,8 +354,13 @@ export const SportsSettings = () => {
           Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
           ))
+        ) : filteredSports.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-8 bg-slate-900/20 border border-slate-800/50 rounded-2xl">
+            <Search className="w-8 h-8 text-slate-600 mb-3" />
+            <p className="text-slate-400 font-medium">Nenhum esporte encontrado.</p>
+          </div>
         ) : (
-          sports.map((sport) => (
+          filteredSports.map((sport) => (
             <motion.div
               key={sport.id}
               initial={{ opacity: 0, scale: 0.95 }}
