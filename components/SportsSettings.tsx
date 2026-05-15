@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface Sport {
   id: string;
   name: string;
+  icon?: string;
   positions: string[];
 }
 
@@ -20,6 +21,7 @@ export const SportsSettings = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingSportId, setEditingSportId] = useState<string | null>(null);
   const [newSportName, setNewSportName] = useState("");
+  const [newSportIcon, setNewSportIcon] = useState("🏆");
   const [newSportPositions, setNewSportPositions] = useState<string[]>([]);
   const [newPosition, setNewPosition] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,14 +39,33 @@ export const SportsSettings = () => {
     try {
       const { data, error } = await supabase
         .from("sports")
-        .select("id, name, positions")
+        .select("id, name, icon, positions")
         .order("name");
       
       if (error) {
-        console.error("Error fetching sports:", error.message, error.details, error.hint);
-        throw error;
+        // If column doesn't exist, try to create it
+        if (error.code === '42703') { // undefined_column
+          try {
+            await supabase.rpc('exec_sql', { sql: 'ALTER TABLE sports ADD COLUMN IF NOT EXISTS icon TEXT;' });
+            // Retry fetch
+            const { data: retryData, error: retryError } = await supabase
+              .from("sports")
+              .select("id, name, icon, positions")
+              .order("name");
+            if (retryError) throw retryError;
+            setSports(retryData || []);
+          } catch (sqlErr) {
+            console.error("Failed to add icon column:", sqlErr);
+            // Fallback: try without icon
+            const { data: fallbackData } = await supabase.from("sports").select("id, name, positions").order("name");
+            setSports(fallbackData || []);
+          }
+        } else {
+          throw error;
+        }
+      } else {
+        setSports(data || []);
       }
-      setSports(data || []);
     } catch (error: any) {
       console.error("Caught error fetching sports:", error);
     } finally {
@@ -54,16 +75,16 @@ export const SportsSettings = () => {
 
   const handleSeedSports = async () => {
     const defaultSports = [
-      { name: 'Atletismo', positions: ['Velocidade', 'Fundo', 'Saltos', 'Arremessos', 'Marcha'] },
-      { name: 'Basquete', positions: ['Armador', 'Ala-Armador', 'Ala', 'Ala-Pivô', 'Pivô'] },
-      { name: 'Futsal', positions: ['Goleiro', 'Fixo', 'Ala Direito', 'Ala Esquerdo', 'Pivô'] },
-      { name: 'Futebol de Campo', positions: ['Goleiro', 'Lateral Direito', 'Lateral Esquerdo', 'Zagueiro', 'Volante', 'Meia', 'Atacante', 'Centroavante'] },
-      { name: 'Handebol', positions: ['Goleiro', 'Ponta Esquerda', 'Ponta Direita', 'Armador Esquerdo', 'Armador Central', 'Armador Direito', 'Pivô'] },
-      { name: 'Judô', positions: ['Ligeiro', 'Meio-Leve', 'Leve', 'Meio-Médio', 'Médio', 'Meio-Pesado', 'Pesado'] },
-      { name: 'Natação', positions: ['Crawl', 'Costas', 'Peito', 'Borboleta', 'Medley'] },
-      { name: 'Tênis', positions: ['Simples', 'Duplas'] },
-      { name: 'Volleyball', positions: ['Levantador', 'Oposto', 'Ponteiro', 'Central', 'Líbero'] },
-      { name: 'Vôlei de Praia', positions: ['Defesa', 'Bloqueio'] }
+      { name: 'Atletismo', icon: '🏃', positions: ['Velocidade', 'Fundo', 'Saltos', 'Arremessos', 'Marcha'] },
+      { name: 'Basquete', icon: '🏀', positions: ['Armador', 'Ala-Armador', 'Ala', 'Ala-Pivô', 'Pivô'] },
+      { name: 'Futsal', icon: '⚽', positions: ['Goleiro', 'Fixo', 'Ala Direito', 'Ala Esquerdo', 'Pivô'] },
+      { name: 'Futebol de Campo', icon: '🏟️', positions: ['Goleiro', 'Lateral Direito', 'Lateral Esquerdo', 'Zagueiro', 'Volante', 'Meia', 'Atacante', 'Centroavante'] },
+      { name: 'Handebol', icon: '🤾', positions: ['Goleiro', 'Ponta Esquerda', 'Ponta Direita', 'Armador Esquerdo', 'Armador Central', 'Armador Direito', 'Pivô'] },
+      { name: 'Judô', icon: '🥋', positions: ['Ligeiro', 'Meio-Leve', 'Leve', 'Meio-Médio', 'Médio', 'Meio-Pesado', 'Pesado'] },
+      { name: 'Natação', icon: '🏊', positions: ['Crawl', 'Costas', 'Peito', 'Borboleta', 'Medley'] },
+      { name: 'Tênis', icon: '🎾', positions: ['Simples', 'Duplas'] },
+      { name: 'Volleyball', icon: '🏐', positions: ['Levantador', 'Oposto', 'Ponteiro', 'Central', 'Líbero'] },
+      { name: 'Vôlei de Praia', icon: '🏖️', positions: ['Defesa', 'Bloqueio'] }
     ];
 
     setLoading(true);
@@ -85,6 +106,7 @@ export const SportsSettings = () => {
   const handleEditClick = (sport: Sport) => {
     setEditingSportId(sport.id);
     setNewSportName(sport.name);
+    setNewSportIcon(sport.icon || "🏆");
     setNewSportPositions(sport.positions || []);
     setIsAdding(true);
   };
@@ -98,6 +120,7 @@ export const SportsSettings = () => {
           .from("sports")
           .update({ 
             name: newSportName, 
+            icon: newSportIcon,
             positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
           })
           .eq("id", editingSportId);
@@ -108,6 +131,7 @@ export const SportsSettings = () => {
           .from("sports")
           .insert([{ 
             name: newSportName, 
+            icon: newSportIcon,
             positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
           }]);
         
@@ -115,6 +139,7 @@ export const SportsSettings = () => {
       }
       
       setNewSportName("");
+      setNewSportIcon("🏆");
       setNewSportPositions([]);
       setIsAdding(false);
       setEditingSportId(null);
@@ -220,6 +245,7 @@ export const SportsSettings = () => {
             onClick={() => {
               setEditingSportId(null);
               setNewSportName("");
+              setNewSportIcon("🏆");
               setNewSportPositions([]);
               setIsAdding(true);
             }}
@@ -249,17 +275,37 @@ export const SportsSettings = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                  {lang === "pt" ? "Nome da Modalidade" : "Sport Name"}
-                </label>
-                <input
-                  type="text"
-                  value={newSportName}
-                  onChange={(e) => setNewSportName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                  placeholder={lang === "pt" ? "Ex: Basquete" : "Ex: Basketball"}
-                />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                    {lang === "pt" ? "Nome da Modalidade" : "Sport Name"}
+                  </label>
+                  <input
+                    type="text"
+                    value={newSportName}
+                    onChange={(e) => setNewSportName(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                    placeholder={lang === "pt" ? "Ex: Basquete" : "Ex: Basketball"}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                    {lang === "pt" ? "Ícone (Emoji)" : "Icon (Emoji)"}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newSportIcon}
+                      onChange={(e) => setNewSportIcon(e.target.value)}
+                      placeholder="🏆"
+                      className="w-16 text-center bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xl focus:outline-none focus:border-cyan-500 transition-colors"
+                    />
+                    <div className="flex-1 bg-slate-800/10 border border-slate-700/30 rounded-xl px-4 py-2 flex items-center text-[10px] text-slate-500 italic leading-tight">
+                      {lang === 'pt' ? 'Use um emoji que represente o esporte' : 'Use an emoji for the sport'}
+                    </div>
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
@@ -331,6 +377,7 @@ export const SportsSettings = () => {
                   setIsAdding(false);
                   setEditingSportId(null);
                   setNewSportName("");
+                  setNewSportIcon("🏆");
                   setNewSportPositions([]);
                 }}
                 className="text-slate-400 hover:text-white"
@@ -369,8 +416,10 @@ export const SportsSettings = () => {
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 group-hover:border-cyan-500/30 transition-colors">
-                    <Users className="w-5 h-5 text-slate-400 group-hover:text-cyan-400" />
+                  <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700 group-hover:border-cyan-500/30 transition-colors shadow-lg">
+                    <span className="text-[28px] leading-none select-none">
+                      {sport.icon || "🏆"}
+                    </span>
                   </div>
                   <h3 className="font-black text-white uppercase tracking-tight">{sport.name}</h3>
                 </div>

@@ -86,6 +86,22 @@ export function AthleteList({
   const [isClient, setIsClient] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [sportsIcons, setSportsIcons] = useState<Record<string, string>>({});
+
+  const fetchSportsIcons = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from("sports").select("name, icon");
+      if (data) {
+        const iconMap: Record<string, string> = {};
+        data.forEach(s => {
+          if (s.icon) iconMap[s.name] = s.icon;
+        });
+        setSportsIcons(iconMap);
+      }
+    } catch (err) {
+      console.error("Error fetching sports icons:", err);
+    }
+  }, []);
 
   const fetchAthletes = useCallback(async (retryCount = 0) => {
     try {
@@ -165,8 +181,9 @@ export function AthleteList({
 
   useEffect(() => {
     fetchAthletes();
+    fetchSportsIcons();
     setIsClient(true);
-  }, [fetchAthletes]);
+  }, [fetchAthletes, fetchSportsIcons]);
 
   const filteredAthletes = athletes.filter((athlete) => {
     const normalizedSearch = searchTerm.toLowerCase();
@@ -487,10 +504,17 @@ export function AthleteList({
                           <div className="flex flex-wrap items-center gap-3 mt-2 text-xs font-bold uppercase tracking-widest">
                             {[
                               athlete.modalidade ? (
-                                <span key="mod" className="text-slate-300">
-                                  {athlete.modalidade === "Volleyball"
-                                    ? "Voleibol"
-                                    : athlete.modalidade}
+                                <span key="mod" className="flex items-center gap-1.5 text-slate-300">
+                                  {sportsIcons[athlete.modalidade] && (
+                                    <span className="text-lg leading-none" title={athlete.modalidade}>
+                                      {sportsIcons[athlete.modalidade]}
+                                    </span>
+                                  )}
+                                  <span>
+                                    {athlete.modalidade === "Volleyball"
+                                      ? "Voleibol"
+                                      : athlete.modalidade}
+                                  </span>
                                 </span>
                               ) : null,
                                 athlete.clube_anterior ? (
@@ -654,10 +678,17 @@ export function AthleteList({
                     <div className="p-3 sm:p-5 flex flex-col bg-[#050B14] relative z-10 border-t border-slate-800/50 flex-1">
                       <div className="flex flex-col gap-1 mb-4 sm:mb-5">
                         {athlete.modalidade && (
-                          <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight">
-                            {athlete.modalidade === "Volleyball"
-                              ? "Voleibol"
-                              : athlete.modalidade}
+                          <div className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest leading-tight flex items-center gap-1.5">
+                            {sportsIcons[athlete.modalidade] && (
+                              <span className="text-base leading-none">
+                                {sportsIcons[athlete.modalidade]}
+                              </span>
+                            )}
+                            <span>
+                              {athlete.modalidade === "Volleyball"
+                                ? "Voleibol"
+                                : athlete.modalidade}
+                            </span>
                           </div>
                         )}
                         {athlete.clube_anterior && (

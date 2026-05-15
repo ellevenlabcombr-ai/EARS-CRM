@@ -56,9 +56,18 @@ export interface Athlete {
   is_menstruating?: boolean;
   group_name?: string;
   status?: string;
+  icon?: string;
   
   created_at?: string;
   updated_at?: string;
+}
+
+export interface Sport {
+  id: string;
+  name: string;
+  icon?: string;
+  positions: string[];
+  created_at?: string;
 }
 
 export interface WellnessRecord {

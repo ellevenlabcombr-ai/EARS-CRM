@@ -211,6 +211,7 @@ SELECT id, athlete_id, assessment_date, created_at, 'postural' as assessment_typ
 CREATE TABLE IF NOT EXISTS public.sports (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT UNIQUE NOT NULL,
+    icon TEXT,
     positions TEXT[] DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT now()
 );

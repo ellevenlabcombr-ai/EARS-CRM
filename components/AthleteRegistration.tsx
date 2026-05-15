@@ -234,6 +234,7 @@ export function AthleteRegistration({
   );
   const [dynamicSports, setDynamicSports] =
     useState<Record<string, string[]>>(MODALIDADES_DATA);
+  const [sportsIcons, setSportsIcons] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchSports = async () => {
@@ -241,19 +242,23 @@ export function AthleteRegistration({
       try {
         const { data, error } = await supabase
           .from("sports")
-          .select("name, positions")
+          .select("name, positions, icon")
           .order("name");
 
         if (data && data.length > 0) {
           const sportsMap: Record<string, string[]> = {};
+          const iconsMap: Record<string, string> = {};
+          
           data.forEach((s) => {
             sportsMap[s.name] = s.positions;
+            if (s.icon) iconsMap[s.name] = s.icon;
           });
           // Ensure "Outro..." is always there
           if (!sportsMap["Outro..."]) {
             sportsMap["Outro..."] = ["Outra Posição"];
           }
           setDynamicSports(sportsMap);
+          setSportsIcons(iconsMap);
         }
       } catch (err: any) {
         console.error(
@@ -1224,6 +1229,7 @@ export function AthleteRegistration({
                       .sort()
                       .map((m) => (
                         <option key={m} value={m}>
+                          {sportsIcons[m] ? `${sportsIcons[m]} ` : ""}
                           {m === "Volleyball" && language === "pt"
                             ? "Vôlei"
                             : m}
