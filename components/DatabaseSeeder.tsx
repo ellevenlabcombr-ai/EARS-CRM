@@ -847,6 +847,15 @@ BEGIN
     END IF;
 
     -- Colunas na tabela automation_settings
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_enabled') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN whatsapp_enabled BOOLEAN DEFAULT true;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_template') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_template') THEN
+        ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?';
+    END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
     END IF;
@@ -864,22 +873,50 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_timing') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_timing TEXT[] DEFAULT ARRAY['24h']::TEXT[];
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_birthday_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_birthday_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_birthday_template') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_birthday_template TEXT DEFAULT 'Parabéns {nome}! Toda a nossa equipe deseja um feliz aniversário!';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_absence_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_absence_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_absence_template') THEN
         ALTER TABLE public.automation_settings ADD COLUMN whatsapp_absence_template TEXT DEFAULT 'Olá {nome}, sentimos sua falta! Faz tempo desde sua última sessão, que tal agendar um retorno?';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_reminder_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN finance_reminder_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_reminder_template') THEN
         ALTER TABLE public.automation_settings ADD COLUMN finance_reminder_template TEXT DEFAULT 'Olá {nome}! Lembramos que seu pacote/mensalidade vence no dia {data}.';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_receipt_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN finance_receipt_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_receipt_template') THEN
         ALTER TABLE public.automation_settings ADD COLUMN finance_receipt_template TEXT DEFAULT 'Olá {nome}! Confirmamos o recebimento do seu pagamento no valor de R$ {valor}. Obrigado!';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prof_morning_resume_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN prof_morning_resume_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prof_morning_resume_time') THEN
         ALTER TABLE public.automation_settings ADD COLUMN prof_morning_resume_time TEXT DEFAULT '07:00';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prof_new_appointment_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN prof_new_appointment_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prep_instructions_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prep_instructions_template') THEN
         ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_template TEXT DEFAULT 'Olá {nome}! Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente.';
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
         ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_reminder_template') THEN
         ALTER TABLE public.automation_settings ADD COLUMN email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.';
     END IF;
 
@@ -1279,6 +1316,18 @@ END $storage$;`;
             END IF;
             
             -- Colunas na tabela automation_settings
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_enabled') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_enabled BOOLEAN DEFAULT true;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_template') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_template') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
+            END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_api_url') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN evolution_api_url TEXT;
             END IF;
@@ -1308,17 +1357,35 @@ END $storage$;`;
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_reminder_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN finance_reminder_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_reminder_template') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN finance_reminder_template TEXT DEFAULT 'Olá {nome}! Lembramos que seu pacote/mensalidade vence no dia {data}.';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_receipt_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN finance_receipt_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'finance_receipt_template') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN finance_receipt_template TEXT DEFAULT 'Olá {nome}! Confirmamos o recebimento do seu pagamento no valor de R$ {valor}. Obrigado!';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prof_morning_resume_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN prof_morning_resume_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prof_morning_resume_time') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN prof_morning_resume_time TEXT DEFAULT '07:00';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prof_new_appointment_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN prof_new_appointment_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prep_instructions_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'prep_instructions_template') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN prep_instructions_template TEXT DEFAULT 'Olá {nome}! Aqui estão algumas orientações importantes antes da sua primeira avaliação com a gente.';
             END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_reminder_template') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.';
             END IF;
         END $$;

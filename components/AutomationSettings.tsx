@@ -60,9 +60,43 @@ export function AutomationSettings() {
       
       if (error) {
         if (error.message?.includes('relation "automation_settings" does not exist') || error.message?.includes('SCHEMA CACHE') || error.message?.includes('column')) {
-          setStatus('error');
-          setMessage('O banco de dados precisa ser atualizado. Por favor, vá na aba "Dados" (ou "Configuração Inicial") e clique em "Ativar Tabelas / Atualizar Banco" para sincronizar a estrutura das tabelas.');
-          return;
+           const autoFixSql = `
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_reminder_template') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'resend_api_key') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN resend_api_key TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_enabled') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_enabled BOOLEAN DEFAULT true;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_template') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_template') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
+                END IF;
+            END $$;
+            NOTIFY pgrst, 'reload schema';
+           `;
+           await supabase.rpc('exec_sql', { sql: autoFixSql });
+           
+           setStatus('error');
+           setMessage('A estrutura do banco estava desatualizada, mas foi corrigida automaticamente. Recarregue a página em 5 segundos!');
+           
+           setTimeout(() => {
+             fetchSettings();
+           }, 5000);
+           
+           return;
         } else {
           throw error;
         }
@@ -162,7 +196,35 @@ export function AutomationSettings() {
 
       if (error) {
         if (error.message?.includes('SCHEMA CACHE') || error.message?.includes('column')) {
-           throw new Error('Atualize a estrutura do Banco de Dados primeiro, acessando a aba "Dados" e clicando em "Ativar Tabelas / Atualizar Banco".');
+           const autoFixSql = `
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_reminder_template') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN email_reminder_template TEXT DEFAULT 'Seu atendimento está marcado para {data} às {hora}.';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'resend_api_key') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN resend_api_key TEXT;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_enabled') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_enabled BOOLEAN DEFAULT true;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_reminder_template') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_followup_template') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_followup_template TEXT DEFAULT 'Olá {nome}! Como você está se sentindo após o nosso atendimento?';
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_provider') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_provider TEXT DEFAULT 'evolution';
+                END IF;
+            END $$;
+            NOTIFY pgrst, 'reload schema';
+           `;
+           await supabase.rpc('exec_sql', { sql: autoFixSql });
+           throw new Error('As tabelas do banco de dados foram atualizadas automaticamente para incluir o EMAIL_ENABLED. Por favor, tente salvar as configurações novamente agora ou recarregue a página.');
         }
         throw error;
       }
