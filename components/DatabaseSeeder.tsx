@@ -209,6 +209,7 @@ BEGIN
             target_athletes INTEGER DEFAULT 20,
             custom_fields JSONB DEFAULT '[]'::jsonb,
             positions TEXT[] DEFAULT ARRAY[]::TEXT[],
+            order_index INTEGER DEFAULT 0,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
@@ -1343,6 +1344,7 @@ END $storage$;`;
                 target_athletes INTEGER DEFAULT 20,
                 custom_fields JSONB DEFAULT '[]'::jsonb,
                 positions TEXT[] DEFAULT ARRAY[]::TEXT[],
+                order_index INTEGER DEFAULT 0,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
             );
@@ -1397,6 +1399,11 @@ END $storage$;`;
         -- Adicionar colunas faltantes se as tabelas já existirem
         DO $$ 
         BEGIN
+            -- Colunas na tabela sports
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'order_index') THEN
+                ALTER TABLE public.sports ADD COLUMN order_index INTEGER DEFAULT 0;
+            END IF;
+
             -- Colunas na tabela agenda_settings
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'working_days') THEN
                 ALTER TABLE public.agenda_settings ADD COLUMN working_days TEXT[] DEFAULT ARRAY['1', '2', '3', '4', '5'];
