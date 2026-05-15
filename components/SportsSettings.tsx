@@ -128,7 +128,7 @@ export const SportsSettings = () => {
       // Fallback robusto se colunas novas estiverem faltando
       if (error && (error.code === '42703' || error.message?.includes('column'))) {
         console.warn("Detectadas colunas ausentes no banco. Tentando salvamento simplificado (Legacy Mode)...");
-        const { order_index, is_active, ...legacyPayload } = payload;
+        const { order_index, is_active, color, target_athletes, ...legacyPayload } = payload;
         if (editingSportId) {
           result = await supabase.from("sports").update(legacyPayload).eq("id", editingSportId);
         } else {
@@ -293,7 +293,8 @@ export const SportsSettings = () => {
       let { error } = await supabase.from("sports").upsert(defaults, { onConflict: 'name' });
       
       if (error && (error.code === '42703' || error.message?.includes('column'))) {
-        const cleanDefaults = defaults.map(({ order_index, is_active, ...rest }) => rest);
+        console.warn("Retrying seed without extended columns...");
+        const cleanDefaults = defaults.map(({ order_index, is_active, color, target_athletes, ...rest }) => rest);
         const retry = await supabase.from("sports").upsert(cleanDefaults, { onConflict: 'name' });
         error = retry.error;
       }

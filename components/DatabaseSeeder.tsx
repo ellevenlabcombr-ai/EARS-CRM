@@ -1395,6 +1395,12 @@ END $storage$;`;
         DO $$ 
         BEGIN
             -- Colunas na tabela sports
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'color') THEN
+                ALTER TABLE public.sports ADD COLUMN color TEXT DEFAULT '#06b6d4';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'target_athletes') THEN
+                ALTER TABLE public.sports ADD COLUMN target_athletes INTEGER DEFAULT 20;
+            END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'order_index') THEN
                 ALTER TABLE public.sports ADD COLUMN order_index INTEGER DEFAULT 0;
             END IF;
