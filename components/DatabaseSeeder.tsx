@@ -216,16 +216,6 @@ BEGIN
         );
     END IF;
 
-    -- Habilitar RLS para system_logs e sports
-    ALTER TABLE IF EXISTS public.system_logs ENABLE ROW LEVEL SECURITY;
-    ALTER TABLE IF EXISTS public.sports ENABLE ROW LEVEL SECURITY;
-    
-    DROP POLICY IF EXISTS "Permitir tudo" ON public.system_logs;
-    CREATE POLICY "Permitir tudo" ON public.system_logs FOR ALL USING (true) WITH CHECK (true);
-    
-    DROP POLICY IF EXISTS "Permitir tudo" ON public.sports;
-    CREATE POLICY "Permitir tudo" ON public.sports FOR ALL USING (true) WITH CHECK (true);
-
     -- Tabela de Configurações da Agenda
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
         CREATE TABLE agenda_settings (
@@ -241,6 +231,11 @@ BEGIN
             working_days TEXT[] DEFAULT ARRAY['1', '2', '3', '4', '5'],
             reminder_enabled BOOLEAN DEFAULT true,
             reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.',
+            lunch_start TEXT DEFAULT '12:00',
+            lunch_end TEXT DEFAULT '13:00',
+            lunch_enabled BOOLEAN DEFAULT true,
+            delay_tolerance_minutes INTEGER DEFAULT 15,
+            cancellation_notice_hours INTEGER DEFAULT 24,
             updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );
     END IF;
@@ -250,6 +245,15 @@ BEGIN
         INSERT INTO agenda_settings (start_time, end_time, default_duration_minutes, break_interval_minutes, appointment_types) 
         VALUES ('08:00', '18:00', 30, 0, ARRAY['Avaliação', 'Tratamento', 'Revisão', 'Recuperação']);
     END IF;
+
+    -- Habilitar RLS
+    ALTER TABLE IF EXISTS public.sports ENABLE ROW LEVEL SECURITY;
+    DROP POLICY IF EXISTS "Permitir tudo" ON public.sports;
+    CREATE POLICY "Permitir tudo" ON public.sports FOR ALL USING (true) WITH CHECK (true);
+
+    ALTER TABLE IF EXISTS public.agenda_settings ENABLE ROW LEVEL SECURITY;
+    DROP POLICY IF EXISTS "Permitir tudo" ON public.agenda_settings;
+    CREATE POLICY "Permitir tudo" ON public.agenda_settings FOR ALL USING (true) WITH CHECK (true);
 
     -- Tabela de Configurações de Automação
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='automation_settings') THEN
@@ -1409,6 +1413,16 @@ END $storage$;`;
                 ALTER TABLE public.sports ADD COLUMN is_active BOOLEAN DEFAULT TRUE;
             END IF;
 
+            -- Inserir modalidades básicas se a tabela estiver vazia (Requisito 5)
+            INSERT INTO public.sports (name, icon, color, positions, target_athletes, order_index, is_active)
+            VALUES 
+                ('Futebol', '⚽', '#10b981', ARRAY['Goleiro', 'Zagueiro', 'Lateral', 'Volante', 'Meia', 'Atacante', 'Ponta'], 22, 0, true),
+                ('Futsal', '⚽', '#06b6d4', ARRAY['Goleiro', 'Fixo', 'Ala', 'Pivô'], 12, 1, true),
+                ('Vôlei', '🏐', '#6366f1', ARRAY['Levantador', 'Ponteiro', 'Central', 'Oposto', 'Líbero'], 12, 2, true),
+                ('Basquete', '🏀', '#f59e0b', ARRAY['Armador', 'Ala', 'Ala-Pivô', 'Pivô'], 12, 3, true),
+                ('Handebol', '🤾', '#f43f5e', ARRAY['Goleiro', 'Armador Central', 'Armador Lateral', 'Ponta', 'Pivô'], 14, 4, true)
+            ON CONFLICT (name) DO NOTHING;
+
             -- Colunas na tabela agenda_settings
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'working_days') THEN
                 ALTER TABLE public.agenda_settings ADD COLUMN working_days TEXT[] DEFAULT ARRAY['1', '2', '3', '4', '5'];
@@ -1425,6 +1439,30 @@ END $storage$;`;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'reminder_template') THEN
                 ALTER TABLE public.agenda_settings ADD COLUMN reminder_template TEXT DEFAULT 'Olá {nome}! Seu atendimento está marcado para {data} às {hora}.';
             END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_enabled') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN lunch_enabled BOOLEAN DEFAULT false;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_start') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN lunch_start TEXT DEFAULT '12:00';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'lunch_end') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN lunch_end TEXT DEFAULT '13:00';
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'delay_tolerance_minutes') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN delay_tolerance_minutes INTEGER DEFAULT 15;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'cancellation_notice_hours') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN cancellation_notice_hours INTEGER DEFAULT 24;
+            END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'agenda_settings' AND column_name = 'reminder_enabled') THEN
+                ALTER TABLE public.agenda_settings ADD COLUMN reminder_enabled BOOLEAN DEFAULT true;
+            END IF;
+            
+            -- Garantir um registro na agenda_settings
+            INSERT INTO public.agenda_settings (id) 
+            SELECT uuid_generate_v4() 
+            WHERE NOT EXISTS (SELECT 1 FROM public.agenda_settings)
+            ON CONFLICT DO NOTHING;
             
             -- Colunas na tabela automation_settings
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_enabled') THEN

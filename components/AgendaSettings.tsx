@@ -214,18 +214,40 @@ export function AgendaSettings() {
         updated_at: new Date().toISOString()
       };
 
-      let error;
+      let result;
       if (existing) {
-        const { error: updateError } = await supabase
+        result = await supabase
           .from('agenda_settings')
           .update(payload)
           .eq('id', existing.id);
-        error = updateError;
       } else {
-        const { error: insertError } = await supabase
+        result = await supabase
           .from('agenda_settings')
           .insert([payload]);
-        error = insertError;
+      }
+      
+      let error = result.error;
+
+      // Fallback robusto se colunas novas estiverem faltando
+      if (error && (error.code === '42703' || error.message?.includes('column'))) {
+        console.warn("Detectadas colunas ausentes no banco. Tentando salvamento simplificado (Legacy Mode)...");
+        const { 
+          lunch_start, lunch_end, lunch_enabled, 
+          delay_tolerance_minutes, cancellation_notice_hours, 
+          ...legacyPayload 
+        } = payload;
+        
+        if (existing) {
+          result = await supabase
+            .from('agenda_settings')
+            .update(legacyPayload)
+            .eq('id', existing.id);
+        } else {
+          result = await supabase
+            .from('agenda_settings')
+            .insert([legacyPayload]);
+        }
+        error = result.error;
       }
 
       if (error) {
@@ -253,7 +275,9 @@ export function AgendaSettings() {
       
       // Handle Supabase error objects which might not have a direct .message property in all cases
       const errorMessage = err.message || (typeof err === 'object' ? JSON.stringify(err) : String(err));
-      setMessage(`Inconsistência temporal detectada: ${errorMessage}`);
+      setMessage(language === 'pt' 
+        ? `Erro ao salvar: ${errorMessage}. DICA: Vá em Configurações > Aba Desenvolvimento e clique em 'Otimizar Banco'.` 
+        : `Save error: ${errorMessage}. TIP: Go to Settings > Development and click 'Optimize DB'.`);
     } finally {
       setIsSaving(false);
     }

@@ -125,23 +125,27 @@ export const SportsSettings = () => {
       
       let error = result.error;
 
-      // Fallback if order_index column is missing
-      if (error && (error.code === '42703' || error.message?.includes('order_index'))) {
-        console.warn("Column order_index missing, retrying save without it");
-        const { order_index, ...payloadWithoutOrder } = payload;
+      // Fallback robusto se colunas novas estiverem faltando
+      if (error && (error.code === '42703' || error.message?.includes('column'))) {
+        console.warn("Detectadas colunas ausentes no banco. Tentando salvamento simplificado (Legacy Mode)...");
+        const { order_index, is_active, ...legacyPayload } = payload;
         if (editingSportId) {
-          result = await supabase.from("sports").update(payloadWithoutOrder).eq("id", editingSportId);
+          result = await supabase.from("sports").update(legacyPayload).eq("id", editingSportId);
         } else {
-          result = await supabase.from("sports").insert([payloadWithoutOrder]);
+          result = await supabase.from("sports").insert([legacyPayload]);
         }
         error = result.error;
       }
       
       if (error) {
+        console.error("DETAILED SPORT SAVE ERROR:", error);
         if (error.code === '23505') {
           alert(language === 'pt' ? 'Já existe um esporte com este nome.' : 'A sport with this name already exists.');
         } else {
-          throw error;
+          const detailMsg = error.message || JSON.stringify(error);
+          alert(language === 'pt' 
+            ? `Erro crítico ao salvar: ${detailMsg}. Tente usar o botão 'Otimizar Banco' em Configurações > Desenvolvimento.` 
+            : `Critical save error: ${detailMsg}. Try using 'Optimize DB' in Settings > Development.`);
         }
         return;
       }
@@ -150,9 +154,11 @@ export const SportsSettings = () => {
       resetForm();
       await fetchSports();
       alert(language === 'pt' ? 'Esporte salvo com sucesso!' : 'Sport saved successfully!');
-    } catch (error) {
-      console.error("Error saving sport:", error);
-      alert(language === 'pt' ? 'Erro ao salvar esporte. Verifique os dados e tente novamente.' : 'Error saving sport. Check the data and try again.');
+    } catch (error: any) {
+      console.error("CATCH ERROR SAVING SPORT:", error);
+      alert(language === 'pt' 
+        ? `Inconsistência detectada: ${error.message || 'Erro desconhecido'}` 
+        : `Inconsistency detected: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -426,16 +432,16 @@ export const SportsSettings = () => {
                       onClick={() => setNewSportIsActive(!newSportIsActive)}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
                         newSportIsActive 
-                          ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400' 
-                          : 'bg-slate-900 border-slate-700 text-slate-500'
+                          ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400 font-black' 
+                          : 'bg-rose-500/10 border-rose-500/50 text-rose-400 font-black'
                       }`}
                     >
-                      <span className="text-xs font-black uppercase tracking-widest">
+                      <span className="text-[10px] uppercase tracking-widest">
                         {newSportIsActive 
-                          ? (language === 'pt' ? 'Ativo' : 'Active') 
-                          : (language === 'pt' ? 'Inativo' : 'Inactive')}
+                          ? (language === 'pt' ? 'ATIVO NO SISTEMA' : 'ACTIVE IN SYSTEM') 
+                          : (language === 'pt' ? 'INATIVO / OCULTO' : 'INACTIVE / HIDDEN')}
                       </span>
-                      <div className={`w-10 h-5 rounded-full relative transition-colors ${newSportIsActive ? 'bg-cyan-500' : 'bg-slate-700'}`}>
+                      <div className={`w-10 h-5 rounded-full relative transition-colors ${newSportIsActive ? 'bg-emerald-500' : 'bg-rose-500'}`}>
                         <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${newSportIsActive ? 'right-1' : 'left-1'}`} />
                       </div>
                     </button>
@@ -689,9 +695,23 @@ export const SportsSettings = () => {
               <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
             ))
           ) : filteredSports.length === 0 ? (
-            <div className="col-span-full flex flex-col items-center justify-center p-8 bg-slate-900/20 border border-slate-800/50 rounded-2xl">
-              <Search className="w-8 h-8 text-slate-600 mb-3" />
-              <p className="text-slate-400 font-medium">Nenhum esporte encontrado.</p>
+            <div className="col-span-full flex flex-col items-center justify-center p-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl space-y-6">
+              <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center">
+                <Search className="w-8 h-8 text-slate-600" />
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-slate-200 font-bold text-lg">{language === 'pt' ? 'Nenhuma modalidade encontrada' : 'No sports found'}</p>
+                <p className="text-slate-500 text-sm max-w-xs">{language === 'pt' ? 'Comece criando uma nova modalidade ou restaure as sugestões padrão do sistema.' : 'Start by creating a new sport or restore the system defaults.'}</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleSeedSports}
+                  className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-8"
+                >
+                  <RefreshCcw className="w-4 h-4 mr-2" />
+                  {language === "pt" ? "Carregar Sugestões" : "Load Suggestions"}
+                </Button>
+              </div>
             </div>
           ) : (
             filteredSports.map((sport) => {
