@@ -1187,29 +1187,6 @@ BEGIN
     INSERT INTO storage.buckets (id, name, public) 
     VALUES ('avatars', 'avatars', true)
     ON CONFLICT (id) DO NOTHING;
-
-    -- 2. Habilitar RLS se necessário
-    ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
-    -- 3. Políticas de Acesso Público (Leitura)
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Access Branding') THEN
-        CREATE POLICY "Public Access Branding" ON storage.objects FOR SELECT USING (bucket_id = 'branding' OR bucket_id = 'avatars');
-    END IF;
-
-    -- 4. Políticas de Upload (Inserção)
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Upload Branding') THEN
-        CREATE POLICY "Public Upload Branding" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'branding' OR bucket_id = 'avatars');
-    END IF;
-
-    -- 5. Políticas de Atualização
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Update Branding') THEN
-        CREATE POLICY "Public Update Branding" ON storage.objects FOR UPDATE USING (bucket_id = 'branding' OR bucket_id = 'avatars');
-    END IF;
-
-    -- 6. Políticas de Exclusão
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Delete Branding') THEN
-        CREATE POLICY "Public Delete Branding" ON storage.objects FOR DELETE USING (bucket_id = 'branding' OR bucket_id = 'avatars');
-    END IF;
 END $storage$;`;
 
   const [isFixing, setIsFixing] = useState(false);
@@ -1307,100 +1284,112 @@ END $storage$;`;
         CREATE POLICY "Permitir tudo" ON public.billings FOR ALL USING (true) WITH CHECK (true);
 
         -- Tabela de Configurações Clínicas
-        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='clinical_settings') THEN
-            CREATE TABLE clinical_settings (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                critical_readiness_threshold INTEGER DEFAULT 50,
-                critical_pain_threshold INTEGER DEFAULT 7,
-                attention_readiness_min INTEGER DEFAULT 50,
-                attention_readiness_max INTEGER DEFAULT 75,
-                attention_pain_min INTEGER DEFAULT 4,
-                attention_pain_max INTEGER DEFAULT 6,
-                risk_message TEXT DEFAULT 'Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.',
-                attention_message TEXT DEFAULT 'Atleta em estado de atenção. Monitorar carga de treino e recuperação.',
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        END IF;
+        DO $$ 
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='clinical_settings') THEN
+                CREATE TABLE clinical_settings (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    critical_readiness_threshold INTEGER DEFAULT 50,
+                    critical_pain_threshold INTEGER DEFAULT 7,
+                    attention_readiness_min INTEGER DEFAULT 50,
+                    attention_readiness_max INTEGER DEFAULT 75,
+                    attention_pain_min INTEGER DEFAULT 4,
+                    attention_pain_max INTEGER DEFAULT 6,
+                    risk_message TEXT DEFAULT 'Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.',
+                    attention_message TEXT DEFAULT 'Atleta em estado de atenção. Monitorar carga de treino e recuperação.',
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
 
-        IF NOT EXISTS (SELECT 1 FROM clinical_settings) THEN
-            INSERT INTO clinical_settings (
-                critical_readiness_threshold, critical_pain_threshold,
-                attention_readiness_min, attention_readiness_max,
-                attention_pain_min, attention_pain_max,
-                risk_message, attention_message
-            ) VALUES (
-                50, 7, 50, 75, 4, 6,
-                'Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.',
-                'Atleta em estado de atenção. Monitorar carga de treino e recuperação.'
-            );
-        END IF;
+            IF NOT EXISTS (SELECT 1 FROM clinical_settings) THEN
+                INSERT INTO clinical_settings (
+                    critical_readiness_threshold, critical_pain_threshold,
+                    attention_readiness_min, attention_readiness_max,
+                    attention_pain_min, attention_pain_max,
+                    risk_message, attention_message
+                ) VALUES (
+                    50, 7, 50, 75, 4, 6,
+                    'Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.',
+                    'Atleta em estado de atenção. Monitorar carga de treino e recuperação.'
+                );
+            END IF;
+        END $$;
 
         ALTER TABLE IF EXISTS public.clinical_settings ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.clinical_settings;
         CREATE POLICY "Permitir tudo" ON public.clinical_settings FOR ALL USING (true) WITH CHECK (true);
 
-        -- Tabela de Perfil do Usuário
-        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='sports') THEN
-            CREATE TABLE sports (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                name TEXT UNIQUE NOT NULL,
-                icon TEXT DEFAULT '🏆',
-                color TEXT DEFAULT '#06b6d4',
-                target_athletes INTEGER DEFAULT 20,
-                custom_fields JSONB DEFAULT '[]'::jsonb,
-                positions TEXT[] DEFAULT ARRAY[]::TEXT[],
-                order_index INTEGER DEFAULT 0,
-                is_active BOOLEAN DEFAULT TRUE,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        END IF;
+        -- Tabela de Esportes
+        DO $$ 
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='sports') THEN
+                CREATE TABLE sports (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT UNIQUE NOT NULL,
+                    icon TEXT DEFAULT '🏆',
+                    color TEXT DEFAULT '#06b6d4',
+                    target_athletes INTEGER DEFAULT 20,
+                    custom_fields JSONB DEFAULT '[]'::jsonb,
+                    positions TEXT[] DEFAULT ARRAY[]::TEXT[],
+                    order_index INTEGER DEFAULT 0,
+                    is_active BOOLEAN DEFAULT TRUE,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+        END $$;
 
         ALTER TABLE IF EXISTS public.sports ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.sports;
         CREATE POLICY "Permitir tudo" ON public.sports FOR ALL USING (true) WITH CHECK (true);
 
         -- Tabela de Perfil do Usuário
-        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='user_profile_settings') THEN
-            CREATE TABLE user_profile_settings (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                name TEXT DEFAULT 'Usuário',
-                email TEXT,
-                avatar_url TEXT,
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        END IF;
+        DO $$ 
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='user_profile_settings') THEN
+                CREATE TABLE user_profile_settings (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT DEFAULT 'Usuário',
+                    email TEXT,
+                    avatar_url TEXT,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
 
-        IF NOT EXISTS (SELECT 1 FROM user_profile_settings) THEN
-            INSERT INTO user_profile_settings (name) VALUES ('Usuário');
-        END IF;
+            IF NOT EXISTS (SELECT 1 FROM user_profile_settings) THEN
+                INSERT INTO user_profile_settings (name) VALUES ('Usuário');
+            END IF;
+        END $$;
 
         ALTER TABLE IF EXISTS public.user_profile_settings ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.user_profile_settings;
         CREATE POLICY "Permitir tudo" ON public.user_profile_settings FOR ALL USING (true) WITH CHECK (true);
 
         -- Garantir Tabelas de Agenda e Automação
-        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
-            CREATE TABLE agenda_settings (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                start_time TEXT DEFAULT '08:00',
-                end_time TEXT DEFAULT '18:00',
-                default_duration_minutes INTEGER DEFAULT 30,
-                break_interval_minutes INTEGER DEFAULT 0,
-                appointment_types TEXT[] DEFAULT ARRAY['Avaliação', 'Tratamento', 'Revisão', 'Recuperação'],
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        END IF;
+        DO $$ 
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
+                CREATE TABLE agenda_settings (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    start_time TEXT DEFAULT '08:00',
+                    end_time TEXT DEFAULT '18:00',
+                    default_duration_minutes INTEGER DEFAULT 30,
+                    break_interval_minutes INTEGER DEFAULT 0,
+                    appointment_types TEXT[] DEFAULT ARRAY['Avaliação', 'Tratamento', 'Revisão', 'Recuperação'],
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
 
-        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='automation_settings') THEN
-            CREATE TABLE automation_settings (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                whatsapp_provider TEXT DEFAULT 'evolution',
-                whatsapp_reminder_enabled BOOLEAN DEFAULT true,
-                email_reminder_enabled BOOLEAN DEFAULT true,
-                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-        END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='automation_settings') THEN
+                CREATE TABLE automation_settings (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    whatsapp_provider TEXT DEFAULT 'evolution',
+                    whatsapp_reminder_enabled BOOLEAN DEFAULT true,
+                    email_reminder_enabled BOOLEAN DEFAULT true,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+        END $$;
 
         -- Adicionar colunas faltantes se as tabelas já existirem
         DO $$ 
@@ -1569,8 +1558,7 @@ END $storage$;`;
         -- Recarregar cache do PostgREST
         NOTIFY pgrst, 'reload schema';
         
-        -- Tentar criar bucket de branding e configurar políticas
-        -- Usamos um bloco DO para garantir que as políticas sejam criadas apenas se não existirem
+        -- Tentar criar bucket de branding
         DO $storage$
         BEGIN
             -- 1. Criar Bucket Branding
@@ -1582,29 +1570,6 @@ END $storage$;`;
             INSERT INTO storage.buckets (id, name, public) 
             VALUES ('avatars', 'avatars', true)
             ON CONFLICT (id) DO NOTHING;
-
-            -- 2. Habilitar RLS se necessário (geralmente já está)
-            ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
-            -- 3. Políticas de Acesso Público (Leitura)
-            IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Access Branding') THEN
-                CREATE POLICY "Public Access Branding" ON storage.objects FOR SELECT USING (bucket_id = 'branding' OR bucket_id = 'avatars');
-            END IF;
-
-            -- 4. Políticas de Upload (Inserção)
-            IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Upload Branding') THEN
-                CREATE POLICY "Public Upload Branding" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'branding' OR bucket_id = 'avatars');
-            END IF;
-
-            -- 5. Políticas de Atualização
-            IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Update Branding') THEN
-                CREATE POLICY "Public Update Branding" ON storage.objects FOR UPDATE USING (bucket_id = 'branding' OR bucket_id = 'avatars');
-            END IF;
-
-            -- 6. Políticas de Exclusão
-            IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public Delete Branding') THEN
-                CREATE POLICY "Public Delete Branding" ON storage.objects FOR DELETE USING (bucket_id = 'branding' OR bucket_id = 'avatars');
-            END IF;
         END $storage$;
       `;
       
