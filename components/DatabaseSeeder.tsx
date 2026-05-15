@@ -199,10 +199,30 @@ BEGIN
         ('Base de Dados Otimizada', 'Database', 'Índices reconstruídos para performance.');
     END IF;
 
-    -- Habilitar RLS para system_logs
+    -- Tabela de Esportes/Modalidades
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='sports') THEN
+        CREATE TABLE sports (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            name TEXT UNIQUE NOT NULL,
+            icon TEXT DEFAULT '🏆',
+            color TEXT DEFAULT '#06b6d4',
+            target_athletes INTEGER DEFAULT 20,
+            custom_fields JSONB DEFAULT '[]'::jsonb,
+            positions TEXT[] DEFAULT ARRAY[]::TEXT[],
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+    END IF;
+
+    -- Habilitar RLS para system_logs e sports
     ALTER TABLE IF EXISTS public.system_logs ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE IF EXISTS public.sports ENABLE ROW LEVEL SECURITY;
+    
     DROP POLICY IF EXISTS "Permitir tudo" ON public.system_logs;
     CREATE POLICY "Permitir tudo" ON public.system_logs FOR ALL USING (true) WITH CHECK (true);
+    
+    DROP POLICY IF EXISTS "Permitir tudo" ON public.sports;
+    CREATE POLICY "Permitir tudo" ON public.sports FOR ALL USING (true) WITH CHECK (true);
 
     -- Tabela de Configurações da Agenda
     IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
@@ -1312,6 +1332,25 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.clinical_settings ENABLE ROW LEVEL SECURITY;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.clinical_settings;
         CREATE POLICY "Permitir tudo" ON public.clinical_settings FOR ALL USING (true) WITH CHECK (true);
+
+        -- Tabela de Perfil do Usuário
+        IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='sports') THEN
+            CREATE TABLE sports (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                name TEXT UNIQUE NOT NULL,
+                icon TEXT DEFAULT '🏆',
+                color TEXT DEFAULT '#06b6d4',
+                target_athletes INTEGER DEFAULT 20,
+                custom_fields JSONB DEFAULT '[]'::jsonb,
+                positions TEXT[] DEFAULT ARRAY[]::TEXT[],
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        END IF;
+
+        ALTER TABLE IF EXISTS public.sports ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.sports;
+        CREATE POLICY "Permitir tudo" ON public.sports FOR ALL USING (true) WITH CHECK (true);
 
         -- Tabela de Perfil do Usuário
         IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='user_profile_settings') THEN

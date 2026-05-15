@@ -37,7 +37,7 @@ const SPORT_COLORS = [
 ];
 
 export const SportsSettings = () => {
-  const { lang } = useLanguage();
+  const { language } = useLanguage();
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -145,7 +145,7 @@ export const SportsSettings = () => {
   };
 
   const handleDeleteSport = async (id: string) => {
-    if (!confirm(lang === "pt" ? "Tem certeza que deseja excluir este esporte?" : "Are you sure you want to delete this sport?")) return;
+    if (!confirm(language === "pt" ? "Tem certeza que deseja excluir este esporte?" : "Are you sure you want to delete this sport?")) return;
     
     try {
       // Safety Validation: Check if sport is in use before deleting
@@ -159,7 +159,7 @@ export const SportsSettings = () => {
         if (countError && countError.code !== 'PGRST116') {
             console.error("Error checking athlete sport usage", countError);
         } else if (count && count > 0) {
-            alert(lang === "pt" ? `Exclusão bloqueada: Existem ${count} atletas usando '${sportToRemove.name}'.` : `Delete blocked: There are ${count} athletes using '${sportToRemove.name}'.`);
+            alert(language === "pt" ? `Exclusão bloqueada: Existem ${count} atletas usando '${sportToRemove.name}'.` : `Delete blocked: There are ${count} athletes using '${sportToRemove.name}'.`);
             return;
         }
       }
@@ -197,6 +197,26 @@ export const SportsSettings = () => {
     setNewSportPositions(newPositions);
   };
 
+  const filteredSports = sports.filter(s => 
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSeedSports = async () => {
+    const defaults = [
+      { name: "Futebol", icon: "⚽", color: SPORT_COLORS[0].hex, positions: ["Goleiro", "Zagueiro", "Lateral", "Meia", "Atacante"], target_athletes: 22 },
+      { name: "Basquete", icon: "🏀", color: SPORT_COLORS[5].hex, positions: ["Armador", "Ala", "Ala-Pivô", "Pivô"], target_athletes: 12 },
+      { name: "Vôlei", icon: "🏐", color: SPORT_COLORS[1].hex, positions: ["Levantador", "Ponteiro", "Central", "Oposto", "Líbero"], target_athletes: 14 }
+    ];
+
+    try {
+      const { error } = await supabase.from("sports").insert(defaults);
+      if (error) throw error;
+      fetchSports();
+    } catch (err) {
+      console.error("Error seeding sports:", err);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -206,10 +226,10 @@ export const SportsSettings = () => {
           </div>
           <div>
             <h2 className="text-xl font-black text-white uppercase tracking-tight">
-              {lang === "pt" ? "Gestão de Esportes" : "Sports Management"}
+              {language === "pt" ? "Gestão de Esportes" : "Sports Management"}
             </h2>
             <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">
-              {lang === "pt" ? "Configure as modalidades e posições" : "Configure sports and positions"}
+              {language === "pt" ? "Configure as modalidades e posições" : "Configure sports and positions"}
             </p>
           </div>
         </div>
@@ -222,7 +242,7 @@ export const SportsSettings = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={lang === "pt" ? "Buscar esporte..." : "Search sport..."}
+              placeholder={language === "pt" ? "Buscar esporte..." : "Search sport..."}
               className="bg-slate-900 border border-slate-700/50 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 transition-colors w-full sm:w-48"
             />
           </div>
@@ -233,7 +253,7 @@ export const SportsSettings = () => {
             disabled={loading}
           >
             <Save className="w-4 h-4 mr-2" />
-            {lang === "pt" ? "Popular Padrão" : "Seed Defaults"}
+            {language === "pt" ? "Popular Padrão" : "Seed Defaults"}
           </Button>
           <Button 
             onClick={() => {
@@ -246,7 +266,7 @@ export const SportsSettings = () => {
             className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-6 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)]"
           >
             <Plus className="w-4 h-4 mr-2" />
-            {lang === "pt" ? "Novo Esporte" : "New Sport"}
+            {language === "pt" ? "Novo Esporte" : "New Sport"}
           </Button>
         </div>
       </div>
@@ -264,7 +284,7 @@ export const SportsSettings = () => {
                 {editingSportId ? <Edit2 className="w-4 h-4 text-cyan-400" /> : <Plus className="w-4 h-4 text-cyan-400" />}
               </div>
               <h3 className="text-white font-bold tracking-wide">
-                {editingSportId ? (lang === 'pt' ? 'Editar Esporte' : 'Edit Sport') : (lang === 'pt' ? 'Criar Novo Esporte' : 'Create New Sport')}
+                {editingSportId ? (language === 'pt' ? 'Editar Esporte' : 'Edit Sport') : (language === 'pt' ? 'Criar Novo Esporte' : 'Create New Sport')}
               </h3>
             </div>
             
@@ -272,20 +292,20 @@ export const SportsSettings = () => {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                    {lang === "pt" ? "Nome da Modalidade" : "Sport Name"}
+                    {language === "pt" ? "Nome da Modalidade" : "Sport Name"}
                   </label>
                   <input
                     type="text"
                     value={newSportName}
                     onChange={(e) => setNewSportName(e.target.value)}
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                    placeholder={lang === "pt" ? "Ex: Basquete" : "Ex: Basketball"}
+                    placeholder={language === "pt" ? "Ex: Basquete" : "Ex: Basketball"}
                   />
                 </div>
-
+ 
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                    {lang === "pt" ? "Cor da Modalidade" : "Sport Color"}
+                    {language === "pt" ? "Cor da Modalidade" : "Sport Color"}
                   </label>
                   <div className="grid grid-cols-4 gap-2">
                     {SPORT_COLORS.map(c => (
@@ -298,10 +318,10 @@ export const SportsSettings = () => {
                     ))}
                   </div>
                 </div>
-
+ 
                 <div className="space-y-2">
                   <label className="text-xxs font-black text-slate-500 uppercase tracking-widest flex justify-between">
-                    {lang === "pt" ? "Meta de Atletas" : "Athlete Target"}
+                    {language === "pt" ? "Meta de Atletas" : "Athlete Target"}
                     <span className="text-cyan-400">{newSportTarget}</span>
                   </label>
                   <input
@@ -314,27 +334,73 @@ export const SportsSettings = () => {
                     className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500"
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                    {lang === "pt" ? "Ícone Sugerido" : "Suggested Icon"}
-                  </label>
-                  <div className="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 grid grid-cols-5 gap-3">
-                    {["⚽", "🏀", "🏐", "🎾", "🏊", "🏃", "🥋", "🤾", "🏋️", "🥊", "🏇", "🚣", "🏹", "🏌️", "⛸️"].map(icon => {
-                      const isBall = ["⚽", "🏀", "🏈", "⚾", "🎾", "🏐", "🏉", "🎱"].includes(icon);
-                      return (
-                        <button
-                          key={icon}
-                          onClick={() => setNewSportIcon(icon)}
-                          className={`w-10 h-10 flex items-center justify-center text-xl hover:bg-slate-800 transition-all hover:scale-110 active:scale-95 ${
-                            isBall ? "rounded-full" : "rounded-xl"
-                          } ${newSportIcon === icon ? 'bg-cyan-500/20 ring-2 ring-cyan-500/50' : 'bg-slate-900/40 border border-slate-800/50'}`}
-                        >
-                          {icon}
-                        </button>
-                      );
-                    })}
+ 
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest pl-1">
+                      {language === "pt" ? "Ícone do Esporte" : "Sport Icon"}
+                    </label>
+                    <button 
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="text-[10px] font-black text-cyan-400 uppercase tracking-widest hover:text-cyan-300 transition-colors"
+                    >
+                      {showEmojiPicker 
+                        ? (language === "pt" ? "Fechar Sugestões" : "Close Suggestions")
+                        : (language === "pt" ? "Explorar Sugestões" : "Explore Suggestions")
+                      }
+                    </button>
                   </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center text-3xl shadow-inner cursor-pointer hover:border-cyan-500/50 transition-all" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+                      {newSportIcon}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                       <input 
+                        type="text" 
+                        value={newSportIcon}
+                        onChange={(e) => setNewSportIcon(e.target.value.substring(0, 4))}
+                        placeholder="Emoji"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500/50 outline-none transition-all text-sm font-black text-center"
+                      />
+                      <p className="text-[9px] text-slate-500 font-medium leading-relaxed px-1">
+                        {language === "pt" 
+                          ? "DICA: Você pode colar qualquer emoji ou escolher um sugerido." 
+                          : "TIP: You can paste any emoji or pick a suggested one."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {showEmojiPicker && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 grid grid-cols-5 gap-2">
+                          {["⚽", "🏀", "🏐", "🎾", "🏊", "🏃", "🥋", "🤾", "🏋️", "🥊", "🏇", "🚣", "🏹", "🏌️", "⛸️", "🎯", "🚲", "🎿", "🏄", "🏈", "⚾", "🥎", "🏒", "🏏", "🏓"].map((icon, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setNewSportIcon(icon);
+                                setShowEmojiPicker(false);
+                              }}
+                              className={`w-full h-10 flex items-center justify-center rounded-lg text-xl transition-all ${
+                                newSportIcon === icon 
+                                  ? "bg-cyan-500/20 border border-cyan-500/50 scale-110 shadow-[0_0_10px_rgba(6,182,212,0.2)]" 
+                                  : "bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800"
+                              }`}
+                            >
+                              {icon}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
@@ -342,7 +408,7 @@ export const SportsSettings = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                      {lang === "pt" ? "Posições" : "Positions"}
+                      {language === "pt" ? "Posições" : "Positions"}
                     </label>
                     <span className="text-[10px] text-slate-500 font-bold">{newSportPositions.length}</span>
                   </div>
@@ -353,7 +419,7 @@ export const SportsSettings = () => {
                       onChange={(e) => setNewPosition(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addPosition()}
                       className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors"
-                      placeholder={lang === "pt" ? "Ex: Armador" : "Ex: Point Guard"}
+                      placeholder={language === "pt" ? "Ex: Armador" : "Ex: Point Guard"}
                     />
                     <Button onClick={addPosition} size="sm" className="bg-slate-800 hover:bg-slate-700">
                       <Plus className="w-4 h-4" />
@@ -378,10 +444,10 @@ export const SportsSettings = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
-                      {lang === "pt" ? "Campos Personalizados" : "Custom Fields"}
+                      {language === "pt" ? "Campos Personalizados" : "Custom Fields"}
                     </label>
                     <Button onClick={addCustomField} size="sm" variant="outline" className="h-7 border-dashed border-slate-700 text-[10px] uppercase font-black tracking-widest hover:border-cyan-500/50">
-                      <Plus className="w-3 h-3 mr-1" /> {lang === 'pt' ? 'Adicionar' : 'Add'}
+                      <Plus className="w-3 h-3 mr-1" /> {language === 'pt' ? 'Adicionar' : 'Add'}
                     </Button>
                   </div>
                   
@@ -394,7 +460,7 @@ export const SportsSettings = () => {
                             value={field.name}
                             onChange={(e) => updateCustomField(field.id, { name: e.target.value })}
                             className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white"
-                            placeholder={lang === 'pt' ? 'Nome do campo' : 'Field name'}
+                            placeholder={language === 'pt' ? 'Nome do campo' : 'Field name'}
                           />
                           <button onClick={() => setNewSportCustomFields(prev => prev.filter(f => f.id !== field.id))} className="text-slate-600 hover:text-rose-400 transition-colors">
                             <Trash2 size={14} />
@@ -416,7 +482,7 @@ export const SportsSettings = () => {
                             value={field.options?.join(', ') || ''}
                             onChange={(e) => updateCustomField(field.id, { options: e.target.value.split(',').map(s => s.trim()) })}
                             className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-[10px] text-slate-500 italic"
-                            placeholder={lang === 'pt' ? 'Opções separadas por vírgula' : 'Options separated by comma'}
+                            placeholder={language === 'pt' ? 'Opções separadas por vírgula' : 'Options separated by comma'}
                           />
                         )}
                       </div>
@@ -438,14 +504,14 @@ export const SportsSettings = () => {
                 }}
                 className="text-slate-400 hover:text-white"
               >
-                {lang === "pt" ? "Cancelar" : "Cancel"}
+                {language === "pt" ? "Cancelar" : "Cancel"}
               </Button>
               <Button 
                 onClick={handleAddSport}
                 className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-6 rounded-xl"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {lang === "pt" ? "Salvar Esporte" : "Save Sport"}
+                {language === "pt" ? "Salvar Esporte" : "Save Sport"}
               </Button>
             </div>
           </motion.div>
@@ -476,43 +542,41 @@ export const SportsSettings = () => {
               >
                 <div className="flex justify-between items-start mb-4 relative z-10">
                   <div className="flex items-center gap-3">
-                    <div className={`w-14 h-14 rounded-2xl ${colorCfg.bg} bg-opacity-20 flex items-center justify-center border ${colorCfg.border} group-hover:scale-105 transition-transform`}>
-                      <span className="text-3xl leading-none select-none">
-                        {sport.icon || "🏆"}
-                      </span>
+                    <div className="relative group/emoji">
+                      <div className={`w-14 h-14 rounded-2xl ${colorCfg.bg} bg-opacity-20 flex items-center justify-center border ${colorCfg.border} group-hover:scale-105 transition-transform`}>
+                        <span className="text-3xl leading-none select-none">
+                          {sport.icon || "🏆"}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSport(sport.id);
+                        }}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/emoji:opacity-100 transition-opacity shadow-lg hover:bg-rose-600 z-20"
+                        title={language === 'pt' ? 'Excluir Esporte' : 'Delete Sport'}
+                      >
+                        <X size={14} strokeWidth={3} />
+                      </button>
                     </div>
-                    <div>
+                    <div className="cursor-pointer" onClick={() => handleEditClick(sport)}>
                       <h3 className={`font-black text-white uppercase tracking-tight group-hover:${colorCfg.text} transition-colors`}>
                         {sport.name}
                       </h3>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Users className="w-3 h-3 text-slate-500" />
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                          {sport.athleteCount || 0} / {sport.target_athletes || 20} {lang === 'pt' ? 'Atletas' : 'Athletes'}
+                          {sport.athleteCount || 0} / {sport.target_athletes || 20} {language === 'pt' ? 'Atletas' : 'Athletes'}
                         </span>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button 
-                      onClick={() => handleEditClick(sport)}
-                      className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteSport(sport.id)}
-                      className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </div>
 
                 {/* Target Progress Bar */}
                 <div className="space-y-1.5 mb-4 relative z-10">
                   <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
-                    <span>{lang === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
+                    <span>{language === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
                     <span className={colorCfg.text}>{Math.round(progress)}%</span>
                   </div>
                   <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -525,14 +589,14 @@ export const SportsSettings = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-1.5 relative z-10">
-                  {sport.positions.slice(0, 3).map((pos, i) => (
+                  {(sport.positions || []).slice(0, 3).map((pos, i) => (
                     <span key={i} className="text-[9px] font-black px-2 py-1 bg-slate-800/50 border border-slate-700/50 text-slate-500 rounded-md uppercase tracking-widest group-hover:text-slate-300 transition-colors">
                       {pos}
                     </span>
                   ))}
                   {sport.custom_fields && sport.custom_fields.length > 0 && (
                     <span className={`text-[9px] font-black px-2 py-1 bg-slate-900 border ${colorCfg.border} ${colorCfg.text} rounded-md uppercase tracking-widest`}>
-                      +{sport.custom_fields.length} {lang === 'pt' ? 'CAMPOS' : 'FIELDS'}
+                      +{sport.custom_fields.length} {language === 'pt' ? 'CAMPOS' : 'FIELDS'}
                     </span>
                   )}
                 </div>
