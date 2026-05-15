@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Save, Trophy, Users } from "lucide-react";
+import { Plus, Trash2, Save, Trophy, Users, Edit2, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export const SportsSettings = () => {
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingSportId, setEditingSportId] = useState<string | null>(null);
   const [newSportName, setNewSportName] = useState("");
   const [newSportPositions, setNewSportPositions] = useState<string[]>([]);
   const [newPosition, setNewPosition] = useState("");
@@ -76,26 +77,46 @@ export const SportsSettings = () => {
     }
   };
 
+  const handleEditClick = (sport: Sport) => {
+    setEditingSportId(sport.id);
+    setNewSportName(sport.name);
+    setNewSportPositions(sport.positions || []);
+    setIsAdding(true);
+  };
+
   const handleAddSport = async () => {
     if (!newSportName.trim()) return;
     
     try {
-      const { error } = await supabase
-        .from("sports")
-        .insert([{ 
-          name: newSportName, 
-          positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
-        }]);
-      
-      if (error) throw error;
+      if (editingSportId) {
+        const { error } = await supabase
+          .from("sports")
+          .update({ 
+            name: newSportName, 
+            positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
+          })
+          .eq("id", editingSportId);
+        
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("sports")
+          .insert([{ 
+            name: newSportName, 
+            positions: newSportPositions.length > 0 ? newSportPositions : ["Atleta"] 
+          }]);
+        
+        if (error) throw error;
+      }
       
       setNewSportName("");
       setNewSportPositions([]);
       setIsAdding(false);
+      setEditingSportId(null);
       fetchSports();
     } catch (error) {
-      console.error("Error adding sport:", error);
-      alert(lang === "pt" ? "Erro ao adicionar esporte. Verifique se já existe." : "Error adding sport. Check if it already exists.");
+      console.error("Error adding/updating sport:", error);
+      alert(lang === "pt" ? "Erro ao salvar esporte. Verifique se já existe." : "Error saving sport. Check if it already exists.");
     }
   };
 
@@ -153,7 +174,12 @@ export const SportsSettings = () => {
             {lang === "pt" ? "Popular Padrão" : "Seed Defaults"}
           </Button>
           <Button 
-            onClick={() => setIsAdding(true)}
+            onClick={() => {
+              setEditingSportId(null);
+              setNewSportName("");
+              setNewSportPositions([]);
+              setIsAdding(true);
+            }}
             className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-6 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)]"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -170,6 +196,15 @@ export const SportsSettings = () => {
             exit={{ opacity: 0, y: -20 }}
             className="bg-slate-900/50 border border-cyan-500/30 rounded-2xl p-6 space-y-4"
           >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
+                {editingSportId ? <Edit2 className="w-4 h-4 text-cyan-400" /> : <Plus className="w-4 h-4 text-cyan-400" />}
+              </div>
+              <h3 className="text-white font-bold tracking-wide">
+                {editingSportId ? (lang === 'pt' ? 'Editar Esporte' : 'Edit Sport') : (lang === 'pt' ? 'Criar Novo Esporte' : 'Create New Sport')}
+              </h3>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
@@ -222,7 +257,12 @@ export const SportsSettings = () => {
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
               <Button 
                 variant="ghost" 
-                onClick={() => setIsAdding(false)}
+                onClick={() => {
+                  setIsAdding(false);
+                  setEditingSportId(null);
+                  setNewSportName("");
+                  setNewSportPositions([]);
+                }}
                 className="text-slate-400 hover:text-white"
               >
                 {lang === "pt" ? "Cancelar" : "Cancel"}
@@ -259,12 +299,22 @@ export const SportsSettings = () => {
                   </div>
                   <h3 className="font-black text-white uppercase tracking-tight">{sport.name}</h3>
                 </div>
-                <button 
-                  onClick={() => handleDeleteSport(sport.id)}
-                  className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center">
+                  <button 
+                    onClick={() => handleEditClick(sport)}
+                    className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-0 group-hover:opacity-100"
+                    title={lang === 'pt' ? 'Editar' : 'Edit'}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteSport(sport.id)}
+                    className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100"
+                    title={lang === 'pt' ? 'Excluir' : 'Delete'}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {sport.positions.slice(0, 4).map((pos, i) => (
