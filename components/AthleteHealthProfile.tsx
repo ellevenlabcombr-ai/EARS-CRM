@@ -989,12 +989,12 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             .order('start_time', { ascending: false })
             .limit(30),
           supabase.from('financial_products').select('*').order('name'),
-          supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).maybeSingle(),
+          supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).order('created_at', { ascending: false }).limit(1),
           supabase.from('financial_transactions').select('*').eq('athlete_id', athlete.id).order('date', { ascending: false }).limit(50)
         ]);
 
         if (productsRes.data) setFinancialProducts(productsRes.data);
-        if (subRes.data) setAthleteSubscription(subRes.data);
+        if (subRes.data) setAthleteSubscription(subRes.data[0] || null);
         if (transRes.data) setAthleteTransactions(transRes.data);
 
         if (alertsRes.data) {
@@ -2249,8 +2249,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       setNotification({ message: 'Plano vinculado com sucesso!', type: 'success' });
       setShowLinkPlanModal(false);
       
-      const { data } = await supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).maybeSingle();
-      setAthleteSubscription(data);
+      const subRes = await supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).order('created_at', { ascending: false }).limit(1);
+      setAthleteSubscription(subRes.data?.[0] || null);
     } catch (err: any) {
       console.error(err);
       setNotification({ message: 'Erro ao vincular plano: ' + err.message, type: 'error' });

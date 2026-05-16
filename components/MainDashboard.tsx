@@ -83,6 +83,19 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
     clinical: { view: 'clinical', athlete: null },
     eagles: { view: 'eagles', athlete: null }
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedView = localStorage.getItem('elleven_latestView');
+      const topLevelViews = ['home', 'clinical', 'eagles', 'agenda', 'athletes', 'pendencies', 'reports', 'wellness', 'finance', 'settings'];
+      if (savedView && topLevelViews.includes(savedView)) {
+        setCurrentView(savedView as View);
+        if (['home', 'clinical', 'eagles'].includes(savedView)) {
+           setActiveMode(savedView as any);
+        }
+      }
+    }
+  }, []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
@@ -316,6 +329,12 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
       onLogout?.();
     } else {
       setCurrentView(action);
+      if (typeof window !== 'undefined') {
+        const topLevelViews = ['home', 'clinical', 'eagles', 'agenda', 'athletes', 'pendencies', 'reports', 'wellness', 'finance', 'settings'];
+        if (topLevelViews.includes(action)) {
+          localStorage.setItem('elleven_latestView', action);
+        }
+      }
       if (!isDesktop) setIsMobileMenuOpen(false);
     }
     setIsDirty(false);
