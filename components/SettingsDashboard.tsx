@@ -54,7 +54,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'data' as const,
-      title: 'Esportes\ne Dados',
+      title: 'Esportes',
       icon: Database,
       color: 'bg-blue-500',
       textColor: 'text-blue-500',

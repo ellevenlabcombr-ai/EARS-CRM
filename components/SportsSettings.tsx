@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Save, Trophy, Users, Edit2, X, Search, ChevronUp, ChevronDown, GripVertical, Zap, RefreshCcw } from "lucide-react";
-import { motion, AnimatePresence, Reorder } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -355,37 +355,24 @@ export const SportsSettings = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-cyan-500/20 rounded-xl flex items-center justify-center border border-cyan-500/30">
-            <Trophy className="w-5 h-5 text-cyan-400" />
+      <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4">
+        <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-500" />
           </div>
-          <div>
-            <h2 className="text-xl font-black text-white uppercase tracking-tight">
-              {language === "pt" ? "Gestão de Esportes" : "Sports Management"}
-            </h2>
-            <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">
-              {language === "pt" ? "Configure as modalidades e posições" : "Configure sports and positions"}
-            </p>
-          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={language === "pt" ? "Buscar esporte..." : "Search sport..."}
+            className="bg-slate-900 border border-slate-700/50 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 transition-colors w-full sm:w-64"
+          />
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-slate-500" />
-            </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={language === "pt" ? "Buscar esporte..." : "Search sport..."}
-              className="bg-slate-900 border border-slate-700/50 rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500/50 transition-colors w-full sm:w-48"
-            />
-          </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <Button 
             onClick={handleSeedSports}
             variant="outline"
-            className="border-slate-700 text-slate-400 hover:text-white hover:border-cyan-500/50 font-black uppercase tracking-widest rounded-xl transition-all"
+            className="border-slate-700 text-slate-400 hover:text-white hover:border-cyan-500/50 font-black uppercase tracking-widest rounded-xl transition-all w-full sm:w-auto"
             disabled={loading}
           >
             <RefreshCcw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -401,7 +388,7 @@ export const SportsSettings = () => {
               setNewSportIsActive(true);
               setIsAdding(true);
             }}
-            className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-6 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+            className="bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest px-6 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
             {language === "pt" ? "Novo Esporte" : "New Sport"}
@@ -687,27 +674,23 @@ export const SportsSettings = () => {
         )}
       </AnimatePresence>
 
-      <div className={searchTerm ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : ""}>
-      {!searchTerm ? (
-        <Reorder.Group 
-          axis="y" 
-          values={filteredSports} 
-          onReorder={(newOrder) => handleReorder(newOrder)}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-        >
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
-            ))
-          ) : filteredSports.length === 0 ? (
-            <div className="col-span-full flex flex-col items-center justify-center p-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl space-y-6">
-              <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center">
-                <Search className="w-8 h-8 text-slate-600" />
-              </div>
-              <div className="text-center space-y-2">
-                <p className="text-slate-200 font-bold text-lg">{language === 'pt' ? 'Nenhuma modalidade encontrada' : 'No sports found'}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
+          ))
+        ) : filteredSports.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center p-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl space-y-6">
+            <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center">
+              <Search className="w-8 h-8 text-slate-600" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-slate-200 font-bold text-lg">{searchTerm ? (language === 'pt' ? 'Nenhuma modalidade encontrada' : 'No sports found') : (language === 'pt' ? 'Nenhuma modalidade cadastrada' : 'No sports registered')}</p>
+              {!searchTerm && (
                 <p className="text-slate-500 text-sm max-w-xs">{language === 'pt' ? 'Comece criando uma nova modalidade ou restaure as sugestões padrão do sistema.' : 'Start by creating a new sport or restore the system defaults.'}</p>
-              </div>
+              )}
+            </div>
+            {!searchTerm && (
               <div className="flex gap-3">
                 <Button 
                   onClick={handleSeedSports}
@@ -717,137 +700,7 @@ export const SportsSettings = () => {
                   {language === "pt" ? "Carregar Sugestões" : "Load Suggestions"}
                 </Button>
               </div>
-            </div>
-          ) : (
-            filteredSports.map((sport) => {
-              const sportColor = sport.color || '#06b6d4';
-              const progress = Math.min(((sport.athleteCount || 0) / (sport.target_athletes || 20)) * 100, 100);
-              const gradientStyle = getGradientState(sportColor);
-
-              return (
-                <Reorder.Item
-                  key={sport.id}
-                  value={sport}
-                  className="bg-slate-900/40 border rounded-2xl p-5 hover:bg-slate-900/60 transition-all group relative overflow-hidden cursor-grab active:cursor-grabbing border-slate-800/50"
-                  style={{ 
-                    background: gradientStyle,
-                    borderColor: `${sportColor}40`
-                  }}
-                >
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 transition-opacity">
-                    <GripVertical className="w-4 h-4 text-white" />
-                  </div>
-
-                  <div className="flex justify-between items-start mb-4 relative z-10">
-                    <div className="flex items-center gap-3">
-                      <span className="text-4xl leading-none select-none group-hover:scale-110 transition-transform duration-300">
-                        {sport.icon || "🏆"}
-                      </span>
-                      <div>
-                        <h3 
-                          className="font-black text-white uppercase tracking-tight transition-colors flex items-center gap-2"
-                          style={{ color: sport.is_active ? 'white' : '#64748b' }}
-                        >
-                          {sport.name}
-                          {!sport.is_active && (
-                            <span className="text-[8px] px-1.5 py-0.5 bg-slate-800 text-slate-500 rounded border border-slate-700">
-                              {language === 'pt' ? 'INATIVO' : 'INACTIVE'}
-                            </span>
-                          )}
-                        </h3>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Users className="w-3 h-3 text-slate-500" />
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                            {sport.athleteCount || 0} / {sport.target_athletes || 20} {language === 'pt' ? 'Atletas' : 'Athletes'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSportStatus(sport);
-                        }}
-                        className="p-2 transition-colors bg-slate-800/50 rounded-lg"
-                        style={{ color: sport.is_active ? sportColor : '#64748b' }}
-                        title={sport.is_active ? 'Desativar' : 'Ativar'}
-                      >
-                        <Zap className="w-3.5 h-3.5" fill={sport.is_active ? sportColor : 'transparent'} />
-                      </button>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditClick(sport);
-                        }}
-                        className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg pointer-events-auto"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSport(sport.id);
-                        }}
-                        className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg pointer-events-auto"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Target Progress Bar */}
-                  <div className="space-y-1.5 mb-4 relative z-10">
-                    <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-slate-500">
-                      <span>{language === 'pt' ? 'Preenchimento' : 'Fill Rate'}</span>
-                      <span style={{ color: sportColor }}>{Math.round(progress)}%</span>
-                    </div>
-                    <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: sportColor }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-1.5 relative z-10">
-                    {(sport.positions || []).slice(0, 3).map((pos, i) => (
-                      <span key={i} className="text-[9px] font-black px-2 py-1 bg-slate-800/20 border border-slate-700/20 text-slate-500 rounded-md uppercase tracking-widest group-hover:text-slate-300 transition-colors">
-                        {pos}
-                      </span>
-                    ))}
-                    {sport.custom_fields && sport.custom_fields.length > 0 && (
-                      <span 
-                        className="text-[9px] font-black px-2 py-1 bg-slate-950/40 border rounded-md uppercase tracking-widest"
-                        style={{ borderColor: `${sportColor}40`, color: sportColor }}
-                      >
-                        +{sport.custom_fields.length} {language === 'pt' ? 'CAMPOS' : 'FIELDS'}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Background Decoration */}
-                  <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
-                    <span className="text-[100px] leading-none select-none rotate-12">
-                      {sport.icon || "🏆"}
-                    </span>
-                  </div>
-                </Reorder.Item>
-              );
-            })
-          )}
-        </Reorder.Group>
-      ) : (
-        loading ? (
-          Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-32 bg-slate-900/30 rounded-2xl animate-pulse border border-slate-800/50" />
-          ))
-        ) : filteredSports.length === 0 ? (
-          <div className="col-span-full flex flex-col items-center justify-center p-8 bg-slate-900/20 border border-slate-800/50 rounded-2xl">
-            <Search className="w-8 h-8 text-slate-600 mb-3" />
-            <p className="text-slate-400 font-medium">Nenhum esporte encontrado.</p>
+            )}
           </div>
         ) : (
           filteredSports.map((sport) => {
@@ -867,10 +720,12 @@ export const SportsSettings = () => {
                 }}
               >
                 <div className="flex justify-between items-start mb-4 relative z-10">
-                  <div className="flex items-center gap-3">
-                    <span className="text-4xl leading-none select-none group-hover:scale-110 transition-transform duration-300">
-                      {sport.icon || "🏆"}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg border border-white/10" style={{ backgroundColor: `${sportColor}20` }}>
+                      <span className="text-4xl leading-none select-none drop-shadow-md">
+                        {sport.icon || "🏆"}
+                      </span>
+                    </div>
                     <div>
                       <h3 
                         className="font-black text-white uppercase tracking-tight transition-colors flex items-center gap-2"
@@ -897,21 +752,27 @@ export const SportsSettings = () => {
                         e.stopPropagation();
                         toggleSportStatus(sport);
                       }}
-                      className="p-2 transition-colors bg-slate-800/50 rounded-lg"
+                      className="p-2 transition-colors bg-slate-800/80 rounded-lg shadow-sm"
                       style={{ color: sport.is_active ? sportColor : '#64748b' }}
                       title={sport.is_active ? 'Desativar' : 'Ativar'}
                     >
                       <Zap className="w-3.5 h-3.5" fill={sport.is_active ? sportColor : 'transparent'} />
                     </button>
                     <button 
-                      onClick={() => handleEditClick(sport)}
-                      className="p-2 text-slate-600 hover:text-cyan-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(sport);
+                      }}
+                      className="p-2 text-slate-300 hover:text-cyan-400 transition-colors bg-slate-800/80 rounded-lg shadow-sm pointer-events-auto"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button 
-                      onClick={() => handleDeleteSport(sport.id)}
-                      className="p-2 text-slate-600 hover:text-rose-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-slate-800/50 rounded-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSport(sport.id);
+                      }}
+                      className="p-2 text-slate-300 hover:text-rose-400 transition-colors bg-slate-800/80 rounded-lg shadow-sm pointer-events-auto"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -959,8 +820,7 @@ export const SportsSettings = () => {
               </motion.div>
             );
           })
-        )
-      )}
+        )}
       </div>
     </div>
   );
