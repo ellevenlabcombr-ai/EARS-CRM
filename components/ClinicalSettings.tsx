@@ -190,6 +190,63 @@ export function ClinicalSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8 pb-10">
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <Activity className="text-rose-500" size={28} /> Regras Clínicas e Alertas
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Configure os parâmetros automáticos do motor de inteligência. O sistema usará esses limites para classificar o nível de risco de cada paciente e recomendar ações imediatas na triagem.
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+          <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual de Regras Clínicas</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 800px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #f43f5e; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual do Motor de Regras</h1>
+
+                    <h2>1. Limites Críticos (Risco Alto)</h2>
+                    <p><b>O que é:</b> São os limiares onde o sistema dispara o alerta vermelho. Se a prontidão cair abaixo do valor configurado ou a dor ficar acima da taxa estipulada, o sistema marca o acompanhamento como urgente.</p>
+                    <p>Dica: O padrão recomendado para esportistas e atletas costuma ser Dor >= 7 e Prontidão < 50%.</p>
+
+                    <h2>2. Faixa de Atenção (Alerta Leve)</h2>
+                    <p><b>O que é:</b> Um limite intermediário que categoriza o alerta amarelo de atenção.</p>
+                    <p>Como funciona: É usado para identificar casos em que há risco potencial, servindo de 'esteira de triagem' para evitar que as dores virem lesões críticas.</p>
+                    
+                    <h2>3. Mensagens Padrão Automáticas</h2>
+                    <p><b>O que é:</b> Textos que são automaticamente sugeridos nas avaliações e no prontuário do paciente quando um alerta é disparado pelas faixas acima. Padroniza e agiliza a comunicação da equipe.</p>
+                    
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <AlertCircle size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
         
         {/* Limites Críticos */}
