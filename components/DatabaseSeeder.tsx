@@ -1615,6 +1615,24 @@ END $storage$;`;
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
             END IF;
+            
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_subscriptions') THEN
+                CREATE TABLE financial_subscriptions (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE,
+                    product_id UUID REFERENCES financial_products(id) ON DELETE SET NULL,
+                    status TEXT DEFAULT 'active',
+                    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+                    end_date DATE,
+                    billing_cycle TEXT DEFAULT 'monthly',
+                    amount NUMERIC NOT NULL,
+                    gateway_provider TEXT,
+                    gateway_subscription_id TEXT,
+                    next_billing_date DATE,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_goals' AND column_name='type') THEN
                 ALTER TABLE financial_goals ADD COLUMN type TEXT DEFAULT 'saving';
             END IF;
@@ -1826,6 +1844,7 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.financial_closures ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_transactions ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_products ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_subscriptions ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_billing_rules ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_payment_methods ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_taxes ENABLE ROW LEVEL SECURITY;
@@ -1843,6 +1862,7 @@ END $storage$;`;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_closures;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_transactions;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_products;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_subscriptions;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_billing_rules;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_payment_methods;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_taxes;
@@ -1860,6 +1880,7 @@ END $storage$;`;
         CREATE POLICY "Permitir tudo" ON public.financial_closures FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_transactions FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_products FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_subscriptions FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_billing_rules FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_payment_methods FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_taxes FOR ALL USING (true) WITH CHECK (true);

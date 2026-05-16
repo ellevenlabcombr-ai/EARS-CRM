@@ -284,6 +284,15 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [athletePhoto, setAthletePhoto] = useState<string | null>(athlete.photo || null);
   const [sportConfig, setSportConfig] = useState<any>(null);
+  
+  // Finance States
+  const [financialProducts, setFinancialProducts] = useState<any[]>([]);
+  const [athleteSubscription, setAthleteSubscription] = useState<any>(null);
+  const [athleteTransactions, setAthleteTransactions] = useState<any[]>([]);
+  const [showLinkPlanModal, setShowLinkPlanModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [isLinkingPlan, setIsLinkingPlan] = useState(false);
+
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
     { id: '1', tag: 'Posterior chain vulnerability', created_at: new Date().toISOString(), weight: 1.5, source: 'clinical' },
     { id: '2', tag: 'Load intolerance', created_at: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(), weight: 2.0, source: 'field_observation' }
@@ -932,7 +941,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         console.log(`Fetching data for athlete: ${athlete.name} (ID: ${athlete.id})`);
 
         // Fetch all data in parallel
-        const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes, eventsRes] = await Promise.all([
+        const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes, eventsRes, productsRes, subRes, transRes] = await Promise.all([
           supabase
             .from('wellness_records')
             .select('record_date, readiness_score, fatigue_level, muscle_soreness, sleep_hours, sleep_quality, stress_level, fatigue_level, muscle_soreness, soreness_location, menstrual_cycle, menstrual_symptoms, hydration_perception, hydration_score, urine_color, symptoms, comments, created_at')
@@ -971,8 +980,15 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             .eq('athlete_id', athlete.id)
             .in('category', ['competition', 'game', 'training'])
             .order('start_time', { ascending: false })
-            .limit(30)
+            .limit(30),
+          supabase.from('financial_products').select('*').order('name'),
+          supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).maybeSingle(),
+          supabase.from('financial_transactions').select('*').eq('athlete_id', athlete.id).order('date', { ascending: false }).limit(50)
         ]);
+
+        if (productsRes.data) setFinancialProducts(productsRes.data);
+        if (subRes.data) setAthleteSubscription(subRes.data);
+        if (transRes.data) setAthleteTransactions(transRes.data);
 
         if (alertsRes.data) {
           setAthleteAlerts(alertsRes.data);
@@ -2197,6 +2213,58 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     const alerts = assessmentValues.flatMap(a => (a.alerts || []).map((alert: string) => ({ type: a.assessment_type, message: alert })));
     return { globalAssessmentScore: score, assessmentAlerts: alerts };
   }, [latestAssessmentsByType]);
+
+  const handleLinkPlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProductId) return;
+    setIsLinkingPlan(true);
+    try {
+      const selectedPlan = financialProducts.find(p => p.id === selectedProductId);
+      if (!selectedPlan) throw new Error("Plano não encontrado.");
+
+      const subPayload = {
+        athlete_id: athlete.id,
+        product_id: selectedProductId,
+        status: 'active',
+        billing_cycle: 'monthly',
+        amount: selectedPlan.default_price,
+        start_date: getLocalDateString()
+      };
+
+      if (athleteSubscription?.id) {
+         const { error } = await supabase.from('financial_subscriptions').update(subPayload).eq('id', athleteSubscription.id);
+         if (error) throw error;
+      } else {
+         const { error } = await supabase.from('financial_subscriptions').insert(subPayload);
+         if (error) throw error;
+      }
+
+      setNotification({ message: 'Plano vinculado com sucesso!', type: 'success' });
+      setShowLinkPlanModal(false);
+      
+      const { data } = await supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).maybeSingle();
+      setAthleteSubscription(data);
+    } catch (err: any) {
+      console.error(err);
+      setNotification({ message: 'Erro ao vincular plano: ' + err.message, type: 'error' });
+    } finally {
+      setIsLinkingPlan(false);
+    }
+  };
+
+  const handleUnlinkPlan = async () => {
+    if(!athleteSubscription?.id) return;
+    if(!confirm('Deseja realmente desvincular o plano atual deste atleta?')) return;
+    try {
+      const { error } = await supabase.from('financial_subscriptions').delete().eq('id', athleteSubscription.id);
+      if(error) throw error;
+      setNotification({ message: 'Plano desvinculado com sucesso.', type: 'success' });
+      setAthleteSubscription(null);
+    } catch(err: any) {
+       console.error(err);
+       setNotification({ message: 'Erro ao desvincular plano: ' + err.message, type: 'error' });
+    }
+  };
 
   const statusCfg = getStatusConfig(athlete.status);
   const riskCfg = getRiskConfig(athlete.riskLevel || 'Baixo');
@@ -4749,13 +4817,33 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Gerencie a assinatura, plano ou cobrança recorrente vinculada a este atleta." : "Manage the subscription, plan, or recurring payment linked to this athlete."}</p>
                    
                    <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center relative z-10">
-                      <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
-                        <Plus size={24} />
-                      </div>
-                      <p className="text-sm text-slate-300">{language === "pt" ? "Nenhum plano vinculado." : "No active plan."}</p>
-                      <button className="mt-4 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs uppercase tracking-widest font-black transition-all">
-                         {language === "pt" ? "Vincular Plano" : "Link Plan"}
-                      </button>
+                      {athleteSubscription ? (
+                        <>
+                          <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
+                            <CheckCircle size={24} />
+                          </div>
+                          <p className="text-lg text-white font-black">{athleteSubscription.product?.name || 'Plano Customizado'}</p>
+                          <p className="text-sm font-bold text-cyan-400 mt-1">R$ {athleteSubscription.amount} <span className="text-[10px] text-slate-500 uppercase">/ {athleteSubscription.billing_cycle === 'monthly' ? 'mês' : athleteSubscription.billing_cycle}</span></p>
+                          <div className="mt-4 flex gap-2 w-full justify-center">
+                             <button onClick={() => setShowLinkPlanModal(true)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all flex items-center gap-2">
+                                <MoreVertical size={14} /> Trocar/Editar
+                             </button>
+                             <button onClick={handleUnlinkPlan} className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs uppercase tracking-widest font-black transition-all rounded-lg flex items-center gap-2">
+                                <Trash2 size={14} />
+                             </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
+                            <Plus size={24} />
+                          </div>
+                          <p className="text-sm text-slate-300">{language === "pt" ? "Nenhum plano vinculado." : "No active plan."}</p>
+                          <button onClick={() => setShowLinkPlanModal(true)} className="mt-4 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs uppercase tracking-widest font-black transition-all">
+                             {language === "pt" ? "Vincular Plano" : "Link Plan"}
+                          </button>
+                        </>
+                      )}
                    </div>
                </div>
 
@@ -5764,6 +5852,84 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   {isUpdatingAttachment ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Link Plan Modal */}
+      <AnimatePresence>
+        {showLinkPlanModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-[#0A1120] border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+            >
+              <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-500/10 rounded-xl">
+                    <CreditCard className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Vincular Plano</h3>
+                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Assinatura de recorrencia</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowLinkPlanModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleLinkPlan} className="p-6 space-y-6">
+                <div className="space-y-4">
+                  {financialProducts.length === 0 ? (
+                    <div className="text-sm font-bold text-slate-500 bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
+                      Nenhum plano cadastrado no sistema. Vá em Configurações &gt; Financeiro para criar um.
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Selecione o Plano Base</label>
+                        <select 
+                          required
+                          value={selectedProductId}
+                          onChange={(e) => setSelectedProductId(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
+                        >
+                          <option value="">Selecione...</option>
+                          {financialProducts.map(p => (
+                            <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+                        <p className="text-xs text-slate-400 mb-2 font-medium">Os pagamentos desta assinatura deverão ser conciliados e criados na aba Histórico de Transações. Aqui apenas definimos o vínculo do contrato.</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-slate-800 flex gap-3">
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLinkPlanModal(false)}
+                    className="flex-1 border-slate-800 text-slate-400 font-black uppercase tracking-widest text-xxs h-12 rounded-xl"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={!selectedProductId || isLinkingPlan || financialProducts.length === 0}
+                    className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest text-xxs h-12 rounded-xl shadow-lg shadow-cyan-500/20"
+                  >
+                    {isLinkingPlan ? 'Vinculando...' : 'Confirmar Vínculo'}
+                  </Button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
