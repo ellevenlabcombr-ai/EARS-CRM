@@ -38,7 +38,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'automation' as const,
-      title: 'Comunicação\ne Automação',
+      title: 'Automação',
       icon: MessageCircle,
       color: 'bg-cyan-500',
       textColor: 'text-cyan-500',
@@ -46,7 +46,7 @@ export function SettingsDashboard() {
     },
     {
       id: 'dev' as const,
-      title: 'Desenv. e\nde Bug',
+      title: 'Desenv.',
       icon: Code,
       color: 'bg-amber-500',
       textColor: 'text-amber-500',
@@ -111,8 +111,8 @@ export function SettingsDashboard() {
       </header>
 
       {/* Horizontal Nav - Timeline Style */}
-      <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full">
-        <div className="flex items-center justify-between min-w-[950px] px-4">
+      <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full flex justify-center">
+        <div className="flex items-center justify-start sm:justify-center min-w-max px-4">
           {sections.map((section, i, arr) => {
             const activeIndex = arr.findIndex(t => t.id === activeSection);
             const isActive = activeSection === section.id;
@@ -132,7 +132,7 @@ export function SettingsDashboard() {
                   </span>
                 </div>
                 {i < arr.length - 1 && (
-                  <div className={`flex-1 h-[3px] mx-6 mb-11 rounded-full ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
+                  <div className={`w-8 md:w-12 h-[3px] mx-3 md:mx-4 mb-11 rounded-full shrink-0 ${activeIndex > i ? 'bg-cyan-500/50' : 'bg-slate-800'}`}></div>
                 )}
               </React.Fragment>
             );
