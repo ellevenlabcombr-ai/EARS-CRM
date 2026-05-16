@@ -2470,8 +2470,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         </div>
       </div>
 
-        <div className="col-span-full lg:row-start-3 order-3 overflow-x-auto custom-scrollbar pb-4 pt-2 flex justify-start sm:justify-center">
-          <div className="flex items-center justify-start sm:justify-center min-w-max px-2 gap-3 md:gap-5">
+        <div className="col-span-full lg:row-start-3 order-3 overflow-x-auto custom-scrollbar pb-4 pt-2">
+          <div className="flex items-center justify-between min-w-[600px] px-4">
             {[
               { id: 'overview', label: 'Visão Geral', icon: Activity },
               { id: 'ficha', label: 'Cadastro', icon: User },
@@ -2488,13 +2488,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               return (
               <React.Fragment key={tab.id}>
                 <div 
-                  className={`flex flex-col items-center gap-2 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
+                  className={`flex flex-col items-center gap-3 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
                   onClick={() => setActiveTab(tab.id as any)}
                 >
-                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-[2px] md:border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
-                    <tab.icon className="w-4 h-4 md:w-5 md:h-5" />
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+                    <tab.icon className="w-6 h-6" />
                   </div>
-                  <span className={`text-[0.6rem] md:text-[0.65rem] font-black uppercase tracking-widest text-center max-w-[5rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>{tab.label}</span>
+                  <span className={`text-[0.65rem] font-black uppercase tracking-widest text-center max-w-[6rem] leading-tight ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>{tab.label}</span>
                 </div>
               </React.Fragment>
             )})}
