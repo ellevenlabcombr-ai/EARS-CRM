@@ -247,40 +247,86 @@ export function ClinicalSettings() {
                   <head>
                     <title>Manual de Regras Clínicas</title>
                     <style>
-                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 800px; margin: 0 auto; }
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
                       h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
                       h2 { color: #f43f5e; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
                       p, li { color: #94a3b8; }
                       strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #f43f5e; border-radius: 4px; margin: 1rem 0; }
                     </style>
                   </head>
                   <body>
-                    <h1>Manual do Motor de Regras</h1>
+                    <h1>Manual do Motor de Regras Clínicas</h1>
+                    <p>O Motor de Regras é o cérebro clínico do sistema. Ele avalia automaticamente os dados dos pacientes (como índices de dor e recuperação) e dispara ações de segurança baseadas nos protocolos que você definir aqui. Este guia mostrará como configurar cada trava operacional.</p>
 
                     <h2>1. Limites Críticos (Risco Alto)</h2>
-                    <p><b>O que é:</b> São os limiares onde o sistema dispara o alerta vermelho. Se a prontidão cair abaixo do valor configurado ou a dor ficar acima da taxa estipulada, o sistema marca o acompanhamento como urgente.</p>
-                    <p>Dica: O padrão recomendado para esportistas e atletas costuma ser Dor >= 7 e Prontidão < 50%.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Identificar atletas com grande risco de lesão aguda para intervir imediatamente.
+                    </div>
+                    <p>Aqui você define os "Limiares de Alerta Vermelho".</p>
+                    <ul>
+                      <li><strong>Prontidão menor que (%):</strong> O questionário wellness gera uma nota de prontidão. Se o atleta pontuar abaixo deste valor (ex: menor que 50%), ele entra em alerta vermelho.</li>
+                      <li><strong>Dor maior ou igual a:</strong> Na escala de dor de 0 a 10. Se ele relatar uma dor que iguale ou ultrapasse este limite (ex: dor 7), também entra no estado crítico.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Digite "50" na prontidão e "7" na dor. Qualquer atleta que chegar na academia com dor 7 ou mais, ou super fadigado, fará o sistema apitar.</p>
 
                     <h2>2. Faixa de Atenção (Alerta Leve)</h2>
-                    <p><b>O que é:</b> Um limite intermediário que categoriza o alerta amarelo de atenção.</p>
-                    <p>Como funciona: É usado para identificar casos em que há risco potencial, servindo de 'esteira de triagem' para evitar que as dores virem lesões críticas.</p>
-                    
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Monitorar atletas que precisam de cuidados preventivos antes que a dor piore.
+                    </div>
+                    <p>É a famosa "Luz Amarela". Você cria uma janela de valores.</p>
+                    <ul>
+                      <li><strong>Prontidão (Mín. e Máx.):</strong> Ex: Entre 51% e 75%. O atleta não está crítico, mas também não está 100%.</li>
+                      <li><strong>Dor (Mín. e Máx.):</strong> Ex: Dor entre 4 e 6. O atleta relata um incômodo, precisa de atenção do preparador, mas não impede o treino leve.</li>
+                    </ul>
+
                     <h2>3. Mensagens Padrão Automáticas</h2>
-                    <p><b>O que é:</b> Textos que são automaticamente sugeridos nas avaliações e no prontuário do paciente quando um alerta é disparado pelas faixas acima. Padroniza e agiliza a comunicação da equipe.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Padronizar os recados que aparecem na tela dos profissionais.
+                    </div>
+                    <p>Quando o sistema identificar que o atleta caiu no Alerta Vermelho ou Amarelo estipulado acima, ele colará esses textos automaticamente no perfil do paciente e nos cards de agendamento do dia.</p>
+                    <ul>
+                      <li><strong>Mensagem de Risco:</strong> Digite um texto urgente. <em>Ex: "ATENÇÃO: Avaliação médica mandatória antes de qualquer esforço."</em></li>
+                      <li><strong>Mensagem de Atenção:</strong> Digite um texto de alerta. <em>Ex: "Cuidado com cargas máximas hoje. Verifique a queixa de dor."</em></li>
+                    </ul>
                     
                     <h2>4. Bloqueios Preventivos e de Segurança (Safety Locks)</h2>
-                    <p><b>O que é:</b> Travas operacionais para segurança clínica.</p>
-                    <p><b>Travar Agendamentos e Treinos:</b> Impede a recepção/técnicos de marcarem novos treinos ou check-ins na academia se o atleta estiver na faixa de Risco Crítico, até que um Fisioterapeuta ou Médico clique em "Aprovar Liberação (Clearance)".</p>
-                    <p><b>Assinatura de Termos:</b> Dispara a exigência de um "Termo de Responsabilidade" automático se o paciente assinalar dor acima de X, mas insistir em treinar.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Impedir fisicamente as rotinas se a segurança for violada.
+                    </div>
+                    <p>Estas chaves funcionam junto com o <strong>Limite Crítico</strong> que você configurou no Passo 1.</p>
+                    <ul>
+                      <li><strong>Travar Agendamentos e Treinos (Risco Crítico):</strong> Se marcado, a recepção e os técnicos perdem o botão de dar "Check-in" ou agendar treinos se o paciente estiver vermelho. A tela fica bloqueada.</li>
+                      <li><strong>Exigir Aprovação Médica (Clearance):</strong> Se o bloqueio acima atracar as telas, ao ligar esta chave você exige que a única maneira de destravar o paciente para treinar é se um usuário com perfil "Médico/Fisio" clicar no botão de "Aprovar Liberação" digitando a sua senha.</li>
+                      <li><strong>Exigir Termo de Responsabilidade se Dor >=:</strong> Indique uma nota de dor (ex: 8). Se o paciente tentar treinar com dor alta e sem o Clearance, o sistema enviará um PDF/Termo para o App dele assinar atestando que está treinando por conta e risco, contra o aviso médico.</li>
+                    </ul>
                     
                     <h2>5. Gatilhos de Notificações Internas (Alert Routing)</h2>
-                    <p><b>O que é:</b> Avisos cruzados para a equipe. Ex: Enviar notificação imediata para o Fisioterapeuta Chefe e Preparador Físico se um atleta entrar em risco crítico.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Fazer as fofocas clínicas chegarem nas pessoas certas instantaneamente.
+                    </div>
+                    <p>Se você assinalar a chave <strong>Avisos Cruzados Imediatos</strong>, assim que o paciente finalizar o questionário no celular dele relatando um nível de dor que o coloque em "Risco", o sistema manda, na mesma hora, no e-mail ou no painel do Preparador Físico Chefe e do Fisioterapeuta que o atleta está quebrado. Assim eles podem alterar os treinos antes do atleta chegar no clube.</p>
                     
                     <h2>6. Automação de Retorno e Acompanhamento (Recall Clínico)</h2>
-                    <p><b>O que é:</b> Prevenção de abandono (Follow-up) e manutenção de status. Alerta quando um paciente em tratamento agudo passar mais de "X" dias sem agendar retorno, ou inativa pacientes após um tempo ocioso.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Gestão automática de evasão e abstenção de pacientes.
+                    </div>
+                    <p>Como garantir que o paciente não parou o tratamento pela metade?</p>
+                    <ul>
+                      <li><strong>Alerta Abandono (Dias sem volta):</strong> Coloque um prazo, ex: 15 dias. Se um paciente com lesão ativa passar 15 dias sem agendar nada, seu nome piscará na aba "Abandonos" pro time ligar para ele.</li>
+                      <li><strong>Inativo Auto (Dias sem atividade):</strong> Se você não quer arquivar pacientes à mão. Digite ex: 90 dias. Se em 90 dias ele não preencher questionários nem for atendido, seu status vai para "Inativo" e o chat dele é fechado.</li>
+                    </ul>
                     
                     <h2>7. Rigor de Evolução Obrigatória (Compliance de Prontuário)</h2>
-                    <p><b>O que é:</b> Travas para os profissionais de saúde não esquecerem os protocolos e atualizações. Define um tempo limite para criar a evolução ou bloqueia o repasse financeiro de sessões não evoluídas.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Forçar a equipe de saúde a preencher os prontuários no prazo, vinculando isso ao dinheiro.
+                    </div>
+                    <p>Para clínicas que lutam com evoluções atrasadas.</p>
+                    <ul>
+                      <li><strong>Tempo Limite para Evolução:</strong> Defina quantas horas os profissionais têm para escrever no prontuário após a consulta. O CRM do Conselho Federal costuma pedir que os prontuários sejam diários. Se preencher "24", o profissional ganha uma pendência vermelha se passar desse prazo.</li>
+                      <li><strong>Travar Fechamento Financeiro:</strong> A ferramenta final de cobrança. Se ativada, a equipe financeira não consegue gerar boletos, emitir nota ou repassar a comissão da sessão para o profissional SE ele não tiver finalizado a Evolução daquele atendimento. <em>Fez a evolução = O Dinheiro é liberado. Não fez = Sessão congelada.</em></li>
+                    </ul>
                     
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
