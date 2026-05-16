@@ -82,7 +82,8 @@ import {
   AlertTriangle,
   CalendarDays,
   Pause,
-  MoreVertical
+  MoreVertical,
+  CreditCard
 } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { Button } from "@/components/ui/button";
@@ -277,7 +278,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const [showSessionFinalizedUI, setShowSessionFinalizedUI] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments' | 'agenda'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments' | 'agenda' | 'finance'>('overview');
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -2480,6 +2481,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               { id: 'agenda', label: 'Calendário', icon: Calendar },
               { id: 'attachments', label: 'Anexos', icon: ClipboardList },
               { id: 'history', label: 'Histórico', icon: Clock },
+              { id: 'finance', label: 'Financeiro', icon: CreditCard },
             ].map((tab, i, arr) => {
               const activeIndex = arr.findIndex(t => t.id === activeTab);
               const isPast = activeIndex > i;
@@ -4722,6 +4724,60 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+        {activeTab === 'finance' && (
+          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-cyan-500" />{language === "pt" ? "Financeiro & Planos" : "Finance & Plans"}
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="bg-[#0A1120] border border-cyan-500/20 rounded-2xl flex flex-col p-6 shadow-xl relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Zap size={80} className="text-cyan-500" />
+                   </div>
+                   <div className="flex items-center gap-3 mb-2 relative z-10">
+                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                         <CreditCard size={20} />
+                      </div>
+                      <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Plano Ativo" : "Active Plan"}</h3>
+                   </div>
+                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Gerencie a assinatura, plano ou cobrança recorrente vinculada a este atleta." : "Manage the subscription, plan, or recurring payment linked to this athlete."}</p>
+                   
+                   <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center relative z-10">
+                      <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
+                        <Plus size={24} />
+                      </div>
+                      <p className="text-sm text-slate-300">{language === "pt" ? "Nenhum plano vinculado." : "No active plan."}</p>
+                      <button className="mt-4 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs uppercase tracking-widest font-black transition-all">
+                         {language === "pt" ? "Vincular Plano" : "Link Plan"}
+                      </button>
+                   </div>
+               </div>
+
+               <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl flex flex-col p-6 shadow-xl relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Clock size={80} className="text-slate-500" />
+                   </div>
+                   <div className="flex items-center gap-3 mb-2 relative z-10">
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center">
+                         <History size={20} />
+                      </div>
+                      <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Transações" : "Transactions"}</h3>
+                   </div>
+                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Histórico de pagamentos, conciliação e inadimplência." : "Payment history, reconciliation, and defaults."}</p>
+                   
+                   <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center relative z-10">
+                      <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação encontrada no período." : "No transactions found."}</p>
+                      <button className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all">
+                         {language === "pt" ? "Nova Transação" : "New Transaction"}
+                      </button>
+                   </div>
+               </div>
             </div>
           </div>
         )}
