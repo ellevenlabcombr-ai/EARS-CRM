@@ -1624,6 +1624,18 @@ END $storage$;`;
         -- Adicionar colunas faltantes se as tabelas já existirem
         DO $$ 
         BEGIN
+            -- Colunas na tabela clinical_settings
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'clinical_settings' AND column_name = 'block_scheduling_on_critical') THEN
+                ALTER TABLE public.clinical_settings ADD COLUMN block_scheduling_on_critical BOOLEAN DEFAULT false;
+                ALTER TABLE public.clinical_settings ADD COLUMN require_clearance_medical BOOLEAN DEFAULT false;
+                ALTER TABLE public.clinical_settings ADD COLUMN require_waiver_on_pain_level INTEGER DEFAULT 0;
+                ALTER TABLE public.clinical_settings ADD COLUMN notify_physio_on_critical BOOLEAN DEFAULT false;
+                ALTER TABLE public.clinical_settings ADD COLUMN alert_abandon_days INTEGER DEFAULT 0;
+                ALTER TABLE public.clinical_settings ADD COLUMN inactive_after_days INTEGER DEFAULT 0;
+                ALTER TABLE public.clinical_settings ADD COLUMN require_evolution_hours INTEGER DEFAULT 0;
+                ALTER TABLE public.clinical_settings ADD COLUMN block_finance_without_evolution BOOLEAN DEFAULT false;
+            END IF;
+
             -- Colunas na tabela sports
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'sports' AND column_name = 'color') THEN
                 ALTER TABLE public.sports ADD COLUMN color TEXT DEFAULT '#06b6d4';

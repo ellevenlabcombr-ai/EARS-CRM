@@ -9,7 +9,11 @@ import {
   CheckCircle, 
   Loader2, 
   AlertCircle,
-  HeartPulse
+  HeartPulse,
+  Lock,
+  Bell,
+  CalendarClock,
+  FileCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -27,6 +31,22 @@ export function ClinicalSettings() {
   // Messages
   const [riskMessage, setRiskMessage] = useState('Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.');
   const [attentionMessage, setAttentionMessage] = useState('Atleta em estado de atenção. Monitorar carga de treino e recuperação.');
+
+  // Safety Locks
+  const [blockSchedulingOnCritical, setBlockSchedulingOnCritical] = useState(false);
+  const [requireClearanceMedical, setRequireClearanceMedical] = useState(false);
+  const [requireWaiverOnPainLevel, setRequireWaiverOnPainLevel] = useState(0);
+
+  // Alert Routing
+  const [notifyPhysioOnCritical, setNotifyPhysioOnCritical] = useState(false);
+
+  // Recall Clínico
+  const [alertAbandonDays, setAlertAbandonDays] = useState(0);
+  const [inactiveAfterDays, setInactiveAfterDays] = useState(0);
+
+  // Compliance de Prontuário
+  const [requireEvolutionHours, setRequireEvolutionHours] = useState(0);
+  const [blockFinanceWithoutEvolution, setBlockFinanceWithoutEvolution] = useState(false);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -78,6 +98,14 @@ export function ClinicalSettings() {
         setAttentionPainMax(data.attention_pain_max ?? 6);
         setRiskMessage(data.risk_message || 'Atleta em risco crítico. Avaliação médica e fisioterapêutica imediata necessária.');
         setAttentionMessage(data.attention_message || 'Atleta em estado de atenção. Monitorar carga de treino e recuperação.');
+        setBlockSchedulingOnCritical(data.block_scheduling_on_critical ?? false);
+        setRequireClearanceMedical(data.require_clearance_medical ?? false);
+        setRequireWaiverOnPainLevel(data.require_waiver_on_pain_level ?? 0);
+        setNotifyPhysioOnCritical(data.notify_physio_on_critical ?? false);
+        setAlertAbandonDays(data.alert_abandon_days ?? 0);
+        setInactiveAfterDays(data.inactive_after_days ?? 0);
+        setRequireEvolutionHours(data.require_evolution_hours ?? 0);
+        setBlockFinanceWithoutEvolution(data.block_finance_without_evolution ?? false);
       }
     } catch (err: any) {
       console.error("CLINICAL SETTINGS CATCH ERROR:", {
@@ -133,6 +161,14 @@ export function ClinicalSettings() {
         attention_pain_max: attentionPainMax,
         risk_message: riskMessage,
         attention_message: attentionMessage,
+        block_scheduling_on_critical: blockSchedulingOnCritical,
+        require_clearance_medical: requireClearanceMedical,
+        require_waiver_on_pain_level: requireWaiverOnPainLevel,
+        notify_physio_on_critical: notifyPhysioOnCritical,
+        alert_abandon_days: alertAbandonDays,
+        inactive_after_days: inactiveAfterDays,
+        require_evolution_hours: requireEvolutionHours,
+        block_finance_without_evolution: blockFinanceWithoutEvolution,
         updated_at: new Date().toISOString()
       };
 
@@ -231,6 +267,20 @@ export function ClinicalSettings() {
                     
                     <h2>3. Mensagens Padrão Automáticas</h2>
                     <p><b>O que é:</b> Textos que são automaticamente sugeridos nas avaliações e no prontuário do paciente quando um alerta é disparado pelas faixas acima. Padroniza e agiliza a comunicação da equipe.</p>
+                    
+                    <h2>4. Bloqueios Preventivos e de Segurança (Safety Locks)</h2>
+                    <p><b>O que é:</b> Travas operacionais para segurança clínica.</p>
+                    <p><b>Travar Agendamentos e Treinos:</b> Impede a recepção/técnicos de marcarem novos treinos ou check-ins na academia se o atleta estiver na faixa de Risco Crítico, até que um Fisioterapeuta ou Médico clique em "Aprovar Liberação (Clearance)".</p>
+                    <p><b>Assinatura de Termos:</b> Dispara a exigência de um "Termo de Responsabilidade" automático se o paciente assinalar dor acima de X, mas insistir em treinar.</p>
+                    
+                    <h2>5. Gatilhos de Notificações Internas (Alert Routing)</h2>
+                    <p><b>O que é:</b> Avisos cruzados para a equipe. Ex: Enviar notificação imediata para o Fisioterapeuta Chefe e Preparador Físico se um atleta entrar em risco crítico.</p>
+                    
+                    <h2>6. Automação de Retorno e Acompanhamento (Recall Clínico)</h2>
+                    <p><b>O que é:</b> Prevenção de abandono (Follow-up) e manutenção de status. Alerta quando um paciente em tratamento agudo passar mais de "X" dias sem agendar retorno, ou inativa pacientes após um tempo ocioso.</p>
+                    
+                    <h2>7. Rigor de Evolução Obrigatória (Compliance de Prontuário)</h2>
+                    <p><b>O que é:</b> Travas para os profissionais de saúde não esquecerem os protocolos e atualizações. Define um tempo limite para criar a evolução ou bloqueia o repasse financeiro de sessões não evoluídas.</p>
                     
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
@@ -373,6 +423,185 @@ export function ClinicalSettings() {
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 outline-none transition-all resize-none h-24 text-sm md:text-base font-medium placeholder:text-slate-600"
               placeholder="Ex: Atleta em estado de atenção..."
             />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+        {/* Bloqueios Preventivos e de Segurança */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-red-500/10 text-red-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <Lock className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Bloqueios Preventivos</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Safety locks em agendamentos</p>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <label className="flex items-start gap-4 cursor-pointer group">
+              <div className="relative flex items-start">
+                <input 
+                  type="checkbox" 
+                  checked={blockSchedulingOnCritical}
+                  onChange={(e) => setBlockSchedulingOnCritical(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-slate-700 rounded bg-slate-950 peer-checked:bg-red-500 peer-checked:border-red-500 transition-colors flex items-center justify-center mt-0.5">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs md:text-sm font-bold text-white uppercase tracking-widest group-hover:text-red-400 transition-colors">
+                  Travar Agendamentos e Treinos (Risco Crítico)
+                </p>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-1">Impede check-in na clínica até aprovação ('Clearance')</p>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-4 cursor-pointer group">
+              <div className="relative flex items-start">
+                <input 
+                  type="checkbox" 
+                  checked={requireClearanceMedical}
+                  onChange={(e) => setRequireClearanceMedical(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-slate-700 rounded bg-slate-950 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-colors flex items-center justify-center mt-0.5">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs md:text-sm font-bold text-white uppercase tracking-widest group-hover:text-emerald-400 transition-colors">
+                  Exigir Aprovação Médica (Clearance)
+                </p>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-1">Requer 'Approval' de Especialista para destravar</p>
+              </div>
+            </label>
+
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Exigir Termo de Responsabilidade se Dor {'>='}</label>
+              <input 
+                type="number" 
+                value={requireWaiverOnPainLevel}
+                onChange={(e) => setRequireWaiverOnPainLevel(parseInt(e.target.value) || 0)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-red-500/50 focus:ring-2 focus:ring-red-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                min="0" max="10"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Gatilhos de Notificações Internas */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-500/10 text-orange-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <Bell className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Notificações da Equipe</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Alert Routing (Equipe)</p>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <label className="flex items-start gap-4 cursor-pointer group">
+              <div className="relative flex items-start">
+                <input 
+                  type="checkbox" 
+                  checked={notifyPhysioOnCritical}
+                  onChange={(e) => setNotifyPhysioOnCritical(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-slate-700 rounded bg-slate-950 peer-checked:bg-orange-500 peer-checked:border-orange-500 transition-colors flex items-center justify-center mt-0.5">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs md:text-sm font-bold text-white uppercase tracking-widest group-hover:text-orange-400 transition-colors">
+                  Avisos Cruzados Imediatos
+                </p>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-1">Notificar Fisioterapeuta e Preparador Físico se paciente atingir risco crítico</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Automação de Retorno e Acompanhamento */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500/10 text-blue-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <CalendarClock className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Acompanhamento (Recall)</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Ciclo de vida do tratamento</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Alerta Abandono (Dias sem volta)</label>
+              <input 
+                type="number" 
+                value={alertAbandonDays}
+                onChange={(e) => setAlertAbandonDays(parseInt(e.target.value) || 0)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all text-sm md:text-base font-medium"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Inativo Auto (Dias sem atividade)</label>
+              <input 
+                type="number" 
+                value={inactiveAfterDays}
+                onChange={(e) => setInactiveAfterDays(parseInt(e.target.value) || 0)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all text-sm md:text-base font-medium"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Rigor de Evolução Obrigatória */}
+        <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
+          <div className="flex items-center gap-3 md:gap-4 mb-2 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-500/10 text-purple-500 rounded-xl md:rounded-2xl flex items-center justify-center">
+              <FileCheck className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Compliance de Prontuário</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Cobrança e rigor clínico</p>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest pl-1">Tempo Limite para Evolução (Horas)</label>
+              <input 
+                type="number" 
+                value={requireEvolutionHours}
+                onChange={(e) => setRequireEvolutionHours(parseInt(e.target.value) || 0)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 outline-none transition-all text-sm md:text-base font-medium"
+                placeholder="Ex: 24 (horas após a Consulta)"
+              />
+            </div>
+            
+            <label className="flex items-start gap-4 cursor-pointer group">
+              <div className="relative flex items-start">
+                <input 
+                  type="checkbox" 
+                  checked={blockFinanceWithoutEvolution}
+                  onChange={(e) => setBlockFinanceWithoutEvolution(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-slate-700 rounded bg-slate-950 peer-checked:bg-purple-500 peer-checked:border-purple-500 transition-colors flex items-center justify-center mt-0.5">
+                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs md:text-sm font-bold text-white uppercase tracking-widest group-hover:text-purple-400 transition-colors">
+                  Travar Fechamento Financeiro
+                </p>
+                <p className="text-[10px] md:text-xs text-slate-400 mt-1">Impedir cobrança e repasse de sessão ou diária caso a evolução clínica não tenha sido preenchida</p>
+              </div>
+            </label>
           </div>
         </div>
       </div>
