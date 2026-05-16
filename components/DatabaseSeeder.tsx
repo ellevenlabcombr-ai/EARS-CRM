@@ -1612,8 +1612,23 @@ END $storage$;`;
                     amount NUMERIC NOT NULL,
                     type TEXT NOT NULL,
                     status TEXT DEFAULT 'paid',
+                    description TEXT,
+                    date DATE,
+                    account TEXT,
+                    is_recurring BOOLEAN DEFAULT false,
+                    athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE,
+                    receipt_filename TEXT,
+                    category TEXT,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
+            ELSE
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS description TEXT;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS date DATE;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS account TEXT;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS receipt_filename TEXT;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS category TEXT;
             END IF;
             
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_subscriptions') THEN

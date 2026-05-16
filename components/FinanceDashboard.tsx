@@ -569,10 +569,12 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const amountParsed = amount ? parseFloat(amount.replace(',', '.')) : 0;
+      
       const payload = {
         type,
         description,
-        amount: parseFloat(amount.replace(',', '.')),
+        amount: isNaN(amountParsed) ? 0 : amountParsed,
         category,
         date,
         status,
@@ -598,6 +600,7 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
       try {
         await doOperation();
       } catch (opErr: any) {
+        console.error("OpErr:", opErr);
         if (opErr.message && (opErr.message.includes('does not exist') || opErr.message.includes('column'))) {
           // Fallback to create the table/columns because the seeder wasn't run
           await supabase.rpc('exec_sql', { sql: `
@@ -625,7 +628,12 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
             ALTER TABLE IF EXISTS public.financial_transactions ENABLE ROW LEVEL SECURITY;
             DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_transactions;
             CREATE POLICY "Permitir tudo" ON public.financial_transactions FOR ALL USING (true) WITH CHECK (true);
+            NOTIFY pgrst, 'reload schema';
           `});
+          
+          // Wait briefly for schema cache to reload
+          await new Promise(r => setTimeout(r, 1000));
+          
           // Retry
           await doOperation();
         } else {
@@ -636,7 +644,7 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
       onSave();
     } catch (err: any) {
       console.error(err);
-      alert('Erro ao salvar transação: ' + err.message);
+      alert('Erro ao salvar transação: ' + (err.message || JSON.stringify(err)));
     } finally {
       setIsSubmitting(false);
     }
