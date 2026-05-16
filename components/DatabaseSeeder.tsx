@@ -1479,6 +1479,28 @@ END $storage$;`;
                 );
             END IF;
 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_taxes') THEN
+                CREATE TABLE financial_taxes (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    rate NUMERIC NOT NULL,
+                    type TEXT DEFAULT 'retention', -- 'retention', 'addition'
+                    is_active BOOLEAN DEFAULT true,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_splits') THEN
+                CREATE TABLE financial_splits (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    recipient_name TEXT NOT NULL,
+                    percentage NUMERIC NOT NULL,
+                    is_active BOOLEAN DEFAULT true,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_transactions') THEN
                 CREATE TABLE financial_transactions (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1690,6 +1712,8 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.financial_products ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_billing_rules ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_payment_methods ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_taxes ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_splits ENABLE ROW LEVEL SECURITY;
 
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_categories;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_goals;
@@ -1698,6 +1722,8 @@ END $storage$;`;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_products;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_billing_rules;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_payment_methods;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_taxes;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_splits;
 
         CREATE POLICY "Permitir tudo" ON public.financial_categories FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_goals FOR ALL USING (true) WITH CHECK (true);
@@ -1706,6 +1732,8 @@ END $storage$;`;
         CREATE POLICY "Permitir tudo" ON public.financial_products FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_billing_rules FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_payment_methods FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_taxes FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_splits FOR ALL USING (true) WITH CHECK (true);
 
         -- Políticas para Clinical Notes e Assessments
         ALTER TABLE IF EXISTS public.clinical_notes ENABLE ROW LEVEL SECURITY;

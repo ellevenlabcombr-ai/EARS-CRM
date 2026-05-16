@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X, DollarSign, CreditCard, AlertTriangle, Save, Tag } from 'lucide-react';
+import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X, DollarSign, CreditCard, AlertTriangle, Save, Tag, Percent, Users, FileText } from 'lucide-react';
 import { getLocalDateString } from '@/lib/utils';
 
 export function FinanceSettings() {
@@ -12,6 +12,8 @@ export function FinanceSettings() {
   const [products, setProducts] = useState<any[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const [billingRules, setBillingRules] = useState<any>({});
+  const [taxes, setTaxes] = useState<any[]>([]);
+  const [splits, setSplits] = useState<any[]>([]);
   
   // States for forms
   const [newCatName, setNewCatName] = useState('');
@@ -28,6 +30,14 @@ export function FinanceSettings() {
   const [newPaymentName, setNewPaymentName] = useState('');
   const [newPaymentType, setNewPaymentType] = useState('credit_card');
   const [newPaymentFee, setNewPaymentFee] = useState('');
+
+  const [newTaxName, setNewTaxName] = useState('');
+  const [newTaxRate, setNewTaxRate] = useState('');
+  const [newTaxType, setNewTaxType] = useState('retention');
+
+  const [newSplitName, setNewSplitName] = useState('');
+  const [newSplitRecipient, setNewSplitRecipient] = useState('');
+  const [newSplitPercentage, setNewSplitPercentage] = useState('');
   
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
@@ -42,17 +52,19 @@ export function FinanceSettings() {
       try { return await query; } catch(e) { return { error: e }; }
     };
 
-    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes] = await Promise.all([
+    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes, taxesRes, splitsRes] = await Promise.all([
       safeFetch(supabase.from('financial_categories').select('*').order('name')),
       safeFetch(supabase.from('financial_goals').select('*').order('created_at', { ascending: false })),
       safeFetch(supabase.from('financial_closures').select('*').order('month', { ascending: false })),
       safeFetch(supabase.from('financial_products').select('*').order('name')),
       safeFetch(supabase.from('financial_payment_methods').select('*').order('name')),
-      safeFetch(supabase.from('financial_billing_rules').select('*').limit(1).single())
+      safeFetch(supabase.from('financial_billing_rules').select('*').limit(1).single()),
+      safeFetch(supabase.from('financial_taxes').select('*').order('name')),
+      safeFetch(supabase.from('financial_splits').select('*').order('name'))
     ]);
 
     let hasMissingTables = false;
-    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error) {
+    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error || taxesRes.error || splitsRes.error) {
        hasMissingTables = true;
     }
 
@@ -61,6 +73,8 @@ export function FinanceSettings() {
     if (closuresRes.data) setClosures(closuresRes.data);
     if (productsRes.data) setProducts(productsRes.data);
     if (paymentRes.data) setPaymentMethods(paymentRes.data);
+    if (taxesRes.data) setTaxes(taxesRes.data);
+    if (splitsRes.data) setSplits(splitsRes.data);
     
     if (rulesRes.data) {
       setBillingRules(rulesRes.data);
@@ -207,6 +221,61 @@ export function FinanceSettings() {
       fetchData();
     } catch (error: any) {
       showMessage('Erro ao excluir.', 'error');
+    }
+  };
+
+  // TAXES
+  const addTax = async () => {
+    if (!newTaxName.trim() || !newTaxRate) return;
+    try {
+      await supabase.from('financial_taxes').insert({
+        name: newTaxName.trim(),
+        rate: parseFloat(newTaxRate),
+        type: newTaxType
+      });
+      setNewTaxName('');
+      setNewTaxRate('');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar imposto.', 'error');
+    }
+  };
+
+  const deleteTax = async (id: string) => {
+    if (!confirm('Deseja excluir este imposto/retenção?')) return;
+    try {
+      await supabase.from('financial_taxes').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir imposto.', 'error');
+    }
+  };
+
+  // SPLITS
+  const addSplit = async () => {
+    if (!newSplitName.trim() || !newSplitRecipient.trim() || !newSplitPercentage) return;
+    try {
+      await supabase.from('financial_splits').insert({
+        name: newSplitName.trim(),
+        recipient_name: newSplitRecipient.trim(),
+        percentage: parseFloat(newSplitPercentage)
+      });
+      setNewSplitName('');
+      setNewSplitRecipient('');
+      setNewSplitPercentage('');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar split.', 'error');
+    }
+  };
+
+  const deleteSplit = async (id: string) => {
+    if (!confirm('Deseja excluir este split?')) return;
+    try {
+      await supabase.from('financial_splits').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir split.', 'error');
     }
   };
 
@@ -503,6 +572,94 @@ export function FinanceSettings() {
                 <input value={billingRules?.warn_after_days_late || ''} onChange={e=>setBillingRules({...billingRules, warn_after_days_late: e.target.value})} type="number" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300" />
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* IMPOSTOS E TRIBUTOS */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-pink-500/10 text-pink-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <FileText className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Impostos e Tributos</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Retenções na Fonte e Adicionais</p>
+            </div>
+          </div>
+
+          <div className="space-y-6 flex-1">
+             <div className="flex flex-col gap-2">
+                <input value={newTaxName} onChange={e=>setNewTaxName(e.target.value)} type="text" placeholder="Ex: ISS, IRRF" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-pink-500/50 outline-none placeholder:text-slate-600" />
+                <div className="flex gap-2">
+                  <select value={newTaxType} onChange={e=>setNewTaxType(e.target.value)} className="w-[45%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-pink-500/50 outline-none text-slate-300">
+                    <option value="retention">Retenção (Desconto)</option>
+                    <option value="addition">Acréscimo (Soma)</option>
+                  </select>
+                  <input value={newTaxRate} onChange={e=>setNewTaxRate(e.target.value)} type="number" placeholder="%" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-pink-500/50 outline-none placeholder:text-slate-600" />
+                  <button onClick={addTax} className="px-4 py-3 bg-pink-500 hover:bg-pink-400 text-white rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                </div>
+             </div>
+
+             <div className="space-y-3">
+               {taxes.map(t => (
+                 <div key={t.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-500 flex items-center justify-center shrink-0">
+                      <Percent size={14} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-300 text-xs md:text-sm">{t.name}</span>
+                      <span className="text-[10px] text-slate-500 uppercase">{t.type === 'retention' ? 'Retenção' : 'Acréscimo'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">{t.rate}%</span>
+                    <button onClick={() => deleteTax(t.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
+                  </div>
+                 </div>
+               ))}
+               {taxes.length === 0 && <span className="text-xs text-slate-600">Nenhum imposto registrado</span>}
+             </div>
+          </div>
+        </section>
+
+        {/* SPLITS E COMISSÕES */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-500/10 text-purple-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Users className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Splits e Comissões</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Rateio de receitas entre profissionais</p>
+            </div>
+          </div>
+
+          <div className="space-y-6 flex-1">
+             <div className="flex flex-col gap-2">
+                <input value={newSplitName} onChange={e=>setNewSplitName(e.target.value)} type="text" placeholder="Ex: Comissão Fisioterapia" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600" />
+                <div className="flex gap-2">
+                  <input value={newSplitRecipient} onChange={e=>setNewSplitRecipient(e.target.value)} type="text" placeholder="Favorecido (Ex: Dr. João)" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600" />
+                  <input value={newSplitPercentage} onChange={e=>setNewSplitPercentage(e.target.value)} type="number" placeholder="%" className="w-[30%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600" />
+                  <button onClick={addSplit} className="px-4 py-3 bg-purple-500 hover:bg-purple-400 text-white rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                </div>
+             </div>
+
+             <div className="space-y-3">
+               {splits.map(s => (
+                 <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-300 text-xs md:text-sm">{s.name}</span>
+                    <span className="text-[10px] text-slate-500">Destino: {s.recipient_name}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">{s.percentage}%</span>
+                    <button onClick={() => deleteSplit(s.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
+                  </div>
+                 </div>
+               ))}
+               {splits.length === 0 && <span className="text-xs text-slate-600">Nenhum split registrado</span>}
+             </div>
           </div>
         </section>
 
