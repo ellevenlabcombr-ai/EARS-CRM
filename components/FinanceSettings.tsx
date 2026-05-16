@@ -590,29 +590,44 @@ export function FinanceSettings() {
                     <h1>Manual do Painel Financeiro</h1>
 
                     <h2>1. Categorias (Plano de Contas)</h2>
-                    <p>Estrutura fundamental para classificar de onde o dinheiro vem (Receitas) e para onde ele vai (Despesas).</p>
-                    
+                    <p><b>O que é:</b> Estrutura fundamental para classificar de onde o dinheiro vem (Receitas) e para onde ele vai (Despesas).</p>
+                    <p>Dica: Um bom plano de contas evita criar categorias genéricas como "Outros".</p>
+
                     <h2>2. Centros de Custo</h2>
-                    <p>Divisão de despesas e receitas por projetos, departamentos ou unidades de negócio. Funciona em paralelo às categorias.</p>
+                    <p><b>O que é:</b> Divisão de despesas e receitas por projetos, departamentos ou unidades de negócio. Funciona em paralelo às categorias.</p>
                     
                     <h2>3. Contas & Caixas (Wallets)</h2>
-                    <p>Gestão individualizada de saldos de contas bancárias, caixas físicos ou carteiras digitais. Aqui você cadastra suas origens e caixinhas da recepção.</p>
+                    <p><b>O que é:</b> Gestão individualizada de saldos de contas bancárias, caixas físicos ou carteiras digitais.</p>
 
-                    <h2>4. Convênios e Parceiros (Health Insurances)</h2>
-                    <p>Adicione convênios que sua clínica atende (ex: Unimed, SulAmérica). Configure códigos ANS e sinalize se o convênio exige coparticipação do paciente, estruturando o repasse de guias TISS/TUSS.</p>
+                    <h2>4. Fornecedores (Vendors)</h2>
+                    <p><b>O que é:</b> Cadastro rápido de fornecedores recorrentes para agilizar os lançamentos no Contas a Pagar.</p>
+
+                    <h2>5. Convênios e Parceiros (Health Insurances)</h2>
+                    <p><b>O que é:</b> Cadastro de planos de saúde ou tabelas de preços de parceiros, associando controle de coparticipação. Ajuda no repasse de guias TISS/TUSS.</p>
                     
-                    <h2>5. Splits e Comissões (Rateios)</h2>
-                    <p>Sistema de divisão automatizada de receitas entre os profissionais e a clínica. Configure comissões % ou subtraia um <b>Valor Fixo</b> por sessão. Você também pode decidir abater eventuais tarifas de cartão <i>antes</i> de processar o split daquele profissional.</p>
+                    <h2>6. Gateways de Pagamento (Integrações)</h2>
+                    <p><b>O que é:</b> Chaves de API para emissão automática de boletos, PIX ou links de cartão via integradores como Asaas, Stripe e Mercado Pago.</p>
+
+                    <h2>7. Emissão de NF-e (Notas Fiscais Eletrônicas)</h2>
+                    <p><b>O que é:</b> Integração via parceiros (como eNotas ou Focus NFe) para gerar Notas Fiscais de Serviço.</p>
+
+                    <h2>8. Notificações e Réguas de Cobrança</h2>
+                    <p><b>O que é:</b> Controle de alertas via e-mail ou WhatsApp para os pacientes e administradores.</p>
+
+                    <h2>9. Splits e Comissões (Rateios)</h2>
+                    <p><b>O que é:</b> Sistema de divisão automatizada de receitas entre os profissionais parceiros e a sua clínica. Configure comissões % ou subtraia um <b>Valor Fixo</b> por sessão. Você também pode decidir abater eventuais tarifas de cartão <i>antes</i> de processar o split daquele profissional.</p>
+
+                    <h2>10. Operacional Financeiro (Conciliação e Caixa)</h2>
+                    <p><b>O que é:</b> Conjunto de travas operacionais para o time do financeiro.<br>
+                    <b>Conciliação OFX (Auto-Match):</b> O sistema sugere baixas sozinho ao ler o extrato bancário.<br>
+                    <b>Travar Sistema Sem Caixa:</b> Força os operadores e recepcionistas a terem um Caixa Aberto formalmente no dia antes de confirmarem pagamentos.</p>
+
+                    <h2>11. Cobrança e Inadimplência</h2>
+                    <p><b>O que é:</b> Definição das condições padrão para clientes que atrasarem o pagamento. Inclui <b>Multa (%) e Juros (a.m)</b>. Também contém a trava operacional <b>'Bloqueio de Inadimplentes'</b> (ex: 5 dias de atraso), impedindo agendamentos para clientes devedores.</p>
                     
-                    <h2>6. Cobrança e Inadimplência</h2>
-                    <p>Defina as políticas automáticas para quem atrasar pagamento. Inclui <b>Multa (%) e Juros (a.m)</b>. Também contém a trava operacional <b>'Bloqueio de Inadimplentes'</b>, onde você define com quantos dias de atraso o sistema deve barrar novos agendamentos daquele cliente / paciente.</p>
-                    
-                    <h2>7. Operacional: Caixa Diário</h2>
-                    <p>Ative a opção <b>'Travar Sistema Sem Caixa'</b> para forçar recepcionistas a terem um 'caixa formal do dia' aberto. Isso impede o recebimento no balcão de valores que ficam 'soltos' sem documentação de fechamento e conferência.</p>
-                    
-                    <h2>8. Operacional: Conciliação OFX (Auto-Match)</h2>
-                    <p>Quando ativado, libera a interface inteligente de extratos (na tela de transações) onde o sistema sugere baixas automaticamente varrendo o arquivo do extrato emitido pelo banco contra os lançamentos e boletos pendentes no sistema.</p>
-                    
+                    <h2>12. Fechamento Mensal</h2>
+                    <p><b>O que é:</b> Trancamento histórico consolidado. Ao finalizar o mês corrente, as transações ficam marcadas como imutáveis para preservar o DRE.</p>
+
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
                   </body>

@@ -1590,26 +1590,20 @@ END $storage$;`;
                 );
             END IF;
 
-            DO $$
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_splits' AND column_name='fee_discount_rule') THEN
-                    ALTER TABLE public.financial_splits ADD COLUMN fee_discount_rule TEXT DEFAULT 'none';
-                    ALTER TABLE public.financial_splits ADD COLUMN fixed_value NUMERIC DEFAULT 0;
-                    ALTER TABLE public.financial_splits ADD COLUMN tax_retention_rule TEXT DEFAULT 'none';
-                END IF;
-            END $$;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_splits' AND column_name='fee_discount_rule') THEN
+                ALTER TABLE public.financial_splits ADD COLUMN fee_discount_rule TEXT DEFAULT 'none';
+                ALTER TABLE public.financial_splits ADD COLUMN fixed_value NUMERIC DEFAULT 0;
+                ALTER TABLE public.financial_splits ADD COLUMN tax_retention_rule TEXT DEFAULT 'none';
+            END IF;
 
-            DO $$
-            BEGIN
-                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_billing_rules' AND column_name='block_scheduling_on_overdue') THEN
-                    ALTER TABLE public.financial_billing_rules ADD COLUMN block_scheduling_on_overdue BOOLEAN DEFAULT false;
-                    ALTER TABLE public.financial_billing_rules ADD COLUMN block_after_days INTEGER DEFAULT 0;
-                    ALTER TABLE public.financial_billing_rules ADD COLUMN default_interest_pt NUMERIC DEFAULT 0;
-                    ALTER TABLE public.financial_billing_rules ADD COLUMN default_penalty_pt NUMERIC DEFAULT 0;
-                    ALTER TABLE public.financial_billing_rules ADD COLUMN require_daily_cash BOOLEAN DEFAULT false;
-                    ALTER TABLE public.financial_billing_rules ADD COLUMN auto_match_ofx BOOLEAN DEFAULT false;
-                END IF;
-            END $$;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_billing_rules' AND column_name='block_scheduling_on_overdue') THEN
+                ALTER TABLE public.financial_billing_rules ADD COLUMN block_scheduling_on_overdue BOOLEAN DEFAULT false;
+                ALTER TABLE public.financial_billing_rules ADD COLUMN block_after_days INTEGER DEFAULT 0;
+                ALTER TABLE public.financial_billing_rules ADD COLUMN default_interest_pt NUMERIC DEFAULT 0;
+                ALTER TABLE public.financial_billing_rules ADD COLUMN default_penalty_pt NUMERIC DEFAULT 0;
+                ALTER TABLE public.financial_billing_rules ADD COLUMN require_daily_cash BOOLEAN DEFAULT false;
+                ALTER TABLE public.financial_billing_rules ADD COLUMN auto_match_ofx BOOLEAN DEFAULT false;
+            END IF;
 
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_transactions') THEN
                 CREATE TABLE financial_transactions (
