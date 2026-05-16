@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X, DollarSign, CreditCard, AlertTriangle, Save, Tag, Percent, Users, FileText } from 'lucide-react';
+import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X, DollarSign, CreditCard, AlertTriangle, Save, Tag, Percent, Users, FileText, Folder, Receipt, Bell, Wallet, Key, Building2 } from 'lucide-react';
 import { getLocalDateString } from '@/lib/utils';
 
 export function FinanceSettings() {
@@ -14,6 +14,12 @@ export function FinanceSettings() {
   const [billingRules, setBillingRules] = useState<any>({});
   const [taxes, setTaxes] = useState<any[]>([]);
   const [splits, setSplits] = useState<any[]>([]);
+  const [costCenters, setCostCenters] = useState<any[]>([]);
+  const [invoiceSettings, setInvoiceSettings] = useState<any>({});
+  const [notificationSettings, setNotificationSettings] = useState<any>({});
+  const [wallets, setWallets] = useState<any[]>([]);
+  const [gateways, setGateways] = useState<any[]>([]);
+  const [vendors, setVendors] = useState<any[]>([]);
   
   // States for forms
   const [newCatName, setNewCatName] = useState('');
@@ -38,6 +44,20 @@ export function FinanceSettings() {
   const [newSplitName, setNewSplitName] = useState('');
   const [newSplitRecipient, setNewSplitRecipient] = useState('');
   const [newSplitPercentage, setNewSplitPercentage] = useState('');
+
+  const [newCostCenterName, setNewCostCenterName] = useState('');
+  const [newCostCenterDesc, setNewCostCenterDesc] = useState('');
+
+  const [newWalletName, setNewWalletName] = useState('');
+  const [newWalletType, setNewWalletType] = useState('bank');
+  const [newWalletBalance, setNewWalletBalance] = useState('');
+
+  const [newVendorName, setNewVendorName] = useState('');
+  const [newVendorDocument, setNewVendorDocument] = useState('');
+  const [newVendorCategory, setNewVendorCategory] = useState('');
+
+  const [newGatewayProvider, setNewGatewayProvider] = useState('asaas');
+  const [newGatewayKey, setNewGatewayKey] = useState('');
   
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
@@ -52,7 +72,7 @@ export function FinanceSettings() {
       try { return await query; } catch(e) { return { error: e }; }
     };
 
-    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes, taxesRes, splitsRes] = await Promise.all([
+    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes, taxesRes, splitsRes, costCentersRes, invoiceSettingsRes, numSettingsRes, walletsRes, gatewaysRes, vendorsRes] = await Promise.all([
       safeFetch(supabase.from('financial_categories').select('*').order('name')),
       safeFetch(supabase.from('financial_goals').select('*').order('created_at', { ascending: false })),
       safeFetch(supabase.from('financial_closures').select('*').order('month', { ascending: false })),
@@ -60,11 +80,17 @@ export function FinanceSettings() {
       safeFetch(supabase.from('financial_payment_methods').select('*').order('name')),
       safeFetch(supabase.from('financial_billing_rules').select('*').limit(1).single()),
       safeFetch(supabase.from('financial_taxes').select('*').order('name')),
-      safeFetch(supabase.from('financial_splits').select('*').order('name'))
+      safeFetch(supabase.from('financial_splits').select('*').order('name')),
+      safeFetch(supabase.from('financial_cost_centers').select('*').order('name')),
+      safeFetch(supabase.from('financial_invoice_settings').select('*').limit(1).single()),
+      safeFetch(supabase.from('financial_notification_settings').select('*').limit(1).single()),
+      safeFetch(supabase.from('financial_wallets').select('*').order('name')),
+      safeFetch(supabase.from('financial_api_gateways').select('*').order('provider_name')),
+      safeFetch(supabase.from('financial_vendors').select('*, financial_categories(name)').order('name'))
     ]);
 
     let hasMissingTables = false;
-    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error || taxesRes.error || splitsRes.error) {
+    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error || taxesRes.error || splitsRes.error || costCentersRes.error || invoiceSettingsRes.error || numSettingsRes.error || walletsRes.error || gatewaysRes.error || vendorsRes.error) {
        hasMissingTables = true;
     }
 
@@ -75,9 +101,19 @@ export function FinanceSettings() {
     if (paymentRes.data) setPaymentMethods(paymentRes.data);
     if (taxesRes.data) setTaxes(taxesRes.data);
     if (splitsRes.data) setSplits(splitsRes.data);
+    if (costCentersRes.data) setCostCenters(costCentersRes.data);
+    if (walletsRes.data) setWallets(walletsRes.data);
+    if (gatewaysRes.data) setGateways(gatewaysRes.data);
+    if (vendorsRes.data) setVendors(vendorsRes.data);
     
     if (rulesRes.data) {
       setBillingRules(rulesRes.data);
+    }
+    if (invoiceSettingsRes.data) {
+      setInvoiceSettings(invoiceSettingsRes.data);
+    }
+    if (numSettingsRes.data) {
+      setNotificationSettings(numSettingsRes.data);
     } else if (!hasMissingTables && !rulesRes.error) {
       // Init default rules if none exists and table exists
       try {
@@ -276,6 +312,143 @@ export function FinanceSettings() {
       fetchData();
     } catch (error: any) {
       showMessage('Erro ao excluir split.', 'error');
+    }
+  };
+
+  // COST CENTERS
+  const addCostCenter = async () => {
+    if (!newCostCenterName.trim()) return;
+    try {
+      await supabase.from('financial_cost_centers').insert({
+        name: newCostCenterName.trim(),
+        description: newCostCenterDesc.trim()
+      });
+      setNewCostCenterName('');
+      setNewCostCenterDesc('');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar centro de custo.', 'error');
+    }
+  };
+
+  const deleteCostCenter = async (id: string) => {
+    if (!confirm('Deseja excluir este centro de custo?')) return;
+    try {
+      await supabase.from('financial_cost_centers').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir centro de custo.', 'error');
+    }
+  };
+
+  // WALLETS / BANK ACCOUNTS
+  const addWallet = async () => {
+    if (!newWalletName.trim()) return;
+    try {
+      await supabase.from('financial_wallets').insert({
+        name: newWalletName.trim(),
+        type: newWalletType,
+        initial_balance: parseFloat(newWalletBalance) || 0
+      });
+      setNewWalletName('');
+      setNewWalletBalance('');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar conta/caixa.', 'error');
+    }
+  };
+
+  const deleteWallet = async (id: string) => {
+    if (!confirm('Deseja excluir esta conta/caixa?')) return;
+    try {
+      await supabase.from('financial_wallets').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir conta/caixa.', 'error');
+    }
+  };
+
+  // VENDORS
+  const addVendor = async () => {
+    if (!newVendorName.trim()) return;
+    try {
+      await supabase.from('financial_vendors').insert({
+        name: newVendorName.trim(),
+        document: newVendorDocument.trim(),
+        category_id: newVendorCategory || null
+      });
+      setNewVendorName('');
+      setNewVendorDocument('');
+      setNewVendorCategory('');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar fornecedor.', 'error');
+    }
+  };
+
+  const deleteVendor = async (id: string) => {
+    if (!confirm('Deseja excluir este fornecedor?')) return;
+    try {
+      await supabase.from('financial_vendors').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir fornecedor.', 'error');
+    }
+  };
+
+  // API GATEWAYS
+  const addGateway = async () => {
+    if (!newGatewayProvider.trim() || !newGatewayKey.trim()) return;
+    try {
+      await supabase.from('financial_api_gateways').insert({
+        provider_name: newGatewayProvider.trim(),
+        api_key: newGatewayKey.trim(),
+        is_active: true
+      });
+      setNewGatewayKey('');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar integração.', 'error');
+    }
+  };
+
+  const deleteGateway = async (id: string) => {
+    if (!confirm('Deseja excluir e revogar esta integração?')) return;
+    try {
+      await supabase.from('financial_api_gateways').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir integração.', 'error');
+    }
+  };
+
+  // INVOICE SETTINGS
+  const saveInvoiceSettings = async () => {
+    try {
+      if (invoiceSettings.id) {
+        await supabase.from('financial_invoice_settings').update(invoiceSettings).eq('id', invoiceSettings.id);
+      } else {
+        await supabase.from('financial_invoice_settings').insert(invoiceSettings);
+      }
+      showMessage('Configurações de NF-e salvas!', 'success');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao salvar NF-e.', 'error');
+    }
+  };
+
+  // NOTIFICATION SETTINGS
+  const saveNotificationSettings = async () => {
+    try {
+      if (notificationSettings.id) {
+        await supabase.from('financial_notification_settings').update(notificationSettings).eq('id', notificationSettings.id);
+      } else {
+        await supabase.from('financial_notification_settings').insert(notificationSettings);
+      }
+      showMessage('Notificações salvas com sucesso!', 'success');
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao salvar notificações.', 'error');
     }
   };
 
@@ -660,6 +833,328 @@ export function FinanceSettings() {
                ))}
                {splits.length === 0 && <span className="text-xs text-slate-600">Nenhum split registrado</span>}
              </div>
+          </div>
+        </section>
+
+        {/* CENTROS DE CUSTO */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-500/10 text-amber-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Folder className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Centros de Custo</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Divisão de despesas e receitas por projetos ou unidades</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+               <div className="flex flex-col gap-2">
+                  <input value={newCostCenterName} onChange={e=>setNewCostCenterName(e.target.value)} type="text" placeholder="Nome do Centro de Custo" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-amber-500/50 outline-none placeholder:text-slate-600" />
+                  <div className="flex gap-2">
+                    <input value={newCostCenterDesc} onChange={e=>setNewCostCenterDesc(e.target.value)} type="text" placeholder="Descrição (Opcional)" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-amber-500/50 outline-none placeholder:text-slate-600" />
+                    <button onClick={addCostCenter} className="px-4 py-3 bg-amber-500 hover:bg-amber-400 text-[#050B14] rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                  </div>
+               </div>
+            </div>
+
+            <div className="space-y-3">
+               {costCenters.map(cc => (
+                 <div key={cc.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-300 text-xs md:text-sm">{cc.name}</span>
+                    {cc.description && <span className="text-[10px] text-slate-500">{cc.description}</span>}
+                  </div>
+                  <button onClick={() => deleteCostCenter(cc.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
+                 </div>
+               ))}
+               {costCenters.length === 0 && <span className="text-xs text-slate-600">Nenhum centro de custo registrado</span>}
+            </div>
+          </div>
+        </section>
+
+        {/* EMISSÃO DE NF-e */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white/10 text-white rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Receipt className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Emissão de NF-e</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Integração com eNotas ou Focus NFe</p>
+            </div>
+            <button onClick={saveInvoiceSettings} className="px-4 py-2 bg-white hover:bg-slate-200 text-[#050B14] rounded-xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-colors flex items-center gap-2">
+              <Save size={14} /> Salvar NF-e
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+               <label className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                 <input type="checkbox" checked={invoiceSettings.auto_emit || false} onChange={e=>setInvoiceSettings({...invoiceSettings, auto_emit: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-white focus:ring-0 focus:ring-offset-0 text-slate-900" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Emissão Automática Habilitada</p>
+                   <p className="text-[10px] text-slate-500">O sistema emitirá notas conforme a regra abaixo.</p>
+                 </div>
+               </label>
+            
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">CNPJ</label>
+                   <input type="text" value={invoiceSettings.cnpj || ''} onChange={e=>setInvoiceSettings({...invoiceSettings, cnpj: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none" placeholder="00.000.000/0001-00" />
+                 </div>
+                 <div>
+                   <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Regime Trib.</label>
+                   <select value={invoiceSettings.tax_regime || 'simples'} onChange={e=>setInvoiceSettings({...invoiceSettings, tax_regime: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none">
+                      <option value="simples">Simples Nacional</option>
+                      <option value="presumido">Lucro Presumido</option>
+                      <option value="real">Lucro Real</option>
+                   </select>
+                 </div>
+               </div>
+
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Inscrição Mun.</label>
+                    <input type="text" value={invoiceSettings.municipal_registration || ''} onChange={e=>setInvoiceSettings({...invoiceSettings, municipal_registration: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none" placeholder="Isento / Nº" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Momento</label>
+                    <select value={invoiceSettings.emit_when || 'on_payment'} onChange={e=>setInvoiceSettings({...invoiceSettings, emit_when: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none">
+                       <option value="on_payment">Após Pagamento</option>
+                       <option value="on_issue">Na Geração (Boleto)</option>
+                    </select>
+                  </div>
+               </div>
+            </div>
+
+            <div className="space-y-4">
+               <div>
+                  <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Plataforma</label>
+                  <select value={invoiceSettings.provider || 'manual'} onChange={e=>setInvoiceSettings({...invoiceSettings, provider: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none">
+                     <option value="manual">Manual (Sem API)</option>
+                     <option value="enotas">eNotas</option>
+                     <option value="focus">Focus NFe</option>
+                  </select>
+               </div>
+               
+               <div>
+                 <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Chave de API (Token)</label>
+                 <input type="password" value={invoiceSettings.api_key || ''} onChange={e=>setInvoiceSettings({...invoiceSettings, api_key: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none" placeholder="Token de Integração" />
+               </div>
+
+               <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Código do Serviço</label>
+                    <input type="text" value={invoiceSettings.service_code || ''} onChange={e=>setInvoiceSettings({...invoiceSettings, service_code: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none" placeholder="Ex: 04.03" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">CNAE Padrão</label>
+                    <input type="text" value={invoiceSettings.cnae || ''} onChange={e=>setInvoiceSettings({...invoiceSettings, cnae: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-white/50 outline-none" placeholder="00000-00" />
+                  </div>
+               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* NOTIFICAÇÕES E ALERTAS */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-sky-500/10 text-sky-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Notificações e Réguas</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">WhatsApp e E-mail Automáticos e Templates</p>
+            </div>
+            <button onClick={saveNotificationSettings} className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-colors flex items-center gap-2">
+              <Save size={14} /> Salvar Alertas
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+               <label className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                 <input type="checkbox" checked={notificationSettings.notify_client_on_issue ?? true} onChange={e=>setNotificationSettings({...notificationSettings, notify_client_on_issue: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-sky-500 focus:ring-0 focus:ring-offset-0 text-sky-500" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Nova Fatura</p>
+                   <p className="text-[10px] text-slate-500">Avisar cliente quando uma cobrança for gerada.</p>
+                 </div>
+               </label>
+
+               <label className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                 <input type="checkbox" checked={notificationSettings.notify_client_on_overdue ?? true} onChange={e=>setNotificationSettings({...notificationSettings, notify_client_on_overdue: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-sky-500 focus:ring-0 focus:ring-offset-0 text-sky-500" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Atrasos & Inadimplência</p>
+                   <p className="text-[10px] text-slate-500">Notificar o cliente se passar da data de vencimento.</p>
+                 </div>
+               </label>
+
+              <div className="flex items-center justify-between p-4 bg-slate-950/50 border border-slate-800 rounded-xl">
+                <div>
+                   <p className="text-sm font-bold text-white">Lembrete Vencimento</p>
+                   <p className="text-[10px] text-slate-500">Enviar aviso antes do vencimento</p>
+                </div>
+                <div className="flex items-center gap-2">
+                   <input type="number" value={notificationSettings.notify_client_before_due || 0} onChange={e=>setNotificationSettings({...notificationSettings, notify_client_before_due: Number(e.target.value)})} className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-white" />
+                   <span className="text-xs text-slate-400">dias</span>
+                </div>
+              </div>
+               
+               <label className="flex items-center gap-3 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl cursor-pointer hover:border-emerald-500/30 transition-colors">
+                 <input type="checkbox" checked={notificationSettings.notify_admin_on_payment ?? true} onChange={e=>setNotificationSettings({...notificationSettings, notify_admin_on_payment: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-emerald-500 focus:ring-0 focus:ring-offset-0 text-emerald-500" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Notificar Administrador</p>
+                   <p className="text-[10px] text-slate-500">Receber e-mail/notificação quando uma fatura for Paga.</p>
+                 </div>
+               </label>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Mensagem de Lembrete</label>
+                <textarea value={notificationSettings.template_reminder || ''} onChange={e=>setNotificationSettings({...notificationSettings, template_reminder: e.target.value})} rows={2} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-sky-500/50 outline-none text-slate-300 resize-none" placeholder="Olá {nome}, sua fatura vence em {data}." />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Mensagem de Atraso</label>
+                <textarea value={notificationSettings.template_overdue || ''} onChange={e=>setNotificationSettings({...notificationSettings, template_overdue: e.target.value})} rows={2} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300 resize-none" placeholder="Aviso: o pagamento {fatura} encontra-se em atraso." />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-2 font-black uppercase tracking-widest block">Mensagem de Recibo</label>
+                <textarea value={notificationSettings.template_receipt || ''} onChange={e=>setNotificationSettings({...notificationSettings, template_receipt: e.target.value})} rows={2} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500/50 outline-none text-slate-300 resize-none" placeholder="Confirmamos o recebimento! Obrigado." />
+              </div>
+               <p className="text-[10px] text-slate-500 mt-2">Dica: Use variáveis como {'{nome}'}, {'{valor}'}, {'{vencimento}'}.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* CONTAS BANCÁRIAS E CAIXAS */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500/10 text-emerald-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Wallet className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Contas & Caixas</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Bancos e Caixas Físicos</p>
+            </div>
+          </div>
+
+          <div className="space-y-6 flex-1">
+             <div className="flex flex-col gap-2">
+                <input value={newWalletName} onChange={e=>setNewWalletName(e.target.value)} type="text" placeholder="Ex: Itaú PJ, Caixa Clínica" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500/50 outline-none placeholder:text-slate-600" />
+                <div className="flex gap-2">
+                  <select value={newWalletType} onChange={e=>setNewWalletType(e.target.value)} className="w-[45%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500/50 outline-none text-slate-300">
+                    <option value="bank">Conta Bancária</option>
+                    <option value="cash">Caixa Físico</option>
+                    <option value="digital">Carteira Digital</option>
+                  </select>
+                  <input value={newWalletBalance} onChange={e=>setNewWalletBalance(e.target.value)} type="number" placeholder="Saldo Atual" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-emerald-500/50 outline-none placeholder:text-slate-600" />
+                  <button onClick={addWallet} className="px-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                </div>
+             </div>
+
+             <div className="space-y-3">
+               {wallets.map(w => (
+                 <div key={w.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-300 text-xs md:text-sm">{w.name}</span>
+                    <span className="text-[10px] text-slate-500 uppercase">{w.type === 'bank' ? 'Banco' : w.type === 'cash' ? 'Caixa' : 'Digital'}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] md:text-xs font-black text-slate-400">R$ {Number(w.initial_balance).toFixed(2)}</span>
+                    <button onClick={() => deleteWallet(w.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
+                  </div>
+                 </div>
+               ))}
+               {wallets.length === 0 && <span className="text-xs text-slate-600">Nenhuma conta cadastrada</span>}
+             </div>
+          </div>
+        </section>
+
+        {/* FORNECEDORES FEED */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-500/10 text-orange-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Fornecedores</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Contatos recorrentes</p>
+            </div>
+          </div>
+
+          <div className="space-y-6 flex-1">
+             <div className="flex flex-col gap-2">
+                <input value={newVendorName} onChange={e=>setNewVendorName(e.target.value)} type="text" placeholder="Ex: Enel, Fornecedor X" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-orange-500/50 outline-none placeholder:text-slate-600" />
+                <div className="flex gap-2">
+                  <input value={newVendorDocument} onChange={e=>setNewVendorDocument(e.target.value)} type="text" placeholder="CNPJ/CPF (Opcional)" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-orange-500/50 outline-none placeholder:text-slate-600" />
+                  <select value={newVendorCategory} onChange={e=>setNewVendorCategory(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-sm font-medium focus:border-orange-500/50 outline-none text-slate-300">
+                    <option value="">Categoria Padrão</option>
+                    {categories.filter(c => c.type === 'expense').map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <button onClick={addVendor} className="px-4 py-3 bg-orange-500 hover:bg-orange-400 text-white rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                </div>
+             </div>
+
+             <div className="space-y-3">
+               {vendors.map(v => (
+                 <div key={v.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-300 text-xs md:text-sm">{v.name}</span>
+                    <span className="text-[10px] text-slate-500">{v.financial_categories?.name || 'Sem categoria base'} {v.document && `• ${v.document}`}</span>
+                  </div>
+                  <button onClick={() => deleteVendor(v.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
+                 </div>
+               ))}
+               {vendors.length === 0 && <span className="text-xs text-slate-600">Nenhum fornecedor registrado</span>}
+             </div>
+          </div>
+        </section>
+
+        {/* INTEGRAÇÕES DE PAGAMENTO */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600/10 text-blue-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Key className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+               <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Gateways de Pagamento</h3>
+               <p className="text-[10px] md:text-xs text-slate-500 font-medium">Chaves de API para emissão automática (Asaas, Stripe)</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+               <div className="flex flex-col gap-2">
+                  <select value={newGatewayProvider} onChange={e=>setNewGatewayProvider(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-blue-500/50 outline-none text-slate-300">
+                    <option value="asaas">Asaas</option>
+                    <option value="stripe">Stripe</option>
+                    <option value="mercadopago">Mercado Pago</option>
+                  </select>
+                  <div className="flex gap-2">
+                    <input value={newGatewayKey} onChange={e=>setNewGatewayKey(e.target.value)} type="password" placeholder="Chave de API / Token" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-blue-500/50 outline-none placeholder:text-slate-600" />
+                    <button onClick={addGateway} className="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                  </div>
+               </div>
+               <p className="text-[10px] md:text-xs text-slate-500">Ao configurar um Webhook na plataforma, todos os pagamentos serão baixados automaticamente no sistema e faturados.</p>
+            </div>
+
+            <div className="space-y-3">
+               {gateways.map(g => (
+                 <div key={g.id} className="flex items-center justify-between p-3 rounded-xl border border-blue-500/20 bg-blue-500/5">
+                  <div className="flex flex-col">
+                    <span className="font-black text-blue-400 uppercase tracking-widest text-xs md:text-sm">{g.provider_name}</span>
+                    <span className="text-[10px] text-slate-400">Ativo para emissão automática</span>
+                  </div>
+                  <button onClick={() => deleteGateway(g.id)} className="text-slate-500 hover:text-rose-500 transition-colors"><Trash size={16} /></button>
+                 </div>
+               ))}
+               {gateways.length === 0 && <span className="text-xs text-slate-600">Nenhuma integração adicionada</span>}
+            </div>
           </div>
         </section>
 

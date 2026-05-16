@@ -1501,6 +1501,84 @@ END $storage$;`;
                 );
             END IF;
 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_cost_centers') THEN
+                CREATE TABLE financial_cost_centers (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    is_active BOOLEAN DEFAULT true,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_invoice_settings') THEN
+                CREATE TABLE financial_invoice_settings (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    auto_emit BOOLEAN DEFAULT false,
+                    emit_when TEXT DEFAULT 'on_payment',
+                    municipal_registration TEXT,
+                    company_name TEXT,
+                    cnpj TEXT,
+                    tax_regime TEXT,
+                    provider TEXT DEFAULT 'manual', -- enotas, focus
+                    api_key TEXT,
+                    cnae TEXT,
+                    service_code TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_notification_settings') THEN
+                CREATE TABLE financial_notification_settings (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    notify_client_on_issue BOOLEAN DEFAULT true,
+                    notify_client_before_due INTEGER DEFAULT 3,
+                    notify_client_on_overdue BOOLEAN DEFAULT true,
+                    notify_admin_on_payment BOOLEAN DEFAULT true,
+                    template_reminder TEXT,
+                    template_overdue TEXT,
+                    template_receipt TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_wallets') THEN
+                CREATE TABLE financial_wallets (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    type TEXT DEFAULT 'bank', -- bank, cash, digital
+                    initial_balance NUMERIC DEFAULT 0,
+                    is_active BOOLEAN DEFAULT true,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_api_gateways') THEN
+                CREATE TABLE financial_api_gateways (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    provider_name TEXT NOT NULL, -- asaas, stripe, mercadopago
+                    api_key TEXT,
+                    api_token TEXT,
+                    webhook_secret TEXT,
+                    is_active BOOLEAN DEFAULT false,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_vendors') THEN
+                CREATE TABLE financial_vendors (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    document TEXT, -- cpf/cnpj
+                    phone TEXT,
+                    email TEXT,
+                    category_id UUID REFERENCES financial_categories(id),
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_transactions') THEN
                 CREATE TABLE financial_transactions (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1714,6 +1792,12 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.financial_payment_methods ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_taxes ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_splits ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_cost_centers ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_invoice_settings ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_notification_settings ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_wallets ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_api_gateways ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_vendors ENABLE ROW LEVEL SECURITY;
 
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_categories;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_goals;
@@ -1724,6 +1808,12 @@ END $storage$;`;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_payment_methods;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_taxes;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_splits;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_cost_centers;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_invoice_settings;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_notification_settings;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_wallets;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_api_gateways;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_vendors;
 
         CREATE POLICY "Permitir tudo" ON public.financial_categories FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_goals FOR ALL USING (true) WITH CHECK (true);
@@ -1734,6 +1824,12 @@ END $storage$;`;
         CREATE POLICY "Permitir tudo" ON public.financial_payment_methods FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_taxes FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_splits FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_cost_centers FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_invoice_settings FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_notification_settings FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_wallets FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_api_gateways FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_vendors FOR ALL USING (true) WITH CHECK (true);
 
         -- Políticas para Clinical Notes e Assessments
         ALTER TABLE IF EXISTS public.clinical_notes ENABLE ROW LEVEL SECURITY;
