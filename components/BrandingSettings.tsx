@@ -218,6 +218,79 @@ export function BrandingSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8 pb-10">
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <Palette className="text-cyan-500" size={28} /> Identidade Visual
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Personalize a plataforma com a sua marca. Altere cores, logotipo e o painel de boas-vindas do paciente (White Label).
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+           <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual de Configurações de Identidade</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #06b6d4; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #06b6d4; border-radius: 4px; margin: 1rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual de Identidade Visual (White Label)</h1>
+                    <p>A identidade visual permite que você personalize a experiência do paciente, fazendo com que ele sinta que está utilizando um aplicativo próprio da sua clínica, e não uma ferramenta genérica.</p>
+
+                    <h2>1. Logotipo e Favicon</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Inserir sua marca nos cabeçalhos, relatórios e abas do navegador.
+                    </div>
+                    <p>Faça upload do seu logotipo em formato horizontal para o sistema. O favicon é aquele ícone em miniatura que aparece na aba do navegador.</p>
+
+                    <h2>2. Cores da Marca</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Alterar a paleta de botões, barras de progresso e menus.
+                    </div>
+                    <p>Coloque o código HEX das suas cores primárias e secundárias. Todos os botões principais de ação refletirão a cor Primária, enquanto destaques usarão a Secundária.</p>
+
+                    <h2>3. Informações Oficiais e Assinatura</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Padronização jurídica e técnica de laudos.
+                    </div>
+                    <p>Quando você for gerar Atestados, Laudos ou Notas Fiscais Eletrônicas, o sistema puxará seu CNPJ, Razão Social e Endereço daqui. Você também pode fazer o upload da foto da sua Assinatura Digitalizada para evitar assinar manualmente.</p>
+
+                    <h2>4. Portal do Paciente</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Personalizar a experiência de quem acessa pelo celular.
+                    </div>
+                    <p>Configure a Imagem de Fundo (Background) da tela de Login do paciente e a mensagem de Boas-Vindas que ele lerá ao entrar no portal de agendamentos.</p>
+
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <Palette size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl">
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           {/* Logo Preview */}

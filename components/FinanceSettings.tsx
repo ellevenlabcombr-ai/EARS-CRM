@@ -579,54 +579,93 @@ export function FinanceSettings() {
                   <head>
                     <title>Manual do Módulo Financeiro</title>
                     <style>
-                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 800px; margin: 0 auto; }
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
                       h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
                       h2 { color: #10b981; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
                       p, li { color: #94a3b8; }
                       strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #10b981; border-radius: 4px; margin: 1rem 0; }
                     </style>
                   </head>
                   <body>
                     <h1>Manual do Painel Financeiro</h1>
+                    <p>O Painel Financeiro centraliza todas as configurações de faturamento, pagamentos e repasses. Entenda abaixo como configurar cada categoria e otimizar o fluxo de caixa.</p>
 
                     <h2>1. Categorias (Plano de Contas)</h2>
-                    <p><b>O que é:</b> Estrutura fundamental para classificar de onde o dinheiro vem (Receitas) e para onde ele vai (Despesas).</p>
-                    <p>Dica: Um bom plano de contas evita criar categorias genéricas como "Outros".</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Classificar a origem (Receitas) e o destino (Despesas) do dinheiro.
+                    </div>
+                    <p>A categorização correta permite relatórios financeiros e DRE precisos. Especifique categorias como "Consultas Particulares", "Atendimentos Convênio", "Material de Escritório", "Impostos".</p>
 
                     <h2>2. Centros de Custo</h2>
-                    <p><b>O que é:</b> Divisão de despesas e receitas por projetos, departamentos ou unidades de negócio. Funciona em paralelo às categorias.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Dividir despesas e receitas por projetos, departamentos ou unidades de negócio.
+                    </div>
+                    <p>Funciona em paralelo às categorias. Por exemplo, uma conta de luz (categoria Despesa Fixa) pode ser dividida 50% para a "Unidade Centro" e 50% para a "Unidade Sul".</p>
                     
                     <h2>3. Contas & Caixas (Wallets)</h2>
-                    <p><b>O que é:</b> Gestão individualizada de saldos de contas bancárias, caixas físicos ou carteiras digitais.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Gestão individualizada de saldos de contas bancárias e carteiras.
+                    </div>
+                    <p>Aqui você cadastra contas como "Banco do Brasil Conta Corrente", "Caixa Física da Recepção" ou "Cielo". Todas as transações serão vinculadas a um caixa específico para simplificar a conciliação.</p>
 
                     <h2>4. Fornecedores (Vendors)</h2>
-                    <p><b>O que é:</b> Cadastro rápido de fornecedores recorrentes para agilizar os lançamentos no Contas a Pagar.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Agilizar lançamentos no Contas a Pagar.
+                    </div>
+                    <p>Cadastro rápido de prestadores de serviços, empresas de energia ou internet. Ajuda na emissão de recibos e rastreamento de maiores despesas.</p>
 
                     <h2>5. Convênios e Parceiros (Health Insurances)</h2>
-                    <p><b>O que é:</b> Cadastro de planos de saúde ou tabelas de preços de parceiros, associando controle de coparticipação. Ajuda no repasse de guias TISS/TUSS.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Estruturar regras de tabelas e repasses para guias (TISS/TUSS).
+                    </div>
+                    <p>Cadastre os planos que atende (ex: SulAmérica, Unimed) ou clínicas parceiras. Você também configura se o convênio exige o pagamento de coparticipação.</p>
                     
                     <h2>6. Gateways de Pagamento (Integrações)</h2>
-                    <p><b>O que é:</b> Chaves de API para emissão automática de boletos, PIX ou links de cartão via integradores como Asaas, Stripe e Mercado Pago.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Automatizar a emissão de boletos, links de crédito e PIX.
+                    </div>
+                    <p>Insira chaves de API de integradores suportados para que cobranças sejam enviadas automaticamente para os clientes.</p>
 
                     <h2>7. Emissão de NF-e (Notas Fiscais Eletrônicas)</h2>
-                    <p><b>O que é:</b> Integração via parceiros (como eNotas ou Focus NFe) para gerar Notas Fiscais de Serviço.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Ligar a plataforma à sua prefeitura.
+                    </div>
+                    <p>Configure a integração via parceiros (como eNotas) para disparar Notas Fiscais de Serviços (NFS-e) logo após a confirmação de recebimento.</p>
 
                     <h2>8. Notificações e Réguas de Cobrança</h2>
-                    <p><b>O que é:</b> Controle de alertas via e-mail ou WhatsApp para os pacientes e administradores.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Avisar sobre vencimentos e cobrar automaticamente (SMS/Email/WhatsApp).
+                    </div>
+                    <p>Configure quantos dias antes enviar aviso de vencimento e réguas contínuas de alerta para inadimplentes.</p>
 
                     <h2>9. Splits e Comissões (Rateios)</h2>
-                    <p><b>O que é:</b> Sistema de divisão automatizada de receitas entre os profissionais parceiros e a sua clínica. Configure comissões % ou subtraia um <b>Valor Fixo</b> por sessão. Você também pode decidir abater eventuais tarifas de cartão <i>antes</i> de processar o split daquele profissional.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Dividir receitas de forma automatizada.
+                    </div>
+                    <p>Configure de quanto será a porcentagem (%) de comissão para parceiros ou estipule Valores Fixos subtraídos.</p>
 
                     <h2>10. Operacional Financeiro (Conciliação e Caixa)</h2>
-                    <p><b>O que é:</b> Conjunto de travas operacionais para o time do financeiro.<br>
-                    <b>Conciliação OFX (Auto-Match):</b> O sistema sugere baixas sozinho ao ler o extrato bancário.<br>
-                    <b>Travar Sistema Sem Caixa:</b> Força os operadores e recepcionistas a terem um Caixa Aberto formalmente no dia antes de confirmarem pagamentos.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Rotinas essenciais de auditoria do dia a dia.
+                    </div>
+                    <ul>
+                     <li><strong>Conciliação OFX (Auto-Match):</strong> Importe seu extrato bancário. O sistema vasculha pendências e sugere correspondências para você dar baixa em um clique.</li>
+                     <li><strong>Travar Sistema Sem Caixa Aberto:</strong> Se ligado, o recepcionista ou caixa não conseguirá registrar receitas sem ter aberturado o caixa com um saldo inicial. Evita perdas em espécie.</li>
+                    </ul>
 
                     <h2>11. Cobrança e Inadimplência</h2>
-                    <p><b>O que é:</b> Definição das condições padrão para clientes que atrasarem o pagamento. Inclui <b>Multa (%) e Juros (a.m)</b>. Também contém a trava operacional <b>'Bloqueio de Inadimplentes'</b> (ex: 5 dias de atraso), impedindo agendamentos para clientes devedores.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Aplicar multas, juros e sanções padrão para inadimplentes.
+                    </div>
+                    <p>Defina multa em % (ex: 2%) e juros (1% a.m.) atrelado aos pagamentos atrasados e bloqueie novos agendamentos se houver dívidas antigas superiores a X dias.</p>
                     
                     <h2>12. Fechamento Mensal</h2>
-                    <p><b>O que é:</b> Trancamento histórico consolidado. Ao finalizar o mês corrente, as transações ficam marcadas como imutáveis para preservar o DRE.</p>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Trancar histórico contábil para evitar bagunça depois de conciliações.
+                    </div>
+                    <p>Funciona congelando as transações do mês para que um lançamento já validado não seja acidentalmente apagado.</p>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

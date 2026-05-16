@@ -364,6 +364,95 @@ export function AgendaSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8">
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <Calendar className="text-indigo-500" size={28} /> Agenda e Grade
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Configure horários de funcionamento, duração padrão de sessões, intervalos, feriados bloqueados e regras de tolerância para clientes.
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+          <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual de Configurações da Agenda</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #6366f1; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #6366f1; border-radius: 4px; margin: 1rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual da Agenda Central</h1>
+                    <p>Dominar os parâmetros da agenda impede buracos na grade (ociosidade) e diminui conflitos com atrasos de pacientes. Veja como dominar cada trava abaixo.</p>
+
+                    <h2>1. Grade Operacional / Horários (Por dia da semana)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Dizer ao sistema em quais momentos você aceita marcações.
+                    </div>
+                    <p>Use as 'bolinhas' com as iniciais da semana (Seg a Dom) para configurar as regras individualmente.</p>
+                    <ul>
+                      <li>Se a sua clínica fecha na quarta à tarde, configure o horário de quarta das 08h às 12h. Desmarque a opção de "Almoço".</li>
+                      <li>Desmarque a caixa "Dia Útil/Trabalhável" para impedir qualquer marcação naquele dia na semana, fechando a clínica no calendário de todos.</li>
+                    </ul>
+
+                    <h2>2. Duração, Limites e Intervalos</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Estruturar o fracionamento do calendário.
+                    </div>
+                    <ul>
+                      <li><strong>Volume Base:</strong> Uma duração padrão de "50 minutos", quando combinada com a sua grade de início rotineira, cria blocos contínuos na visão da agenda (ex: 8h, 8h50, 9h40).</li>
+                      <li><strong>Tempo de Prep/Higienização (Descanso):</strong> Você pode definir intervalos obrigatórios (ex: 10 minutos) que o sistema injeta entre todo término de sessão e início da próxima.</li>
+                    </ul>
+
+                    <h2>3. Tipos de Consulta</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Classificar os motivos da vinda do paciente para fins de relatórios (e futuramente integração de preços).
+                    </div>
+                    <p>Adicione textos curtos que você quer que apareçam numa roleta quando o recepcionista for criar o agendamento. (Ex: "Avaliação 1a Vez", "Reavaliação", "Sessão Avulsa").</p>
+
+                    <h2>4. Tolerâncias Operacionais (Atraso e Cancelamento)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Transferir a responsabilidade para o paciente criando regras impessoais de corte.
+                    </div>
+                    <ul>
+                      <li><strong>Tolerância de Atraso (min):</strong> Se você configurar "15" minutos, assim que a sessão bater 15 minutos em andamento e não tiver ocorrido o check-in na recepção, o sistema emite um alerta de No-Show iminente.</li>
+                      <li><strong>Horas P/ Cancelamento:</strong> Você pode barrar que um cliente mande no aplicativo "Não vou poder ir" faltando apenas duas horas. Se estiver "24", qualquer tentativa de desmarcar com menos de 24h acarreta "falta não justificada", sujeita a ser cobrada financeiramente.</li>
+                    </ul>
+
+                    <h2>5. Exceções / Dias Bloqueados</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Fechar as portas num dia específico.
+                    </div>
+                    <p>Utilize para emendar feriados, colocar pontos facultativos, datas de retiro ou reformas. Você não precisa alterar a sua regra semanal inteira. Basta adicionar uma data específica aqui e ela não aceitará mais agendamentos. Você também pode clicar no botão de puxar em lote os feriados nacionais rapidamente.</p>
+
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <Calendar size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-32">
         {/* Horários */}
         <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6 lg:row-span-2">

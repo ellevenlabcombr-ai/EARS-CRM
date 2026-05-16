@@ -355,6 +355,73 @@ export const SportsSettings = () => {
 
   return (
     <div className="space-y-6">
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <Database className="text-blue-500" size={28} /> Modalidades e Esportes
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Configure o portfólio de atividades oferecidas. Crie turmas, defina posições táticas e campos personalizados para o prontuário.
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+           <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual do Módulo de Modalidades</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #3b82f6; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #3b82f6; border-radius: 4px; margin: 1rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual de Esportes e Modalidades</h1>
+                    <p>O módulo de esportes é onde você modela os serviços da sua clínica, ou os esportes do seu Clube. Cada uma destas opções virarão "Departamentos" (Turmas) visuais onde você alocará os atletas/pacientes.</p>
+
+                    <h2>1. Posicionamento e Tática</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Fornecer contexto técnico para a fisioterapia ou preparação física.
+                    </div>
+                    <p>Ao criar uma modalidade (ex: Futebol), é recomendado preencher as "Posições". Crie tags como "Goleiro", "Zagueiro", "Atacante". Assim, a equipe saberá o grau de exigência mecânica que aquele paciente terá após receber alta e as estatísticas do clube farão sentido por posição.</p>
+
+                    <h2>2. Quantidade Limite (Tamanho do Elenco)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Monitorar lotação.
+                    </div>
+                    <p>Se você possui turmas de Pilates, defina o tamanho alvo. Isso auxiliará futuros alertas de Ociosidade ou Sobrecarga.</p>
+
+                    <h2>3. Desativar Modalidades (Arquivamento)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Limpar a visão sem apagar o passado.
+                    </div>
+                    <p>Evite apagar um esporte (lixeira). Ao invés disso, desligue o interruptor (Tornar Inativo). Ele sumirá do seletor da recepção, mas preservará o histórico dos atletas que já praticaram no passado.</p>
+
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <Database size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4">
         <div className="relative w-full sm:w-auto flex-grow sm:flex-grow-0">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

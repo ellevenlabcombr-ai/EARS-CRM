@@ -57,6 +57,73 @@ export function GeneralSettings() {
 
   return (
     <div className="space-y-6 md:space-y-10 pb-10">
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <Settings className="text-slate-500" size={28} /> Configurações Gerais
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Visão central do sistema. Acesse estatísticas de uso, versionamento e o mapa gerencial da plataforma.
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+           <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual do Módulo Geral</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #64748b; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #64748b; border-radius: 4px; margin: 1rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual de Visão Geral</h1>
+                    <p>Você está no centro de comando. Navegue pelo menu lateral para descer o nível de configuração para áreas específicas do sistema.</p>
+
+                    <h2>1. Indicadores de Volume</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Diagnóstico de carga do servidor.
+                    </div>
+                    <p>O topo da página lhe fornece indicadores da dimensão do uso da plataforma: Número de Eventos na Agenda, Check-ins biométricos recebidos e número total de Perfils Ativos.</p>
+
+                    <h2>2. Logs Operacionais (Trilha de Auditoria)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Descobrir "quem apagou o que" e "quando".
+                    </div>
+                    <p>A tabela inferior funciona como a caixa preta do sistema. Se uma consulta for excluída acidentalmente ou um pagamento no financeiro for estornado, um registro de máquina imutável aparecerá aqui para controle gerencial.</p>
+
+                    <h2>3. Permissões e Segurança</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Manter a proteção de dados (LGPD).
+                    </div>
+                    <p>Somente os Administradores de Sistema devem possuir acesso contínuo a este painel geral. Assistentes e Recepcionistas devem receber níveis de acesso fragmentados nas suas configurações de cargos e salários.</p>
+
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 border border-slate-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <Settings size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       {/* Header Section - Refined for "General" purpose */}
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>

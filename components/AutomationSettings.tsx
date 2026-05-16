@@ -327,6 +327,93 @@ export function AutomationSettings() {
 
   return (
     <div className="space-y-6 md:space-y-8 pb-32">
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <MessageCircle className="text-cyan-500" size={28} /> Automações de Marketing e CRM
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Configure o motor de engajamento automático. Conecte o WhatsApp (via Evolution API) e o servidor de E-mail (Resend) para nutrir os pacientes sem intervenção humana.
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+          <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual do Módulo de Automação</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #06b6d4; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #06b6d4; border-radius: 4px; margin: 1rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual de Automações e CRM</h1>
+                    <p>Aqui você delega para as máquinas aquilo que os humanos sempre esquecem de fazer: cobrar quem está devendo, lembrar de agendamentos e dar feliz aniversário. É a máquina que mantém o engajamento da clínica com os pacientes 24/7.</p>
+
+                    <h2>1. Conexão do WhatsApp (Evolution API)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Ligar o WhatsApp do seu celular corporativo à plataforma para disparar mensagens no automático.
+                    </div>
+                    <p>O sistema usa a plataforma open-source "Evolution API". Para isso você precisará da <strong>URL da API</strong>, da <strong>API Key (Global/Instância)</strong> e do <strong>Nome da Instância</strong> criada no container da Evolution.</p>
+
+                    <h2>2. Régua de Agendamentos (Lembrete e Follow-Up)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Reduzir os "No-Shows" (faltantes).
+                    </div>
+                    <ul>
+                      <li>Configure o sistema para disparar o <strong>Lembrete de Agendamento</strong> "X" horas antes do compromisso. <i>Dica: Enviar 24h antes dá tempo pro paciente cancelar e você encaixar outro.</i></li>
+                      <li>Configure o <strong>Follow-up</strong> para ser enviado horas após a sessão ser marcada como "Concluída".</li>
+                    </ul>
+
+                    <h2>3. Engajamento Secundário (Aniversários e Inatividade)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Fidelização e Resgate de clientes inativos (Recall).
+                    </div>
+                    <p>Configure disparos automáticos matinais parabenizando aniversariantes, ou envie campanhas para pessoas que estão marcadas no CRM como "Ausentes".</p>
+
+                    <h2>4. Financeiro Ativo (Recibos e Lembretes)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Fazer com que o robô faça o trabalho sujo de cobrança.
+                    </div>
+                    <p>Alinhe para que recibos da clínica disparem automaticamente em PDF para o WhatsApp assim que o paciente pagar. Alinhe alarmes para cobranças no vencimento.</p>
+
+                    <h2>5. Daily Profissional (Agenda Matinal)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Avisar os profissionais da saúde logo de manhã quais as sessões do dia, sem precisarem abrir a plataforma.
+                    </div>
+
+                    <h2>6. E-Mails Transacionais (Resend)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Oficializar mensagens ou enviar PDFs pesados (Ex: Dietas/Triagem) por e-mail.
+                    </div>
+                    <p>Vincule uma chave do Resend (SMTP) para que o sistema utilize-o como fallback caso o WhatsApp do paciente falhe.</p>
+
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <MessageCircle size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       {/* WhatsApp Automation Section */}
       <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl space-y-6">
         <div className="flex items-center gap-3 md:gap-4 mb-2">
