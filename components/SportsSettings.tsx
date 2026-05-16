@@ -721,8 +721,8 @@ export const SportsSettings = () => {
               >
                 <div className="flex justify-between items-start mb-4 relative z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg border border-white/10" style={{ backgroundColor: `${sportColor}20` }}>
-                      <span className="text-4xl leading-none select-none drop-shadow-md">
+                    <div className="flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-5xl leading-none select-none drop-shadow-lg">
                         {sport.icon || "🏆"}
                       </span>
                     </div>
@@ -812,8 +812,8 @@ export const SportsSettings = () => {
                 </div>
 
                 {/* Background Decoration */}
-                <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
-                  <span className="text-[100px] leading-none select-none rotate-12">
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                  <span className="text-[100px] leading-none select-none rotate-12 drop-shadow-sm">
                     {sport.icon || "🏆"}
                   </span>
                 </div>
