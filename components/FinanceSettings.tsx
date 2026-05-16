@@ -37,31 +37,43 @@ export function FinanceSettings() {
 
   const fetchData = async () => {
     if (!supabase) return;
-    try {
-      const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes] = await Promise.all([
-        supabase.from('financial_categories').select('*').order('name'),
-        supabase.from('financial_goals').select('*').order('created_at', { ascending: false }),
-        supabase.from('financial_closures').select('*').order('month', { ascending: false }),
-        supabase.from('financial_products').select('*').order('name'),
-        supabase.from('financial_payment_methods').select('*').order('name'),
-        supabase.from('financial_billing_rules').select('*').limit(1).single()
-      ]);
-      
-      if (catsRes.data) setCategories(catsRes.data);
-      if (goalsRes.data) setGoals(goalsRes.data);
-      if (closuresRes.data) setClosures(closuresRes.data);
-      if (productsRes.data) setProducts(productsRes.data);
-      if (paymentRes.data) setPaymentMethods(paymentRes.data);
-      
-      if (rulesRes.data) {
-        setBillingRules(rulesRes.data);
-      } else {
-        // Init default rules if none exists
+
+    const safeFetch = async (query: any) => {
+      try { return await query; } catch(e) { return { error: e }; }
+    };
+
+    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes] = await Promise.all([
+      safeFetch(supabase.from('financial_categories').select('*').order('name')),
+      safeFetch(supabase.from('financial_goals').select('*').order('created_at', { ascending: false })),
+      safeFetch(supabase.from('financial_closures').select('*').order('month', { ascending: false })),
+      safeFetch(supabase.from('financial_products').select('*').order('name')),
+      safeFetch(supabase.from('financial_payment_methods').select('*').order('name')),
+      safeFetch(supabase.from('financial_billing_rules').select('*').limit(1).single())
+    ]);
+
+    let hasMissingTables = false;
+    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error) {
+       hasMissingTables = true;
+    }
+
+    if (catsRes.data) setCategories(catsRes.data);
+    if (goalsRes.data) setGoals(goalsRes.data);
+    if (closuresRes.data) setClosures(closuresRes.data);
+    if (productsRes.data) setProducts(productsRes.data);
+    if (paymentRes.data) setPaymentMethods(paymentRes.data);
+    
+    if (rulesRes.data) {
+      setBillingRules(rulesRes.data);
+    } else if (!hasMissingTables && !rulesRes.error) {
+      // Init default rules if none exists and table exists
+      try {
         const { data: newRules } = await supabase.from('financial_billing_rules').insert({}).select().single();
         if (newRules) setBillingRules(newRules);
-      }
-    } catch (err: any) {
-      console.warn("Algumas tabelas financeiras podem não existir ainda:", err.message);
+      } catch(e) {}
+    }
+
+    if (hasMissingTables) {
+      showMessage('ATENÇÃO: Vá na aba "Desenv." e execute o Database Seeder para atualizar as tabelas do Financeiro!', 'error');
     }
   };
 
@@ -84,8 +96,7 @@ export function FinanceSettings() {
     }
   };
 
-  const deleteCategory = async (id: string, isDefault: boolean) => {
-    if (isDefault) return showMessage('Não é possível apagar categoria padrão.', 'error');
+  const deleteCategory = async (id: string) => {
     if (!confirm('Deseja excluir esta categoria?')) return;
     try {
       await supabase.from('financial_categories').delete().eq('id', id);
@@ -154,6 +165,22 @@ export function FinanceSettings() {
   };
 
   // PAYMENT METHODS
+  const loadAsaasFees = async () => {
+    try {
+      const asaasMethods = [
+        { name: 'Pix (Asaas)', type: 'pix', fee_percentage: 0.99 },
+        { name: 'Boleto (Asaas)', type: 'boleto', fee_fixed: 2.99, fee_percentage: 0 },
+        { name: 'Cartão Crédito 30d (Asaas)', type: 'credit_card', fee_percentage: 4.99 }
+      ];
+      const { error } = await supabase.from('financial_payment_methods').insert(asaasMethods);
+      if (error) throw error;
+      fetchData();
+      showMessage('Taxas Asaas importadas com sucesso!', 'success');
+    } catch (err: any) {
+      showMessage('Erro ao importar taxas Asaas.', 'error');
+    }
+  };
+
   const addPaymentMethod = async () => {
     if (!newPaymentName.trim()) return;
     try {
@@ -184,19 +211,26 @@ export function FinanceSettings() {
 
   // BILLING RULES
   const saveBillingRules = async () => {
-    if (!billingRules.id) return;
     try {
-      const { error } = await supabase.from('financial_billing_rules').update({
+      const payload = {
         default_due_day: parseInt(billingRules.default_due_day || 5),
         reminder_days_before: parseInt(billingRules.reminder_days_before || 3),
         warn_after_days_late: parseInt(billingRules.warn_after_days_late || 1),
         penalty_rate: parseFloat(billingRules.penalty_rate || 2),
         interest_rate_monthly: parseFloat(billingRules.interest_rate_monthly || 1)
-      }).eq('id', billingRules.id);
-      if (error) throw error;
+      };
+
+      if (!billingRules.id) {
+        const { error, data } = await supabase.from('financial_billing_rules').insert(payload).select().single();
+        if (error) throw error;
+        if (data) setBillingRules(data);
+      } else {
+        const { error } = await supabase.from('financial_billing_rules').update(payload).eq('id', billingRules.id);
+        if (error) throw error;
+      }
       showMessage('Regras salvas com sucesso!', 'success');
     } catch (err: any) {
-      showMessage('Erro ao salvar regras.', 'error');
+      showMessage('Erro ao salvar regras. Verifique se o Database Seeder foi executado.', 'error');
     }
   };
 
@@ -264,7 +298,7 @@ export function FinanceSettings() {
               <div className="flex flex-wrap gap-2">
                  {categories.filter(c => c.type === 'income').map(c => (
                    <span key={c.id} className="text-[10px] md:text-xs font-bold px-3 py-1.5 border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 rounded-xl flex items-center gap-2">
-                     {c.name} {!c.is_default && <button onClick={() => deleteCategory(c.id, c.is_default)} className="text-emerald-500 hover:text-emerald-300 transition-colors"><X size={12} /></button>}
+                     {c.name} <button onClick={() => deleteCategory(c.id)} className="text-emerald-500 hover:text-emerald-300 transition-colors"><X size={12} /></button>
                    </span>
                  ))}
                  {categories.filter(c => c.type === 'income').length === 0 && <span className="text-xs text-slate-600">Nenhuma registrada</span>}
@@ -274,7 +308,7 @@ export function FinanceSettings() {
               <div className="flex flex-wrap gap-2">
                  {categories.filter(c => c.type === 'expense').map(c => (
                    <span key={c.id} className="text-[10px] md:text-xs font-bold px-3 py-1.5 border border-rose-500/20 bg-rose-500/5 text-rose-400 rounded-xl flex items-center gap-2">
-                     {c.name} {!c.is_default && <button onClick={() => deleteCategory(c.id, c.is_default)} className="text-rose-500 hover:text-rose-300 transition-colors"><X size={12} /></button>}
+                     {c.name} <button onClick={() => deleteCategory(c.id)} className="text-rose-500 hover:text-rose-300 transition-colors"><X size={12} /></button>
                    </span>
                  ))}
                  {categories.filter(c => c.type === 'expense').length === 0 && <span className="text-xs text-slate-600">Nenhuma registrada</span>}
@@ -375,9 +409,14 @@ export function FinanceSettings() {
             <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500/10 text-blue-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
               <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
             </div>
-            <div>
-              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Formas & Taxas</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Tipos de pagamento aceitos e descontos de maquineta</p>
+            <div className="flex-1 flex justify-between items-center">
+              <div>
+                <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Formas & Taxas</h3>
+                <p className="text-[10px] md:text-xs text-slate-500 font-medium">Tipos de pagamento e descontos</p>
+              </div>
+              <button onClick={loadAsaasFees} className="px-3 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-500/20 transition-all">
+                + Asaas
+              </button>
             </div>
           </div>
 
@@ -403,7 +442,12 @@ export function FinanceSettings() {
                     <span className="font-bold text-slate-300 text-xs md:text-sm">{p.name}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">{p.fee_percentage}% taxa</span>
+                    <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">
+                      {p.fee_percentage > 0 && `${p.fee_percentage}%`}
+                      {p.fee_percentage > 0 && p.fee_fixed > 0 && ' + '}
+                      {p.fee_fixed > 0 && `R$ ${p.fee_fixed}`}
+                      {p.fee_percentage === 0 && (p.fee_fixed === 0 || !p.fee_fixed) && 'S/ taxa'}
+                    </span>
                     <button onClick={() => deletePaymentMethod(p.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
                   </div>
                 </div>
