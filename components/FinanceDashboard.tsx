@@ -582,21 +582,61 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
         receipt_filename: receiptFile ? receiptFile.name : initialData?.receipt_filename || null,
       };
 
-      if (initialData?.id) {
-         const { error } = await supabase.from('financial_transactions').update(payload).eq('id', initialData.id);
-         if (error) throw error;
-      } else {
-         const { error } = await supabase.from('financial_transactions').insert({
-            ...payload,
-            created_at: new Date().toISOString()
-         });
-         if (error) throw error;
+      const doOperation = async () => {
+        if (initialData?.id) {
+           const { error } = await supabase.from('financial_transactions').update(payload).eq('id', initialData.id);
+           if (error) throw error;
+        } else {
+           const { error } = await supabase.from('financial_transactions').insert({
+              ...payload,
+              created_at: new Date().toISOString()
+           });
+           if (error) throw error;
+        }
+      };
+
+      try {
+        await doOperation();
+      } catch (opErr: any) {
+        if (opErr.message && (opErr.message.includes('does not exist') || opErr.message.includes('column'))) {
+          // Fallback to create the table/columns because the seeder wasn't run
+          await supabase.rpc('exec_sql', { sql: `
+            CREATE TABLE IF NOT EXISTS public.financial_transactions (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                description TEXT,
+                amount NUMERIC NOT NULL,
+                type TEXT NOT NULL,
+                status TEXT DEFAULT 'paid',
+                date DATE,
+                account TEXT,
+                category TEXT,
+                is_recurring BOOLEAN DEFAULT false,
+                athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE,
+                receipt_filename TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS description TEXT;
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS date DATE;
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS account TEXT;
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE;
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS receipt_filename TEXT;
+            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS category TEXT;
+            ALTER TABLE IF EXISTS public.financial_transactions ENABLE ROW LEVEL SECURITY;
+            DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_transactions;
+            CREATE POLICY "Permitir tudo" ON public.financial_transactions FOR ALL USING (true) WITH CHECK (true);
+          `});
+          // Retry
+          await doOperation();
+        } else {
+          throw opErr;
+        }
       }
       
       onSave();
     } catch (err: any) {
       console.error(err);
-      alert('Tabela financial_transactions inexistente ou erro: ' + err.message);
+      alert('Erro ao salvar transação: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }

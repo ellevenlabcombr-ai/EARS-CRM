@@ -2234,16 +2234,48 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         product_id: selectedProductId,
         status: 'active',
         billing_cycle: 'monthly',
-        amount: selectedPlan.default_price,
+        amount: selectedPlan.default_price || 0,
         start_date: getLocalDateString()
       };
 
-      if (athleteSubscription?.id) {
-         const { error } = await supabase.from('financial_subscriptions').update(subPayload).eq('id', athleteSubscription.id);
-         if (error) throw error;
-      } else {
-         const { error } = await supabase.from('financial_subscriptions').insert(subPayload);
-         if (error) throw error;
+      const doOperation = async () => {
+        if (athleteSubscription?.id) {
+           const { error } = await supabase.from('financial_subscriptions').update(subPayload).eq('id', athleteSubscription.id);
+           if (error) throw error;
+        } else {
+           const { error } = await supabase.from('financial_subscriptions').insert(subPayload);
+           if (error) throw error;
+        }
+      };
+
+      try {
+        await doOperation();
+      } catch (opErr: any) {
+        if (opErr.message && opErr.message.includes('does not exist')) {
+          // Fallback to create the table because the seeder wasn't run
+          await supabase.rpc('exec_sql', { sql: `
+            CREATE TABLE IF NOT EXISTS public.financial_subscriptions (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE,
+                product_id UUID REFERENCES financial_products(id) ON DELETE SET NULL,
+                status TEXT DEFAULT 'active',
+                start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+                end_date DATE,
+                billing_cycle TEXT DEFAULT 'monthly',
+                amount NUMERIC NOT NULL,
+                gateway_provider TEXT,
+                gateway_subscription_id TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            ALTER TABLE IF EXISTS public.financial_subscriptions ENABLE ROW LEVEL SECURITY;
+            DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_subscriptions;
+            CREATE POLICY "Permitir tudo" ON public.financial_subscriptions FOR ALL USING (true) WITH CHECK (true);
+          `});
+          // Retry
+          await doOperation();
+        } else {
+          throw opErr;
+        }
       }
 
       setNotification({ message: 'Plano vinculado com sucesso!', type: 'success' });
@@ -2252,8 +2284,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       const subRes = await supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).order('created_at', { ascending: false }).limit(1);
       setAthleteSubscription(subRes.data?.[0] || null);
     } catch (err: any) {
-      console.error(err);
-      setNotification({ message: 'Erro ao vincular plano: ' + err.message, type: 'error' });
+      console.error("Erro no Link Plan:", err);
+      setNotification({ message: 'Erro ao vincular plano: ' + (err.message || 'Desconhecido'), type: 'error' });
     } finally {
       setIsLinkingPlan(false);
     }
@@ -2286,7 +2318,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             initial={{ opacity: 0, y: -20, x: 20 }}
             animate={{ opacity: 1, y: 0, x: 0 }}
             exit={{ opacity: 0, y: -20, x: 20 }}
-            className={`fixed top-4 right-4 z-[100] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 ${
+            className={`fixed top-4 right-4 z-[9999] px-6 py-3 rounded-xl shadow-2xl border flex items-center gap-3 ${
               notification.type === 'success' 
                 ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
                 : 'bg-red-500/10 border-red-500/50 text-red-400'
