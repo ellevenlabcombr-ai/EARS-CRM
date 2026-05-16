@@ -291,6 +291,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [athleteTransactions, setAthleteTransactions] = useState<any[]>([]);
   const [showLinkPlanModal, setShowLinkPlanModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
+
+  // Auto-select first financial product if none is selected when modal opens
+  useEffect(() => {
+    if (showLinkPlanModal && financialProducts.length > 0 && !selectedProductId) {
+      setSelectedProductId(financialProducts[0].id);
+    }
+  }, [showLinkPlanModal, financialProducts, selectedProductId]);
   const [isLinkingPlan, setIsLinkingPlan] = useState(false);
 
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
@@ -2214,8 +2221,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     return { globalAssessmentScore: score, assessmentAlerts: alerts };
   }, [latestAssessmentsByType]);
 
-  const handleLinkPlan = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLinkPlan = async (e?: React.MouseEvent | React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!selectedProductId) return;
     setIsLinkingPlan(true);
     try {
@@ -5882,7 +5889,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 </button>
               </div>
 
-              <form onSubmit={handleLinkPlan} className="p-6 space-y-6">
+              <div className="p-6 space-y-6">
                 <div className="space-y-4">
                   {financialProducts.length === 0 ? (
                     <div className="text-sm font-bold text-slate-500 bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
@@ -5893,7 +5900,6 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                       <div className="space-y-2">
                         <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Selecione o Plano Base</label>
                         <select 
-                          required
                           value={selectedProductId}
                           onChange={(e) => setSelectedProductId(e.target.value)}
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
@@ -5922,14 +5928,21 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                     Cancelar
                   </Button>
                   <Button 
-                    type="submit"
-                    disabled={!selectedProductId || isLinkingPlan || financialProducts.length === 0}
+                    type="button"
+                    onClick={() => {
+                        if (!selectedProductId) {
+                            setNotification({ message: 'Por favor, selecione um plano.', type: 'error' });
+                            return;
+                        }
+                        handleLinkPlan();
+                    }}
+                    disabled={isLinkingPlan || financialProducts.length === 0}
                     className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest text-xxs h-12 rounded-xl shadow-lg shadow-cyan-500/20"
                   >
                     {isLinkingPlan ? 'Vinculando...' : 'Confirmar Vínculo'}
                   </Button>
                 </div>
-              </form>
+              </div>
             </motion.div>
           </div>
         )}
