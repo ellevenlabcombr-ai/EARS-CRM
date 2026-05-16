@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X, DollarSign, CreditCard, AlertTriangle, Save, Tag, Percent, Users, FileText, Folder, Receipt, Bell, Wallet, Key, Building2 } from 'lucide-react';
+import { Plus, Trash, CheckCircle2, Lock, Target, TrendingUp, X, DollarSign, CreditCard, AlertTriangle, Save, Tag, Percent, Users, FileText, Folder, Receipt, Bell, Wallet, Key, Building2, HeartPulse, FileDown, ShieldAlert, Calculator } from 'lucide-react';
 import { getLocalDateString } from '@/lib/utils';
 
 export function FinanceSettings() {
@@ -20,6 +20,11 @@ export function FinanceSettings() {
   const [wallets, setWallets] = useState<any[]>([]);
   const [gateways, setGateways] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
+  const [insurances, setInsurances] = useState<any[]>([]);
+
+  const [newInsuranceName, setNewInsuranceName] = useState('');
+  const [newInsuranceCode, setNewInsuranceCode] = useState('');
+  const [newInsuranceCopart, setNewInsuranceCopart] = useState(false);
   
   // States for forms
   const [newCatName, setNewCatName] = useState('');
@@ -44,6 +49,9 @@ export function FinanceSettings() {
   const [newSplitName, setNewSplitName] = useState('');
   const [newSplitRecipient, setNewSplitRecipient] = useState('');
   const [newSplitPercentage, setNewSplitPercentage] = useState('');
+  const [newSplitFeeRule, setNewSplitFeeRule] = useState('none');
+  const [newSplitFixed, setNewSplitFixed] = useState('');
+  const [newSplitTaxRule, setNewSplitTaxRule] = useState('none');
 
   const [newCostCenterName, setNewCostCenterName] = useState('');
   const [newCostCenterDesc, setNewCostCenterDesc] = useState('');
@@ -72,7 +80,7 @@ export function FinanceSettings() {
       try { return await query; } catch(e) { return { error: e }; }
     };
 
-    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes, taxesRes, splitsRes, costCentersRes, invoiceSettingsRes, numSettingsRes, walletsRes, gatewaysRes, vendorsRes] = await Promise.all([
+    const [catsRes, goalsRes, closuresRes, productsRes, paymentRes, rulesRes, taxesRes, splitsRes, costCentersRes, invoiceSettingsRes, numSettingsRes, walletsRes, gatewaysRes, vendorsRes, insurancesRes] = await Promise.all([
       safeFetch(supabase.from('financial_categories').select('*').order('name')),
       safeFetch(supabase.from('financial_goals').select('*').order('created_at', { ascending: false })),
       safeFetch(supabase.from('financial_closures').select('*').order('month', { ascending: false })),
@@ -86,11 +94,12 @@ export function FinanceSettings() {
       safeFetch(supabase.from('financial_notification_settings').select('*').limit(1).single()),
       safeFetch(supabase.from('financial_wallets').select('*').order('name')),
       safeFetch(supabase.from('financial_api_gateways').select('*').order('provider_name')),
-      safeFetch(supabase.from('financial_vendors').select('*, financial_categories(name)').order('name'))
+      safeFetch(supabase.from('financial_vendors').select('*, financial_categories(name)').order('name')),
+      safeFetch(supabase.from('financial_health_insurances').select('*').order('name'))
     ]);
 
     let hasMissingTables = false;
-    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error || taxesRes.error || splitsRes.error || costCentersRes.error || invoiceSettingsRes.error || numSettingsRes.error || walletsRes.error || gatewaysRes.error || vendorsRes.error) {
+    if (catsRes.error || goalsRes.error || closuresRes.error || productsRes.error || paymentRes.error || taxesRes.error || splitsRes.error || costCentersRes.error || invoiceSettingsRes.error || numSettingsRes.error || walletsRes.error || gatewaysRes.error || vendorsRes.error || insurancesRes.error) {
        hasMissingTables = true;
     }
 
@@ -105,6 +114,7 @@ export function FinanceSettings() {
     if (walletsRes.data) setWallets(walletsRes.data);
     if (gatewaysRes.data) setGateways(gatewaysRes.data);
     if (vendorsRes.data) setVendors(vendorsRes.data);
+    if (insurancesRes.data) setInsurances(insurancesRes.data);
     
     if (rulesRes.data) {
       setBillingRules(rulesRes.data);
@@ -294,11 +304,17 @@ export function FinanceSettings() {
       await supabase.from('financial_splits').insert({
         name: newSplitName.trim(),
         recipient_name: newSplitRecipient.trim(),
-        percentage: parseFloat(newSplitPercentage)
+        percentage: parseFloat(newSplitPercentage),
+        fee_discount_rule: newSplitFeeRule,
+        fixed_value: parseFloat(newSplitFixed) || 0,
+        tax_retention_rule: newSplitTaxRule
       });
       setNewSplitName('');
       setNewSplitRecipient('');
       setNewSplitPercentage('');
+      setNewSplitFeeRule('none');
+      setNewSplitFixed('');
+      setNewSplitTaxRule('none');
       fetchData();
     } catch (error: any) {
       showMessage('Erro ao adicionar split.', 'error');
@@ -365,6 +381,34 @@ export function FinanceSettings() {
       fetchData();
     } catch (error: any) {
       showMessage('Erro ao excluir conta/caixa.', 'error');
+    }
+  };
+
+  // HEALTH INSURANCES
+  const addInsurance = async () => {
+    if (!newInsuranceName.trim()) return;
+    try {
+      await supabase.from('financial_health_insurances').insert({
+        name: newInsuranceName.trim(),
+        registration_code: newInsuranceCode.trim(),
+        has_coparticipation: newInsuranceCopart
+      });
+      setNewInsuranceName('');
+      setNewInsuranceCode('');
+      setNewInsuranceCopart(false);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao adicionar convênio.', 'error');
+    }
+  };
+
+  const deleteInsurance = async (id: string) => {
+    if (!confirm('Deseja excluir este convênio?')) return;
+    try {
+      await supabase.from('financial_health_insurances').delete().eq('id', id);
+      fetchData();
+    } catch (error: any) {
+      showMessage('Erro ao excluir convênio.', 'error');
     }
   };
 
@@ -460,7 +504,11 @@ export function FinanceSettings() {
         reminder_days_before: parseInt(billingRules.reminder_days_before || 3),
         warn_after_days_late: parseInt(billingRules.warn_after_days_late || 1),
         penalty_rate: parseFloat(billingRules.penalty_rate || 2),
-        interest_rate_monthly: parseFloat(billingRules.interest_rate_monthly || 1)
+        interest_rate_monthly: parseFloat(billingRules.interest_rate_monthly || 1),
+        block_scheduling_on_overdue: billingRules.block_scheduling_on_overdue || false,
+        block_after_days: parseInt(billingRules.block_after_days || 0),
+        require_daily_cash: billingRules.require_daily_cash || false,
+        auto_match_ofx: billingRules.auto_match_ofx || false
       };
 
       if (!billingRules.id) {
@@ -720,14 +768,31 @@ export function FinanceSettings() {
                 <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Vencimento Padrão (Dia do Mês)</label>
                 <input value={billingRules?.default_due_day || ''} onChange={e=>setBillingRules({...billingRules, default_due_day: e.target.value})} type="number" min="1" max="31" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300" />
               </div>
-              <div>
-                <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Multa por Atraso (%)</label>
-                <input value={billingRules?.penalty_rate || ''} onChange={e=>setBillingRules({...billingRules, penalty_rate: e.target.value})} type="number" step="0.1" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300" />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Multa por Atraso (%)</label>
+                  <input value={billingRules?.penalty_rate || ''} onChange={e=>setBillingRules({...billingRules, penalty_rate: e.target.value})} type="number" step="0.1" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300" />
+                </div>
+                <div className="flex-1">
+                  <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Juros ao Mês (%)</label>
+                  <input value={billingRules?.interest_rate_monthly || ''} onChange={e=>setBillingRules({...billingRules, interest_rate_monthly: e.target.value})} type="number" step="0.1" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300" />
+                </div>
               </div>
-              <div>
-                <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Juros ao Mês (%)</label>
-                <input value={billingRules?.interest_rate_monthly || ''} onChange={e=>setBillingRules({...billingRules, interest_rate_monthly: e.target.value})} type="number" step="0.1" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-slate-300" />
-              </div>
+
+               <label className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors mt-2">
+                 <input type="checkbox" checked={billingRules?.block_scheduling_on_overdue || false} onChange={e=>setBillingRules({...billingRules, block_scheduling_on_overdue: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-rose-500 focus:ring-0 focus:ring-offset-0 text-rose-500" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Bloqueio de Inadimplentes</p>
+                   <p className="text-[10px] text-slate-500">Impedir novos agendamentos se em atraso.</p>
+                 </div>
+               </label>
+               
+               {billingRules?.block_scheduling_on_overdue && (
+                  <div>
+                    <label className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block">Bloquear após (dias de atraso)</label>
+                    <input value={billingRules?.block_after_days || ''} onChange={e=>setBillingRules({...billingRules, block_after_days: e.target.value})} type="number" min="0" className="w-full bg-slate-950 border border-rose-500/50 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500 outline-none text-white shadow-[0_0_15px_-3px_rgba(244,63,94,0.1)]" placeholder="Ex: 5" />
+                  </div>
+               )}
             </div>
 
             <div className="space-y-5">
@@ -797,25 +862,32 @@ export function FinanceSettings() {
         </section>
 
         {/* SPLITS E COMISSÕES */}
-        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full">
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
           <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-500/10 text-purple-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
               <Users className="w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div>
               <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Splits e Comissões</h3>
-              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Rateio de receitas entre profissionais</p>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Rateio de receitas entre profissionais e clínicas</p>
             </div>
           </div>
 
-          <div className="space-y-6 flex-1">
-             <div className="flex flex-col gap-2">
-                <input value={newSplitName} onChange={e=>setNewSplitName(e.target.value)} type="text" placeholder="Ex: Comissão Fisioterapia" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+             <div className="space-y-4">
+                <input value={newSplitName} onChange={e=>setNewSplitName(e.target.value)} type="text" placeholder="Ex: Comissão Fisioterapia" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600 text-white" />
                 <div className="flex gap-2">
-                  <input value={newSplitRecipient} onChange={e=>setNewSplitRecipient(e.target.value)} type="text" placeholder="Favorecido (Ex: Dr. João)" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600" />
-                  <input value={newSplitPercentage} onChange={e=>setNewSplitPercentage(e.target.value)} type="number" placeholder="%" className="w-[30%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600" />
-                  <button onClick={addSplit} className="px-4 py-3 bg-purple-500 hover:bg-purple-400 text-white rounded-xl font-black transition-colors"><Plus size={18} /></button>
+                  <input value={newSplitRecipient} onChange={e=>setNewSplitRecipient(e.target.value)} type="text" placeholder="Favorecido (Ex: Dr. João)" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600 text-white" />
+                  <input value={newSplitPercentage} onChange={e=>setNewSplitPercentage(e.target.value)} type="number" placeholder="%" className="w-[30%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600 text-white" />
                 </div>
+                <div className="flex gap-2">
+                  <input value={newSplitFixed} onChange={e=>setNewSplitFixed(e.target.value)} type="number" placeholder="Valor Fixo R$" className="w-[50%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-purple-500/50 outline-none placeholder:text-slate-600 text-white" />
+                  <select value={newSplitFeeRule} onChange={e=>setNewSplitFeeRule(e.target.value)} className="w-[50%] bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-xs font-medium focus:border-purple-500/50 outline-none text-slate-300">
+                    <option value="none">S/ Desconto Taxa</option>
+                    <option value="before_split">Abater Tarifa Antes</option>
+                  </select>
+                </div>
+                <button onClick={addSplit} className="px-4 py-3 bg-purple-500 hover:bg-purple-400 text-white rounded-xl font-black transition-colors w-full flex items-center justify-center gap-2"><Plus size={18} /> Adicionar Regra</button>
              </div>
 
              <div className="space-y-3">
@@ -823,10 +895,12 @@ export function FinanceSettings() {
                  <div key={s.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
                   <div className="flex flex-col">
                     <span className="font-bold text-slate-300 text-xs md:text-sm">{s.name}</span>
-                    <span className="text-[10px] text-slate-500">Destino: {s.recipient_name}</span>
+                    <span className="text-[10px] text-slate-500">Destino: {s.recipient_name}
+                      {s.fee_discount_rule === 'before_split' ? ' • (Liq)' : ''}
+                    </span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">{s.percentage}%</span>
+                    <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">{s.percentage}% {s.fixed_value > 0 ? ` + R$${s.fixed_value}` : ''}</span>
                     <button onClick={() => deleteSplit(s.id)} className="text-slate-600 hover:text-rose-500 transition-colors"><Trash size={14} /></button>
                   </div>
                  </div>
@@ -1073,6 +1147,53 @@ export function FinanceSettings() {
           </div>
         </section>
 
+        {/* CONVÊNIOS E TABELAS DE PREÇOS */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-rose-500/10 text-rose-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <HeartPulse className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Convênios e Parceiros</h3>
+              <p className="text-[10px] md:text-xs text-slate-500 font-medium">Tabelas de Preços, TISS/TUSS e Coparticipação</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+               <div className="flex flex-col gap-3">
+                  <input value={newInsuranceName} onChange={e=>setNewInsuranceName(e.target.value)} type="text" placeholder="Nome do Convênio (ex: Unimed)" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-white placeholder:text-slate-600" />
+                  <div className="flex gap-3">
+                    <input value={newInsuranceCode} onChange={e=>setNewInsuranceCode(e.target.value)} type="text" placeholder="Cód. ANS / Reg" className="w-[50%] bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-rose-500/50 outline-none text-white placeholder:text-slate-600" />
+                    <label className="flex items-center gap-2 p-3 w-[50%] bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                      <input type="checkbox" checked={newInsuranceCopart} onChange={e=>setNewInsuranceCopart(e.target.checked)} className="w-4 h-4 rounded border-slate-700 bg-slate-900 checked:bg-rose-500" />
+                      <span className="text-xs font-bold text-white">Coparticipação</span>
+                    </label>
+                  </div>
+                  <button onClick={addInsurance} className="px-4 py-3 bg-rose-500 hover:bg-rose-400 text-white rounded-xl font-black w-full transition-colors flex justify-center items-center gap-2">
+                    <Plus size={18} /> Adicionar Convênio
+                  </button>
+               </div>
+            </div>
+
+            <div className="space-y-3">
+               {insurances.map(ins => (
+                 <div key={ins.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50 group">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-slate-300 text-xs md:text-sm">{ins.name}</span>
+                    <span className="text-[10px] text-slate-500">
+                      {ins.registration_code ? `ANS: ${ins.registration_code} • ` : ''}
+                      {ins.has_coparticipation ? 'Exige Coparticipação' : 'Sem Coparticipação'}
+                    </span>
+                  </div>
+                  <button onClick={() => deleteInsurance(ins.id)} className="text-slate-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"><Trash size={14} /></button>
+                 </div>
+               ))}
+               {insurances.length === 0 && <span className="text-xs text-slate-600">Nenhum convênio registrado.</span>}
+            </div>
+          </div>
+        </section>
+
         {/* FORNECEDORES FEED */}
         <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full">
           <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
@@ -1154,6 +1275,61 @@ export function FinanceSettings() {
                  </div>
                ))}
                {gateways.length === 0 && <span className="text-xs text-slate-600">Nenhuma integração adicionada</span>}
+            </div>
+          </div>
+        </section>
+
+        {/* CONCILIAÇÃO OFX E CAIXA DIÁRIO */}
+        <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full xl:col-span-2">
+          <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-sky-500/10 text-sky-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+              <Calculator className="w-5 h-5 md:w-6 md:h-6" />
+            </div>
+            <div className="flex-1">
+               <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">Operacional Financeiro</h3>
+               <p className="text-[10px] md:text-xs text-slate-500 font-medium">Conciliação Bancária (OFX) e Controle de Caixa</p>
+            </div>
+            <button onClick={saveBillingRules} className="px-4 py-2.5 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-black uppercase tracking-widest text-[10px] md:text-xs flex items-center gap-2 transition-all">
+              <Save size={16} /> Salvar Ops
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+               <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-500 flex items-center justify-center shrink-0">
+                    <FileDown size={14} />
+                  </div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-widest">Conciliação OFX</h4>
+               </div>
+               <p className="text-[10px] md:text-xs text-slate-400 leading-relaxed mb-4">
+                 Ative a conciliação automática para cruzar o extrato bancário com os lançamentos no sistema e sugerir a baixa de faturas.
+               </p>
+               <label className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                 <input type="checkbox" checked={billingRules?.auto_match_ofx || false} onChange={e=>setBillingRules({...billingRules, auto_match_ofx: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-sky-500 focus:ring-0 focus:ring-offset-0 text-sky-500" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Ativar Auto-Match OFX</p>
+                 </div>
+               </label>
+            </div>
+
+            <div className="space-y-4">
+               <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                    <ShieldAlert size={14} />
+                  </div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-widest">Caixa Diário / Turno</h4>
+               </div>
+               <p className="text-[10px] md:text-xs text-slate-400 leading-relaxed mb-4">
+                 Exija que os operadores abram e fechem o caixa diariamente na recepção, registrando suprimentos e sangrias (troco).
+               </p>
+               <label className="flex items-center gap-3 p-4 bg-slate-950/50 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
+                 <input type="checkbox" checked={billingRules?.require_daily_cash || false} onChange={e=>setBillingRules({...billingRules, require_daily_cash: e.target.checked})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 checked:bg-emerald-500 focus:ring-0 focus:ring-offset-0 text-emerald-500" />
+                 <div className="flex-1">
+                   <p className="text-sm font-bold text-white">Travar Sistema Sem Caixa</p>
+                   <p className="text-[10px] text-slate-500">Bloquear recebimentos se não houver caixa aberto no dia.</p>
+                 </div>
+               </label>
             </div>
           </div>
         </section>

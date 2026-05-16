@@ -1579,6 +1579,38 @@ END $storage$;`;
                 );
             END IF;
 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_health_insurances') THEN
+                CREATE TABLE financial_health_insurances (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    registration_code TEXT,
+                    has_coparticipation BOOLEAN DEFAULT false,
+                    is_active BOOLEAN DEFAULT true,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_splits' AND column_name='fee_discount_rule') THEN
+                    ALTER TABLE public.financial_splits ADD COLUMN fee_discount_rule TEXT DEFAULT 'none';
+                    ALTER TABLE public.financial_splits ADD COLUMN fixed_value NUMERIC DEFAULT 0;
+                    ALTER TABLE public.financial_splits ADD COLUMN tax_retention_rule TEXT DEFAULT 'none';
+                END IF;
+            END $$;
+
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_billing_rules' AND column_name='block_scheduling_on_overdue') THEN
+                    ALTER TABLE public.financial_billing_rules ADD COLUMN block_scheduling_on_overdue BOOLEAN DEFAULT false;
+                    ALTER TABLE public.financial_billing_rules ADD COLUMN block_after_days INTEGER DEFAULT 0;
+                    ALTER TABLE public.financial_billing_rules ADD COLUMN default_interest_pt NUMERIC DEFAULT 0;
+                    ALTER TABLE public.financial_billing_rules ADD COLUMN default_penalty_pt NUMERIC DEFAULT 0;
+                    ALTER TABLE public.financial_billing_rules ADD COLUMN require_daily_cash BOOLEAN DEFAULT false;
+                    ALTER TABLE public.financial_billing_rules ADD COLUMN auto_match_ofx BOOLEAN DEFAULT false;
+                END IF;
+            END $$;
+
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_transactions') THEN
                 CREATE TABLE financial_transactions (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -1798,6 +1830,7 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.financial_wallets ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_api_gateways ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_vendors ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_health_insurances ENABLE ROW LEVEL SECURITY;
 
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_categories;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_goals;
@@ -1814,6 +1847,7 @@ END $storage$;`;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_wallets;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_api_gateways;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_vendors;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_health_insurances;
 
         CREATE POLICY "Permitir tudo" ON public.financial_categories FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_goals FOR ALL USING (true) WITH CHECK (true);
@@ -1830,6 +1864,7 @@ END $storage$;`;
         CREATE POLICY "Permitir tudo" ON public.financial_wallets FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_api_gateways FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_vendors FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_health_insurances FOR ALL USING (true) WITH CHECK (true);
 
         -- Políticas para Clinical Notes e Assessments
         ALTER TABLE IF EXISTS public.clinical_notes ENABLE ROW LEVEL SECURITY;
