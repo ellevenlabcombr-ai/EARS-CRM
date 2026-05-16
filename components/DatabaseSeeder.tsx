@@ -1191,8 +1191,31 @@ END $storage$;`;
 
   const [isFixing, setIsFixing] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+
+  const runMigrations = async () => {
+    if (!supabase) return;
+    setIsMigrating(true);
+    setStatus('loading');
+    setMessage('Criando tabelas e atualizando banco de dados...');
+    try {
+      const { error } = await supabase.rpc('exec_sql', { sql: sqlToRun });
+      if (error) {
+        throw new Error(error.message + " (Você precisa executar o SQL manualmente no painel do Supabase se a função exec_sql não existir)");
+      }
+      setStatus('success');
+      setMessage('Estrutura do banco de dados atualizada com sucesso!');
+      setIsMigrating(false);
+    } catch (err: any) {
+      console.error(err);
+      setStatus('error');
+      setMessage(err.message || 'Erro ao executar migrações.');
+      setIsMigrating(false);
+      setShowSql(true);
+    }
+  };
 
   const clearDatabase = async () => {
     if (!window.confirm('ATENÇÃO: Você tem certeza absoluta que deseja apagar TODOS os dados do sistema? (Atletas, registros clínicos, eventos, avaliações, etc.) Isso não pode ser desfeito.')) {
@@ -2168,18 +2191,34 @@ END $storage$;`;
 
       {status === 'idle' && (
         <div className="space-y-3">
-          <button
-            onClick={seedDatabase}
-            disabled={isSeeding || isFixing || isClearing}
-            className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            <Database className="w-5 h-5" />
-            Inserir Dados de Teste
-          </button>
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4 mb-4">
+            <h4 className="text-emerald-500 font-bold mb-2 text-sm uppercase tracking-widest">1. Atualizar Estrutura</h4>
+            <p className="text-xs text-emerald-400/80 mb-3 leading-relaxed">Cria as tabelas ausentes e adiciona colunas novas essenciais, muito importante antes de usar funcionalidades recém adicionadas.</p>
+            <button
+              onClick={runMigrations}
+              disabled={isSeeding || isFixing || isClearing || isMigrating}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-[#050B14] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <Database className="w-5 h-5" />
+              Executar Migrações
+            </button>
+          </div>
+
+          <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-4 mb-4">
+            <h4 className="text-cyan-500 font-bold mb-2 text-sm uppercase tracking-widest">2. População (Opcional)</h4>
+            <button
+              onClick={seedDatabase}
+              disabled={isSeeding || isFixing || isClearing || isMigrating}
+              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              <Database className="w-5 h-5" />
+              Inserir Dados de Teste
+            </button>
+          </div>
           
           <button
             onClick={fixPerformance}
-            disabled={isSeeding || isFixing || isClearing}
+            disabled={isSeeding || isFixing || isClearing || isMigrating}
             className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-cyan-500 font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2 border border-cyan-500/20"
           >
             <Zap className="w-5 h-5" />
@@ -2188,7 +2227,7 @@ END $storage$;`;
 
           <button
             onClick={clearDatabase}
-            disabled={isSeeding || isFixing || isClearing}
+            disabled={isSeeding || isFixing || isClearing || isMigrating}
             className="w-full py-3 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-black uppercase tracking-widest rounded-xl transition-colors flex items-center justify-center gap-2 border border-rose-500/20"
           >
             <AlertCircle className="w-5 h-5" />

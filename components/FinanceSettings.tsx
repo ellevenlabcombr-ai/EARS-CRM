@@ -177,7 +177,8 @@ export function FinanceSettings() {
       fetchData();
       showMessage('Taxas Asaas importadas com sucesso!', 'success');
     } catch (err: any) {
-      showMessage('Erro ao importar taxas Asaas.', 'error');
+      console.error("Asaas import error:", err);
+      showMessage(`Erro ao importar taxas Asaas: ${err.message}`, 'error');
     }
   };
 
