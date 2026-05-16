@@ -558,6 +558,76 @@ export function FinanceSettings() {
         </div>
       )}
 
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <DollarSign className="text-emerald-500" size={28} /> Painel Financeiro
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Configure as regras de cobrança, métodos de pagamento, centro de custos,<br className="hidden md:block"/> rateios automáticos (splits) e integrações de recebimento.
+          </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+          <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual do Módulo Financeiro</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 800px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #10b981; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual do Painel Financeiro</h1>
+
+                    <h2>1. Categorias (Plano de Contas)</h2>
+                    <p>Estrutura fundamental para classificar de onde o dinheiro vem (Receitas) e para onde ele vai (Despesas).</p>
+                    
+                    <h2>2. Centros de Custo</h2>
+                    <p>Divisão de despesas e receitas por projetos, departamentos ou unidades de negócio. Funciona em paralelo às categorias.</p>
+                    
+                    <h2>3. Contas & Caixas (Wallets)</h2>
+                    <p>Gestão individualizada de saldos de contas bancárias, caixas físicos ou carteiras digitais. Aqui você cadastra suas origens e caixinhas da recepção.</p>
+
+                    <h2>4. Convênios e Parceiros (Health Insurances)</h2>
+                    <p>Adicione convênios que sua clínica atende (ex: Unimed, SulAmérica). Configure códigos ANS e sinalize se o convênio exige coparticipação do paciente, estruturando o repasse de guias TISS/TUSS.</p>
+                    
+                    <h2>5. Splits e Comissões (Rateios)</h2>
+                    <p>Sistema de divisão automatizada de receitas entre os profissionais e a clínica. Configure comissões % ou subtraia um <b>Valor Fixo</b> por sessão. Você também pode decidir abater eventuais tarifas de cartão <i>antes</i> de processar o split daquele profissional.</p>
+                    
+                    <h2>6. Cobrança e Inadimplência</h2>
+                    <p>Defina as políticas automáticas para quem atrasar pagamento. Inclui <b>Multa (%) e Juros (a.m)</b>. Também contém a trava operacional <b>'Bloqueio de Inadimplentes'</b>, onde você define com quantos dias de atraso o sistema deve barrar novos agendamentos daquele cliente / paciente.</p>
+                    
+                    <h2>7. Operacional: Caixa Diário</h2>
+                    <p>Ative a opção <b>'Travar Sistema Sem Caixa'</b> para forçar recepcionistas a terem um 'caixa formal do dia' aberto. Isso impede o recebimento no balcão de valores que ficam 'soltos' sem documentação de fechamento e conferência.</p>
+                    
+                    <h2>8. Operacional: Conciliação OFX (Auto-Match)</h2>
+                    <p>Quando ativado, libera a interface inteligente de extratos (na tela de transações) onde o sistema sugere baixas automaticamente varrendo o arquivo do extrato emitido pelo banco contra os lançamentos e boletos pendentes no sistema.</p>
+                    
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <FileText size={18} />
+            Ler Manual
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
         
         {/* CATEGORIES SECTION */}
