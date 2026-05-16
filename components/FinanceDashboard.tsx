@@ -1020,11 +1020,10 @@ function SubscriptionsTab({ athletes, transactions }: { athletes: any[], transac
 
          <div className="p-10 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center">
             <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500 mb-4">
-              <Plus size={32} />
+              <CheckCircle2 size={32} />
             </div>
-            <h3 className="text-lg text-white mb-2">Integrar Gateway (Em Breve)</h3>
-            <p className="max-w-md mx-auto text-sm font-medium pr-1 pl-1">A integração com Asaas/Stripe vai gerar as cobranças no cartão do paciente e as transações constarão na visão geral automaticamente!</p>
-            <button className="mt-6 px-6 py-3 bg-purple-500 hover:bg-purple-600 text-[#050B14] rounded-xl font-bold uppercase tracking-wider transition-colors shadow-lg shadow-purple-500/20">Configurar Stripe/Asaas</button>
+            <h3 className="text-lg text-white mb-2">Nenhuma assinatura ativa</h3>
+            <p className="max-w-md mx-auto text-sm font-medium pr-1 pl-1">Configure o seu Gateway de Pagamento (Stripe, Asaas, etc) no menu de Configurações para que as cobranças recorrentes apareçam aqui automaticamente.</p>
          </div>
       </div>
     </main>
