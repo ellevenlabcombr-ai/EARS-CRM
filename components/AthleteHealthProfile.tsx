@@ -2470,8 +2470,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         </div>
       </div>
 
-        <div className="col-span-full lg:row-start-3 order-3 overflow-x-auto custom-scrollbar pb-4 pt-2">
-          <div className="flex items-center justify-between min-w-[600px] px-4">
+        <div className="col-span-full lg:row-start-3 order-3 overflow-x-auto custom-scrollbar pb-4 pt-2 flex justify-start sm:justify-center">
+          <div className="flex items-center justify-start sm:justify-center min-w-max px-4 gap-8 md:gap-12">
             {[
               { id: 'overview', label: 'Visão Geral', icon: Activity },
               { id: 'ficha', label: 'Cadastro', icon: User },

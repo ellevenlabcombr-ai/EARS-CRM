@@ -111,8 +111,8 @@ export function SettingsDashboard() {
       </header>
 
       {/* Horizontal Nav - Timeline Style */}
-      <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full">
-        <div className="flex items-center justify-between min-w-[800px] px-4">
+      <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full flex justify-start sm:justify-center">
+        <div className="flex items-center justify-start sm:justify-center min-w-max px-4 gap-8 md:gap-12">
           {sections.map((section, i, arr) => {
             const activeIndex = arr.findIndex(t => t.id === activeSection);
             const isActive = activeSection === section.id;
