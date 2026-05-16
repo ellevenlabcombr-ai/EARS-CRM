@@ -112,7 +112,7 @@ export function SettingsDashboard() {
 
       {/* Horizontal Nav - Timeline Style */}
       <div className="overflow-x-auto custom-scrollbar pb-6 pt-2 w-full flex justify-center">
-        <div className="flex items-center justify-start sm:justify-center min-w-max px-4 gap-6 md:gap-10">
+        <div className="flex items-center justify-start sm:justify-center min-w-max px-2 gap-3 md:gap-5">
           {sections.map((section, i, arr) => {
             const activeIndex = arr.findIndex(t => t.id === activeSection);
             const isActive = activeSection === section.id;
@@ -121,13 +121,13 @@ export function SettingsDashboard() {
             return (
               <React.Fragment key={section.id}>
                 <div 
-                  className={`flex flex-col items-center gap-3 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
+                  className={`flex flex-col items-center gap-2 cursor-pointer transition-all ${isActive ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
                   onClick={() => setActiveSection(section.id)}
                 >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
-                    <Icon className="w-5 h-5 md:w-6 md:h-6" />
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-[2px] md:border-[3px] ${isActive ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-slate-700 bg-slate-900/50 text-slate-400'}`}>
+                    <Icon className="w-4 h-4 md:w-5 md:h-5" />
                   </div>
-                  <span className={`text-[0.7rem] md:text-[0.75rem] font-black uppercase tracking-widest text-center max-w-[7rem] leading-tight whitespace-pre-line ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
+                  <span className={`text-[0.6rem] md:text-[0.65rem] font-black uppercase tracking-widest text-center max-w-[5rem] leading-tight whitespace-pre-line ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}>
                     {section.title}
                   </span>
                 </div>

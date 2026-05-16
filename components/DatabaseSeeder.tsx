@@ -1365,7 +1365,7 @@ END $storage$;`;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.user_profile_settings;
         CREATE POLICY "Permitir tudo" ON public.user_profile_settings FOR ALL USING (true) WITH CHECK (true);
 
-        -- Garantir Tabelas de Agenda e Automação
+        -- Garantir Tabelas de Agenda, Automação e Financeiro
         DO $$ 
         BEGIN
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='agenda_settings') THEN
@@ -1387,6 +1387,47 @@ END $storage$;`;
                     whatsapp_reminder_enabled BOOLEAN DEFAULT true,
                     email_reminder_enabled BOOLEAN DEFAULT true,
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            -- Tabelas Financeiras
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_categories') THEN
+                CREATE TABLE financial_categories (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    type TEXT NOT NULL, -- 'income' ou 'expense'
+                    is_default BOOLEAN DEFAULT false,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_goals') THEN
+                CREATE TABLE financial_goals (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    target_amount NUMERIC NOT NULL,
+                    current_amount NUMERIC DEFAULT 0,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_closures') THEN
+                CREATE TABLE financial_closures (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    month TEXT UNIQUE NOT NULL, -- formato YYYY-MM
+                    final_balance NUMERIC NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_transactions') THEN
+                CREATE TABLE financial_transactions (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    category_id UUID REFERENCES financial_categories(id),
+                    amount NUMERIC NOT NULL,
+                    type TEXT NOT NULL,
+                    status TEXT DEFAULT 'paid',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
             END IF;
         END $$;
@@ -1577,6 +1618,20 @@ END $storage$;`;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.automation_settings;
         CREATE POLICY "Permitir tudo" ON public.agenda_settings FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.automation_settings FOR ALL USING (true) WITH CHECK (true);
+
+        -- RLS para Financeiro
+        ALTER TABLE IF EXISTS public.financial_categories ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_goals ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_closures ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_transactions ENABLE ROW LEVEL SECURITY;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_categories;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_goals;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_closures;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_transactions;
+        CREATE POLICY "Permitir tudo" ON public.financial_categories FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_goals FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_closures FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_transactions FOR ALL USING (true) WITH CHECK (true);
 
         -- Políticas para Clinical Notes e Assessments
         ALTER TABLE IF EXISTS public.clinical_notes ENABLE ROW LEVEL SECURITY;
