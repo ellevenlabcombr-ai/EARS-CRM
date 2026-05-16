@@ -365,39 +365,51 @@ export function AutomationSettings() {
                     <div class="highlight">
                       <strong>Objetivo:</strong> Ligar o WhatsApp do seu celular corporativo à plataforma para disparar mensagens no automático.
                     </div>
-                    <p>O sistema usa a plataforma open-source "Evolution API". Para isso você precisará da <strong>URL da API</strong>, da <strong>API Key (Global/Instância)</strong> e do <strong>Nome da Instância</strong> criada no container da Evolution.</p>
+                    <ul>
+                      <li>O sistema usa a infraestrutura "Evolution API".</li>
+                      <li>Você precisará informar a <strong>URL da API</strong>, a <strong>API Key</strong> e o <strong>Nome da Instância</strong> que foram gerados pelo seu servidor.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Após scanear o QR Code, qualquer transação que gerar aviso na plataforma fará com que o paciente receba um "Bip" no WhatsApp do celular dele enviado pela clínica, sem que sua recepção precise digitar nada.</p>
 
                     <h2>2. Régua de Agendamentos (Lembrete e Follow-Up)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Reduzir os "No-Shows" (faltantes).
+                      <strong>Objetivo:</strong> Reduzir radicalmente o número de "No-Shows" (pacientes que faltam e deixam buracos na agenda).
                     </div>
                     <ul>
-                      <li>Configure o sistema para disparar o <strong>Lembrete de Agendamento</strong> "X" horas antes do compromisso. <i>Dica: Enviar 24h antes dá tempo pro paciente cancelar e você encaixar outro.</i></li>
-                      <li>Configure o <strong>Follow-up</strong> para ser enviado horas após a sessão ser marcada como "Concluída".</li>
+                      <li>Configure o gatilho <strong>Lembrete de Agendamento</strong> para disparar "X" horas antes.</li>
+                      <li>Configure o gatilho <strong>Follow-up</strong> para pedir feedback ou lembrar do próximo agendamento "X" horas depois de finalizado.</li>
                     </ul>
+                    <p><em>Exemplo Prático:</em> Coloque o lenbrete para "-24 Hrs". Se ele tem consulta na terça as 15h, segunda as 15h recebe uma mensagem: "Você tem consulta amanhã. Responda 1 para Confirmar e 2 para Cancelar".</p>
 
-                    <h2>3. Engajamento Secundário (Aniversários e Inatividade)</h2>
+                    <h2>3. Engajamento Secundário (Ações de Aniversário e Recall)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Fidelização e Resgate de clientes inativos (Recall).
+                      <strong>Objetivo:</strong> Fidelização (Lifetime Value) e resgate de inativos.
                     </div>
-                    <p>Configure disparos automáticos matinais parabenizando aniversariantes, ou envie campanhas para pessoas que estão marcadas no CRM como "Ausentes".</p>
+                    <ul>
+                      <li><strong>Aniversário:</strong> Um robô verifica a base de dados todo dia às 8:00am em busca de aniversariantes e manda felicitações.</li>
+                      <li><strong>Recall (Resgate):</strong> Dispara mensagens do tipo "Sentimos sua falta" baseadas na última vez que o paciente esteve presencialmente.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Crie um gatilho de "Recall" em 90 dias com o texto: "Olá! Faz 3 meses que sua alta fisioterápica ocorreu. Como está se sentindo? Que tal marcarmos uma manutenção?"</p>
 
-                    <h2>4. Financeiro Ativo (Recibos e Lembretes)</h2>
+                    <h2>4. Cobrança Financeira (Smart Billing)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Fazer com que o robô faça o trabalho sujo de cobrança.
+                      <strong>Objetivo:</strong> Eliminar o desgaste emocional do profissional ao cobrar clientes.
                     </div>
-                    <p>Alinhe para que recibos da clínica disparem automaticamente em PDF para o WhatsApp assim que o paciente pagar. Alinhe alarmes para cobranças no vencimento.</p>
+                    <ul>
+                      <li>Remova do humano a tarefa chata de cobrar dívidas.</li>
+                      <li>Dispare recibos de dinheiro em PDF direto no celular do pagador.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Se ele comprou pacote via Boleto que vence no dia 10, no dia 09 o robô chama: "Seu boleto da fatura X vence amanhã, segue a linha digitável: 123...". E no dia 11 dispara "Opa, não identificamos o pagamento da consulta de ontem."</p>
 
-                    <h2>5. Daily Profissional (Agenda Matinal)</h2>
+                    <h2>5. E-Mails Transacionais (Fallback e Documentos)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Avisar os profissionais da saúde logo de manhã quais as sessões do dia, sem precisarem abrir a plataforma.
+                      <strong>Objetivo:</strong> Oficializar documentações judiciais (Laudos) ou entregar PDFs grandes.
                     </div>
-
-                    <h2>6. E-Mails Transacionais (Resend)</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Oficializar mensagens ou enviar PDFs pesados (Ex: Dietas/Triagem) por e-mail.
-                    </div>
-                    <p>Vincule uma chave do Resend (SMTP) para que o sistema utilize-o como fallback caso o WhatsApp do paciente falhe.</p>
+                    <ul>
+                      <li>A integração nativa é feita com o motor "Resend" (ou qualquer SMTP/Sendgrid se customizado).</li>
+                      <li>Se o número de WhatsApp informado for inválido, o sistema usará o e-mail cadastrado do paciente como via secundária.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> O plano alimentar com 25 páginas cheio de fotos gerado pela aba Nutricional passa dos limites textuais do WhatsApp. O sistema manda um aviso no Whats: "Seu nutricionista lhe enviou sua nova dieta no seu e-mail: joão.silva@gmail.com".</p>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

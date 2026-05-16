@@ -393,50 +393,57 @@ export function AgendaSettings() {
                       strong { color: #e2e8f0; }
                       .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #6366f1; border-radius: 4px; margin: 1rem 0; }
                     </style>
-                  </head>
-                  <body>
-                    <h1>Manual da Agenda Central</h1>
+                                      <h1>Manual da Agenda Central</h1>
                     <p>Dominar os parâmetros da agenda impede buracos na grade (ociosidade) e diminui conflitos com atrasos de pacientes. Veja como dominar cada trava abaixo.</p>
 
                     <h2>1. Grade Operacional / Horários (Por dia da semana)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Dizer ao sistema em quais momentos você aceita marcações.
+                      <strong>Objetivo:</strong> Dizer ao sistema em quais momentos você aceita marcações (Janela de Funcionamento).
                     </div>
-                    <p>Use as 'bolinhas' com as iniciais da semana (Seg a Dom) para configurar as regras individualmente.</p>
                     <ul>
-                      <li>Se a sua clínica fecha na quarta à tarde, configure o horário de quarta das 08h às 12h. Desmarque a opção de "Almoço".</li>
-                      <li>Desmarque a caixa "Dia Útil/Trabalhável" para impedir qualquer marcação naquele dia na semana, fechando a clínica no calendário de todos.</li>
+                      <li>Use as 'bolinhas' com as iniciais da semana (Seg a Dom) para configurar as regras independentes para cada dia.</li>
+                      <li>Desmarque a caixa "Dia Útil/Trabalhável" para fechar a clínica e impedir qualquer marcação naquele dia na semana regularmente.</li>
                     </ul>
+                    <p><em>Exemplo Prático:</em> A clínica folga no Sábado e Domingo. Desmarque essas duas bolinhas. Na Quarta a clínica fecha 12h, então configure "Término" às 12h e desmarque a opção "Pausa de Almoço" apenas para Quarta.</p>
 
                     <h2>2. Duração, Limites e Intervalos</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Estruturar o fracionamento do calendário.
+                      <strong>Objetivo:</strong> Estruturar o recorte e fatiamento contínuo da agenda virtual.
                     </div>
                     <ul>
-                      <li><strong>Volume Base:</strong> Uma duração padrão de "50 minutos", quando combinada com a sua grade de início rotineira, cria blocos contínuos na visão da agenda (ex: 8h, 8h50, 9h40).</li>
-                      <li><strong>Tempo de Prep/Higienização (Descanso):</strong> Você pode definir intervalos obrigatórios (ex: 10 minutos) que o sistema injeta entre todo término de sessão e início da próxima.</li>
+                      <li><strong>Volume Base:</strong> Uma duração padrão de "50 minutos", ao ser sobreposta a uma grade das 08h às 18h gera as caixinhas exatas na visão diária.</li>
+                      <li><strong>Tempo de Prep/Higienização (Descanso):</strong> Defina intervalos obrigatórios que o sistema injeta "escondido" após toda sessão.</li>
                     </ul>
+                    <p><em>Exemplo Prático:</em> Sessão de 50 min. + 10 min de Higienização = Bloco comercial de 1h. O paciente "compra" 50 min, mas sua agenda bloqueia 1 hora. Às 08:00 inicia, 08:50 encerra e de 08:50 às 09:00 o paciente não enxerga, sendo seu preparo.</p>
 
                     <h2>3. Tipos de Consulta</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Classificar os motivos da vinda do paciente para fins de relatórios (e futuramente integração de preços).
+                      <strong>Objetivo:</strong> Classificar os motivos da vinda do paciente para fins de estipulação de tarifas e organização.
                     </div>
-                    <p>Adicione textos curtos que você quer que apareçam numa roleta quando o recepcionista for criar o agendamento. (Ex: "Avaliação 1a Vez", "Reavaliação", "Sessão Avulsa").</p>
+                    <ul>
+                      <li>Crie os rótulos de atendimento padrões da sua clínica.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> "Avaliação 1a Vez", "Reavaliação de Protocolo", "Sessão Avulsa", "Retorno". Assim, no fim do mês você sabe quantas das suas consultas totais foram retornos vs primeira vez.</p>
 
                     <h2>4. Tolerâncias Operacionais (Atraso e Cancelamento)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Transferir a responsabilidade para o paciente criando regras impessoais de corte.
+                      <strong>Objetivo:</strong> Transferir a responsabilidade (ônus financeiro) para o paciente criando regras impessoais ("é o sistema que bloqueou").
                     </div>
                     <ul>
-                      <li><strong>Tolerância de Atraso (min):</strong> Se você configurar "15" minutos, assim que a sessão bater 15 minutos em andamento e não tiver ocorrido o check-in na recepção, o sistema emite um alerta de No-Show iminente.</li>
-                      <li><strong>Horas P/ Cancelamento:</strong> Você pode barrar que um cliente mande no aplicativo "Não vou poder ir" faltando apenas duas horas. Se estiver "24", qualquer tentativa de desmarcar com menos de 24h acarreta "falta não justificada", sujeita a ser cobrada financeiramente.</li>
+                      <li><strong>Tolerância de Atraso (min):</strong> Janela máxima até a recepção derrubar a vez dele.</li>
+                      <li><strong>Horas P/ Cancelamento:</strong> O famoso "Aviso Prévio" que todos consultórios desejam mas não conseguem impor.</li>
                     </ul>
+                    <p><em>Exemplo Prático:</em> Horas P/ Cancelamento = 24. No ambiente online do paciente, o botão "Desmarcar" sofre "fade out" se a consulta for dali a menos de 24h, impedindo furos last-minute injustificados e garantindo sua cobrança.</p>
 
                     <h2>5. Exceções / Dias Bloqueados</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Fechar as portas num dia específico.
+                      <strong>Objetivo:</strong> Fechar as portas num dia atípico (feriado, reforma).
                     </div>
-                    <p>Utilize para emendar feriados, colocar pontos facultativos, datas de retiro ou reformas. Você não precisa alterar a sua regra semanal inteira. Basta adicionar uma data específica aqui e ela não aceitará mais agendamentos. Você também pode clicar no botão de puxar em lote os feriados nacionais rapidamente.</p>
+                    <ul>
+                      <li>Adicione a data e um pequeno motivo (Ex: "Retiro Anual", "Feriado Estadual", "Manutenção").</li>
+                      <li>Você também pode clicar no botão "Buscar Feriados" para o robô injetar no calendário os feriados bancários brasileiros.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Você não precisa ir lá na Regra Semanal (Passo 1) falar que terça não abre porque caiu no feriado. É só colocar o feriado nas "Exceções" que a terça em questão será inteiramente inutilizada.</p>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

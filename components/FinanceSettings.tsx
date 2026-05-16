@@ -596,76 +596,59 @@ export function FinanceSettings() {
                     <div class="highlight">
                       <strong>Objetivo:</strong> Classificar a origem (Receitas) e o destino (Despesas) do dinheiro.
                     </div>
-                    <p>A categorização correta permite relatórios financeiros e DRE precisos. Especifique categorias como "Consultas Particulares", "Atendimentos Convênio", "Material de Escritório", "Impostos".</p>
+                    <p>A categorização correta permite relatórios financeiros e DRE precisos.</p>
+                    <ul>
+                      <li>Especifique categorias macro e micro. Ex: "Despesa Fixa > Conta de Luz".</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Evite a categoria genérica "Outros". Crie "Consultas Particulares", "Atendimentos Convênio", "Material de Escritório", "Impostos".</p>
 
                     <h2>2. Centros de Custo</h2>
                     <div class="highlight">
                       <strong>Objetivo:</strong> Dividir despesas e receitas por projetos, departamentos ou unidades de negócio.
                     </div>
-                    <p>Funciona em paralelo às categorias. Por exemplo, uma conta de luz (categoria Despesa Fixa) pode ser dividida 50% para a "Unidade Centro" e 50% para a "Unidade Sul".</p>
+                    <p>Funciona em paralelo às categorias, cruzando informações.</p>
+                    <ul>
+                      <li>Crie os centros baseados no local físico ou equipe.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Uma conta de luz (categoria Despesa Fixa) de R$ 1000 pode ser dividida: 50% para a "Unidade Centro" e 50% para a "Unidade Sul".</p>
                     
                     <h2>3. Contas & Caixas (Wallets)</h2>
                     <div class="highlight">
                       <strong>Objetivo:</strong> Gestão individualizada de saldos de contas bancárias e carteiras.
                     </div>
-                    <p>Aqui você cadastra contas como "Banco do Brasil Conta Corrente", "Caixa Física da Recepção" ou "Cielo". Todas as transações serão vinculadas a um caixa específico para simplificar a conciliação.</p>
+                    <ul>
+                      <li>Cadastre as contas físicas ou digitais que processam dinheiro da clínica.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Você cadastra "Banco do Brasil Conta Corrente", "Caixa Física da Recepção" e "Cielo". Todas as transações precisarão obrigatoriamente indicar de qual desses caixas o dinheiro saiu ou entrou.</p>
 
-                    <h2>4. Fornecedores (Vendors)</h2>
+                    <h2>4. Gatilhos de Cobrança e Inadimplência</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Agilizar lançamentos no Contas a Pagar.
-                    </div>
-                    <p>Cadastro rápido de prestadores de serviços, empresas de energia ou internet. Ajuda na emissão de recibos e rastreamento de maiores despesas.</p>
-
-                    <h2>5. Convênios e Parceiros (Health Insurances)</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Estruturar regras de tabelas e repasses para guias (TISS/TUSS).
-                    </div>
-                    <p>Cadastre os planos que atende (ex: SulAmérica, Unimed) ou clínicas parceiras. Você também configura se o convênio exige o pagamento de coparticipação.</p>
-                    
-                    <h2>6. Gateways de Pagamento (Integrações)</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Automatizar a emissão de boletos, links de crédito e PIX.
-                    </div>
-                    <p>Insira chaves de API de integradores suportados para que cobranças sejam enviadas automaticamente para os clientes.</p>
-
-                    <h2>7. Emissão de NF-e (Notas Fiscais Eletrônicas)</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Ligar a plataforma à sua prefeitura.
-                    </div>
-                    <p>Configure a integração via parceiros (como eNotas) para disparar Notas Fiscais de Serviços (NFS-e) logo após a confirmação de recebimento.</p>
-
-                    <h2>8. Notificações e Réguas de Cobrança</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Avisar sobre vencimentos e cobrar automaticamente (SMS/Email/WhatsApp).
-                    </div>
-                    <p>Configure quantos dias antes enviar aviso de vencimento e réguas contínuas de alerta para inadimplentes.</p>
-
-                    <h2>9. Splits e Comissões (Rateios)</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Dividir receitas de forma automatizada.
-                    </div>
-                    <p>Configure de quanto será a porcentagem (%) de comissão para parceiros ou estipule Valores Fixos subtraídos.</p>
-
-                    <h2>10. Operacional Financeiro (Conciliação e Caixa)</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Rotinas essenciais de auditoria do dia a dia.
+                      <strong>Objetivo:</strong> Aplicar multas, juros e sanções padrão para inadimplentes de forma autônoma.
                     </div>
                     <ul>
-                     <li><strong>Conciliação OFX (Auto-Match):</strong> Importe seu extrato bancário. O sistema vasculha pendências e sugere correspondências para você dar baixa em um clique.</li>
-                     <li><strong>Travar Sistema Sem Caixa Aberto:</strong> Se ligado, o recepcionista ou caixa não conseguirá registrar receitas sem ter aberturado o caixa com um saldo inicial. Evita perdas em espécie.</li>
+                      <li><strong>Multa (%):</strong> Cobrada uma única vez por atraso (Ex: 2%).</li>
+                      <li><strong>Juros ao mês (%):</strong> Cobrados proporcionalmente aos dias de atraso (Ex: 1% a.m.).</li>
+                      <li><strong>Bloqueio Automático:</strong> Trava o sistema impedindo a recepção de marcar pacientes com dívidas ativas há X dias.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Bloquear agendamentos de clientes que devem há mais de 15 dias, forçando-os a regularizar na recepção.</p>
+
+                    <h2>5. Operacional Financeiro (Conciliação e Caixa)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Rotinas essenciais de auditoria do dia a dia da recepção.
+                    </div>
+                    <ul>
+                      <li><strong>Conciliação OFX:</strong> Importe seu extrato bancário. O sistema vasculha pendências e sugere correspondências para você dar baixa em um clique.</li>
+                      <li><strong>Travar Sistema Sem Caixa Aberto:</strong> Se ligado, o recepcionista ou caixa não conseguirá registrar receitas financeiras sem ter primeiro "Aberto o Caixa" com um saldo inicial. Evita perdas em gavetas físicas.</li>
                     </ul>
 
-                    <h2>11. Cobrança e Inadimplência</h2>
+                    <h2>6. Splits e Comissões (Rateios)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Aplicar multas, juros e sanções padrão para inadimplentes.
+                      <strong>Objetivo:</strong> Dividir receitas de forma automatizada com os profissionais parceiros.
                     </div>
-                    <p>Defina multa em % (ex: 2%) e juros (1% a.m.) atrelado aos pagamentos atrasados e bloqueie novos agendamentos se houver dívidas antigas superiores a X dias.</p>
-                    
-                    <h2>12. Fechamento Mensal</h2>
-                    <div class="highlight">
-                      <strong>Objetivo:</strong> Trancar histórico contábil para evitar bagunça depois de conciliações.
-                    </div>
-                    <p>Funciona congelando as transações do mês para que um lançamento já validado não seja acidentalmente apagado.</p>
+                    <ul>
+                      <li>Configure de quanto será a porcentagem (%) de comissão para parceiros (ex: Médico ganha 60%, Clínica 40%).</li>
+                      <li>Defina se você vai descontar a tarifa da maquininha de cartão <strong>antes</strong> de calcular a parte do médico.</li>
+                    </ul>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

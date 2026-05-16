@@ -88,26 +88,37 @@ export function GeneralSettings() {
                     </style>
                   </head>
                   <body>
-                    <h1>Manual de Visão Geral</h1>
-                    <p>Você está no centro de comando. Navegue pelo menu lateral para descer o nível de configuração para áreas específicas do sistema.</p>
+                    <h1>Manual de Visão Geral (Dashboard do Administrador)</h1>
+                    <p>Você está no centro de comando do sistema ("Mission Control"). A Visão Geral não foi feita para o dia-a-dia de agendar pacientes, mas sim para auditar a saúde da clínica, a eficiência da equipe e a carga dos servidores.</p>
 
-                    <h2>1. Indicadores de Volume</h2>
+                    <h2>1. Indicadores de Volume (Telemetria)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Diagnóstico de carga do servidor.
+                      <strong>Objetivo:</strong> Diagnóstico rápido de carga, ajudando a prever faturamento e necessidade de contratação de staff.
                     </div>
-                    <p>O topo da página lhe fornece indicadores da dimensão do uso da plataforma: Número de Eventos na Agenda, Check-ins biométricos recebidos e número total de Perfils Ativos.</p>
+                    <ul>
+                      <li>Os blocos superiores contam, em tempo real, todas as marcações da semana, cadastros totais e check-ins no totem.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Se você notar que o número de "Agendamentos da Semana" está 30% acima da sua média anual, é o sinal do gestor para, talvez, providenciar substitutos caso algum médico adoeça, ou reforçar o caixa de troco da recepção.</p>
 
-                    <h2>2. Logs Operacionais (Trilha de Auditoria)</h2>
+                    <h2>2. Logs Operacionais (A "Caixa Preta" de Auditoria)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Descobrir "quem apagou o que" e "quando".
+                      <strong>Objetivo:</strong> Monitoramento LGPD e controle de estornos (Anti-Fraude).
                     </div>
-                    <p>A tabela inferior funciona como a caixa preta do sistema. Se uma consulta for excluída acidentalmente ou um pagamento no financeiro for estornado, um registro de máquina imutável aparecerá aqui para controle gerencial.</p>
+                    <ul>
+                      <li>A grande tabela inferior é inalterável. Nem mesmo você consegue apagar uma linha dela.</li>
+                      <li>Ela grava a digital de quem mexeu no quê e a exata hora UTC.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> A recepcionista apaga acidentalmente uma consulta de R$ 500 do sistema. Em vez do valor e do registro sumirem no ar, a tabela gerará uma linha vermelha "Agendamento Deletado" constando o IP da máquina, a hora 15:42 e o usuário "Recepção A".</p>
 
-                    <h2>3. Permissões e Segurança</h2>
+                    <h2>3. Permissões de Acesso e Segurança</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Manter a proteção de dados (LGPD).
+                      <strong>Objetivo:</strong> Blindagem contratual dos dados.
                     </div>
-                    <p>Somente os Administradores de Sistema devem possuir acesso contínuo a este painel geral. Assistentes e Recepcionistas devem receber níveis de acesso fragmentados nas suas configurações de cargos e salários.</p>
+                    <ul>
+                      <li>Nunca compartilhe o login que cede acesso a esta página "Configurações".</li>
+                      <li>Profissionais de saúde e secretários operam em módulos restritos. Modificações nestes painéis afetam a conta bancária, os domínios do WhatsApp e a estrutura legal dos recibos.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Utilize a navegação pela barra lateral esquerda para delegar apenas as visões que a sua equipe precisa, reservando a área da engrenagem (Configurações) somente aos donos/acionistas.</p>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

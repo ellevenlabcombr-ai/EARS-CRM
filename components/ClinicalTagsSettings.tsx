@@ -112,26 +112,48 @@ export function ClinicalTagsSettings() {
                     </style>
                   </head>
                   <body>
-                    <h1>Manual de Tags (Classificadores Smart)</h1>
-                    <p>As Tags são etiquetas virtuais que você cola na ficha do paciente. Em uma clínica concorrida, a recepção ou outros colegas podem bater o olho na grade de agendamentos e ver a Tag "Alto Risco" ou "VIP", sabendo exatamente como lidar com aquela situação.</p>
+                    <h1>Manual do Dicionário de Tags (Classificadores Smart)</h1>
+                    <p>As Tags são o sistema de inteligência visual da sua clínica. Elas funcionam como etiquetas virtuais coladas na ficha do paciente. Em um ambiente concorrido, qualquer profissional ao bater o olho na agenda sabe imediatamente como lidar com o paciente, seja ele um "Pós-Operatório", "Devedor", ou "Alto Risco". Este guia mostra como criar tags ativas.</p>
 
-                    <h2>1. Categorização e Severidade</h2>
+                    <h2>1. Nomeclatura e Categoria (A Etiqueta Base)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Separar a tag por departamento e nível de alerta.
+                      <strong>Objetivo:</strong> Nomear a condição e definir qual departamento é dono daquela informação.
                     </div>
-                    <p>Você pode criar tags exclusivas de Médicos, Físicos, Psicologia, etc. E atribuir uma severidade. Por exemplo "Ansiedade (Crítico)" ou "Gestante (Atenção)".</p>
+                    <p>Não misture informações médicas com financeiras na mesma cor.</p>
+                    <ul>
+                      <li><strong>Nome da Tag:</strong> Use termos curtos. Ex: "Pós-Op LCP", "Diabético", "VIP", "Inadimplente".</li>
+                      <li><strong>Categoria:</strong> Escolha a cor/departamento. Médicos (Roxo), Físico/Preparação (Amarelo), Nutrição (Verde), Psicologia (Azul). Se a tag for "Restrição de Glúten", coloque na Nutrição.</li>
+                    </ul>
 
-                    <h2>2. Validade (Tags Expiráveis)</h2>
+                    <h2>2. Severidade (O Grau de Urgência)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Limpar a ficha do paciente automaticamente.
+                      <strong>Objetivo:</strong> Mostrar para quem lê a tag se aquilo é apenas uma observação ou se é algo gravíssimo.
                     </div>
-                    <p>Se você sabe que uma tag de "Virola" não dura mais que 15 dias, defina a expiração para 15. A tag será removida automaticamente do atleta após esse prazo, mantendo a ficha limpa.</p>
+                    <ul>
+                      <li><strong>Baixa (Cinza):</strong> Apenas informativo. <em>Ex: "Canhoto", "Convênio Unimed".</em></li>
+                      <li><strong>Média/Atenção (Amarelo):</strong> Exige cuidado do profissional. <em>Ex: "Dor Crônica Lombar", "Ansioso".</em></li>
+                      <li><strong>Alta/Crítico (Vermelho Pulsante):</strong> Para o que estiver fazendo e leia. A tag ficará piscando na tela da recepção e dos profissionais. <em>Ex: "Aviso: Risco de Morte Súbita", "Cirurgia Recente (15 dias)".</em></li>
+                    </ul>
 
-                    <h2>3. Ações (Smart Tags)</h2>
+                    <h2>3. Expiração Automática (Tag com Data de Validade)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> O sistema tomar decisões baseado na tag.
+                      <strong>Objetivo:</strong> Limpar a ficha do paciente sozinha, sem você precisar lembrar de tirar a tag.
                     </div>
-                    <p>Você pode configurar uma tag de "Suspensão Médica" e quando ela for aplicada, o atleta é barrado de marcar novas sessões até que a tag expire ou seja removida.</p>
+                    <p>Ideal para condições temporárias.</p>
+                    <ul>
+                      <li><strong>Como usar:</strong> Digite o número de dias que a tag deve existir.</li>
+                      <li><strong>Exemplo Prático:</strong> Você cria a tag "Virose" e coloca Expira em: 7 Dias. Quando você colar essa tag no Joãozinho hoje, daqui a 7 dias exatos a tag "Virose" vai sumir da ficha dele no sistema. Se for permanente (ex: "Asmático"), deixe o campo vazio.</li>
+                    </ul>
+
+                    <h2>4. Automação e Ações Vinculadas (Smart Locks)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Fazer com que a tag tome decisões pelo sistema, travando funcionalidades.
+                    </div>
+                    <p>A tag passa a ter um comportamento de segurança, não sendo apenas um enfeite visual.</p>
+                    <ul>
+                      <li><strong>Impede Novos Agendamentos (Afastamento):</strong> Se selecionado, qualquer paciente de posse desta tag perderá o acesso de agendar horários, e a recepção também será impedida de alocá-lo até a tag ser removida. <em>Ex: Tag "Afastamento Médico (Lesão)".</em></li>
+                      <li><strong>Disparar Alerta para Recepção:</strong> Ao inserir essa tag num paciente, o sistema acorda a recepção alertando sobre uma peculiaridade. <em>Ex: Tag "Vip/Indicação do Dono" ou "Devedor Crônico".</em></li>
+                    </ul>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

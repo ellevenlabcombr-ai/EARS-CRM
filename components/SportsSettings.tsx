@@ -387,25 +387,46 @@ export const SportsSettings = () => {
                   </head>
                   <body>
                     <h1>Manual de Esportes e Modalidades</h1>
-                    <p>O módulo de esportes é onde você modela os serviços da sua clínica, ou os esportes do seu Clube. Cada uma destas opções virarão "Departamentos" (Turmas) visuais onde você alocará os atletas/pacientes.</p>
+                    <p>O módulo de esportes é onde você modela os serviços da sua clínica, ou os esportes do seu Clube. Cada uma destas opções se tornará um "Departamento" (ou Turma) visual onde você alocará os atletas/pacientes. A correta configuração aqui afeta os relatórios táticos de lesão.</p>
 
                     <h2>1. Posicionamento e Tática</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Fornecer contexto técnico para a fisioterapia ou preparação física.
+                      <strong>Objetivo:</strong> Fornecer contexto técnico para a fisioterapia ou preparação física com base no movimento rotineiro.
                     </div>
-                    <p>Ao criar uma modalidade (ex: Futebol), é recomendado preencher as "Posições". Crie tags como "Goleiro", "Zagueiro", "Atacante". Assim, a equipe saberá o grau de exigência mecânica que aquele paciente terá após receber alta e as estatísticas do clube farão sentido por posição.</p>
+                    <ul>
+                      <li>Ao criar uma modalidade (ex: Futebol), você deve abastecer a aba "Posições".</li>
+                      <li>Crie os termos exatos que sua comissão emprega. Ex: "Goleiro", "Zagueiro", "Atacante".</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> A equipe saberá o grau de exigência mecânica que aquele paciente terá após receber alta (um "Zagueiro" demanda menos explosão lateral que um "Lateral"). E as estatísticas médicas do clube mostrarão quais posições sofrem mais lesões.</p>
 
-                    <h2>2. Quantidade Limite (Tamanho do Elenco)</h2>
+                    <h2>2. Quantidade Limite (Tamanho do Elenco / Vagas)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Monitorar lotação.
+                      <strong>Objetivo:</strong> Monitorar lotação e fila de espera.
                     </div>
-                    <p>Se você possui turmas de Pilates, defina o tamanho alvo. Isso auxiliará futuros alertas de Ociosidade ou Sobrecarga.</p>
+                    <ul>
+                      <li><strong>Turmas:</strong> Se você possui estúdio de Pilates ou Funcional, defina o tamanho alvo máximo da turma.</li>
+                      <li><strong>Elenco:</strong> Para clubes esportivos profissionais, estabeleça a folha do elenco principal.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Colocar 25 vagas no elenco de Tênis permitirá que o sistema cruze relatórios de "Ociosidade e Sobrecarga" mostrando qual percentual do elenco atual está no departamento médico.</p>
 
-                    <h2>3. Desativar Modalidades (Arquivamento)</h2>
+                    <h2>3. Níveis de Competição (Categorias)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Limpar a visão sem apagar o passado.
+                      <strong>Objetivo:</strong> Classificar a carga do praticante.
                     </div>
-                    <p>Evite apagar um esporte (lixeira). Ao invés disso, desligue o interruptor (Tornar Inativo). Ele sumirá do seletor da recepção, mas preservará o histórico dos atletas que já praticaram no passado.</p>
+                    <ul>
+                      <li>Crie os níveis para esta modalidade. Ex: "Iniciante", "Intermediário", "Profissional", ou categorias de base "Sub-15", "Sub-20".</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Ao transferir um atleta do "Sub-20"  para o "Profissional", seu dashboard de Performance de Campo automaticamente adaptará suas curvas de força alvo.</p>
+
+                    <h2>4. Desativar Modalidades (Arquivamento vs Lixeira)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Limpar a visão sem apagar o passado histórico e financeiro.
+                    </div>
+                    <ul>
+                      <li><strong>Inativar:</strong> Apenas desligue o interruptor lateral (Tornar Inativo) da modalidade.</li>
+                      <li><strong>Lixeira:</strong> NUNCA use a lixeira se já houveram aulas ou avaliações aplicadas neste esporte, pois as planilhas vinculadas perderão seu "Pai".</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Se você parou de oferecer "Natação", desligue a Categoria. Ela sumirá do botão de escolha da recepcionista, mas os atletas antigos manterão seus exames e registros intactos nos PDFs gerados.</p>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>

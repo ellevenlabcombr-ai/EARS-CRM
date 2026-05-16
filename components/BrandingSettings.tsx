@@ -250,31 +250,46 @@ export function BrandingSettings() {
                   </head>
                   <body>
                     <h1>Manual de Identidade Visual (White Label)</h1>
-                    <p>A identidade visual permite que você personalize a experiência do paciente, fazendo com que ele sinta que está utilizando um aplicativo próprio da sua clínica, e não uma ferramenta genérica.</p>
+                    <p>A identidade visual permite que você personalize a experiência do paciente, fazendo com que ele sinta que está utilizando um aplicativo próprio da sua clínica, e não uma ferramenta de terceiros. Este guia dita as regras de como "esconder" o software base e exibir só a sua marca.</p>
 
                     <h2>1. Logotipo e Favicon</h2>
                     <div class="highlight">
                       <strong>Objetivo:</strong> Inserir sua marca nos cabeçalhos, relatórios e abas do navegador.
                     </div>
-                    <p>Faça upload do seu logotipo em formato horizontal para o sistema. O favicon é aquele ícone em miniatura que aparece na aba do navegador.</p>
+                    <ul>
+                      <li><strong>Logotipo (Horizontal):</strong> Faça o upload com fundo transparente (PNG ou SVG). Ele substituirá a logo padrão em todas as telas de impressão de dieta e evoluções.</li>
+                      <li><strong>Favicon (Ícone):</strong> Suba o brasão ou ícone em miniatura (quadrado, 512x512). Ele ficará na aba superior do Google Chrome.</li>
+                    </ul>
 
-                    <h2>2. Cores da Marca</h2>
+                    <h2>2. Cores da Marca (Paleta Principal)</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Alterar a paleta de botões, barras de progresso e menus.
+                      <strong>Objetivo:</strong> Alterar a pintura dos botões, barras de progresso e menus do App do paciente.
                     </div>
-                    <p>Coloque o código HEX das suas cores primárias e secundárias. Todos os botões principais de ação refletirão a cor Primária, enquanto destaques usarão a Secundária.</p>
+                    <ul>
+                      <li>Configure a Cor Primária (Hexadecimal) para ditar a cor de botões de Salvar/Confirmar.</li>
+                      <li>Configure a Cor Secundária para ditar realces e detalhes menores.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Se sua clínica é azul e você colocar <code>#3b82f6</code> na cor primária, imediatamente o aplicativo de marcação de consulta no celular do seu cliente ficará com botões azuis ao invés da cor padrão do sistema.</p>
 
-                    <h2>3. Informações Oficiais e Assinatura</h2>
+                    <h2>3. Informações Oficiais e Assinatura Jurídica</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Padronização jurídica e técnica de laudos.
+                      <strong>Objetivo:</strong> Automatizar a formatação jurídica de laudos para que não precisem de carimbo de borracha.
                     </div>
-                    <p>Quando você for gerar Atestados, Laudos ou Notas Fiscais Eletrônicas, o sistema puxará seu CNPJ, Razão Social e Endereço daqui. Você também pode fazer o upload da foto da sua Assinatura Digitalizada para evitar assinar manualmente.</p>
+                    <ul>
+                      <li><strong>Dados CNPJ/Endereço:</strong> Digite exatamente a Razão Social. Essas informações aparecem em letras miúdas (rodapé) em todas as Notas Fiscais e Receituários.</li>
+                      <li><strong>Assinatura Digitalizada:</strong> Ao invés de imprimir e assinar de caneta um laudo médico, faça upload da foto da sua rubrica/carimbo.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> Ao emitir um Atestado de Liberação Esportiva para o treinador, o sistema puxará seu Carimbo CRM/CREFITO e colocará a imagem da sua assinatura automaticamente no canto inferior direito do PDF.</p>
 
-                    <h2>4. Portal do Paciente</h2>
+                    <h2>4. Customização do Portal do Paciente</h2>
                     <div class="highlight">
-                      <strong>Objetivo:</strong> Personalizar a experiência de quem acessa pelo celular.
+                      <strong>Objetivo:</strong> Personalizar a recepção digital do seu cliente.
                     </div>
-                    <p>Configure a Imagem de Fundo (Background) da tela de Login do paciente e a mensagem de Boas-Vindas que ele lerá ao entrar no portal de agendamentos.</p>
+                    <ul>
+                      <li><strong>Imagem de Fundo (Login):</strong> Coloque uma foto bonita da fachada da sua clínica, ou do campo de treino. Ela será o fundo da tela de "Digite sua Senha".</li>
+                      <li><strong>Mensagem de Boas-Vindas:</strong> Um texto curto de instrução que o paciente lerá.</li>
+                    </ul>
+                    <p><em>Exemplo Prático:</em> "Bem vindo à Clínica X! Para visualizar a sua dieta, faça o login abaixo com o seu CPF. Em caso de dúvidas chame no WhatsApp."</p>
 
                     <hr style="margin-top: 3rem; border-color: #334155;" />
                     <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
