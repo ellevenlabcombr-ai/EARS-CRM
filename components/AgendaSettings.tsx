@@ -393,7 +393,9 @@ export function AgendaSettings() {
                       strong { color: #e2e8f0; }
                       .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #6366f1; border-radius: 4px; margin: 1rem 0; }
                     </style>
-                                      <h1>Manual da Agenda Central</h1>
+                  </head>
+                  <body>
+                    <h1>Manual da Agenda Central</h1>
                     <p>Dominar os parâmetros da agenda impede buracos na grade (ociosidade) e diminui conflitos com atrasos de pacientes. Veja como dominar cada trava abaixo.</p>
 
                     <h2>1. Grade Operacional / Horários (Por dia da semana)</h2>

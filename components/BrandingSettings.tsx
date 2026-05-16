@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Upload, X, CheckCircle, Loader2, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Upload, X, CheckCircle, Loader2, Image as ImageIcon, Trash2, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion } from 'motion/react';

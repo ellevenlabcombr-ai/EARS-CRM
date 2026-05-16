@@ -2304,53 +2304,79 @@ END $storage$;`;
 
   return (
     <div className="space-y-6 max-w-xl mx-auto">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center">
-          <Database className="w-6 h-6 text-cyan-400" />
-        </div>
-        <div>
-          <h2 className="text-lg font-black text-white uppercase tracking-widest">Opções de Desenvolvedor e Banco de Dados</h2>
-          <p className="text-sm text-slate-400">Gerenciamento de dados teste, otimização e limpeza do sistema.</p>
-        </div>
-      </div>
-
-      <div className="bg-slate-800/50 border border-slate-700/50 p-4 md:p-6 rounded-xl space-y-4 mb-6 text-sm text-slate-300 leading-relaxed">
-        <h3 className="text-base font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-          <Settings2 className="w-5 h-5 text-cyan-400" />
-          Manual de Uso da Sessão
-        </h3>
-        
-        <p>Esta aba de configurações é destinada <strong className="text-white">exclusivamente a desenvolvedores ou administradores de sistema</strong> com conhecimento técnico. Aqui você tem controle total sob a infraestrutura e a integridade do banco de dados (Supabase).</p>
-        
-        <div className="space-y-4 mt-6">
-          <div className="space-y-1">
-            <h4 className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
-              <Database className="w-4 h-4" /> 1. Inserir Dados de Teste
-            </h4>
-            <p className="pl-6 text-slate-400">Ação que preenche o sistema com perfis de atletas fictícios, registros de bem-estar (wellness), ocorrências médicas e agendamentos nas próximas semanas. Útil para <span className="text-amber-400 font-medium">testar lógicas de renderização, visualização de gráficos e testar os alertas (automações) da agenda</span> sem afetar pacientes reais.</p>
-          </div>
-
-          <div className="space-y-1">
-            <h4 className="font-bold text-cyan-400 uppercase tracking-wider text-xs flex items-center gap-2">
-              <Zap className="w-4 h-4" /> 2. Otimizar Performance (Fix Timeout)
-            </h4>
-            <p className="pl-6 text-slate-400">Roda uma série de instruções SQL assíncronas projetadas para <span className="text-emerald-400 font-medium">limpar caches obsoletos, criar índices vitais perdidos ou corrigir eventuais timeouts</span> provenientes de tabelas com estrutura deficiente. Esta função também atua de forma proativa criando colunas ou tabelas que possam não existir e estejam bloqueando novas funcionalidades do UI do sistema.</p>
-          </div>
-
-          <div className="space-y-1">
-            <h4 className="font-bold text-rose-500 uppercase tracking-wider text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" /> 3. Apagar Todos os Dados
-            </h4>
-            <p className="pl-6 text-slate-400">Essa é uma ação <strong className="text-rose-400 underline underline-offset-4 decoration-rose-500/30">irreversível</strong> (destructive). Ele limpa completamente todas as tabelas (cascade delete) que armazenam métricas dinâmicas, como atletas, relatórios, tarefas e eventos. É recomendado usar somente em ambientes de desenvolvimento ou caso o usuário queira resetar o sistema do zero voltando de um período de testes massivos.</p>
-          </div>
-        </div>
-
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mt-6 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-500/90 leading-relaxed font-medium">
-            <strong className="text-amber-500 block mb-1">Boas Práticas de Segurança:</strong>
-            Nunca clique no botão "Apagar Todos os Dados" sem antes ter certeza de que exportou relatórios necessários. Após utilizar o Inserir Dados de Teste, recomendamos que sempre navegue pelas agendas para ver se a distribuição foi correta.
+      {/* HEADER AND MANUAL BANNER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden group mb-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-700 ease-out" />
+        <div className="relative z-10 flex-1">
+          <h2 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+            <Database className="text-amber-500" size={28} /> Desenvolvedor
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 mt-2 font-medium leading-relaxed max-w-2xl">
+            Gerenciamento de dados teste, otimização e limpeza do sistema.
           </p>
+        </div>
+        <div className="relative z-10 shrink-0">
+           <button
+             onClick={() => {
+               const newWindow = window.open('', '_blank');
+               if (newWindow) {
+                 newWindow.document.write(`
+                  <html>
+                  <head>
+                    <title>Manual do Módulo Desenvolvedor</title>
+                    <style>
+                      body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 2rem; max-w: 900px; margin: 0 auto; }
+                      h1 { color: #fff; font-size: 2rem; border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+                      h2 { color: #f59e0b; margin-top: 2.5rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+                      h3 { color: #cbd5e1; margin-top: 1.5rem; }
+                      p, li { color: #94a3b8; }
+                      strong { color: #e2e8f0; }
+                      .highlight { background: #1e293b; padding: 1rem; border-left: 4px solid #f59e0b; border-radius: 4px; margin: 1rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <h1>Manual de Uso do Banco de Dados (Dev)</h1>
+                    <p>Esta seção é destinada <strong>exclusivamente a desenvolvedores ou administradores de sistema</strong> com conhecimento técnico. Aqui você tem controle de infraestrutura e da integridade do banco de dados (Supabase).</p>
+
+                    <h2>1. Inserir Dados de Teste</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Popular o sistema com informações "dummy" (fictícias).
+                    </div>
+                    <ul>
+                      <li>Preenche a plataforma com dezenas de perfis, check-ins, registros médicos e agendamentos nas próximas semanas.</li>
+                      <li>Útil para testar relatórios com gráficos reais e treinar funcionários num ambiente Sandbox.</li>
+                    </ul>
+
+                    <h2>2. Otimizar Performance (Fix Timeout & Migrações)</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Reestruturação assíncrona do Schema.
+                    </div>
+                    <ul>
+                      <li>Se algo parou de funcionar e o log reclamou de "Coluna não existe", este botão executa todo o script de alteração na arquitetura para a versão mais recente.</li>
+                      <li>Ele injeta os índices B-Tree faltantes nas queries mais pesadas das listas.</li>
+                    </ul>
+
+                    <h2>3. Apagar Todos os Dados</h2>
+                    <div class="highlight">
+                      <strong>Objetivo:</strong> Drop Tables (Hard Reset).
+                    </div>
+                    <ul>
+                      <li>Uma vez que seus testes de "sandbox" com dados falsos terminarem, limpe o terreno aqui.</li>
+                      <li>Vai sumir tudo: pacientes, contas bancárias, evoluções, agendamentos. Somente as contas Admin se mantêm logadas.</li>
+                    </ul>
+
+                    <hr style="margin-top: 3rem; border-color: #334155;" />
+                    <p style="text-align: center; font-size: 0.8rem; margin-top: 2rem;">Pode fechar esta janela para retornar ao sistema.</p>
+                  </body>
+                  </html>
+                 `);
+               }
+             }}
+             className="px-6 py-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded-xl font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <Settings2 size={18} />
+            Ler Manual
+          </button>
         </div>
       </div>
 
