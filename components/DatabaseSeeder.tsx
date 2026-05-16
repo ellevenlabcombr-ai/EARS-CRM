@@ -1407,6 +1407,7 @@ END $storage$;`;
                     name TEXT NOT NULL,
                     target_amount NUMERIC NOT NULL,
                     current_amount NUMERIC DEFAULT 0,
+                    type TEXT DEFAULT 'saving', -- 'income_goal', 'expense_limit', 'saving'
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
             END IF;
@@ -1416,6 +1417,41 @@ END $storage$;`;
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                     month TEXT UNIQUE NOT NULL, -- formato YYYY-MM
                     final_balance NUMERIC NOT NULL,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_products') THEN
+                CREATE TABLE financial_products (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    default_price NUMERIC NOT NULL,
+                    type TEXT DEFAULT 'service',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_billing_rules') THEN
+                CREATE TABLE financial_billing_rules (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    default_due_day INTEGER DEFAULT 5,
+                    reminder_days_before INTEGER DEFAULT 3,
+                    warn_after_days_late INTEGER DEFAULT 1,
+                    penalty_rate NUMERIC DEFAULT 2.0, -- Multa (%)
+                    interest_rate_monthly NUMERIC DEFAULT 1.0, -- Juros ao mês (%)
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_payment_methods') THEN
+                CREATE TABLE financial_payment_methods (
+                    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                    name TEXT NOT NULL,
+                    type TEXT NOT NULL, -- 'pix', 'credit', 'debit', 'boleto', 'cash'
+                    fee_percentage NUMERIC DEFAULT 0,
+                    fee_fixed NUMERIC DEFAULT 0,
+                    is_active BOOLEAN DEFAULT true,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
             END IF;
@@ -1430,6 +1466,10 @@ END $storage$;`;
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
             END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_goals' AND column_name='type') THEN
+                ALTER TABLE financial_goals ADD COLUMN type TEXT DEFAULT 'saving';
+            END IF;
+
         END $$;
 
         -- Adicionar colunas faltantes se as tabelas já existirem
@@ -1624,14 +1664,25 @@ END $storage$;`;
         ALTER TABLE IF EXISTS public.financial_goals ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_closures ENABLE ROW LEVEL SECURITY;
         ALTER TABLE IF EXISTS public.financial_transactions ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_products ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_billing_rules ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE IF EXISTS public.financial_payment_methods ENABLE ROW LEVEL SECURITY;
+
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_categories;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_goals;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_closures;
         DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_transactions;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_products;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_billing_rules;
+        DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_payment_methods;
+
         CREATE POLICY "Permitir tudo" ON public.financial_categories FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_goals FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_closures FOR ALL USING (true) WITH CHECK (true);
         CREATE POLICY "Permitir tudo" ON public.financial_transactions FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_products FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_billing_rules FOR ALL USING (true) WITH CHECK (true);
+        CREATE POLICY "Permitir tudo" ON public.financial_payment_methods FOR ALL USING (true) WITH CHECK (true);
 
         -- Políticas para Clinical Notes e Assessments
         ALTER TABLE IF EXISTS public.clinical_notes ENABLE ROW LEVEL SECURITY;
