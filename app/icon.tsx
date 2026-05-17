@@ -1,5 +1,7 @@
 import { ImageResponse } from 'next/og';
 
+export const runtime = 'edge';
+
 // Image metadata
 export const size = {
   width: 32,
@@ -8,7 +10,52 @@ export const size = {
 export const contentType = 'image/png';
 
 // Image generation
-export default function Icon() {
+export default async function Icon() {
+  let logoUrl = null;
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    if (supabaseUrl && supabaseKey) {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: { persistSession: false },
+      });
+      const { data } = await supabase.from('branding_settings').select('favicon_url, logo_url').maybeSingle();
+      if (data?.favicon_url) {
+         logoUrl = data.favicon_url;
+      } else if (data?.logo_url) {
+         logoUrl = data.logo_url;
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  if (logoUrl) {
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            background: 'transparent',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoUrl}
+            alt="Favicon"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+      ),
+      { ...size }
+    );
+  }
+
   return new ImageResponse(
     (
       // ImageResponse JSX element
@@ -38,3 +85,4 @@ export default function Icon() {
     }
   );
 }
+
