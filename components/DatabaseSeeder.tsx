@@ -1619,6 +1619,8 @@ END $storage$;`;
                     athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE,
                     receipt_filename TEXT,
                     category TEXT,
+                    asaas_payment_id TEXT,
+                    asaas_invoice_url TEXT,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
             ELSE
@@ -1629,6 +1631,8 @@ END $storage$;`;
                 ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE;
                 ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS receipt_filename TEXT;
                 ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS category TEXT;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS asaas_payment_id TEXT;
+                ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS asaas_invoice_url TEXT;
             END IF;
             
             IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='financial_subscriptions') THEN

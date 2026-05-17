@@ -27,6 +27,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { getLocalDateString } from "@/lib/utils";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
+import { createAsaasCustomer, createAsaasPayment, getAsaasPixQrCode } from "@/app/actions/asaas";
 
 interface Transaction {
   id: string;
@@ -40,6 +41,8 @@ interface Transaction {
   is_recurring?: boolean;
   receipt_filename?: string;
   athlete_id?: string;
+  asaas_payment_id?: string;
+  asaas_invoice_url?: string;
   created_at: string;
 }
 
@@ -60,6 +63,7 @@ export function FinanceDashboard() {
 
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
   const [receiptTransaction, setReceiptTransaction] = useState<Transaction | null>(null);
+  const [asaasTransaction, setAsaasTransaction] = useState<Transaction | null>(null);
 
   useEffect(() => {
     fetchTransactions();
@@ -74,7 +78,30 @@ export function FinanceDashboard() {
         supabase.from('financial_categories').select('*').order('name'),
         supabase.from('financial_goals').select('*').order('created_at', { ascending: false })
       ]);
-      if (catsRes.data) setCategories(catsRes.data);
+      
+      let fetchedCats = catsRes.data || [];
+      if (!catsRes.error && fetchedCats.length === 0) {
+        // Seed some defaults
+        const defaultCats = [
+          { name: 'Mensalidade', type: 'income', is_default: true },
+          { name: 'Avaliação Clínica', type: 'income', is_default: true },
+          { name: 'Patrocínio', type: 'income', is_default: true },
+          { name: 'Venda de Produto', type: 'income', is_default: true },
+          { name: 'Salário', type: 'expense', is_default: true },
+          { name: 'Aluguel', type: 'expense', is_default: true },
+          { name: 'Software', type: 'expense', is_default: true },
+          { name: 'Impostos', type: 'expense', is_default: true },
+          { name: 'Materiais', type: 'expense', is_default: true },
+          { name: 'Outros', type: 'expense', is_default: true },
+          { name: 'Outros', type: 'income', is_default: true }
+        ];
+        const { data: newCats, error: seedErr } = await supabase.from('financial_categories').insert(defaultCats).select();
+        if (!seedErr && newCats) {
+             fetchedCats = newCats;
+        }
+      }
+      
+      setCategories(fetchedCats);
       if (goalsRes.data) setGoals(goalsRes.data);
     } catch (err) {
       console.warn("Extras (categorias/metas) podem não existir:", err);
@@ -482,6 +509,26 @@ export function FinanceDashboard() {
                                </button>
                              )}
 
+                             {t.type === 'income' && t.status === 'pending' && !t.asaas_payment_id && (
+                               <button
+                                 onClick={() => setAsaasTransaction(t)}
+                                 className="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg transition-colors ml-2"
+                                 title="Cobrar via Asaas"
+                               >
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                               </button>
+                             )}
+                             
+                             {t.asaas_invoice_url && (
+                               <button
+                                 onClick={() => window.open(t.asaas_invoice_url, '_blank')}
+                                 className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg transition-colors ml-2 tooltip"
+                                 title="Abrir Fatura Asaas"
+                               >
+                                 <DollarSign size={14} />
+                               </button>
+                             )}
+
                              <button
                                onClick={() => { setTransactionToEdit(t); setIsAddingMode(true); }}
                                className="text-slate-400 hover:text-emerald-400 p-1.5 rounded-lg transition-colors ml-2"
@@ -546,6 +593,13 @@ export function FinanceDashboard() {
           onClose={() => setReceiptTransaction(null)}
         />
       )}
+
+      {asaasTransaction && (
+        <AsaasPaymentModal
+          transaction={asaasTransaction}
+          onClose={() => { setAsaasTransaction(null); fetchTransactions(); }}
+        />
+      )}
     </div>
   );
 }
@@ -601,41 +655,8 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
         await doOperation();
       } catch (opErr: any) {
         console.error("OpErr:", opErr);
-        if (opErr.message && (opErr.message.includes('does not exist') || opErr.message.includes('column'))) {
-          // Fallback to create the table/columns because the seeder wasn't run
-          await supabase.rpc('exec_sql', { sql: `
-            CREATE TABLE IF NOT EXISTS public.financial_transactions (
-                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                description TEXT,
-                amount NUMERIC NOT NULL,
-                type TEXT NOT NULL,
-                status TEXT DEFAULT 'paid',
-                date DATE,
-                account TEXT,
-                category TEXT,
-                is_recurring BOOLEAN DEFAULT false,
-                athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE,
-                receipt_filename TEXT,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS description TEXT;
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS date DATE;
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS account TEXT;
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS athlete_id UUID REFERENCES athletes(id) ON DELETE CASCADE;
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS receipt_filename TEXT;
-            ALTER TABLE IF EXISTS public.financial_transactions ADD COLUMN IF NOT EXISTS category TEXT;
-            ALTER TABLE IF EXISTS public.financial_transactions ENABLE ROW LEVEL SECURITY;
-            DROP POLICY IF EXISTS "Permitir tudo" ON public.financial_transactions;
-            CREATE POLICY "Permitir tudo" ON public.financial_transactions FOR ALL USING (true) WITH CHECK (true);
-            NOTIFY pgrst, 'reload schema';
-          `});
-          
-          // Wait briefly for schema cache to reload
-          await new Promise(r => setTimeout(r, 1000));
-          
-          // Retry
-          await doOperation();
+        if (opErr.message && (opErr.message.includes('does not exist') || opErr.message.includes('column') || opErr.message.includes('relation'))) {
+          throw new Error("Tabela ou coluna ausente! Acesse a aba Configurações e execute o Database Seeder para criar as tabelas financeiras. Erro original: " + opErr.message);
         } else {
           throw opErr;
         }
@@ -1150,4 +1171,141 @@ function DREReport({ transactions }: { transactions: Transaction[] }) {
       </div>
     </main>
   );
+}
+
+function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction, onClose: () => void }) {
+  const [cpfCnpj, setCpfCnpj] = useState('');
+  const [name, setName] = useState(transaction.description || 'Cliente Varejo');
+  const [billingType, setBillingType] = useState<'PIX'|'BOLETO'>('PIX');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successData, setSuccessData] = useState<{ qrCodePic?: string, invoiceUrl?: string } | null>(null);
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMsg('');
+    try {
+      if (!cpfCnpj) throw new Error("CPF ou CNPJ é obrigatório para emissão.");
+      
+      const customer = await createAsaasCustomer({ 
+         name, 
+         cpfCnpj: cpfCnpj.replace(/\D/g, '') 
+      });
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dueDate = tomorrow.toISOString().split('T')[0];
+
+      const payment = await createAsaasPayment({
+         customer: customer.id,
+         billingType,
+         value: transaction.amount,
+         dueDate,
+         description: transaction.description || 'Cobrança do Sistema',
+         externalReference: transaction.id
+      });
+
+      let qrCodePic = undefined;
+      if (billingType === 'PIX') {
+         const pixData = await getAsaasPixQrCode(payment.id);
+         qrCodePic = pixData.encodedImage;
+      }
+
+      await supabase.from('financial_transactions').update({
+         asaas_payment_id: payment.id,
+         asaas_invoice_url: payment.invoiceUrl
+      }).eq('id', transaction.id);
+
+      setSuccessData({
+         qrCodePic,
+         invoiceUrl: payment.invoiceUrl
+      });
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Erro ao gerar cobrança.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[#0A1120] border border-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
+        <div className="p-5 border-b border-slate-800/50 flex justify-between items-center bg-[#050B14]">
+          <h3 className="font-bold text-white uppercase tracking-widest text-sm flex items-center gap-2">
+            <DollarSign size={16} className="text-blue-500" /> Cobrança Asaas
+          </h3>
+          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors">
+             X
+          </button>
+        </div>
+        
+        <div className="p-6">
+          {!successData ? (
+             <form onSubmit={handleGenerate} className="space-y-4">
+                {errorMsg && (
+                   <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-lg text-xs font-bold">
+                      {errorMsg}
+                   </div>
+                )}
+                
+                <div>
+                   <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">Nome do Pagador</label>
+                   <input required type="text" value={name} onChange={e=>setName(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none" />
+                </div>
+
+                <div>
+                   <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF ou CNPJ</label>
+                   <input required type="text" value={cpfCnpj} onChange={e=>setCpfCnpj(e.target.value)} placeholder="Apenas os números" className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none" />
+                </div>
+
+                <div>
+                   <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">Forma de Emissão</label>
+                   <select required value={billingType} onChange={e=>setBillingType(e.target.value as any)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+                      <option value="PIX">PIX</option>
+                      <option value="BOLETO">Boleto Bancário</option>
+                   </select>
+                </div>
+
+                <div className="pt-4">
+                   <button disabled={isSubmitting} type="submit" className="w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider text-[#050B14] bg-blue-500 hover:bg-blue-600 transition-colors disabled:opacity-50">
+                      {isSubmitting ? 'Gerando...' : 'Gerar Cobrança'}
+                   </button>
+                </div>
+             </form>
+          ) : (
+             <div className="text-center flex flex-col items-center">
+                <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-500 mb-4">
+                   <CheckCircle2 size={32} />
+                </div>
+                <h4 className="text-white font-bold text-lg mb-2">Cobrança Gerada!</h4>
+                <p className="text-sm text-slate-400 mb-6">A cobrança foi registrada com sucesso.</p>
+
+                {successData.qrCodePic && (
+                   <div className="mb-6 p-4 bg-white rounded-xl">
+                      <img src={`data:image/png;base64,${successData.qrCodePic}`} alt="QR Code PIX" className="w-48 h-48 mx-auto" />
+                   </div>
+                )}
+                
+                {successData.invoiceUrl && (
+                   <a href={successData.invoiceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-colors mb-4 w-full">
+                      <DollarSign size={16} /> Abrir Fatura (Link de Pagamento)
+                   </a>
+                )}
+                
+                <button onClick={onClose} className="px-6 py-2 text-slate-500 hover:text-white uppercase font-bold text-xs tracking-wider transition-colors w-full">
+                   Fechar
+                </button>
+             </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  )
 }
