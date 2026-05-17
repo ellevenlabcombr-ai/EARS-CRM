@@ -237,8 +237,8 @@ export function FinanceDashboard() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#050B14] relative">
-      <header className="px-4 md:px-6 py-4 md:h-20 border-b border-slate-800/50 flex flex-col md:flex-row items-start md:items-center justify-between shrink-0 bg-[#0A1120] z-10 gap-4 md:gap-0">
-        <div className="flex items-center justify-between w-full md:w-auto">
+      <header className="bg-[#0A1120] border-b border-slate-800/50 shrink-0 z-10">
+        <div className="px-4 md:px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
               <DollarSign size={20} />
@@ -248,18 +248,8 @@ export function FinanceDashboard() {
               <p className="text-xs text-slate-400 font-medium">Gestão de receitas e despesas</p>
             </div>
           </div>
-        </div>
-        
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
-          <div className="flex bg-slate-800 p-1 rounded-xl md:mr-4 overflow-x-auto custom-scrollbar shrink-0 w-full md:max-w-[500px]">
-            <button onClick={() => setActiveTab('geral')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'geral' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Visão Geral</button>
-            <button onClick={() => setActiveTab('metas')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'metas' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Caixinhas</button>
-            <button onClick={() => setActiveTab('inadimplencia')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'inadimplencia' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Inadimplência</button>
-            <button onClick={() => setActiveTab('assinaturas')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'assinaturas' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Assinaturas</button>
-            <button onClick={() => setActiveTab('dre')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'dre' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>DRE & Info</button>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2">
+          
+          <div className="hidden md:flex items-center gap-2 shrink-0">
             <button 
               onClick={exportCSV}
               className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
@@ -268,11 +258,19 @@ export function FinanceDashboard() {
             </button>
             <button 
               onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
-              className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+              className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]"
             >
               <Plus size={16} /> Nova Transação
             </button>
           </div>
+        </div>
+        
+        <div className="px-4 md:px-6 flex overflow-x-auto custom-scrollbar no-scrollbar-mobile gap-6">
+          <button onClick={() => setActiveTab('geral')} className={`py-3 text-sm font-bold transition-all whitespace-nowrap border-b-2 ${activeTab === 'geral' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-400 hover:text-slate-300'}`}>Visão Geral</button>
+          <button onClick={() => setActiveTab('metas')} className={`py-3 text-sm font-bold transition-all whitespace-nowrap border-b-2 ${activeTab === 'metas' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-400 hover:text-slate-300'}`}>Caixinhas</button>
+          <button onClick={() => setActiveTab('inadimplencia')} className={`py-3 text-sm font-bold transition-all whitespace-nowrap border-b-2 ${activeTab === 'inadimplencia' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-400 hover:text-slate-300'}`}>Inadimplência</button>
+          <button onClick={() => setActiveTab('assinaturas')} className={`py-3 text-sm font-bold transition-all whitespace-nowrap border-b-2 ${activeTab === 'assinaturas' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-400 hover:text-slate-300'}`}>Assinaturas</button>
+          <button onClick={() => setActiveTab('dre')} className={`py-3 text-sm font-bold transition-all whitespace-nowrap border-b-2 ${activeTab === 'dre' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-slate-400 hover:text-slate-300'}`}>DRE & Info</button>
         </div>
       </header>
 
@@ -286,7 +284,7 @@ export function FinanceDashboard() {
         </button>
         <button
           onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
-          className="w-14 h-14 bg-emerald-500 text-[#050B14] rounded-full flex items-center justify-center shadow-lg border border-emerald-400 disabled:opacity-50"
+          className="w-14 h-14 bg-emerald-500 text-[#050B14] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-400 disabled:opacity-50"
         >
           <Plus size={24} />
         </button>
@@ -294,27 +292,29 @@ export function FinanceDashboard() {
 
       {activeTab === 'geral' && (
         <>
-          <div className="bg-[#0A1120] px-6 py-3 border-b border-slate-800/50 flex items-center gap-2 overflow-x-auto shrink-0 custom-scrollbar">
-            <span className="text-sm font-bold text-slate-500 uppercase tracking-widest mr-2">Forma de Pagamento:</span>
-            <button 
-              onClick={() => setSelectedAccount('all')}
-              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${selectedAccount === 'all' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800 border border-transparent'}`}
-            >
-              Visão Geral
-            </button>
-            {ACCOUNTS.map(acc => (
+          <div className="bg-[#080d1a] px-4 md:px-6 py-3 border-b border-slate-800/50 flex flex-col md:flex-row md:items-center gap-3 md:gap-4 shrink-0">
+            <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap shrink-0">Forma de Pagamento:</span>
+            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 md:pb-0 w-full">
               <button 
-                key={acc}
-                onClick={() => setSelectedAccount(acc)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 ${selectedAccount === acc ? 'bg-slate-800 text-white border border-slate-600' : 'text-slate-400 hover:text-slate-300 hover:bg-slate-800 border border-transparent'}`}
+                onClick={() => setSelectedAccount('all')}
+                className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap shrink-0 ${selectedAccount === 'all' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:text-slate-300 bg-slate-800/50 hover:bg-slate-800 border border-transparent'}`}
               >
-                {acc === 'Débito' && <CreditCard size={14} />}
-                {acc === 'Crédito' && <CreditCard size={14} />}
-                {acc === 'PIX' && <Wallet size={14} />}
-                {acc === 'Dinheiro' && <Building2 size={14} />}
-                {acc}
+                Visão Geral
               </button>
-            ))}
+              {ACCOUNTS.map(acc => (
+                <button 
+                  key={acc}
+                  onClick={() => setSelectedAccount(acc)}
+                  className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap flex items-center gap-2 shrink-0 ${selectedAccount === acc ? 'bg-slate-800 text-white border border-slate-600 shadow-sm' : 'text-slate-400 hover:text-slate-300 bg-slate-800/50 hover:bg-slate-800 border border-transparent'}`}
+                >
+                  {acc === 'Débito' && <CreditCard size={14} className="opacity-70" />}
+                  {acc === 'Crédito' && <CreditCard size={14} className="opacity-70" />}
+                  {acc === 'PIX' && <Wallet size={14} className="opacity-70" />}
+                  {acc === 'Dinheiro' && <Building2 size={14} className="opacity-70" />}
+                  {acc}
+                </button>
+              ))}
+            </div>
           </div>
 
           <main className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
