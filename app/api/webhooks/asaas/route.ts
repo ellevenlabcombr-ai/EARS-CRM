@@ -55,13 +55,21 @@ export async function POST(req: NextRequest) {
       'PAYMENT_CREDIT_CARD_CAPTURE_REFUSED',
       'PAYMENT_REPROVED_BY_RISK_ANALYSIS',
       'PAYMENT_REFUND_DENIED',
-      'PAYMENT_BANK_SLIP_CANCELLED'
+      'PAYMENT_BANK_SLIP_CANCELLED',
+      'PAYMENT_OVERDUE'
+    ];
+
+    const pendingEvents = [
+      'PAYMENT_CREATED',
+      'PAYMENT_UPDATED'
     ];
 
     if (paidEvents.includes(event)) {
       statusToUpdate = "paid";
     } else if (cancelledEvents.includes(event)) {
       statusToUpdate = "cancelled";
+    } else if (pendingEvents.includes(event)) {
+      statusToUpdate = "pending";
     }
 
     if (statusToUpdate) {
@@ -71,6 +79,57 @@ export async function POST(req: NextRequest) {
         ? `asaas_payment_id.eq.${asaasPaymentId},asaas_payment_id.eq.${asaasSubscriptionId}`
         : `asaas_payment_id.eq.${asaasPaymentId}`;
 
+      let { data: existingTx, error: findError } = await supabase
+        .from("financial_transactions")
+        .select('id')
+        .or(orCondition);
+
+      if (!existingTx || existingTx.length === 0) {
+        // Not found in transactions.
+        if (asaasSubscriptionId || asaasPaymentId) {
+          // If it has subscription, fetch `financial_subscriptions`.
+          // If not, we might not auto-create unless we want to for single payments not recorded, 
+          // but single payments are usually created alongside the transaction. 
+          // We will definitely auto-create for subscriptions.
+          let athleteId = null;
+
+          if (asaasSubscriptionId) {
+            const { data: subData } = await supabase
+               .from("financial_subscriptions")
+               .select('*')
+               .eq('asaas_subscription_id', asaasSubscriptionId)
+               .single();
+            if (subData) athleteId = subData.athlete_id;
+          }
+
+          if (athleteId) {
+            let accountType = "PIX";
+            if (payment.billingType === "CREDIT_CARD") accountType = "Crédito";
+            else if (payment.billingType === "BOLETO") accountType = "Boleto";
+            
+            const insertPayload = {
+              type: 'income',
+              category: 'Geral',
+              amount: payment.value,
+              description: payment.description || 'Cobrança de Assinatura',
+              date: payment.paymentDate || payment.clientPaymentDate || payment.dueDate || new Date().toISOString().split('T')[0],
+              status: statusToUpdate,
+              account: accountType,
+              athlete_id: athleteId,
+              is_recurring: !!asaasSubscriptionId,
+              asaas_payment_id: asaasPaymentId,
+              asaas_invoice_url: payment.invoiceUrl
+            };
+            const { error: insertErr } = await supabase.from('financial_transactions').insert(insertPayload);
+            if (insertErr) {
+               return NextResponse.json({ error: "Failed to auto-create subscription transaction.", details: insertErr }, { status: 500 });
+            }
+            return NextResponse.json({ success: true, message: "Transaction auto-created from subscription/payment" });
+          }
+        }
+      }
+
+      // If exists or fallback update
       const { error: updateError } = await supabase
         .from("financial_transactions")
         .update({ status: statusToUpdate })

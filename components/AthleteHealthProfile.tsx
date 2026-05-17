@@ -147,6 +147,7 @@ import {
 } from "recharts";
 import { SafeRender } from "@/components/SafeRender";
 import { QRCodeSVG } from "qrcode.react";
+import { createAsaasCustomer, createAsaasSubscription } from "@/app/actions/asaas";
 
 interface Athlete {
   id: string;
@@ -291,11 +292,20 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [athleteTransactions, setAthleteTransactions] = useState<any[]>([]);
   const [showLinkPlanModal, setShowLinkPlanModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
+  const [planBillingCycle, setPlanBillingCycle] = useState('monthly');
+  const [planGenerateAsaas, setPlanGenerateAsaas] = useState(false);
+  const [planAsaasCpf, setPlanAsaasCpf] = useState('');
 
   // Auto-select first financial product if none is selected when modal opens
   useEffect(() => {
     if (showLinkPlanModal && financialProducts.length > 0 && !selectedProductId) {
       setSelectedProductId(financialProducts[0].id);
+    }
+    if (!showLinkPlanModal) {
+      setSelectedProductId('');
+      setPlanGenerateAsaas(false);
+      setPlanAsaasCpf('');
+      setPlanBillingCycle('monthly');
     }
   }, [showLinkPlanModal, financialProducts, selectedProductId]);
   const [isLinkingPlan, setIsLinkingPlan] = useState(false);
@@ -2229,22 +2239,70 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       const selectedPlan = financialProducts.find(p => p.id === selectedProductId);
       if (!selectedPlan) throw new Error("Plano não encontrado.");
 
-      const subPayload = {
+      const subPayload: any = {
         athlete_id: athlete.id,
         product_id: selectedProductId,
         status: 'active',
-        billing_cycle: 'monthly',
+        billing_cycle: planBillingCycle,
         amount: selectedPlan.default_price || 0,
         start_date: getLocalDateString()
       };
 
       const doOperation = async () => {
+        let insertedId = athleteSubscription?.id;
         if (athleteSubscription?.id) {
            const { error } = await supabase.from('financial_subscriptions').update(subPayload).eq('id', athleteSubscription.id);
            if (error) throw error;
         } else {
-           const { error } = await supabase.from('financial_subscriptions').insert(subPayload);
+           const { data, error } = await supabase.from('financial_subscriptions').insert(subPayload).select().single();
            if (error) throw error;
+           insertedId = data.id;
+        }
+
+        if (planGenerateAsaas && insertedId) {
+            if (!planAsaasCpf) throw new Error("CPF/CNPJ é obrigatório para gerar via Asaas");
+            
+            let customerId = athlete.asaas_customer_id;
+
+            if (!customerId) {
+              const customerRes = await createAsaasCustomer({ 
+                name: athlete.name || 'Atleta', 
+                cpfCnpj: planAsaasCpf.replace(/\D/g, '') 
+              });
+              if (customerRes.error) throw new Error("Asaas Erro (Cliente): " + customerRes.error);
+              customerId = customerRes.data.id;
+              
+              await supabase.from('athletes').update({ asaas_customer_id: customerId }).eq('id', athlete.id);
+            }
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dueDateStr = tomorrow.toISOString().split('T')[0];
+
+            let cycleMap: Record<string, string> = {
+                monthly: 'MONTHLY',
+                quarterly: 'QUARTERLY',
+                semiannually: 'SEMIANNUALLY',
+                yearly: 'YEARLY'
+            };
+
+            const subRes = await createAsaasSubscription({
+              customer: customerId,
+              billingType: 'PIX', // default, user can change later or they pay via generated link
+              value: selectedPlan.default_price || 0,
+              nextDueDate: dueDateStr,
+              cycle: cycleMap[planBillingCycle] || 'MONTHLY',
+              description: selectedPlan.name || 'Assinatura',
+              externalReference: insertedId
+            });
+
+            if (subRes.error) throw new Error("Asaas Erro (Assinatura): " + subRes.error);
+            const payment = subRes.data;
+
+            await supabase.from('financial_subscriptions').update({
+               asaas_subscription_id: payment.id,
+               asaas_customer_id: customerId
+            }).eq('id', insertedId);
         }
       };
 
@@ -4898,12 +4956,39 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    </div>
                    <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Histórico de pagamentos, conciliação e inadimplência." : "Payment history, reconciliation, and defaults."}</p>
                    
-                   <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center relative z-10">
-                      <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação encontrada no período." : "No transactions found."}</p>
-                      <button className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all">
-                         {language === "pt" ? "Nova Transação" : "New Transaction"}
-                      </button>
+                   <div className="bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col relative z-10 max-h-64 overflow-y-auto">
+                      {athleteTransactions.length === 0 ? (
+                        <div className="p-8 text-center text-slate-400 font-bold flex flex-col items-center">
+                          <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação encontrada no período." : "No transactions found."}</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col w-full">
+                          {athleteTransactions.map(t => (
+                            <div key={t.id} className="p-4 border-b border-slate-800 last:border-b-0 flex items-center justify-between hover:bg-slate-900/50 transition-colors">
+                              <div>
+                                <p className="text-sm font-bold text-white break-words">{t.description}</p>
+                                <p className="text-xs text-slate-500">{t.date} • {t.account}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  {t.type === 'income' ? '+' : '-'} R$ {t.amount}
+                                </p>
+                                <div className="mt-1">
+                                  {t.status === 'paid' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Pago</span>}
+                                  {t.status === 'pending' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">Pendente</span>}
+                                  {t.status === 'cancelled' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">Cancelada</span>}
+                                  {t.status === 'overdue' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/30">Vencida</span>}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
                    </div>
+                   <button className="mt-4 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs uppercase tracking-widest font-black transition-all text-center w-full relative z-10 hidden">
+                      {language === "pt" ? "Nova Transação" : "New Transaction"}
+                   </button>
                </div>
             </div>
           </div>
@@ -5943,8 +6028,41 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         </select>
                       </div>
 
-                      <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
-                        <p className="text-xs text-slate-400 mb-2 font-medium">Os pagamentos desta assinatura deverão ser conciliados e criados na aba Histórico de Transações. Aqui apenas definimos o vínculo do contrato.</p>
+                      <div className="space-y-2">
+                        <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tempo de Vigência / Recorrência</label>
+                        <select 
+                          value={planBillingCycle}
+                          onChange={(e) => setPlanBillingCycle(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
+                        >
+                          <option value="monthly">Mensal</option>
+                          <option value="quarterly">Trimestral</option>
+                          <option value="semiannually">Semestral</option>
+                          <option value="yearly">Anual</option>
+                        </select>
+                      </div>
+
+                      <div className="bg-[#050B14] border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
+                            {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
+                          </div>
+                          <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
+                          <div>
+                            <p className="text-sm font-bold text-cyan-400">Gerar assinatura no Asaas</p>
+                            <p className="text-xs text-slate-500">Cria a cobrança recorrente e integra automaticamente</p>
+                          </div>
+                        </label>
+
+                        {planGenerateAsaas && (
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden space-y-4 pt-2 border-t border-slate-800 mt-2">
+                            <div>
+                              <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Pagador (Obrigatório)</label>
+                              <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none" placeholder="000.000.000-00" />
+                            </div>
+                            <p className="text-xs text-yellow-500 mb-2 font-medium">As cobranças serão disparadas automaticamente pelo Asaas a partir de amanhã.</p>
+                          </motion.div>
+                        )}
                       </div>
                     </>
                   )}
