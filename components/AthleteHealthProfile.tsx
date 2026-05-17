@@ -547,7 +547,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   useEffect(() => {
     async function loadBranding() {
       try {
-         const { data } = await supabase.from('branding_settings').select('*').single();
+         const { data } = await supabase.from('branding_settings').select('*').maybeSingle();
          if (data) {
            setBranding(data);
          }

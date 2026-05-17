@@ -48,7 +48,7 @@ export function BrandingSettings() {
       const { data, error } = await supabase
         .from('branding_settings')
         .select('*')
-        .single();
+        .maybeSingle();
       
       if (data) {
         setLogoUrl(data.logo_url);
@@ -156,7 +156,7 @@ export function BrandingSettings() {
       const { data: existing } = await supabase
         .from('branding_settings')
         .select('id')
-        .single();
+        .maybeSingle();
 
       const payload = {
         logo_url: logoUrl,

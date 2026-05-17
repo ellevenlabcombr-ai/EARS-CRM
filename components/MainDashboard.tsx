@@ -115,7 +115,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
       const { data, error } = await supabase
         .from('branding_settings')
         .select('logo_url, company_name')
-        .single();
+        .maybeSingle();
       
       if (data) {
         setBranding({

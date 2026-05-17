@@ -32,7 +32,7 @@ export const ReportsDashboard: React.FC<ReportsDashboardProps> = ({ athletes = [
     async function loadBranding() {
       try {
         if (!supabase) return;
-        const { data } = await supabase.from('branding_settings').select('*').single();
+        const { data } = await supabase.from('branding_settings').select('*').maybeSingle();
         if (data) {
           setBranding(data);
         }
