@@ -238,13 +238,15 @@ export function FinanceDashboard() {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#050B14] relative">
       <header className="px-4 md:px-6 py-4 md:h-20 border-b border-slate-800/50 flex flex-col md:flex-row items-start md:items-center justify-between shrink-0 bg-[#0A1120] z-10 gap-4 md:gap-0">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
-            <DollarSign size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-black text-white uppercase tracking-tight">Financeiro</h1>
-            <p className="text-xs text-slate-400 font-medium">Gestão de receitas e despesas</p>
+        <div className="flex items-center justify-between w-full md:w-auto">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
+              <DollarSign size={20} />
+            </div>
+            <div>
+              <h1 className="text-xl font-black text-white uppercase tracking-tight">Financeiro</h1>
+              <p className="text-xs text-slate-400 font-medium">Gestão de receitas e despesas</p>
+            </div>
           </div>
         </div>
         
@@ -257,22 +259,38 @@ export function FinanceDashboard() {
             <button onClick={() => setActiveTab('dre')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'dre' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>DRE & Info</button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <button 
               onClick={exportCSV}
-              className="flex-1 md:flex-none h-10 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+              className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
             >
               <Download size={16} /> Exportar
             </button>
             <button 
               onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
-              className="flex-1 md:flex-none h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+              className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
             >
               <Plus size={16} /> Nova Transação
             </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Floating Action Buttons */}
+      <div className="md:hidden fixed bottom-24 right-4 flex flex-col gap-3 z-40">
+        <button
+          onClick={exportCSV}
+          className="w-12 h-12 bg-slate-800 text-white rounded-full flex items-center justify-center shadow-lg border border-slate-700 disabled:opacity-50"
+        >
+          <Download size={20} />
+        </button>
+        <button
+          onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
+          className="w-14 h-14 bg-emerald-500 text-[#050B14] rounded-full flex items-center justify-center shadow-lg border border-emerald-400 disabled:opacity-50"
+        >
+          <Plus size={24} />
+        </button>
+      </div>
 
       {activeTab === 'geral' && (
         <>
