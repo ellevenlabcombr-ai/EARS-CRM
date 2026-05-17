@@ -31,23 +31,65 @@ export async function POST(req: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Se o pagamento for recebido/confirmado
-    if (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED' || event === 'PAYMENT_DUND' || event === 'PAYMENT_RECEIVED_IN_CASH_UNDONE') {
+    // Listas de eventos por status
+    const paidEvents = [
+      'PAYMENT_RECEIVED', 
+      'PAYMENT_CONFIRMED',
+      'PAYMENT_ANTICIPATED',
+      'PAYMENT_RESTORED',
+      'PAYMENT_DUNNING_RECEIVED'
+    ];
+
+    const cancelledEvents = [
+      'PAYMENT_DELETED',
+      'PAYMENT_REFUNDED',
+      'PAYMENT_REFUND_IN_PROGRESS',
+      'PAYMENT_CHARGEBACK_REQUESTED',
+      'PAYMENT_CHARGEBACK_DISPUTE',
+      'PAYMENT_RECEIVED_IN_CASH_UNDONE',
+      'PAYMENT_CREDIT_CARD_CAPTURE_REFUSED',
+      'PAYMENT_REPROVED_BY_RISK_ANALYSIS',
+      'PAYMENT_REFUND_DENIED',
+      'PAYMENT_BANK_SLIP_CANCELLED' // Boleto expirado - podemos considerar cancelado ou deixar pendente, mas a cobrança em si pode ficar vencida. Vamos usar o padrão do Asaas.
+    ];
+
+    const pendingEvents = [
+      'PAYMENT_CREATED',
+      'PAYMENT_UPDATED',
+      'PAYMENT_OVERDUE',
+      'PAYMENT_AUTHORIZED',
+      'PAYMENT_AWAITING_RISK_ANALYSIS',
+      'PAYMENT_APPROVED_BY_RISK_ANALYSIS',
+      'PAYMENT_AWAITING_CHARGEBACK_REVERSAL',
+      'PAYMENT_DUNNING_REQUESTED',
+      'PAYMENT_BANK_SLIP_VIEWED',
+      'PAYMENT_CHECKOUT_VIEWED',
+      'PAYMENT_PARTIALLY_REFUNDED',
+      'PAYMENT_SPLIT_CANCELLED',
+      'PAYMENT_SPLIT_DIVERGENCE_BLOCK',
+      'PAYMENT_SPLIT_DIVERGENCE_BLOCK_FINISHED'
+    ];
+
+    let newStatus = '';
+    if (paidEvents.includes(event)) {
+      newStatus = 'paid';
+    } else if (cancelledEvents.includes(event)) {
+      newStatus = 'cancelled';
+    }
+
+    if (newStatus) {
       const { data, error } = await supabase
         .from('financial_transactions')
-        .update({ 
-          status: 'paid',
-          // optionally save payment date/receipt
-        })
+        .update({ status: newStatus })
         .eq('asaas_payment_id', paymentId);
         
       if (error) {
-        console.error("Error updating transaction status:", error);
+        console.error(`Error updating transaction status to ${newStatus}:`, error);
       } else {
-        console.log("Transaction successfully updated as paid:", paymentId);
+        console.log(`Transaction successfully updated as ${newStatus}:`, paymentId);
       }
-    } else if (event === 'PAYMENT_OVERDUE') {
-      // maybe mark as delayed or pending?
+    } else {
+      console.log(`Event ${event} ignorado ou mapeado como pendente.`);
     }
 
     return NextResponse.json({ success: true });
