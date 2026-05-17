@@ -37,7 +37,9 @@ export async function POST(req: NextRequest) {
       'PAYMENT_CONFIRMED',
       'PAYMENT_ANTICIPATED',
       'PAYMENT_RESTORED',
-      'PAYMENT_DUNNING_RECEIVED'
+      'PAYMENT_DUNNING_RECEIVED',
+      'PAYMENT_RECEIVED_IN_CASH',
+      'PAYMENT_APPROVED_BY_RISK_ANALYSIS'
     ];
 
     const cancelledEvents = [
