@@ -1648,8 +1648,17 @@ END $storage$;`;
                     gateway_provider TEXT,
                     gateway_subscription_id TEXT,
                     next_billing_date DATE,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    asaas_subscription_id TEXT,
+                    asaas_customer_id TEXT
                 );
+            ELSE
+                ALTER TABLE IF EXISTS public.financial_subscriptions ADD COLUMN IF NOT EXISTS asaas_subscription_id TEXT;
+                ALTER TABLE IF EXISTS public.financial_subscriptions ADD COLUMN IF NOT EXISTS asaas_customer_id TEXT;
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='athletes' AND column_name='asaas_customer_id') THEN
+                ALTER TABLE public.athletes ADD COLUMN asaas_customer_id TEXT;
             END IF;
 
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='financial_goals' AND column_name='type') THEN

@@ -680,10 +680,22 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
   const [account, setAccount] = useState(initialData?.account || 'PIX');
   const [isRecurring, setIsRecurring] = useState(initialData?.is_recurring || false);
   const [athleteId, setAthleteId] = useState(initialData?.athlete_id || '');
+  const [generateAsaas, setGenerateAsaas] = useState(false);
+  const [asaasCpf, setAsaasCpf] = useState('');
+  const [asaasName, setAsaasName] = useState('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (athleteId) {
+      const auth = athletes.find(a => a.id === athleteId);
+      if (auth) setAsaasName(auth.name || '');
+    } else {
+      setAsaasName(description);
+    }
+  }, [athleteId, athletes, description]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -705,15 +717,73 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
       };
 
       const doOperation = async () => {
+        let insertedId = initialData?.id;
         if (initialData?.id) {
            const { error } = await supabase.from('financial_transactions').update(payload).eq('id', initialData.id);
            if (error) throw error;
         } else {
-           const { error } = await supabase.from('financial_transactions').insert({
+           const { data, error } = await supabase.from('financial_transactions').insert({
               ...payload,
               created_at: new Date().toISOString()
-           });
+           }).select().single();
            if (error) throw error;
+           insertedId = data.id;
+        }
+
+        if (generateAsaas && insertedId && account !== 'Dinheiro') {
+            if (!asaasCpf) throw new Error("CPF/CNPJ é obrigatório para gerar via Asaas");
+            
+            const customerRes = await createAsaasCustomer({ 
+              name: asaasName || 'Cliente', 
+              cpfCnpj: asaasCpf.replace(/\D/g, '') 
+            });
+
+            if (customerRes.error) throw new Error("Asaas Erro (Cliente): " + customerRes.error);
+            const customer = customerRes.data;
+
+            let dueDateStr = date;
+            if (!dueDateStr) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                dueDateStr = tomorrow.toISOString().split('T')[0];
+            }
+            
+            let billingType = 'UNDEFINED';
+            if (account === 'PIX') billingType = 'PIX';
+            if (account === 'Crédito' || account === 'Débito') billingType = 'CREDIT_CARD';
+            if (account === 'Boleto') billingType = 'BOLETO';
+
+            let payment;
+            if (!isRecurring) {
+                const paymentRes = await createAsaasPayment({
+                  customer: customer.id,
+                  billingType,
+                  value: isNaN(amountParsed) ? 0 : amountParsed,
+                  dueDate: dueDateStr,
+                  description: description || 'Cobrança Elleven',
+                  externalReference: insertedId
+                });
+                if (paymentRes.error) throw new Error("Asaas Erro (Pagamento): " + paymentRes.error);
+                payment = paymentRes.data;
+            } else {
+                const subRes = await createAsaasSubscription({
+                  customer: customer.id,
+                  billingType,
+                  value: isNaN(amountParsed) ? 0 : amountParsed,
+                  nextDueDate: dueDateStr,
+                  cycle: 'MONTHLY',
+                  description: description || 'Assinatura',
+                  externalReference: insertedId
+                });
+                if (subRes.error) throw new Error("Asaas Erro (Assinatura): " + subRes.error);
+                payment = subRes.data;
+            }
+
+            await supabase.from('financial_transactions').update({
+               asaas_payment_id: payment.id,
+               asaas_invoice_url: payment.invoiceUrl || undefined,
+               status: 'pending'
+            }).eq('id', insertedId);
         }
       };
 
@@ -898,6 +968,34 @@ function AddTransactionDrawer({ onClose, onSave, athletes, categories, initialDa
                 )}
               </div>
             </div>
+
+            {type === 'income' && !initialData?.asaas_payment_id && (
+              <div className="bg-[#050B14] border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${generateAsaas ? 'bg-emerald-500 border-emerald-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
+                    {generateAsaas && <CheckCircle2 size={14} className="text-[#050B14]" />}
+                  </div>
+                  <input type="checkbox" checked={generateAsaas} onChange={e => setGenerateAsaas(e.target.checked)} className="hidden" />
+                  <div>
+                    <p className="text-sm font-bold text-emerald-400">Gerar cobrança no Asaas</p>
+                    <p className="text-xs text-slate-500">Cria a cobrança (PIX, Boleto ou Cartão) automaticamente</p>
+                  </div>
+                </label>
+
+                {generateAsaas && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden space-y-4 pt-2 border-t border-slate-800 mt-2">
+                    <div>
+                      <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Pagador (Obrigatório)</label>
+                      <input required type="text" value={asaasCpf} onChange={e=>setAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" placeholder="000.000.000-00" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">Nome do Pagador</label>
+                      <input required type="text" value={asaasName} onChange={e=>setAsaasName(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500 outline-none" placeholder="Nome Completo" />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
 
           </div>
           
