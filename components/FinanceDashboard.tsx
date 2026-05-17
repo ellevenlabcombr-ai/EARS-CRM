@@ -516,7 +516,7 @@ export function FinanceDashboard() {
                              {t.type === 'income' && t.status === 'pending' && !t.asaas_payment_id && (
                                <button
                                  onClick={() => setAsaasTransaction(t)}
-                                 className="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg transition-colors ml-2 flex items-center justify-center p-0"
+                                 className="text-slate-400 hover:text-blue-400 rounded-lg transition-colors ml-2 flex items-center justify-center w-8 h-8"
                                  title="Cobrar via Asaas"
                                >
                                  <span className="text-base leading-none block pt-0.5">🪽</span>
@@ -526,7 +526,7 @@ export function FinanceDashboard() {
                              {t.asaas_invoice_url && (
                                <button
                                  onClick={() => window.open(t.asaas_invoice_url, '_blank')}
-                                 className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg transition-colors ml-2 tooltip flex items-center justify-center p-0"
+                                 className="text-blue-400 hover:text-blue-300 rounded-lg transition-colors ml-2 tooltip flex items-center justify-center w-8 h-8"
                                  title="Abrir Fatura Asaas"
                                >
                                  <span className="text-base leading-none block pt-0.5">🪽</span>
@@ -1192,16 +1192,19 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
     try {
       if (!cpfCnpj) throw new Error("CPF ou CNPJ é obrigatório para emissão.");
       
-      const customer = await createAsaasCustomer({ 
+      const customerRes = await createAsaasCustomer({ 
          name, 
          cpfCnpj: cpfCnpj.replace(/\D/g, '') 
       });
+
+      if (customerRes.error) throw new Error(customerRes.error);
+      const customer = customerRes.data;
 
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dueDate = tomorrow.toISOString().split('T')[0];
 
-      const payment = await createAsaasPayment({
+      const paymentRes = await createAsaasPayment({
          customer: customer.id,
          billingType,
          value: transaction.amount,
@@ -1209,11 +1212,16 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
          description: transaction.description || 'Cobrança do Sistema',
          externalReference: transaction.id
       });
+      
+      if (paymentRes.error) throw new Error(paymentRes.error);
+      const payment = paymentRes.data;
 
       let qrCodePic = undefined;
       if (billingType === 'PIX') {
-         const pixData = await getAsaasPixQrCode(payment.id);
-         qrCodePic = pixData.encodedImage;
+         const pixDataRes = await getAsaasPixQrCode(payment.id);
+         if (!pixDataRes.error) {
+           qrCodePic = pixDataRes.data.encodedImage;
+         }
       }
 
       await supabase.from('financial_transactions').update({
