@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
       if (updateError) {
         console.error("Webhook update error:", updateError);
-        return NextResponse.json({ error: "Failed to update internal record." }, { status: 500 });
+        return NextResponse.json({ error: "Failed to update internal record.", details: updateError }, { status: 500 });
       }
     }
 
