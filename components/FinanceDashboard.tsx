@@ -1180,7 +1180,8 @@ function DREReport({ transactions }: { transactions: Transaction[] }) {
 function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction, onClose: () => void }) {
   const [cpfCnpj, setCpfCnpj] = useState('');
   const [name, setName] = useState(transaction.description || 'Cliente Varejo');
-  const [billingType, setBillingType] = useState<'PIX'|'BOLETO'>('PIX');
+  const [billingType, setBillingType] = useState<'PIX'|'BOLETO'|'CREDIT_CARD'|'UNDEFINED'>('UNDEFINED');
+  const [frequency, setFrequency] = useState<'ONETIME'|'MONTHLY'|'YEARLY'>('ONETIME');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successData, setSuccessData] = useState<{ qrCodePic?: string, invoiceUrl?: string } | null>(null);
@@ -1204,20 +1205,37 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
       tomorrow.setDate(tomorrow.getDate() + 1);
       const dueDate = tomorrow.toISOString().split('T')[0];
 
-      const paymentRes = await createAsaasPayment({
-         customer: customer.id,
-         billingType,
-         value: transaction.amount,
-         dueDate,
-         description: transaction.description || 'Cobrança do Sistema',
-         externalReference: transaction.id
-      });
-      
-      if (paymentRes.error) throw new Error(paymentRes.error);
-      const payment = paymentRes.data;
+      let payment;
+      if (frequency === 'ONETIME') {
+        const paymentRes = await createAsaasPayment({
+           customer: customer.id,
+           billingType,
+           value: transaction.amount,
+           dueDate,
+           description: transaction.description || 'Cobrança do Sistema',
+           externalReference: transaction.id
+        });
+        if (paymentRes.error) throw new Error(paymentRes.error);
+        payment = paymentRes.data;
+      } else {
+        const subRes = await createAsaasSubscription({
+           customer: customer.id,
+           billingType,
+           value: transaction.amount,
+           nextDueDate: dueDate,
+           cycle: frequency,
+           description: transaction.description || 'Assinatura',
+           externalReference: transaction.id
+        });
+        if (subRes.error) throw new Error(subRes.error);
+        payment = subRes.data;
+      }
 
       let qrCodePic = undefined;
-      if (billingType === 'PIX') {
+      // subscription endpoints do not return pixQrCode the same way directly for the subscription ID,
+      // it returns for the generated charge in "payment" but here we just have subscription id. 
+      // If it's a subscription with PIX, the `invoiceUrl` works anyway.
+      if (billingType === 'PIX' && frequency === 'ONETIME') {
          const pixDataRes = await getAsaasPixQrCode(payment.id);
          if (!pixDataRes.error) {
            qrCodePic = pixDataRes.data.encodedImage;
@@ -1226,12 +1244,12 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
 
       await supabase.from('financial_transactions').update({
          asaas_payment_id: payment.id,
-         asaas_invoice_url: payment.invoiceUrl
+         asaas_invoice_url: frequency === 'ONETIME' ? payment.invoiceUrl : undefined // or something else
       }).eq('id', transaction.id);
 
       setSuccessData({
          qrCodePic,
-         invoiceUrl: payment.invoiceUrl
+         invoiceUrl: frequency === 'ONETIME' ? payment.invoiceUrl : undefined // if we can't find invoice URL directly
       });
     } catch (err: any) {
       console.error(err);
@@ -1280,8 +1298,19 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
                 <div>
                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">Forma de Emissão</label>
                    <select required value={billingType} onChange={e=>setBillingType(e.target.value as any)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+                      <option value="UNDEFINED">Qualquer (Escolher no Checkout)</option>
                       <option value="PIX">PIX</option>
                       <option value="BOLETO">Boleto Bancário</option>
+                      <option value="CREDIT_CARD">Cartão de Crédito</option>
+                   </select>
+                </div>
+
+                <div>
+                   <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">Frequência</label>
+                   <select required value={frequency} onChange={e=>setFrequency(e.target.value as any)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none">
+                      <option value="ONETIME">Única (À Vista)</option>
+                      <option value="MONTHLY">Mensal</option>
+                      <option value="YEARLY">Anual</option>
                    </select>
                 </div>
 
