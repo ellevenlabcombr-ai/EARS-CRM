@@ -2282,8 +2282,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             let cycleMap: Record<string, string> = {
                 monthly: 'MONTHLY',
                 quarterly: 'QUARTERLY',
-                semiannually: 'SEMIANNUALLY',
-                yearly: 'YEARLY'
+                semiannual: 'SEMIANNUAL',
+                annual: 'YEARLY'
             };
 
             const subRes = await createAsaasSubscription({
@@ -6032,13 +6032,13 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tempo de Vigência / Recorrência</label>
                         <select 
                           value={planBillingCycle}
-                          onChange={(e) => setPlanBillingCycle(e.target.value)}
+                          onChange={(e) => setPlanBillingCycle(e.target.value as any)}
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
                         >
                           <option value="monthly">Mensal</option>
                           <option value="quarterly">Trimestral</option>
-                          <option value="semiannually">Semestral</option>
-                          <option value="yearly">Anual</option>
+                          <option value="semiannual">Semestral</option>
+                          <option value="annual">Anual</option>
                         </select>
                       </div>
 

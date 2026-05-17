@@ -142,7 +142,7 @@ export async function createAsaasSubscription(data: {
   billingType: 'BOLETO' | 'PIX' | 'CREDIT_CARD' | 'UNDEFINED';
   value: number;
   nextDueDate: string;
-  cycle: 'MONTHLY' | 'YEARLY';
+  cycle: 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY' | 'BIMONTHLY' | 'QUARTERLY' | 'SEMIANNUAL' | 'YEARLY';
   description?: string;
   externalReference?: string;
 }) {

@@ -45,6 +45,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Target,
+  CreditCard,
+  DollarSign,
   Dumbbell,
   Heart,
   Globe,
@@ -565,7 +567,7 @@ const motivationalQuotes = [
   },
 ];
 
-type ViewState = "history" | "questionnaire" | "summary" | "cycle_setup" | "cycle_details" | "squad";
+type ViewState = "history" | "questionnaire" | "summary" | "cycle_setup" | "cycle_details" | "squad" | "finance";
 
 interface AthleteDashboardProps {
   onBack: () => void;
@@ -587,6 +589,9 @@ export function AthleteDashboard({
 
   const [lang, setLang] = useState<Language>("pt");
   const [view, setView] = useState<ViewState>("history");
+  const [athleteSubscription, setAthleteSubscription] = useState<any>(null);
+  const [athleteTransactions, setAthleteTransactions] = useState<any[]>([]);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
 
   // Athlete profile state
   const [athleteData, setAthleteData] = useState<Athlete | null>(initialAthleteData || null);
@@ -980,6 +985,35 @@ export function AthleteDashboard({
         setHasUpcomingCompetition(hasCompetition);
       } else {
         setHasUpcomingCompetition(false);
+      }
+
+      // 5. Fetch Finance Data
+      try {
+        const { data: subData } = await supabase
+          .from("financial_subscriptions")
+          .select(`
+            *,
+            product:financial_products(*)
+          `)
+          .eq("athlete_id", athleteId)
+          .maybeSingle();
+        
+        if (subData) {
+          setAthleteSubscription(subData);
+        }
+
+        const { data: transData } = await supabase
+          .from("financial_transactions")
+          .select("*")
+          .eq("athlete_id", athleteId)
+          .order("date", { ascending: false })
+          .limit(10);
+        
+        if (transData) {
+          setAthleteTransactions(transData);
+        }
+      } catch (fErr) {
+        console.error("Finance fetch error:", fErr);
       }
 
       clearTimeout(timeoutId);
@@ -1614,6 +1648,143 @@ export function AthleteDashboard({
     );
   }
 
+    if (view === "finance") {
+      return (
+        <PageContainer maxWidth="3xl" className="pt-safe">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="space-y-6 pb-12"
+          >
+            <div className="flex justify-between items-center mb-2">
+              <Button
+                variant="ghost"
+                onClick={() => setView("history")}
+                className="text-slate-400 hover:text-white hover:bg-slate-800 -ml-2"
+              >
+                <ChevronLeft className="w-5 h-5 mr-1" />
+                {lang === 'pt' ? 'Voltar' : 'Back'}
+              </Button>
+            </div>
+
+            <div className="space-y-2 text-center pb-4">
+              <div className="w-20 h-20 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto border border-cyan-500/30 mb-4">
+                <CreditCard className="w-10 h-10 text-cyan-500" />
+              </div>
+              <h2 className="text-3xl font-black text-white uppercase tracking-tight">
+                {lang === 'pt' ? 'Financeiro' : 'Finance'}
+              </h2>
+              <p className="text-slate-400 font-medium italic">
+                {lang === 'pt' ? 'Gerencie seus planos e pagamentos' : 'Manage your plans and payments'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {/* Active Subscription */}
+              <Card className="bg-[#0A1120] border-cyan-500/20 p-6 space-y-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                   <ShieldCheck size={120} className="text-cyan-500" />
+                </div>
+                
+                <div className="relative z-10">
+                  <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-4">
+                    <Info className="w-4 h-4 text-cyan-400" />
+                    {lang === 'pt' ? 'Plano e Assinatura' : 'Plan and Subscription'}
+                  </h3>
+                  
+                  {athleteSubscription ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center bg-slate-950/50 p-4 rounded-2xl border border-slate-800">
+                        <div>
+                          <p className="text-lg font-black text-white uppercase">{athleteSubscription.product?.name || (lang === 'pt' ? 'Plano Customizado' : 'Custom Plan')}</p>
+                          <p className="text-xs text-slate-500 uppercase font-black tracking-widest">
+                            {athleteSubscription.billing_cycle === 'monthly' ? (lang === 'pt' ? 'Mensal' : 'Monthly') :
+                             athleteSubscription.billing_cycle === 'quarterly' ? (lang === 'pt' ? 'Trimestral' : 'Quarterly') :
+                             athleteSubscription.billing_cycle === 'semiannual' ? (lang === 'pt' ? 'Semestral' : 'Semiannual') :
+                             athleteSubscription.billing_cycle === 'annual' ? (lang === 'pt' ? 'Anual' : 'Annual') : athleteSubscription.billing_cycle}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-black text-cyan-400">R$ {athleteSubscription.amount}</p>
+                          <span className="text-[10px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Ativo</span>
+                        </div>
+                      </div>
+
+                      {athleteSubscription.asaas_id && (
+                         <div className="bg-blue-500/5 p-4 rounded-2xl border border-blue-500/20 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                               <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400">
+                                  <Globe size={20} />
+                               </div>
+                               <div>
+                                  <p className="text-xs font-black text-white uppercase tracking-widest">Gateway Asaas</p>
+                                  <p className="text-[10px] text-slate-500 font-bold">Cobrança Automatizada Ativa</p>
+                               </div>
+                            </div>
+                         </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center bg-slate-950/50 rounded-2xl border border-dashed border-slate-800">
+                      <p className="text-slate-500 font-bold">{lang === 'pt' ? 'Nenhum plano ativo vinculado ao seu perfil.' : 'No active plan linked to your profile.'}</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Transactions History */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+                  <History className="w-4 h-4" />
+                  {lang === 'pt' ? 'Histórico de Pagamentos' : 'Payment History'}
+                </h3>
+                
+                {athleteTransactions.length > 0 ? (
+                  <div className="space-y-3">
+                    {athleteTransactions.map(t => (
+                      <Card key={t.id} className="bg-[#0A1120] border-slate-800/80 p-4 transition-all hover:border-slate-700">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${t.type === 'income' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                              {t.type === 'income' ? <Plus size={18} /> : <Minus size={18} />}
+                            </div>
+                            <div>
+                              <p className="text-sm font-black text-white">{t.description}</p>
+                              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                                {new Date(t.date).toLocaleDateString()} • {t.payment_method || '---'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-lg font-black ${t.status === 'paid' ? 'text-white' : 'text-slate-400'}`}>R$ {t.amount}</p>
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${
+                              t.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              t.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                              'bg-slate-800 text-slate-500 border-slate-700'
+                            }`}>
+                              {t.status === 'paid' ? (lang === 'pt' ? 'Pago' : 'Paid') :
+                               t.status === 'pending' ? (lang === 'pt' ? 'Pendente' : 'Pending') :
+                               t.status === 'overdue' ? (lang === 'pt' ? 'Vencido' : 'Overdue') : t.status}
+                            </span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center bg-slate-900/30 rounded-2xl border border-slate-800/50">
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+                      {lang === 'pt' ? 'Nenhuma transação encontrada' : 'No transactions found'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </PageContainer>
+      );
+    }
+
     if (view === "cycle_setup") {
       return (
         <PageContainer maxWidth="3xl" className="pt-safe">
@@ -1861,6 +2032,36 @@ export function AthleteDashboard({
         { label: lang === "pt" ? "Dor" : "Pain", value: maxPainLevel, icon: Activity, color: "text-rose-400" },
       ];
 
+      const FinanceWidget = () => {
+        return (
+          <Card 
+            className={`overflow-hidden border-dashed p-1 cursor-pointer transition-all group mt-4 ${
+              athleteSubscription ? 'bg-cyan-500/5 border-cyan-500/20 hover:bg-cyan-500/10' : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800'
+            }`}
+            onClick={() => setView("finance")}
+          >
+            <div className="p-5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-4 rounded-2xl border transition-transform group-hover:scale-110 ${
+                  athleteSubscription ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-slate-800 border-slate-700 text-slate-500'
+                }`}>
+                  <CreditCard className="w-7 h-7" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">
+                    {lang === 'pt' ? 'Financeiro' : 'Finance'}
+                  </p>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">
+                    {athleteSubscription ? (athleteSubscription.product?.name || (lang === 'pt' ? 'Plano Ativo' : 'Active Plan')) : (lang === 'pt' ? 'Nenhum Plano' : 'No Active Plan')}
+                  </h3>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-cyan-500 transition-colors" />
+            </div>
+          </Card>
+        );
+      };
+
       if (!respondedToday) {
         return (
           <div className="w-full">
@@ -1987,6 +2188,8 @@ export function AthleteDashboard({
               </CardContent>
             </Card>
           )}
+
+          <FinanceWidget />
         </div>
       );
     };
