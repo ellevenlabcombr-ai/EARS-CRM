@@ -15,11 +15,11 @@ export async function GET() {
           alignItems: 'center',
           justifyContent: 'center',
           color: '#06b6d4',
-          fontWeight: 'bold',
+          fontWeight: '900',
           borderRadius: '20%',
         }}
       >
-        E
+        11
       </div>
     ),
     {

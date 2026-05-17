@@ -14,7 +14,7 @@ export default function Icon() {
       // ImageResponse JSX element
       <div
         style={{
-          fontSize: 24,
+          fontSize: 20,
           background: '#050B14',
           width: '100%',
           height: '100%',
@@ -22,12 +22,12 @@ export default function Icon() {
           alignItems: 'center',
           justifyContent: 'center',
           color: '#06b6d4', // cyan-500
-          fontWeight: 'bold',
+          fontWeight: '900',
           borderRadius: '20%',
           border: '1px solid rgba(6, 182, 212, 0.3)',
         }}
       >
-        E
+        11
       </div>
     ),
     // ImageResponse options

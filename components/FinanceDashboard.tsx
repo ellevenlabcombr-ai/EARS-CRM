@@ -22,7 +22,8 @@ import {
   User,
   Repeat,
   Printer,
-  Target
+  Target,
+  RefreshCcw
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getLocalDateString } from "@/lib/utils";
@@ -108,9 +109,23 @@ export function FinanceDashboard() {
     }
   };
 
-  const syncPendingTransactions = async (pendingTransactions: Transaction[]) => {
+  const [isSyncingAsaas, setIsSyncingAsaas] = useState(false);
+  
+  const syncPendingTransactions = async (pendingTransactions?: Transaction[]) => {
+    setIsSyncingAsaas(true);
     let hasUpdates = false;
-    for (const t of pendingTransactions) {
+    let syncedCount = 0;
+    
+    // If no transations provided, fetch all pending asaas transactions currently in state
+    const txToSync = pendingTransactions || transactions.filter(t => t.status === 'pending' && t.asaas_payment_id);
+    
+    if (txToSync.length === 0) {
+      setIsSyncingAsaas(false);
+      if (!pendingTransactions) alert('Nenhuma cobrança pendente do Asaas para sincronizar.');
+      return;
+    }
+
+    for (const t of txToSync) {
       if (!t.asaas_payment_id) continue;
       try {
         const res = await checkAsaasStatus(t.asaas_payment_id);
@@ -125,6 +140,7 @@ export function FinanceDashboard() {
           if (newStatus && newStatus !== t.status) {
             await supabase.from('financial_transactions').update({ status: newStatus }).eq('id', t.id);
             hasUpdates = true;
+            syncedCount++;
           }
         }
       } catch (err) {
@@ -133,10 +149,13 @@ export function FinanceDashboard() {
     }
     
     if (hasUpdates) {
-       // Refresh list without showing loading spinner
        const { data } = await supabase.from('financial_transactions').select('*').order('date', { ascending: false });
        if (data) setTransactions(data);
+       if (!pendingTransactions) alert(`${syncedCount} cobrança(s) atualizada(s) com sucesso!`);
+    } else {
+       if (!pendingTransactions) alert('Nenhuma nova atualização de status encontrada no Asaas.');
     }
+    setIsSyncingAsaas(false);
   };
 
   const fetchTransactions = async () => {
@@ -285,6 +304,14 @@ export function FinanceDashboard() {
           </div>
           
           <div className="flex items-center w-full md:w-auto gap-2 shrink-0">
+            <button 
+              onClick={() => syncPendingTransactions()}
+              disabled={isSyncingAsaas}
+              className="flex-1 md:flex-none h-11 md:h-10 px-4 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap border border-indigo-500/30 disabled:opacity-50"
+            >
+              <RefreshCcw size={16} className={isSyncingAsaas ? "animate-spin" : ""} /> 
+              {isSyncingAsaas ? 'Sincronizando...' : 'Sincronizar Asaas'}
+            </button>
             <button 
               onClick={exportCSV}
               className="flex-1 md:flex-none h-11 md:h-10 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"

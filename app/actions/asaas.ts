@@ -98,7 +98,7 @@ export async function checkAsaasStatus(paymentOrSubId: string) {
 
     let endpoint = '';
     if (paymentOrSubId.startsWith('sub_')) {
-      endpoint = `${ASAAS_API_URL}/payments?subscription=${paymentOrSubId}&limit=1`;
+      endpoint = `${ASAAS_API_URL}/payments?subscription=${paymentOrSubId}`;
     } else {
       endpoint = `${ASAAS_API_URL}/payments/${paymentOrSubId}`;
     }
@@ -118,7 +118,14 @@ export async function checkAsaasStatus(paymentOrSubId: string) {
     let paymentData = json;
     if (paymentOrSubId.startsWith('sub_')) {
       if (json.data && json.data.length > 0) {
-        paymentData = json.data[0];
+        // Find if ANY payment is paid
+        const paidStatuses = ['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH', 'RESTORED', 'DUNNING_RECEIVED', 'APPROVED_BY_RISK_ANALYSIS'];
+        const paidPayment = json.data.find((p: any) => paidStatuses.includes(p.status));
+        if (paidPayment) {
+          paymentData = paidPayment;
+        } else {
+          paymentData = json.data[0]; // fallback
+        }
       } else {
         return { success: true, status: 'PENDING' };
       }
