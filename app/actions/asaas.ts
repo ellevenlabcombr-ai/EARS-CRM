@@ -91,6 +91,45 @@ export async function getAsaasPixQrCode(paymentId: string) {
   }
 }
 
+export async function checkAsaasStatus(paymentOrSubId: string) {
+  try {
+    const apiKey = process.env.ASAAS_API_KEY || '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjQ2MjZjYjI5LWE5ZWYtNDlhMS04MjY3LTQ4ZjBjM2I5ZTY2NTo6JGFhY2hfMjQ2ZjQ5ZjYtYjA3MC00NmM4LWJhZDYtN2JjNDNkNDFhODIy';
+    if (!apiKey) return { error: 'API do Asaas não configurada.' };
+
+    let endpoint = '';
+    if (paymentOrSubId.startsWith('sub_')) {
+      endpoint = `${ASAAS_API_URL}/payments?subscription=${paymentOrSubId}&limit=1`;
+    } else {
+      endpoint = `${ASAAS_API_URL}/payments/${paymentOrSubId}`;
+    }
+
+    const res = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        'access_token': apiKey,
+      },
+    });
+
+    const json = await res.json().catch(() => null);
+    if (!res.ok) {
+      return { error: json?.errors?.[0]?.description || 'Erro ao consultar Asaas.' };
+    }
+
+    let paymentData = json;
+    if (paymentOrSubId.startsWith('sub_')) {
+      if (json.data && json.data.length > 0) {
+        paymentData = json.data[0];
+      } else {
+        return { success: true, status: 'PENDING' };
+      }
+    }
+
+    return { success: true, status: paymentData.status };
+  } catch (err: any) {
+    return { error: err.message || 'Erro interno no servidor.' };
+  }
+}
+
 export async function createAsaasSubscription(data: {
   customer: string;
   billingType: 'BOLETO' | 'PIX' | 'CREDIT_CARD' | 'UNDEFINED';

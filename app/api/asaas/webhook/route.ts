@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
 
     const { event, payment } = body;
     const paymentId = payment.id;
+    const subscriptionId = payment.subscription;
 
     // Conectar ao Supabase (service role for server side)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -55,23 +56,6 @@ export async function POST(req: NextRequest) {
       'PAYMENT_BANK_SLIP_CANCELLED' // Boleto expirado - podemos considerar cancelado ou deixar pendente, mas a cobrança em si pode ficar vencida. Vamos usar o padrão do Asaas.
     ];
 
-    const pendingEvents = [
-      'PAYMENT_CREATED',
-      'PAYMENT_UPDATED',
-      'PAYMENT_OVERDUE',
-      'PAYMENT_AUTHORIZED',
-      'PAYMENT_AWAITING_RISK_ANALYSIS',
-      'PAYMENT_APPROVED_BY_RISK_ANALYSIS',
-      'PAYMENT_AWAITING_CHARGEBACK_REVERSAL',
-      'PAYMENT_DUNNING_REQUESTED',
-      'PAYMENT_BANK_SLIP_VIEWED',
-      'PAYMENT_CHECKOUT_VIEWED',
-      'PAYMENT_PARTIALLY_REFUNDED',
-      'PAYMENT_SPLIT_CANCELLED',
-      'PAYMENT_SPLIT_DIVERGENCE_BLOCK',
-      'PAYMENT_SPLIT_DIVERGENCE_BLOCK_FINISHED'
-    ];
-
     let newStatus = '';
     if (paidEvents.includes(event)) {
       newStatus = 'paid';
@@ -80,15 +64,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (newStatus) {
+      const orCondition = subscriptionId 
+        ? `asaas_payment_id.eq.${paymentId},asaas_payment_id.eq.${subscriptionId}`
+        : `asaas_payment_id.eq.${paymentId}`;
+
       const { data, error } = await supabase
         .from('financial_transactions')
         .update({ status: newStatus })
-        .eq('asaas_payment_id', paymentId);
+        .or(orCondition);
         
       if (error) {
         console.error(`Error updating transaction status to ${newStatus}:`, error);
       } else {
-        console.log(`Transaction successfully updated as ${newStatus}:`, paymentId);
+        console.log(`Transaction successfully updated as ${newStatus} for ${paymentId} or ${subscriptionId}`);
       }
     } else {
       console.log(`Event ${event} ignorado ou mapeado como pendente.`);

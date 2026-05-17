@@ -27,7 +27,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { getLocalDateString } from "@/lib/utils";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
-import { createAsaasCustomer, createAsaasPayment, createAsaasSubscription, getAsaasPixQrCode } from "@/app/actions/asaas";
+import { createAsaasCustomer, createAsaasPayment, createAsaasSubscription, checkAsaasStatus, getAsaasPixQrCode } from "@/app/actions/asaas";
 
 interface Transaction {
   id: string;
@@ -108,6 +108,37 @@ export function FinanceDashboard() {
     }
   };
 
+  const syncPendingTransactions = async (pendingTransactions: Transaction[]) => {
+    let hasUpdates = false;
+    for (const t of pendingTransactions) {
+      if (!t.asaas_payment_id) continue;
+      try {
+        const res = await checkAsaasStatus(t.asaas_payment_id);
+        if (res.success && res.status) {
+          const s = res.status;
+          const paidStatuses = ['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH', 'RESTORED', 'DUNNING_RECEIVED', 'APPROVED_BY_RISK_ANALYSIS'];
+          const cancelledStatuses = ['DELETED', 'REFUNDED', 'CHARGEBACK_REQUESTED', 'CHARGEBACK_DISPUTE', 'RECEIVED_IN_CASH_UNDONE', 'CREDIT_CARD_CAPTURE_REFUSED'];
+          let newStatus = null;
+          if (paidStatuses.includes(s)) newStatus = 'paid';
+          else if (cancelledStatuses.includes(s)) newStatus = 'cancelled';
+
+          if (newStatus && newStatus !== t.status) {
+            await supabase.from('financial_transactions').update({ status: newStatus }).eq('id', t.id);
+            hasUpdates = true;
+          }
+        }
+      } catch (err) {
+        console.error('Erro ao sincronizar do Asaas:', err);
+      }
+    }
+    
+    if (hasUpdates) {
+       // Refresh list without showing loading spinner
+       const { data } = await supabase.from('financial_transactions').select('*').order('date', { ascending: false });
+       if (data) setTransactions(data);
+    }
+  };
+
   const fetchTransactions = async () => {
     setIsLoading(true);
     try {
@@ -125,6 +156,10 @@ export function FinanceDashboard() {
       
       if (data) {
         setTransactions(data);
+        const asaasPending = data.filter(t => t.status === 'pending' && t.asaas_payment_id);
+        if (asaasPending.length > 0) {
+          syncPendingTransactions(asaasPending);
+        }
       }
     } catch (err) {
       console.error("Error fetching transactions:", err);

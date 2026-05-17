@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const asaasPaymentId = payment.id;
+    const asaasSubscriptionId = payment.subscription; 
     let statusToUpdate: string | null = null;
 
     // Listas de eventos por status
@@ -66,10 +67,14 @@ export async function POST(req: NextRequest) {
     if (statusToUpdate) {
       const supabase = getSupabaseClient();
       
+      const orCondition = asaasSubscriptionId 
+        ? `asaas_payment_id.eq.${asaasPaymentId},asaas_payment_id.eq.${asaasSubscriptionId}`
+        : `asaas_payment_id.eq.${asaasPaymentId}`;
+
       const { error: updateError } = await supabase
         .from("financial_transactions")
         .update({ status: statusToUpdate })
-        .eq("asaas_payment_id", asaasPaymentId);
+        .or(orCondition);
 
       if (updateError) {
         console.error("Webhook update error:", updateError);
