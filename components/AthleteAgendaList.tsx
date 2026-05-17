@@ -105,12 +105,25 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged, isBlocked =
           )}
         </div>
         <Button 
-          onClick={() => setIsCreateModalOpen(true)}
-          disabled={isBlocked}
-          className={`font-black uppercase tracking-widest border-none px-4 rounded-xl ${isBlocked ? 'bg-slate-800 text-slate-500' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'}`}
+          onClick={() => {
+             if (isBlocked) {
+                 alert("Por favor, entre em contato com a administração para regularizar o pagamento e desbloquear o agendamento.");
+             } else {
+                 setIsCreateModalOpen(true);
+             }
+          }}
+          className={`font-black uppercase tracking-widest border-none px-4 rounded-xl ${isBlocked ? 'bg-rose-500 hover:bg-rose-600 text-slate-100 shadow-[0_0_15px_rgba(244,63,94,0.4)]' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'}`}
         >
-          <Plus className="w-4 h-4 mr-2" />
-          {lang === 'pt' ? 'Novo Evento' : 'New Event'}
+          {isBlocked ? (
+             <>
+               {lang === 'pt' ? 'Regularizar Pagamento' : 'Pay Overdue'}
+             </>
+          ) : (
+             <>
+               <Plus className="w-4 h-4 mr-2" />
+               {lang === 'pt' ? 'Novo Evento' : 'New Event'}
+             </>
+          )}
         </Button>
       </div>
 

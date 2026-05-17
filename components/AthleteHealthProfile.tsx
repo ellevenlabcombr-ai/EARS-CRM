@@ -296,26 +296,27 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [transType, setTransType] = useState('income');
   const [transAccount, setTransAccount] = useState('PIX');
   const [isAddingTrans, setIsAddingTrans] = useState(false);
-  const [isEditingPlan, setIsEditingPlan] = useState(false);
+  
   const [selectedProductId, setSelectedProductId] = useState('');
   const [planBillingCycle, setPlanBillingCycle] = useState('monthly');
   const [planGenerateAsaas, setPlanGenerateAsaas] = useState(false);
   const [planAsaasCpf, setPlanAsaasCpf] = useState('');
   const [planDiscount, setPlanDiscount] = useState('');
 
-  // Auto-select first financial product if none is selected when editing opens
   useEffect(() => {
-    if (isEditingPlan && financialProducts.length > 0 && !selectedProductId) {
+    if (athleteSubscription) {
+      setSelectedProductId(athleteSubscription.product_id || '');
+      setPlanBillingCycle(athleteSubscription.billing_cycle || 'monthly');
+      setPlanGenerateAsaas(!!athleteSubscription.asaas_subscription_id);
+    }
+  }, [athleteSubscription]);
+
+  // Auto-select first financial product if none is selected
+  useEffect(() => {
+    if (financialProducts.length > 0 && !selectedProductId && !athleteSubscription) {
       setSelectedProductId(financialProducts[0].id);
     }
-    if (!isEditingPlan) {
-      setSelectedProductId('');
-      setPlanGenerateAsaas(false);
-      setPlanAsaasCpf('');
-      setPlanBillingCycle('monthly');
-      setPlanDiscount('');
-    }
-  }, [isEditingPlan, financialProducts, selectedProductId]);
+  }, [financialProducts, selectedProductId, athleteSubscription]);
   const [isLinkingPlan, setIsLinkingPlan] = useState(false);
 
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
@@ -4992,146 +4993,131 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    </p>
                    
                    <div className="relative z-10 flex-1">
-                      {isEditingPlan || (!athleteSubscription && !isEditingPlan) ? (
-                        <div className="bg-[#050B14] p-5 rounded-2xl border border-slate-800 flex flex-col gap-5">
-                            {financialProducts.length === 0 ? (
-                              <p className="text-sm text-slate-500 text-center font-bold">Nenhum plano cadastrado. Configure os produtos primeiro.</p>
-                            ) : (
-                              <>
-                                <div className="space-y-2">
-                                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
-                                  <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
-                                    <option value="">Selecione...</option>
-                                    {financialProducts.map(p => (
-                                      <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
-                                  <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
-                                    <option value="monthly">Mensal</option>
-                                    <option value="bimonthly">Bimestral</option>
-                                    <option value="quarterly">Trimestral</option>
-                                    <option value="semiannual">Semestral</option>
-                                    <option value="annual">Anual</option>
-                                  </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
-                                  <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors" />
-                                </div>
-
-                                <div className="space-y-3 pt-2">
-                                  <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-                                    <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
-                                      {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
-                                    </div>
-                                    <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
-                                    <div>
-                                      <p className="text-sm font-bold text-cyan-400">Renovação Autom. (Asaas)</p>
-                                      <p className="text-xs text-slate-500">Gera cobranças via PIX todo ciclo.</p>
-                                    </div>
-                                  </label>
-
-                                  {planGenerateAsaas && (
-                                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
-                                      <div className="pt-2">
-                                        <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
-                                        <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none text-sm" placeholder="Obrigatório" />
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </div>
-
-                                <div className="flex gap-2 pt-4">
-                                  {athleteSubscription && (
-                                    <Button variant="outline" onClick={() => setIsEditingPlan(false)} className="flex-1 bg-transparent border-slate-800 text-slate-400 hover:text-white uppercase tracking-widest text-xxs font-black rounded-xl">Cancelar</Button>
-                                  )}
-                                  <Button onClick={handleLinkPlan} disabled={isLinkingPlan} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xxs font-black rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                                    {isLinkingPlan ? 'Salvando...' : 'Salvar Plano'}
-                                  </Button>
-                                </div>
-                              </>
-                            )}
-                        </div>
-                      ) : (
-                        <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center">
-                          <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
-                            <CheckCircle size={24} />
-                          </div>
-                          
-                          <div className="mb-2">
-                             {(() => {
-                               const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
-                               if (athleteSubscription?.status !== 'active') {
-                                 return (
-                                   <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                     🔴 Cancelado
-                                   </span>
-                                 );
-                               }
-                               if (hasOverdue) {
+                      <div className="bg-[#050B14] p-5 rounded-2xl border border-slate-800 flex flex-col gap-5">
+                          {/* Active Plan Status Badges (if exists) */}
+                          {athleteSubscription && (
+                            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800/50">
+                              <div className="flex items-center gap-2">
+                                {(() => {
+                                  const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
+                                  if (athleteSubscription?.status !== 'active') {
+                                    return (
+                                      <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        🔴 Cancelado
+                                      </span>
+                                    );
+                                  }
+                                  if (hasOverdue) {
+                                      return (
+                                        <span className="bg-rose-500/10 text-rose-500 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                          🔴 Inadimplente
+                                        </span>
+                                      );
+                                  }
                                   return (
-                                     <span className="bg-rose-500/10 text-rose-500 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                       🔴 Inadimplente
-                                     </span>
+                                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                      🟢 Ativo
+                                    </span>
                                   );
-                               }
-                               return (
-                                 <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                   🟢 Ativo
-                                 </span>
-                               );
-                             })()}
-                          </div>
-
-                          <p className="text-lg text-white font-black">{athleteSubscription.product?.name || 'Plano Customizado'}</p>
-                          <p className="text-sm font-bold text-cyan-400 mt-1">R$ {athleteSubscription.amount} <span className="text-[10px] text-slate-500 uppercase">/ {
-                            athleteSubscription.billing_cycle === 'monthly' ? (language === 'pt' ? 'mês' : 'month') :
-                            athleteSubscription.billing_cycle === 'bimonthly' ? (language === 'pt' ? 'bimestre' : 'bimonthly') :
-                            athleteSubscription.billing_cycle === 'quarterly' ? (language === 'pt' ? 'trimestre' : 'quarter') :
-                            athleteSubscription.billing_cycle === 'semiannual' ? (language === 'pt' ? 'semestre' : 'half-year') :
-                            athleteSubscription.billing_cycle === 'annual' ? (language === 'pt' ? 'ano' : 'year') : 
-                            athleteSubscription.billing_cycle
-                          }</span></p>
-
-                          <div className="w-full pt-4 mt-6 border-t border-slate-800 space-y-2">
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-slate-500 font-medium">Asaas Integrado</span>
-                              <span className="text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? 'Sim' : 'Não'}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-slate-500 font-medium">Data Início</span>
-                              <span className="text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</span>
-                            </div>
-                            {athleteSubscription.asaas_subscription_id && (
-                              <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800/50">
-                                <span className="text-slate-500 font-medium">Cartão de Crédito</span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-rose-400 font-bold">Sem Token</span>
-                                  <button onClick={() => {
-                                      if (athlete.phone) {
-                                         handleSendWhatsapp(athlete.phone, `Olá! Para evitar interrupções no seu plano, por favor atualize os dados do seu cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
-                                      }
-                                  }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
-                                </div>
+                                })()}
                               </div>
-                            )}
-                          </div>
+                              <div className="text-right">
+                                <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor Vigente</p>
+                                <p className="text-sm font-bold text-cyan-400">R$ {athleteSubscription.amount}</p>
+                              </div>
+                            </div>
+                          )}
 
-                          <div className="mt-6 flex gap-2 w-full justify-center flex-wrap">
-                             <button onClick={() => setIsEditingPlan(true)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all flex items-center gap-2">
-                                <PenTool size={14} /> Editar Contrato
-                             </button>
-                             <button onClick={handleUnlinkPlan} className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs uppercase tracking-widest font-black transition-all rounded-lg flex items-center gap-2">
-                                <Trash2 size={14} /> Cancelar Plano
-                             </button>
-                          </div>
-                        </div>
-                      )}
+                          {financialProducts.length === 0 ? (
+                            <p className="text-sm text-slate-500 text-center font-bold">Nenhum plano cadastrado. Configure os produtos primeiro.</p>
+                          ) : (
+                            <>
+                              <div className="space-y-2">
+                                <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
+                                <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                  <option value="">Selecione...</option>
+                                  {financialProducts.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
+                                  ))}
+                                </select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
+                                <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                  <option value="monthly">Mensal</option>
+                                  <option value="bimonthly">Bimestral</option>
+                                  <option value="quarterly">Trimestral</option>
+                                  <option value="semiannual">Semestral</option>
+                                  <option value="annual">Anual</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
+                                <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors" />
+                              </div>
+
+                              <div className="space-y-3 pt-2">
+                                <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                                  <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
+                                    {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
+                                  </div>
+                                  <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
+                                  <div>
+                                    <p className="text-sm font-bold text-cyan-400">Renovação Autom. (Asaas)</p>
+                                    <p className="text-xs text-slate-500">Gera cobranças via PIX todo ciclo.</p>
+                                  </div>
+                                </label>
+
+                                {planGenerateAsaas && (
+                                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
+                                    <div className="pt-2">
+                                      <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
+                                      <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none text-sm" placeholder="Obrigatório" />
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </div>
+
+                              {/* Info Extra: Integração e Data */}
+                              {athleteSubscription && (
+                                <div className="w-full pt-4 mt-2 border-t border-slate-800 space-y-2">
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-500 font-medium">Asaas Integrado</span>
+                                    <span className="text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? 'Sim' : 'Não'}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-500 font-medium">Data Início</span>
+                                    <span className="text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</span>
+                                  </div>
+                                  {athleteSubscription.asaas_subscription_id && (
+                                    <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800/50">
+                                      <span className="text-slate-500 font-medium">Cartão de Crédito</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-rose-400 font-bold">Sem Token</span>
+                                        <button onClick={() => {
+                                            if (athlete.phone) {
+                                               handleSendWhatsapp(athlete.phone, `Olá! Para evitar interrupções no seu plano, por favor atualize os dados do seu cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
+                                            }
+                                        }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="flex gap-2 pt-4">
+                                {athleteSubscription && (
+                                  <Button variant="outline" onClick={handleUnlinkPlan} className="flex-1 bg-transparent border-rose-500/30 text-rose-400 hover:bg-rose-500/10 uppercase tracking-widest text-xxs font-black rounded-xl">Cancelar Plano</Button>
+                                )}
+                                <Button onClick={handleLinkPlan} disabled={isLinkingPlan} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xxs font-black rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                                  {isLinkingPlan ? 'Salvando...' : (athleteSubscription ? 'Atualizar Plano' : 'Salvar Plano')}
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                      </div>
                    </div>
                </div>
 
