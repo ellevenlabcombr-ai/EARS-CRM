@@ -1,7 +1,7 @@
 export const ASAAS_API_URL = process.env.ASAAS_API_URL || 'https://sandbox.asaas.com/api/v3';
 
 async function fetchAsaas(endpoint: string, options: RequestInit = {}) {
-  const apiKey = process.env.ASAAS_API_KEY;
+  const apiKey = process.env.ASAAS_API_KEY || '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjQ2MjZjYjI5LWE5ZWYtNDlhMS04MjY3LTQ4ZjBjM2I5ZTY2NTo6JGFhY2hfMjQ2ZjQ5ZjYtYjA3MC00NmM4LWJhZDYtN2JjNDNkNDFhODIy';
   
   if (!apiKey) {
     throw new Error('ASAAS_API_KEY não configurada no ambiente.');

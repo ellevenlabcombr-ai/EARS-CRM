@@ -11,7 +11,7 @@ export async function createAsaasCustomer(data: {
   postalCode?: string;
 }) {
   try {
-    const apiKey = process.env.ASAAS_API_KEY;
+    const apiKey = process.env.ASAAS_API_KEY || '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjQ2MjZjYjI5LWE5ZWYtNDlhMS04MjY3LTQ4ZjBjM2I5ZTY2NTo6JGFhY2hfMjQ2ZjQ5ZjYtYjA3MC00NmM4LWJhZDYtN2JjNDNkNDFhODIy';
     if (!apiKey) return { error: 'API do Asaas não configurada.' };
 
     const res = await fetch(`${ASAAS_API_URL}/customers`, {
@@ -44,7 +44,7 @@ export async function createAsaasPayment(data: {
   externalReference?: string;
 }) {
   try {
-    const apiKey = process.env.ASAAS_API_KEY;
+    const apiKey = process.env.ASAAS_API_KEY || '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjQ2MjZjYjI5LWE5ZWYtNDlhMS04MjY3LTQ4ZjBjM2I5ZTY2NTo6JGFhY2hfMjQ2ZjQ5ZjYtYjA3MC00NmM4LWJhZDYtN2JjNDNkNDFhODIy';
     if (!apiKey) return { error: 'API do Asaas não configurada.' };
 
     const res = await fetch(`${ASAAS_API_URL}/payments`, {
@@ -70,7 +70,7 @@ export async function createAsaasPayment(data: {
 
 export async function getAsaasPixQrCode(paymentId: string) {
   try {
-    const apiKey = process.env.ASAAS_API_KEY;
+    const apiKey = process.env.ASAAS_API_KEY || '$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjQ2MjZjYjI5LWE5ZWYtNDlhMS04MjY3LTQ4ZjBjM2I5ZTY2NTo6JGFhY2hfMjQ2ZjQ5ZjYtYjA3MC00NmM4LWJhZDYtN2JjNDNkNDFhODIy';
     if (!apiKey) return { error: 'API do Asaas não configurada.' };
 
     const res = await fetch(`${ASAAS_API_URL}/payments/${paymentId}/pixQrCode`, {
