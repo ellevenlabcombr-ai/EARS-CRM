@@ -260,7 +260,7 @@ export function FinanceDashboard() {
               onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
               className="flex-1 md:flex-none h-11 md:h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] whitespace-nowrap"
             >
-              <span className="text-lg leading-none">🪽</span> Nova Transação
+              <Plus size={16} /> Nova Transação
             </button>
           </div>
         </div>
@@ -516,20 +516,20 @@ export function FinanceDashboard() {
                              {t.type === 'income' && t.status === 'pending' && !t.asaas_payment_id && (
                                <button
                                  onClick={() => setAsaasTransaction(t)}
-                                 className="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg transition-colors ml-2"
+                                 className="text-slate-400 hover:text-blue-400 p-1.5 rounded-lg transition-colors ml-2 flex items-center justify-center p-0"
                                  title="Cobrar via Asaas"
                                >
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                                 <span className="text-base leading-none block pt-0.5">🪽</span>
                                </button>
                              )}
                              
                              {t.asaas_invoice_url && (
                                <button
                                  onClick={() => window.open(t.asaas_invoice_url, '_blank')}
-                                 className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg transition-colors ml-2 tooltip"
+                                 className="text-blue-400 hover:text-blue-300 p-1.5 rounded-lg transition-colors ml-2 tooltip flex items-center justify-center p-0"
                                  title="Abrir Fatura Asaas"
                                >
-                                 <DollarSign size={14} />
+                                 <span className="text-base leading-none block pt-0.5">🪽</span>
                                </button>
                              )}
 
@@ -1243,7 +1243,7 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
       >
         <div className="p-5 border-b border-slate-800/50 flex justify-between items-center bg-[#050B14]">
           <h3 className="font-bold text-white uppercase tracking-widest text-sm flex items-center gap-2">
-            <DollarSign size={16} className="text-blue-500" /> Cobrança Asaas
+            <span className="text-xl leading-none">🪽</span> Cobrança Asaas
           </h3>
           <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors">
              X
@@ -1299,7 +1299,7 @@ function AsaasPaymentModal({ transaction, onClose }: { transaction: Transaction,
                 
                 {successData.invoiceUrl && (
                    <a href={successData.invoiceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold uppercase text-xs tracking-wider transition-colors mb-4 w-full">
-                      <DollarSign size={16} /> Abrir Fatura (Link de Pagamento)
+                      <span className="text-base leading-none">🪽</span> Abrir Fatura (Link de Pagamento)
                    </a>
                 )}
                 
