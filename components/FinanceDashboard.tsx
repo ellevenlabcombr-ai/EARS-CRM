@@ -27,7 +27,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { getLocalDateString } from "@/lib/utils";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
-import { createAsaasCustomer, createAsaasPayment, getAsaasPixQrCode } from "@/app/actions/asaas";
+import { createAsaasCustomer, createAsaasPayment, createAsaasSubscription, getAsaasPixQrCode } from "@/app/actions/asaas";
 
 interface Transaction {
   id: string;
