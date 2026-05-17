@@ -2033,9 +2033,11 @@ export function AthleteDashboard({
       ];
 
       const FinanceWidget = () => {
+        const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
         return (
           <Card 
             className={`overflow-hidden border-dashed p-1 cursor-pointer transition-all group mt-4 ${
+              hasOverdue ? 'bg-rose-500/5 border-rose-500/30 hover:bg-rose-500/10' :
               athleteSubscription ? 'bg-cyan-500/5 border-cyan-500/20 hover:bg-cyan-500/10' : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800'
             }`}
             onClick={() => setView("finance")}
@@ -2043,20 +2045,28 @@ export function AthleteDashboard({
             <div className="p-5 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className={`p-4 rounded-2xl border transition-transform group-hover:scale-110 ${
+                  hasOverdue ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
                   athleteSubscription ? 'bg-cyan-500/10 border-cyan-500/20 text-cyan-500' : 'bg-slate-800 border-slate-700 text-slate-500'
                 }`}>
                   <CreditCard className="w-7 h-7" />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">
-                    {lang === 'pt' ? 'Financeiro' : 'Finance'}
-                  </p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-0">
+                      {lang === 'pt' ? 'Financeiro' : 'Finance'}
+                    </p>
+                    {hasOverdue ? (
+                       <span className="text-[10px] font-black tracking-widest uppercase text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/30">Pendente</span>
+                    ) : (
+                       athleteSubscription ? <span className="text-[10px] font-black tracking-widest uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">Ativo</span> : null
+                    )}
+                  </div>
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">
                     {athleteSubscription ? (athleteSubscription.product?.name || (lang === 'pt' ? 'Plano Ativo' : 'Active Plan')) : (lang === 'pt' ? 'Nenhum Plano' : 'No Active Plan')}
                   </h3>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-cyan-500 transition-colors" />
+              <ChevronRight className={`w-5 h-5 transition-colors ${hasOverdue ? 'text-rose-500/50 group-hover:text-rose-500' : 'text-slate-600 group-hover:text-cyan-500'}`} />
             </div>
           </Card>
         );

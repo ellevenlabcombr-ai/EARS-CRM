@@ -27,9 +27,10 @@ interface AthleteAgendaListProps {
   athleteId: string;
   lang: "pt" | "en";
   onEventChanged?: () => void;
+  isBlocked?: boolean;
 }
 
-export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAgendaListProps) {
+export function AthleteAgendaList({ athleteId, lang, onEventChanged, isBlocked = false }: AthleteAgendaListProps) {
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -97,10 +98,16 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged }: AthleteAg
           <h3 className="text-sm font-black text-white uppercase tracking-widest">
             {lang === 'pt' ? 'Próximos Eventos' : 'Upcoming Events'}
           </h3>
+          {isBlocked && (
+             <p className="text-[10px] text-rose-500 font-bold uppercase tracking-widest mt-1">
+                Bloqueado (Inadimplência)
+             </p>
+          )}
         </div>
         <Button 
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black uppercase tracking-widest border-none px-4 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+          disabled={isBlocked}
+          className={`font-black uppercase tracking-widest border-none px-4 rounded-xl ${isBlocked ? 'bg-slate-800 text-slate-500' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)]'}`}
         >
           <Plus className="w-4 h-4 mr-2" />
           {lang === 'pt' ? 'Novo Evento' : 'New Event'}

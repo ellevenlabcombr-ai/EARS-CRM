@@ -290,24 +290,32 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [financialProducts, setFinancialProducts] = useState<any[]>([]);
   const [athleteSubscription, setAthleteSubscription] = useState<any>(null);
   const [athleteTransactions, setAthleteTransactions] = useState<any[]>([]);
-  const [showLinkPlanModal, setShowLinkPlanModal] = useState(false);
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [transAmount, setTransAmount] = useState('');
+  const [transDesc, setTransDesc] = useState('');
+  const [transType, setTransType] = useState('income');
+  const [transAccount, setTransAccount] = useState('PIX');
+  const [isAddingTrans, setIsAddingTrans] = useState(false);
+  const [isEditingPlan, setIsEditingPlan] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [planBillingCycle, setPlanBillingCycle] = useState('monthly');
   const [planGenerateAsaas, setPlanGenerateAsaas] = useState(false);
   const [planAsaasCpf, setPlanAsaasCpf] = useState('');
+  const [planDiscount, setPlanDiscount] = useState('');
 
-  // Auto-select first financial product if none is selected when modal opens
+  // Auto-select first financial product if none is selected when editing opens
   useEffect(() => {
-    if (showLinkPlanModal && financialProducts.length > 0 && !selectedProductId) {
+    if (isEditingPlan && financialProducts.length > 0 && !selectedProductId) {
       setSelectedProductId(financialProducts[0].id);
     }
-    if (!showLinkPlanModal) {
+    if (!isEditingPlan) {
       setSelectedProductId('');
       setPlanGenerateAsaas(false);
       setPlanAsaasCpf('');
       setPlanBillingCycle('monthly');
+      setPlanDiscount('');
     }
-  }, [showLinkPlanModal, financialProducts, selectedProductId]);
+  }, [isEditingPlan, financialProducts, selectedProductId]);
   const [isLinkingPlan, setIsLinkingPlan] = useState(false);
 
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
@@ -2239,12 +2247,29 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       const selectedPlan = financialProducts.find(p => p.id === selectedProductId);
       if (!selectedPlan) throw new Error("Plano não encontrado.");
 
+      let finalAmount = selectedPlan.default_price || 0;
+      if (planDiscount) {
+         const d = planDiscount.replace(',', '.');
+         if (d.includes('%')) {
+            const pct = parseFloat(d.replace('%', ''));
+            if (!isNaN(pct)) {
+               finalAmount = finalAmount - (finalAmount * (pct / 100));
+            }
+         } else {
+            const val = parseFloat(d);
+            if (!isNaN(val)) {
+               finalAmount = finalAmount - val;
+            }
+         }
+      }
+      if (finalAmount < 0) finalAmount = 0;
+
       const subPayload: any = {
         athlete_id: athlete.id,
         product_id: selectedProductId,
         status: 'active',
         billing_cycle: planBillingCycle,
-        amount: selectedPlan.default_price || 0,
+        amount: finalAmount,
         start_date: getLocalDateString()
       };
 
@@ -2281,6 +2306,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
             let cycleMap: Record<string, string> = {
                 monthly: 'MONTHLY',
+                bimonthly: 'BIMONTHLY',
                 quarterly: 'QUARTERLY',
                 semiannual: 'SEMIANNUAL',
                 annual: 'YEARLY'
@@ -2289,9 +2315,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             const subRes = await createAsaasSubscription({
               customer: customerId,
               billingType: 'PIX', // default, user can change later or they pay via generated link
-              value: selectedPlan.default_price || 0,
+              value: finalAmount,
               nextDueDate: dueDateStr,
-              cycle: cycleMap[planBillingCycle] || 'MONTHLY',
+              cycle: (cycleMap[planBillingCycle] || 'MONTHLY') as any,
               description: selectedPlan.name || 'Assinatura',
               externalReference: insertedId
             });
@@ -2360,6 +2386,55 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     } catch(err: any) {
        console.error(err);
        setNotification({ message: 'Erro ao desvincular plano: ' + err.message, type: 'error' });
+    }
+  };
+
+  const handleSendWhatsapp = (phone: string, text: string) => {
+    const cleaned = phone.replace(/\D/g, '');
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/55${cleaned}?text=${encoded}`, '_blank');
+  };
+
+  const handleGenerateAgreement = () => {
+     setNotification({ message: 'Funcionalidade de Acordo via Asaas em desenvolvimento.', type: 'info' });
+  };
+
+  const handleCreateAvulso = (e: React.FormEvent) => {
+     handleGenerateAgreement();
+  };
+
+  const handleAddTransactionSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+    if (!transAmount || isNaN(parseFloat(transAmount.replace(',','.')))) {
+       setNotification({ message: 'Valor inválido', type: 'error' });
+       return;
+    }
+    
+    setIsAddingTrans(true);
+    try {
+       const payload = {
+          athlete_id: athlete.id,
+          amount: parseFloat(transAmount.replace(',','.')),
+          description: transDesc || 'Cobrança Avulsa',
+          type: transType,
+          account: transAccount,
+          status: 'pending',
+          date: getLocalDateString(),
+          category: 'Receitas/Mensalidades',
+          created_at: new Date().toISOString()
+       };
+       const { data, error } = await supabase.from('financial_transactions').insert(payload).select();
+       if (error) throw error;
+       
+       setAthleteTransactions([data[0], ...athleteTransactions]);
+       setShowAddTransaction(false);
+       setTransAmount('');
+       setTransDesc('');
+       setNotification({ message: 'Transação adicionada com sucesso.', type: 'success' });
+    } catch(err: any) {
+       setNotification({ message: 'Erro: ' + err.message, type: 'error' });
+    } finally {
+       setIsAddingTrans(false);
     }
   };
 
@@ -4731,6 +4806,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                 athleteId={athlete.id} 
                 lang={language as "pt" | "en"} 
                 onEventChanged={() => setRefreshCounter(c => c + 1)} 
+                isBlocked={athleteTransactions.some(t => t.status === 'overdue')}
               />
             </div>
           </div>
@@ -4909,37 +4985,152 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                       <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
                          <CreditCard size={20} />
                       </div>
-                      <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Plano Ativo" : "Active Plan"}</h3>
+                      <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Gestão do Plano" : "Plan Management"}</h3>
                    </div>
-                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Gerencie a assinatura, plano ou cobrança recorrente vinculada a este atleta." : "Manage the subscription, plan, or recurring payment linked to this athlete."}</p>
+                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">
+                     {language === "pt" ? "Assinaturas, renovação automática e descontos." : "Subscriptions, auto-renew and discounts."}
+                   </p>
                    
-                   <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center relative z-10">
-                      {athleteSubscription ? (
-                        <>
+                   <div className="relative z-10 flex-1">
+                      {isEditingPlan || (!athleteSubscription && !isEditingPlan) ? (
+                        <div className="bg-[#050B14] p-5 rounded-2xl border border-slate-800 flex flex-col gap-5">
+                            {financialProducts.length === 0 ? (
+                              <p className="text-sm text-slate-500 text-center font-bold">Nenhum plano cadastrado. Configure os produtos primeiro.</p>
+                            ) : (
+                              <>
+                                <div className="space-y-2">
+                                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
+                                  <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                    <option value="">Selecione...</option>
+                                    {financialProducts.map(p => (
+                                      <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
+                                  <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                    <option value="monthly">Mensal</option>
+                                    <option value="bimonthly">Bimestral</option>
+                                    <option value="quarterly">Trimestral</option>
+                                    <option value="semiannual">Semestral</option>
+                                    <option value="annual">Anual</option>
+                                  </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
+                                  <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors" />
+                                </div>
+
+                                <div className="space-y-3 pt-2">
+                                  <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                                    <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
+                                      {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
+                                    </div>
+                                    <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
+                                    <div>
+                                      <p className="text-sm font-bold text-cyan-400">Renovação Autom. (Asaas)</p>
+                                      <p className="text-xs text-slate-500">Gera cobranças via PIX todo ciclo.</p>
+                                    </div>
+                                  </label>
+
+                                  {planGenerateAsaas && (
+                                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
+                                      <div className="pt-2">
+                                        <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
+                                        <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none text-sm" placeholder="Obrigatório" />
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </div>
+
+                                <div className="flex gap-2 pt-4">
+                                  {athleteSubscription && (
+                                    <Button variant="outline" onClick={() => setIsEditingPlan(false)} className="flex-1 bg-transparent border-slate-800 text-slate-400 hover:text-white uppercase tracking-widest text-xxs font-black rounded-xl">Cancelar</Button>
+                                  )}
+                                  <Button onClick={handleLinkPlan} disabled={isLinkingPlan} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xxs font-black rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                                    {isLinkingPlan ? 'Salvando...' : 'Salvar Plano'}
+                                  </Button>
+                                </div>
+                              </>
+                            )}
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center text-slate-400 font-bold bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col items-center">
                           <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
                             <CheckCircle size={24} />
                           </div>
+                          
+                          <div className="mb-2">
+                             {(() => {
+                               const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
+                               if (athleteSubscription?.status !== 'active') {
+                                 return (
+                                   <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                     🔴 Cancelado
+                                   </span>
+                                 );
+                               }
+                               if (hasOverdue) {
+                                  return (
+                                     <span className="bg-rose-500/10 text-rose-500 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                       🔴 Inadimplente
+                                     </span>
+                                  );
+                               }
+                               return (
+                                 <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                   🟢 Ativo
+                                 </span>
+                               );
+                             })()}
+                          </div>
+
                           <p className="text-lg text-white font-black">{athleteSubscription.product?.name || 'Plano Customizado'}</p>
-                          <p className="text-sm font-bold text-cyan-400 mt-1">R$ {athleteSubscription.amount} <span className="text-[10px] text-slate-500 uppercase">/ {athleteSubscription.billing_cycle === 'monthly' ? 'mês' : athleteSubscription.billing_cycle}</span></p>
-                          <div className="mt-4 flex gap-2 w-full justify-center">
-                             <button onClick={() => setShowLinkPlanModal(true)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all flex items-center gap-2">
-                                <MoreVertical size={14} /> Trocar/Editar
+                          <p className="text-sm font-bold text-cyan-400 mt-1">R$ {athleteSubscription.amount} <span className="text-[10px] text-slate-500 uppercase">/ {
+                            athleteSubscription.billing_cycle === 'monthly' ? (language === 'pt' ? 'mês' : 'month') :
+                            athleteSubscription.billing_cycle === 'bimonthly' ? (language === 'pt' ? 'bimestre' : 'bimonthly') :
+                            athleteSubscription.billing_cycle === 'quarterly' ? (language === 'pt' ? 'trimestre' : 'quarter') :
+                            athleteSubscription.billing_cycle === 'semiannual' ? (language === 'pt' ? 'semestre' : 'half-year') :
+                            athleteSubscription.billing_cycle === 'annual' ? (language === 'pt' ? 'ano' : 'year') : 
+                            athleteSubscription.billing_cycle
+                          }</span></p>
+
+                          <div className="w-full pt-4 mt-6 border-t border-slate-800 space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-500 font-medium">Asaas Integrado</span>
+                              <span className="text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? 'Sim' : 'Não'}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-slate-500 font-medium">Data Início</span>
+                              <span className="text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</span>
+                            </div>
+                            {athleteSubscription.asaas_subscription_id && (
+                              <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800/50">
+                                <span className="text-slate-500 font-medium">Cartão de Crédito</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-rose-400 font-bold">Sem Token</span>
+                                  <button onClick={() => {
+                                      if (athlete.phone) {
+                                         handleSendWhatsapp(athlete.phone, `Olá! Para evitar interrupções no seu plano, por favor atualize os dados do seu cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
+                                      }
+                                  }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="mt-6 flex gap-2 w-full justify-center flex-wrap">
+                             <button onClick={() => setIsEditingPlan(true)} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all flex items-center gap-2">
+                                <PenTool size={14} /> Editar Contrato
                              </button>
                              <button onClick={handleUnlinkPlan} className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs uppercase tracking-widest font-black transition-all rounded-lg flex items-center gap-2">
-                                <Trash2 size={14} />
+                                <Trash2 size={14} /> Cancelar Plano
                              </button>
                           </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
-                            <Plus size={24} />
-                          </div>
-                          <p className="text-sm text-slate-300">{language === "pt" ? "Nenhum plano vinculado." : "No active plan."}</p>
-                          <button onClick={() => setShowLinkPlanModal(true)} className="mt-4 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg text-xs uppercase tracking-widest font-black transition-all">
-                             {language === "pt" ? "Vincular Plano" : "Link Plan"}
-                          </button>
-                        </>
+                        </div>
                       )}
                    </div>
                </div>
@@ -4948,47 +5139,86 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity">
                       <Clock size={80} className="text-slate-500" />
                    </div>
-                   <div className="flex items-center gap-3 mb-2 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center">
-                         <History size={20} />
+                   <div className="flex items-center justify-between mb-2 relative z-10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center">
+                           <History size={20} />
+                        </div>
+                        <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Extrato e Timeline" : "Transactions"}</h3>
                       </div>
-                      <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Transações" : "Transactions"}</h3>
+                      <button onClick={() => setShowAddTransaction(true)} className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors">
+                        <Plus size={16} />
+                      </button>
                    </div>
-                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Histórico de pagamentos, conciliação e inadimplência." : "Payment history, reconciliation, and defaults."}</p>
+                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Histórico de recebimentos e ações rápidas." : "Receipts history and quick actions."}</p>
                    
-                   <div className="bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col relative z-10 max-h-64 overflow-y-auto">
+                   {/* Destaque Inadimplência */}
+                   {athleteTransactions.some(t => t.status === 'overdue') && (
+                     <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 mb-4 relative z-10 flex flex-col gap-3">
+                        <div className="flex items-center gap-2 text-rose-400">
+                          <AlertTriangle size={16} />
+                          <span className="text-sm font-black uppercase tracking-widest">Atraso Detectado</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={handleGenerateAgreement} className="flex-1 bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-widest py-2 rounded-lg transition-colors">
+                            Gerar Acordo
+                          </button>
+                          <button 
+                             onClick={() => {
+                               const firstOverdue = athleteTransactions.find(t => t.status === 'overdue');
+                               if (firstOverdue && athlete.phone) {
+                                  const text = `Olá, notamos uma fatura em aberto no valor de R$ ${firstOverdue.amount}. Segue o link para pagamento: ${firstOverdue.asaas_invoice_url || 'Link não disponível'}`;
+                                  handleSendWhatsapp(athlete.phone, text);
+                               } else {
+                                  setNotification({ message: 'Telefone não cadastrado', type: 'error' });
+                               }
+                             }}
+                             className="flex-1 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-widest py-2 rounded-lg transition-colors overflow-hidden whitespace-nowrap text-ellipsis">
+                            2ª Via Whats
+                          </button>
+                        </div>
+                     </div>
+                   )}
+
+                   <div className="bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col relative z-10 max-h-64 overflow-y-auto flex-1">
                       {athleteTransactions.length === 0 ? (
                         <div className="p-8 text-center text-slate-400 font-bold flex flex-col items-center">
-                          <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação encontrada no período." : "No transactions found."}</p>
+                          <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação no histórico." : "No transactions found."}</p>
                         </div>
                       ) : (
                         <div className="flex flex-col w-full">
                           {athleteTransactions.map(t => (
-                            <div key={t.id} className="p-4 border-b border-slate-800 last:border-b-0 flex items-center justify-between hover:bg-slate-900/50 transition-colors">
-                              <div>
-                                <p className="text-sm font-bold text-white break-words">{t.description}</p>
-                                <p className="text-xs text-slate-500">{t.date} • {t.account}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                  {t.type === 'income' ? '+' : '-'} R$ {t.amount}
-                                </p>
-                                <div className="mt-1">
-                                  {t.status === 'paid' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Pago</span>}
-                                  {t.status === 'pending' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">Pendente</span>}
-                                  {t.status === 'cancelled' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">Cancelada</span>}
-                                  {t.status === 'overdue' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/30">Vencida</span>}
+                            <div key={t.id} className="p-4 border-b border-slate-800 last:border-b-0 flex flex-col gap-2 hover:bg-slate-900/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-bold text-white break-words">{t.description}</p>
+                                  <p className="text-xs text-slate-500">{t.date} • {t.account}</p>
                                 </div>
+                                <div className="text-right">
+                                  <p className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                    {t.type === 'income' ? '+' : '-'} R$ {t.amount}
+                                  </p>
+                                  <div className="mt-1">
+                                    {t.status === 'paid' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Pago</span>}
+                                    {t.status === 'pending' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">Pendente</span>}
+                                    {t.status === 'cancelled' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">Cancelada</span>}
+                                    {t.status === 'overdue' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/30">Vencida</span>}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-end gap-2 mt-1">
+                                {t.status === 'paid' && (
+                                  <button className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Recibo</button>
+                                )}
+                                {t.status === 'pending' && t.asaas_invoice_url && (
+                                  <button onClick={() => window.open(t.asaas_invoice_url, '_blank')} className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Pagar (Asaas)</button>
+                                )}
                               </div>
                             </div>
                           ))}
                         </div>
                       )}
-                      
                    </div>
-                   <button className="mt-4 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs uppercase tracking-widest font-black transition-all text-center w-full relative z-10 hidden">
-                      {language === "pt" ? "Nova Transação" : "New Transaction"}
-                   </button>
                </div>
             </div>
           </div>
@@ -5981,118 +6211,57 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         )}
       </AnimatePresence>
 
-      {/* Link Plan Modal */}
+      {/* Link Plan Modal Removed */}
+
       <AnimatePresence>
-        {showLinkPlanModal && (
+        {showAddTransaction && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0A1120] border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+              className="bg-[#0A1120] border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
             >
               <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-cyan-500/10 rounded-xl">
-                    <CreditCard className="w-5 h-5 text-cyan-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Vincular Plano</h3>
-                    <p className="text-xxs font-bold text-slate-500 uppercase tracking-widest">Assinatura de recorrencia</p>
-                  </div>
-                </div>
-                <button onClick={() => setShowLinkPlanModal(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors">
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">Nova Transação</h3>
+                <button onClick={() => setShowAddTransaction(false)} className="p-2 text-slate-400 hover:text-white transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
-                <div className="space-y-4">
-                  {financialProducts.length === 0 ? (
-                    <div className="text-sm font-bold text-slate-500 bg-slate-900 border border-slate-800 p-4 rounded-xl text-center">
-                      Nenhum plano cadastrado no sistema. Vá em Configurações &gt; Financeiro para criar um.
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-2">
-                        <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Selecione o Plano Base</label>
-                        <select 
-                          value={selectedProductId}
-                          onChange={(e) => setSelectedProductId(e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
-                        >
-                          <option value="">Selecione...</option>
-                          {financialProducts.map(p => (
-                            <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tempo de Vigência / Recorrência</label>
-                        <select 
-                          value={planBillingCycle}
-                          onChange={(e) => setPlanBillingCycle(e.target.value as any)}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors"
-                        >
-                          <option value="monthly">Mensal</option>
-                          <option value="quarterly">Trimestral</option>
-                          <option value="semiannual">Semestral</option>
-                          <option value="annual">Anual</option>
-                        </select>
-                      </div>
-
-                      <div className="bg-[#050B14] border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
-                            {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
-                          </div>
-                          <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
-                          <div>
-                            <p className="text-sm font-bold text-cyan-400">Gerar assinatura no Asaas</p>
-                            <p className="text-xs text-slate-500">Cria a cobrança recorrente e integra automaticamente</p>
-                          </div>
-                        </label>
-
-                        {planGenerateAsaas && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden space-y-4 pt-2 border-t border-slate-800 mt-2">
-                            <div>
-                              <label className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Pagador (Obrigatório)</label>
-                              <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none" placeholder="000.000.000-00" />
-                            </div>
-                            <p className="text-xs text-yellow-500 mb-2 font-medium">As cobranças serão disparadas automaticamente pelo Asaas a partir de amanhã.</p>
-                          </motion.div>
-                        )}
-                      </div>
-                    </>
-                  )}
+              <form onSubmit={handleAddTransactionSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor</label>
+                  <input required type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="0.00" />
+                </div>
+                <div>
+                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Descrição</label>
+                  <input required type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="Mensalidade, Avaliação..." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tipo</label>
+                    <select value={transType} onChange={e => setTransType(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
+                      <option value="income">Receita</option>
+                      <option value="expense">Despesa</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Conta</label>
+                    <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
+                      <option value="PIX">PIX</option>
+                      <option value="Dinheiro">Dinheiro</option>
+                      <option value="Boleto">Boleto</option>
+                      <option value="Crédito">Crédito</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-800 flex gap-3">
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowLinkPlanModal(false)}
-                    className="flex-1 border-slate-800 text-slate-400 font-black uppercase tracking-widest text-xxs h-12 rounded-xl"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="button"
-                    onClick={() => {
-                        if (!selectedProductId) {
-                            setNotification({ message: 'Por favor, selecione um plano.', type: 'error' });
-                            return;
-                        }
-                        handleLinkPlan();
-                    }}
-                    disabled={isLinkingPlan || financialProducts.length === 0}
-                    className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest text-xxs h-12 rounded-xl shadow-lg shadow-cyan-500/20"
-                  >
-                    {isLinkingPlan ? 'Vinculando...' : 'Confirmar Vínculo'}
-                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setShowAddTransaction(false)} className="flex-1 border-slate-800 text-slate-400 font-black uppercase tracking-widest text-xxs h-12 rounded-xl">Cancelar</Button>
+                  <Button type="submit" disabled={isAddingTrans} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest text-xxs h-12 rounded-xl">Salvar</Button>
                 </div>
-              </div>
+              </form>
             </motion.div>
           </div>
         )}
