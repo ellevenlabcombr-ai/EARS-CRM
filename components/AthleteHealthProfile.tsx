@@ -297,6 +297,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [transAccount, setTransAccount] = useState('PIX');
   const [isAddingTrans, setIsAddingTrans] = useState(false);
   
+  const [isEditingPlan, setIsEditingPlan] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [planBillingCycle, setPlanBillingCycle] = useState('monthly');
   const [planGenerateAsaas, setPlanGenerateAsaas] = useState(false);
@@ -313,10 +314,15 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
   // Auto-select first financial product if none is selected
   useEffect(() => {
-    if (financialProducts.length > 0 && !selectedProductId && !athleteSubscription) {
+    if ((isEditingPlan || !athleteSubscription) && financialProducts.length > 0 && !selectedProductId) {
       setSelectedProductId(financialProducts[0].id);
     }
-  }, [financialProducts, selectedProductId, athleteSubscription]);
+    if (!isEditingPlan && athleteSubscription) {
+      setSelectedProductId(athleteSubscription.product_id || '');
+      setPlanBillingCycle(athleteSubscription.billing_cycle || 'monthly');
+      setPlanGenerateAsaas(!!athleteSubscription.asaas_subscription_id);
+    }
+  }, [financialProducts, selectedProductId, athleteSubscription, isEditingPlan]);
   const [isLinkingPlan, setIsLinkingPlan] = useState(false);
 
   const [clinicalTags, setClinicalTags] = useState<ClinicalTag[]>([
@@ -2368,6 +2374,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       
       const subRes = await supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).order('created_at', { ascending: false }).limit(1);
       setAthleteSubscription(subRes.data?.[0] || null);
+      setIsEditingPlan(false);
     } catch (err: any) {
       console.error("Erro no Link Plan:", err);
       setNotification({ message: 'Erro ao vincular plano: ' + (err.message || 'Desconhecido'), type: 'error' });
@@ -2384,6 +2391,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       if(error) throw error;
       setNotification({ message: 'Plano desvinculado com sucesso.', type: 'success' });
       setAthleteSubscription(null);
+      setIsEditingPlan(false);
     } catch(err: any) {
        console.error(err);
        setNotification({ message: 'Erro ao desvincular plano: ' + err.message, type: 'error' });
@@ -4994,126 +5002,152 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    
                    <div className="relative z-10 flex-1">
                       <div className="bg-[#050B14] p-5 rounded-2xl border border-slate-800 flex flex-col gap-5">
-                          {/* Active Plan Status Badges (if exists) */}
-                          {athleteSubscription && (
-                            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800/50">
-                              <div className="flex items-center gap-2">
-                                {(() => {
-                                  const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
-                                  if (athleteSubscription?.status !== 'active') {
-                                    return (
-                                      <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                        🔴 Cancelado
-                                      </span>
-                                    );
-                                  }
-                                  if (hasOverdue) {
-                                      return (
-                                        <span className="bg-rose-500/10 text-rose-500 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                          🔴 Inadimplente
-                                        </span>
-                                      );
-                                  }
-                                  return (
-                                    <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                      🟢 Ativo
-                                    </span>
-                                  );
-                                })()}
-                              </div>
-                              <div className="text-right">
-                                <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor Vigente</p>
-                                <p className="text-sm font-bold text-cyan-400">R$ {athleteSubscription.amount}</p>
-                              </div>
-                            </div>
-                          )}
+                          {(!athleteSubscription || isEditingPlan) ? (
+                            <>
+                              {financialProducts.length === 0 ? (
+                                <p className="text-sm text-slate-500 text-center font-bold">Nenhum plano cadastrado. Configure os produtos primeiro.</p>
+                              ) : (
+                                <>
+                                  <div className="space-y-2">
+                                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
+                                    <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                      <option value="">Selecione...</option>
+                                      {financialProducts.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
+                                      ))}
+                                    </select>
+                                  </div>
 
-                          {financialProducts.length === 0 ? (
-                            <p className="text-sm text-slate-500 text-center font-bold">Nenhum plano cadastrado. Configure os produtos primeiro.</p>
+                                  <div className="space-y-2">
+                                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
+                                    <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                      <option value="monthly">Mensal</option>
+                                      <option value="bimonthly">Bimestral</option>
+                                      <option value="quarterly">Trimestral</option>
+                                      <option value="semiannual">Semestral</option>
+                                      <option value="annual">Anual</option>
+                                    </select>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
+                                    <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors" />
+                                  </div>
+
+                                  <div className="space-y-3 pt-2">
+                                    <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                                      <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
+                                        {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
+                                      </div>
+                                      <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
+                                      <div>
+                                        <p className="text-sm font-bold text-cyan-400">Renovação Autom. (Asaas)</p>
+                                        <p className="text-xs text-slate-500">Gera cobranças via PIX todo ciclo.</p>
+                                      </div>
+                                    </label>
+
+                                    {planGenerateAsaas && (
+                                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
+                                        <div className="pt-2">
+                                          <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
+                                          <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none text-sm" placeholder="Obrigatório" />
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </div>
+
+                                  <div className="flex gap-2 pt-4">
+                                    {athleteSubscription && (
+                                      <Button variant="outline" onClick={() => setIsEditingPlan(false)} className="flex-1 bg-transparent border-slate-800 text-slate-400 hover:text-white uppercase tracking-widest text-xxs font-black rounded-xl">Cancelar</Button>
+                                    )}
+                                    <Button onClick={handleLinkPlan} disabled={isLinkingPlan} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xxs font-black rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                                      {isLinkingPlan ? 'Salvando...' : 'Salvar Plano'}
+                                    </Button>
+                                  </div>
+                                </>
+                              )}
+                            </>
                           ) : (
                             <>
-                              <div className="space-y-2">
-                                <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
-                                <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
-                                  <option value="">Selecione...</option>
-                                  {financialProducts.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
-                                  ))}
-                                </select>
+                              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800/50">
+                                <div className="flex items-center gap-2">
+                                  {(() => {
+                                    const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
+                                    if (athleteSubscription?.status !== 'active') {
+                                      return (
+                                        <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                          🔴 Cancelado
+                                        </span>
+                                      );
+                                    }
+                                    if (hasOverdue) {
+                                        return (
+                                          <span className="bg-rose-500/10 text-rose-500 border border-rose-500/30 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                            🔴 Inadimplente
+                                          </span>
+                                        );
+                                    }
+                                    return (
+                                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                        🟢 Ativo
+                                      </span>
+                                    );
+                                  })()}
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor Vigente</p>
+                                  <p className="text-sm font-bold text-cyan-400">R$ {athleteSubscription.amount}</p>
+                                </div>
                               </div>
 
-                              <div className="space-y-2">
-                                <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
-                                <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
-                                  <option value="monthly">Mensal</option>
-                                  <option value="bimonthly">Bimestral</option>
-                                  <option value="quarterly">Trimestral</option>
-                                  <option value="semiannual">Semestral</option>
-                                  <option value="annual">Anual</option>
-                                </select>
+                              <div className="my-2 text-center text-slate-400 font-bold flex flex-col items-center">
+                                <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
+                                  <CheckCircle size={24} />
+                                </div>
+                                <p className="text-lg text-white font-black">{athleteSubscription.product?.name || 'Plano Customizado'}</p>
+                                <p className="text-sm font-bold text-cyan-400 mt-1">
+                                  Ciclo: <span className="text-xs text-slate-500 uppercase">
+                                  {athleteSubscription.billing_cycle === 'monthly' ? (language === 'pt' ? 'Mensal' : 'Monthly') :
+                                   athleteSubscription.billing_cycle === 'bimonthly' ? (language === 'pt' ? 'Bimestral' : 'Bimonthly') :
+                                   athleteSubscription.billing_cycle === 'quarterly' ? (language === 'pt' ? 'Trimestral' : 'Quarterly') :
+                                   athleteSubscription.billing_cycle === 'semiannual' ? (language === 'pt' ? 'Semestral' : 'Semiannual') :
+                                   athleteSubscription.billing_cycle === 'annual' ? (language === 'pt' ? 'Anual' : 'Annual') : 
+                                   athleteSubscription.billing_cycle}
+                                  </span>
+                                </p>
                               </div>
 
-                              <div className="space-y-2">
-                                <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
-                                <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors" />
-                              </div>
-
-                              <div className="space-y-3 pt-2">
-                                <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-900/50 rounded-xl border border-slate-800">
-                                  <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
-                                    {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
-                                  </div>
-                                  <input type="checkbox" checked={planGenerateAsaas} onChange={e => setPlanGenerateAsaas(e.target.checked)} className="hidden" />
-                                  <div>
-                                    <p className="text-sm font-bold text-cyan-400">Renovação Autom. (Asaas)</p>
-                                    <p className="text-xs text-slate-500">Gera cobranças via PIX todo ciclo.</p>
-                                  </div>
-                                </label>
-
-                                {planGenerateAsaas && (
-                                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
-                                    <div className="pt-2">
-                                      <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
-                                      <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none text-sm" placeholder="Obrigatório" />
+                              <div className="w-full pt-4 mt-2 border-t border-slate-800 space-y-2">
+                                <div className="flex justify-between items-center text-xs">
+                                  <span className="text-slate-500 font-medium">Asaas Integrado</span>
+                                  <span className="text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? 'Sim' : 'Não'}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                  <span className="text-slate-500 font-medium">Data Início</span>
+                                  <span className="text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</span>
+                                </div>
+                                {athleteSubscription.asaas_subscription_id && (
+                                  <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800/50">
+                                    <span className="text-slate-500 font-medium">Cartão de Crédito</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-rose-400 font-bold">Sem Token</span>
+                                      <button onClick={() => {
+                                          if (athlete.phone) {
+                                             handleSendWhatsapp(athlete.phone, `Olá! Para evitar interrupções no seu plano, por favor atualize os dados do seu cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
+                                          }
+                                      }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
                                     </div>
-                                  </motion.div>
+                                  </div>
                                 )}
                               </div>
-
-                              {/* Info Extra: Integração e Data */}
-                              {athleteSubscription && (
-                                <div className="w-full pt-4 mt-2 border-t border-slate-800 space-y-2">
-                                  <div className="flex justify-between items-center text-xs">
-                                    <span className="text-slate-500 font-medium">Asaas Integrado</span>
-                                    <span className="text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? 'Sim' : 'Não'}</span>
-                                  </div>
-                                  <div className="flex justify-between items-center text-xs">
-                                    <span className="text-slate-500 font-medium">Data Início</span>
-                                    <span className="text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</span>
-                                  </div>
-                                  {athleteSubscription.asaas_subscription_id && (
-                                    <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800/50">
-                                      <span className="text-slate-500 font-medium">Cartão de Crédito</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-rose-400 font-bold">Sem Token</span>
-                                        <button onClick={() => {
-                                            if (athlete.phone) {
-                                               handleSendWhatsapp(athlete.phone, `Olá! Para evitar interrupções no seu plano, por favor atualize os dados do seu cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
-                                            }
-                                        }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
 
                               <div className="flex gap-2 pt-4">
-                                {athleteSubscription && (
-                                  <Button variant="outline" onClick={handleUnlinkPlan} className="flex-1 bg-transparent border-rose-500/30 text-rose-400 hover:bg-rose-500/10 uppercase tracking-widest text-xxs font-black rounded-xl">Cancelar Plano</Button>
-                                )}
-                                <Button onClick={handleLinkPlan} disabled={isLinkingPlan} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xxs font-black rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                                  {isLinkingPlan ? 'Salvando...' : (athleteSubscription ? 'Atualizar Plano' : 'Salvar Plano')}
-                                </Button>
+                                <button onClick={() => setIsEditingPlan(true)} className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs uppercase tracking-widest font-black transition-all flex items-center justify-center gap-2">
+                                  <PenTool size={14} /> Editar Contrato
+                                </button>
+                                <button onClick={handleUnlinkPlan} className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs uppercase tracking-widest font-black transition-all rounded-lg flex items-center justify-center gap-2">
+                                  <Trash2 size={14} />
+                                </button>
                               </div>
                             </>
                           )}
@@ -5205,6 +5239,57 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         </div>
                       )}
                    </div>
+
+                   {/* Add Transaction Inline Form */}
+                   {showAddTransaction && (
+                     <div className="mt-4 p-5 bg-slate-900 border border-slate-800 rounded-2xl relative z-10 w-full animate-in fade-in slide-in-from-top-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-black text-white uppercase tracking-widest">Nova Transação / Cobrança</h4>
+                          <button onClick={() => setShowAddTransaction(false)} className="text-slate-500 hover:text-white transition-colors">
+                            <X size={16} />
+                          </button>
+                        </div>
+                        <form onSubmit={(e) => {
+                           e.preventDefault();
+                           handleAddTransactionSubmit(e);
+                           setShowAddTransaction(false);
+                        }} className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor (R$)</label>
+                              <input required type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="0.00" />
+                            </div>
+                            <div>
+                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Descrição</label>
+                              <input required type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="Mensalidade, Avaliação..." />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tipo</label>
+                              <select value={transType} onChange={e => setTransType(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Método</label>
+                              <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
+                                <option value="PIX">PIX</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Boleto">Boleto</option>
+                                <option value="Crédito">Crédito</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="pt-2">
+                             <Button type="submit" disabled={isAddingTrans} className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xs font-black rounded-xl">
+                               {isAddingTrans ? 'Adicionando...' : 'Confirmar Lançamento'}
+                             </Button>
+                          </div>
+                        </form>
+                     </div>
+                   )}
                </div>
             </div>
           </div>
@@ -6199,59 +6284,6 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
       {/* Link Plan Modal Removed */}
 
-      <AnimatePresence>
-        {showAddTransaction && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[#0A1120] border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
-            >
-              <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
-                <h3 className="text-lg font-black text-white uppercase tracking-tight">Nova Transação</h3>
-                <button onClick={() => setShowAddTransaction(false)} className="p-2 text-slate-400 hover:text-white transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleAddTransactionSubmit} className="p-6 space-y-4">
-                <div>
-                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor</label>
-                  <input required type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="0.00" />
-                </div>
-                <div>
-                  <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Descrição</label>
-                  <input required type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="Mensalidade, Avaliação..." />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tipo</label>
-                    <select value={transType} onChange={e => setTransType(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
-                      <option value="income">Receita</option>
-                      <option value="expense">Despesa</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Conta</label>
-                    <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
-                      <option value="PIX">PIX</option>
-                      <option value="Dinheiro">Dinheiro</option>
-                      <option value="Boleto">Boleto</option>
-                      <option value="Crédito">Crédito</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-800 flex gap-3">
-                  <Button type="button" variant="outline" onClick={() => setShowAddTransaction(false)} className="flex-1 border-slate-800 text-slate-400 font-black uppercase tracking-widest text-xxs h-12 rounded-xl">Cancelar</Button>
-                  <Button type="submit" disabled={isAddingTrans} className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-[#050B14] font-black uppercase tracking-widest text-xxs h-12 rounded-xl">Salvar</Button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
