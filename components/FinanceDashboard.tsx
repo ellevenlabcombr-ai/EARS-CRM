@@ -237,7 +237,7 @@ export function FinanceDashboard() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#050B14] relative">
-      <header className="px-6 h-20 border-b border-slate-800/50 flex items-center justify-between shrink-0 bg-[#0A1120] z-10">
+      <header className="px-4 md:px-6 py-4 md:h-20 border-b border-slate-800/50 flex flex-col md:flex-row items-start md:items-center justify-between shrink-0 bg-[#0A1120] z-10 gap-4 md:gap-0">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-500">
             <DollarSign size={20} />
@@ -248,27 +248,29 @@ export function FinanceDashboard() {
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="flex bg-slate-800 p-1 rounded-xl mr-4 overflow-x-auto custom-scrollbar shrink-0 max-w-[500px]">
-            <button onClick={() => setActiveTab('geral')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'geral' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Visão Geral</button>
-            <button onClick={() => setActiveTab('metas')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'metas' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Caixinhas</button>
-            <button onClick={() => setActiveTab('inadimplencia')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'inadimplencia' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Inadimplência</button>
-            <button onClick={() => setActiveTab('assinaturas')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'assinaturas' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Assinaturas</button>
-            <button onClick={() => setActiveTab('dre')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'dre' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>DRE & Info</button>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+          <div className="flex bg-slate-800 p-1 rounded-xl md:mr-4 overflow-x-auto custom-scrollbar shrink-0 w-full md:max-w-[500px]">
+            <button onClick={() => setActiveTab('geral')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'geral' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Visão Geral</button>
+            <button onClick={() => setActiveTab('metas')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'metas' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Caixinhas</button>
+            <button onClick={() => setActiveTab('inadimplencia')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'inadimplencia' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Inadimplência</button>
+            <button onClick={() => setActiveTab('assinaturas')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'assinaturas' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>Assinaturas</button>
+            <button onClick={() => setActiveTab('dre')} className={`flex-1 md:flex-none px-4 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'dre' ? 'bg-[#050B14] text-white' : 'text-slate-400 hover:text-slate-300'}`}>DRE & Info</button>
           </div>
 
-          <button 
-            onClick={exportCSV}
-            className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2"
-          >
-            <Download size={16} /> Exportar
-          </button>
-          <button 
-            onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
-            className="h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center gap-2"
-          >
-            <Plus size={16} /> Nova Transação
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={exportCSV}
+              className="flex-1 md:flex-none h-10 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <Download size={16} /> Exportar
+            </button>
+            <button 
+              onClick={() => { setTransactionToEdit(null); setIsAddingMode(true); }}
+              className="flex-1 md:flex-none h-10 px-4 bg-emerald-500 hover:bg-emerald-600 text-[#050B14] rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <Plus size={16} /> Nova Transação
+            </button>
+          </div>
         </div>
       </header>
 
