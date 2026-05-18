@@ -8,6 +8,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Faltam parâmetros obrigatórios. Verifique URL, Instância e Action.' }, { status: 400 });
     }
 
+    const baseUrl = url.replace(/\/+$/, "");
     let endpoint = "";
     let options: any = {
       headers: {
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     };
 
     if (action === "create") {
-      endpoint = `${url}/instance/create`;
+      endpoint = `${baseUrl}/instance/create`;
       options.method = "POST";
       options.body = JSON.stringify({
         instanceName: instanceId,
@@ -25,16 +26,16 @@ export async function POST(req: Request) {
         integration: "WHATSAPP-BAILEYS"
       });
     } else if (action === "connect") {
-      endpoint = `${url}/instance/connect/${instanceId}`;
+      endpoint = `${baseUrl}/instance/connect/${instanceId}`;
       options.method = "GET"; // connect is usually GET in Evolution? wait, let's use the UI docs. evolution api connect is GET.
     } else if (action === "status") {
-      endpoint = `${url}/instance/connectionState/${instanceId}`;
+      endpoint = `${baseUrl}/instance/connectionState/${instanceId}`;
       options.method = "GET";
     } else if (action === "logout") {
-      endpoint = `${url}/instance/logout/${instanceId}`;
+      endpoint = `${baseUrl}/instance/logout/${instanceId}`;
       options.method = "DELETE";
     } else if (action === "delete") {
-      endpoint = `${url}/instance/delete/${instanceId}`;
+      endpoint = `${baseUrl}/instance/delete/${instanceId}`;
       options.method = "DELETE";
     }
 
