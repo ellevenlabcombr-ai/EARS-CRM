@@ -4986,22 +4986,25 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="bg-[#0A1120] border border-cyan-500/20 rounded-2xl flex flex-col p-6 shadow-xl relative overflow-hidden group">
-                   <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity">
+               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       <Zap size={80} className="text-cyan-500" />
                    </div>
-                   <div className="flex items-center gap-3 mb-2 relative z-10">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
-                         <CreditCard size={20} />
-                      </div>
-                      <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Gestão do Plano" : "Plan Management"}</h3>
-                   </div>
-                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">
-                     {language === "pt" ? "Assinaturas, renovação automática e descontos." : "Subscriptions, auto-renew and discounts."}
-                   </p>
                    
-                   <div className="relative z-10 flex-1">
-                      <div className="bg-[#050B14] p-5 rounded-2xl border border-slate-800 flex flex-col gap-5">
+                   <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4 relative z-10">
+                     <div className="w-10 h-10 md:w-12 md:h-12 bg-cyan-500/10 text-cyan-500 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+                       <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
+                     </div>
+                     <div>
+                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Gestão do Plano" : "Plan Management"}</h3>
+                       <p className="text-[10px] md:text-xs text-slate-500 font-medium">
+                         {language === "pt" ? "Assinaturas, renovação automática e descontos." : "Subscriptions, auto-renew and discounts."}
+                       </p>
+                     </div>
+                   </div>
+                   
+                   <div className="relative z-10 flex-1 flex flex-col">
+                      <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col gap-5 flex-1">
                           {(!athleteSubscription || isEditingPlan) ? (
                             <>
                               {financialProducts.length === 0 ? (
@@ -5010,7 +5013,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                 <>
                                   <div className="space-y-2">
                                     <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
-                                    <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                    <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors">
                                       <option value="">Selecione...</option>
                                       {financialProducts.map(p => (
                                         <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
@@ -5020,7 +5023,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
                                   <div className="space-y-2">
                                     <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
-                                    <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors">
+                                    <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors">
                                       <option value="monthly">Mensal</option>
                                       <option value="bimonthly">Bimestral</option>
                                       <option value="quarterly">Trimestral</option>
@@ -5031,11 +5034,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
                                   <div className="space-y-2">
                                     <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
-                                    <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none transition-colors" />
+                                    <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors" />
                                   </div>
 
                                   <div className="space-y-3 pt-2">
-                                    <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-900/50 rounded-xl border border-slate-800">
+                                    <label className="flex items-center gap-3 cursor-pointer group p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-slate-700 transition-colors mt-2">
                                       <div className={`w-6 h-6 rounded flex items-center justify-center border transition-colors ${planGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
                                         {planGenerateAsaas && <CheckCircle size={14} className="text-[#050B14]" />}
                                       </div>
@@ -5050,7 +5053,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
                                         <div className="pt-2">
                                           <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
-                                          <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-[#0A1120] border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none text-sm" placeholder="Obrigatório" />
+                                          <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors" placeholder="Obrigatório" />
                                         </div>
                                       </motion.div>
                                     )}
@@ -5153,24 +5156,27 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                           )}
                       </div>
                    </div>
-               </div>
+               </section>
 
-               <div className="bg-[#0A1120] border border-slate-800/50 rounded-2xl flex flex-col p-6 shadow-xl relative overflow-hidden group">
-                   <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity">
+               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       <Clock size={80} className="text-slate-500" />
                    </div>
-                   <div className="flex items-center justify-between mb-2 relative z-10">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center">
-                           <History size={20} />
-                        </div>
-                        <h3 className="text-lg font-black text-white uppercase tracking-tight">{language === "pt" ? "Extrato e Timeline" : "Transactions"}</h3>
-                      </div>
-                      <button onClick={() => setShowAddTransaction(true)} className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-colors">
-                        <Plus size={16} />
-                      </button>
+
+                   <div className="flex items-center gap-3 md:gap-4 mb-6 border-b border-slate-800/50 pb-4 relative z-10">
+                     <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 text-slate-400 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0">
+                       <History className="w-5 h-5 md:w-6 md:h-6" />
+                     </div>
+                     <div className="flex-1">
+                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Extrato e Timeline" : "Transactions"}</h3>
+                       <p className="text-[10px] md:text-xs text-slate-500 font-medium">
+                         {language === "pt" ? "Histórico de recebimentos e ações rápidas." : "Receipts history and quick actions."}
+                       </p>
+                     </div>
+                     <button onClick={() => setShowAddTransaction(true)} className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-xl md:rounded-2xl transition-colors flex items-center justify-center shrink-0">
+                       <Plus size={18} />
+                     </button>
                    </div>
-                   <p className="text-xs text-slate-500 mb-6 max-w-[80%] relative z-10">{language === "pt" ? "Histórico de recebimentos e ações rápidas." : "Receipts history and quick actions."}</p>
                    
                    {/* Destaque Inadimplência */}
                    {athleteTransactions.some(t => t.status === 'overdue') && (
@@ -5200,7 +5206,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                      </div>
                    )}
 
-                   <div className="bg-[#050B14] rounded-2xl border border-slate-800 flex flex-col relative z-10 max-h-64 overflow-y-auto flex-1">
+                   <div className="bg-slate-950 rounded-2xl border border-slate-800 flex flex-col relative z-10 max-h-64 overflow-y-auto custom-scrollbar flex-1">
                       {athleteTransactions.length === 0 ? (
                         <div className="p-8 text-center text-slate-400 font-bold flex flex-col items-center">
                           <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação no histórico." : "No transactions found."}</p>
@@ -5257,24 +5263,24 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor (R$)</label>
-                              <input required type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="0.00" />
+                              <input required type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none" placeholder="0.00" />
                             </div>
                             <div>
                               <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Descrição</label>
-                              <input required type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none" placeholder="Mensalidade, Avaliação..." />
+                              <input required type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none" placeholder="Mensalidade, Avaliação..." />
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tipo</label>
-                              <select value={transType} onChange={e => setTransType(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
+                              <select value={transType} onChange={e => setTransType(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none">
                                 <option value="income">Receita</option>
                                 <option value="expense">Despesa</option>
                               </select>
                             </div>
                             <div>
                               <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Método</label>
-                              <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-full bg-[#050B14] border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-cyan-500 outline-none">
+                              <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none">
                                 <option value="PIX">PIX</option>
                                 <option value="Dinheiro">Dinheiro</option>
                                 <option value="Boleto">Boleto</option>
@@ -5290,7 +5296,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         </form>
                      </div>
                    )}
-               </div>
+               </section>
             </div>
           </div>
         )}
