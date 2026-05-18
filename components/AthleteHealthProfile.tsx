@@ -5062,8 +5062,8 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               </h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full relative overflow-hidden group">
+            <div className="flex flex-col gap-8">
+               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group">
                    <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       <Zap size={80} className="text-cyan-500" />
                    </div>
@@ -5073,45 +5073,47 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                        <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
                      </div>
                      <div>
-                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Gestão do Plano" : "Plan Management"}</h3>
+                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Gestão do Plano / Mensalidade" : "Plan Management"}</h3>
                        <p className="text-[10px] md:text-xs text-slate-500 font-medium">
                          {language === "pt" ? "Assinaturas, renovação automática e descontos." : "Subscriptions, auto-renew and discounts."}
                        </p>
                      </div>
                    </div>
                    
-                   <div className="relative z-10 flex-1 flex flex-col">
-                      <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col gap-5 flex-1">
+                   <div className="relative z-10">
+                      <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 flex flex-col gap-5">
                           {(!athleteSubscription || isEditingPlan) ? (
                             <>
                               {financialProducts.length === 0 ? (
                                 <p className="text-sm text-slate-500 text-center font-bold">Nenhum plano cadastrado. Configure os produtos primeiro.</p>
                               ) : (
                                 <>
-                                  <div className="space-y-2">
-                                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
-                                    <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors">
-                                      <option value="">Selecione...</option>
-                                      {financialProducts.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
-                                      ))}
-                                    </select>
-                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                      <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Plano Base</label>
+                                      <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors">
+                                        <option value="">Selecione...</option>
+                                        {financialProducts.map(p => (
+                                          <option key={p.id} value={p.id}>{p.name} - R$ {p.default_price}</option>
+                                        ))}
+                                      </select>
+                                    </div>
 
-                                  <div className="space-y-2">
-                                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
-                                    <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors">
-                                      <option value="monthly">Mensal</option>
-                                      <option value="bimonthly">Bimestral</option>
-                                      <option value="quarterly">Trimestral</option>
-                                      <option value="semiannual">Semestral</option>
-                                      <option value="annual">Anual</option>
-                                    </select>
-                                  </div>
+                                    <div className="space-y-2">
+                                      <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Periodicidade</label>
+                                      <select value={planBillingCycle} onChange={(e) => setPlanBillingCycle(e.target.value as any)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors">
+                                        <option value="monthly">Mensal</option>
+                                        <option value="bimonthly">Bimestral</option>
+                                        <option value="quarterly">Trimestral</option>
+                                        <option value="semiannual">Semestral</option>
+                                        <option value="annual">Anual</option>
+                                      </select>
+                                    </div>
 
-                                  <div className="space-y-2">
-                                    <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
-                                    <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors" />
+                                    <div className="space-y-2">
+                                      <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Desconto / Bolsa (Opcional)</label>
+                                      <input type="text" value={planDiscount} onChange={(e) => setPlanDiscount(e.target.value)} placeholder="Ex: 50% ou 100" className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors" />
+                                    </div>
                                   </div>
 
                                   <div className="space-y-3 pt-2">
@@ -5152,7 +5154,28 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                             </>
                           ) : (
                             <>
-                              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-800/50">
+                              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-800/50">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 shrink-0">
+                                    <CheckCircle size={24} />
+                                  </div>
+                                  <div>
+                                    <p className="text-lg text-white font-black">{athleteSubscription.product?.name || 'Plano Customizado'}</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                      <span className="text-xs font-bold text-cyan-400 border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 rounded uppercase tracking-widest">
+                                        R$ {athleteSubscription.amount}
+                                      </span>
+                                      <span className="text-xs text-slate-500 uppercase font-black tracking-widest">
+                                      {athleteSubscription.billing_cycle === 'monthly' ? (language === 'pt' ? 'Mensal' : 'Monthly') :
+                                       athleteSubscription.billing_cycle === 'bimonthly' ? (language === 'pt' ? 'Bimestral' : 'Bimonthly') :
+                                       athleteSubscription.billing_cycle === 'quarterly' ? (language === 'pt' ? 'Trimestral' : 'Quarterly') :
+                                       athleteSubscription.billing_cycle === 'semiannual' ? (language === 'pt' ? 'Semestral' : 'Semiannual') :
+                                       athleteSubscription.billing_cycle === 'annual' ? (language === 'pt' ? 'Anual' : 'Annual') : 
+                                       athleteSubscription.billing_cycle}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
                                 <div className="flex items-center gap-2">
                                   {(() => {
                                     const hasOverdue = athleteTransactions.some(t => t.status === 'overdue');
@@ -5177,51 +5200,32 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                     );
                                   })()}
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor Vigente</p>
-                                  <p className="text-sm font-bold text-cyan-400">R$ {athleteSubscription.amount}</p>
-                                </div>
                               </div>
 
-                              <div className="my-2 text-center text-slate-400 font-bold flex flex-col items-center">
-                                <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-500 mb-3">
-                                  <CheckCircle size={24} />
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                <div className="space-y-1">
+                                  <span className="text-xxs font-black uppercase tracking-widest text-slate-500">Asaas Integrado</span>
+                                  <p className="text-sm text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? '✅ Sim (Renovação via Asaas)' : '❌ Não'}</p>
                                 </div>
-                                <p className="text-lg text-white font-black">{athleteSubscription.product?.name || 'Plano Customizado'}</p>
-                                <p className="text-sm font-bold text-cyan-400 mt-1">
-                                  Ciclo: <span className="text-xs text-slate-500 uppercase">
-                                  {athleteSubscription.billing_cycle === 'monthly' ? (language === 'pt' ? 'Mensal' : 'Monthly') :
-                                   athleteSubscription.billing_cycle === 'bimonthly' ? (language === 'pt' ? 'Bimestral' : 'Bimonthly') :
-                                   athleteSubscription.billing_cycle === 'quarterly' ? (language === 'pt' ? 'Trimestral' : 'Quarterly') :
-                                   athleteSubscription.billing_cycle === 'semiannual' ? (language === 'pt' ? 'Semestral' : 'Semiannual') :
-                                   athleteSubscription.billing_cycle === 'annual' ? (language === 'pt' ? 'Anual' : 'Annual') : 
-                                   athleteSubscription.billing_cycle}
-                                  </span>
-                                </p>
-                              </div>
-
-                              <div className="w-full pt-4 mt-2 border-t border-slate-800 space-y-2">
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="text-slate-500 font-medium">Asaas Integrado</span>
-                                  <span className="text-slate-300 font-bold">{athleteSubscription.asaas_subscription_id ? 'Sim' : 'Não'}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="text-slate-500 font-medium">Data Início</span>
-                                  <span className="text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</span>
+                                <div className="space-y-1">
+                                  <span className="text-xxs font-black uppercase tracking-widest text-slate-500">Data de Início</span>
+                                  <p className="text-sm text-slate-300 font-bold">{new Date(athleteSubscription.start_date).toLocaleDateString()}</p>
                                 </div>
                                 {athleteSubscription.asaas_subscription_id && (
-                                  <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-800/50">
-                                    <span className="text-slate-500 font-medium">Cartão de Crédito</span>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-rose-400 font-bold">Sem Token</span>
-                                      <button onClick={() => {
-                                          if (athlete.phone || athlete.guardianPhone) {
-                                             const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
-                                             const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
-                                             handleSendWhatsapp(phoneToUse || athlete.phone, `Olá ${destName}! Para evitar interrupções no plano, por favor atualize os dados do cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
-                                          }
-                                      }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
+                                  <div className="space-y-1 md:col-span-2 pt-2 border-t border-slate-800/50 flex items-center justify-between">
+                                    <div>
+                                      <span className="text-xxs font-black uppercase tracking-widest text-slate-500 block mb-1">Cartão de Crédito</span>
+                                      <span className="text-sm text-rose-400 font-bold">Sem Token Cadastrado</span>
                                     </div>
+                                    <button onClick={() => {
+                                        if (athlete.phone || athlete.guardianPhone) {
+                                           const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
+                                           const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
+                                           handleSendWhatsapp(phoneToUse || athlete.phone, `Olá ${destName}! Para evitar interrupções no plano, por favor atualize os dados do cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
+                                        }
+                                    }} className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2">
+                                       <Zap size={14} className="text-cyan-400" /> Solicitar Cartão
+                                    </button>
                                   </div>
                                 )}
                               </div>
@@ -5240,7 +5244,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    </div>
                </section>
 
-               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl flex flex-col h-full relative overflow-hidden group">
+               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group">
                    <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       <Clock size={80} className="text-slate-500" />
                    </div>
