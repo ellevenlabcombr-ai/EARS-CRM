@@ -83,7 +83,13 @@ import {
   CalendarDays,
   Pause,
   MoreVertical,
-  CreditCard
+  CreditCard,
+  Printer,
+  CheckCircle2,
+  Repeat,
+  Paperclip,
+  Building2,
+  Wallet
 } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { Button } from "@/components/ui/button";
@@ -290,6 +296,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [financialProducts, setFinancialProducts] = useState<any[]>([]);
   const [athleteSubscription, setAthleteSubscription] = useState<any>(null);
   const [athleteTransactions, setAthleteTransactions] = useState<any[]>([]);
+  const [receiptTransaction, setReceiptTransaction] = useState<any | null>(null);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [transAmount, setTransAmount] = useState('');
   const [transDesc, setTransDesc] = useState('');
@@ -5063,7 +5070,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             </div>
             
             <div className="flex flex-col gap-8">
-               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group">
+               <section className="bg-slate-900/50 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group mb-8">
                    <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       <Zap size={80} className="text-cyan-500" />
                    </div>
@@ -5073,9 +5080,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                        <CreditCard className="w-5 h-5 md:w-6 md:h-6" />
                      </div>
                      <div>
-                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Gestão do Plano / Mensalidade" : "Plan Management"}</h3>
+                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Contrato & Assinatura" : "Plan Management"}</h3>
                        <p className="text-[10px] md:text-xs text-slate-500 font-medium">
-                         {language === "pt" ? "Assinaturas, renovação automática e descontos." : "Subscriptions, auto-renew and discounts."}
+                         {language === "pt" ? "Gerencie a mensalidade, periodicidade e métodos de cobrança automática." : "Subscriptions, auto-renew and discounts."}
                        </p>
                      </div>
                    </div>
@@ -5244,7 +5251,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                    </div>
                </section>
 
-               <section className="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group">
+               <section className="bg-slate-900/50 border border-slate-800 p-6 md:p-8 rounded-2xl md:rounded-3xl relative overflow-hidden group">
                    <div className="absolute top-0 right-0 p-5 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                       <Clock size={80} className="text-slate-500" />
                    </div>
@@ -5254,9 +5261,9 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                        <History className="w-5 h-5 md:w-6 md:h-6" />
                      </div>
                      <div className="flex-1">
-                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Extrato e Timeline" : "Transactions"}</h3>
+                       <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Extrato Financeiro" : "Transactions"}</h3>
                        <p className="text-[10px] md:text-xs text-slate-500 font-medium">
-                         {language === "pt" ? "Lançamentos e histórico." : "Transactions and history."}
+                         {language === "pt" ? "Lançamentos detalhados, faturas Asaas e emissão de recibos." : "Detailed transactions and receipts."}
                        </p>
                      </div>
                    </div>
@@ -5330,56 +5337,115 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                      </div>
                    )}
 
-                   <div className="bg-slate-950 rounded-2xl border border-slate-800 flex flex-col relative z-10 max-h-64 overflow-y-auto custom-scrollbar flex-1">
-                      {athleteTransactions.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400 font-bold flex flex-col items-center">
-                          <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação no histórico." : "No transactions found."}</p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col w-full">
-                          {athleteTransactions.map(t => (
-                            <div key={t.id} className="p-4 border-b border-slate-800 last:border-b-0 flex flex-col gap-2 hover:bg-slate-900/50 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-bold text-white break-words">{t.description}</p>
-                                  <p className="text-xs text-slate-500">{t.date} • {t.account}</p>
-                                </div>
-                                <div className="text-right">
-                                  <p className={`text-sm font-black ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                    {t.type === 'income' ? '+' : '-'} R$ {t.amount}
-                                  </p>
-                                  <div className="mt-1">
-                                    {t.status === 'paid' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Pago</span>}
-                                    {t.status === 'pending' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">Pendente</span>}
-                                    {t.status === 'cancelled' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20">Cancelada</span>}
-                                    {t.status === 'overdue' && <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/30">Vencida</span>}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex justify-end gap-3 mt-1">
-                                {t.status === 'paid' && (
-                                  <button className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Recibo</button>
-                                )}
-                                {t.status === 'pending' && t.asaas_invoice_url && (
-                                  <div className="flex items-center gap-3">
-                                    <button onClick={() => window.open(t.asaas_invoice_url, '_blank')} className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Pagar (Asaas)</button>
-                                    <button onClick={() => {
-                                        if (athlete.phone) {
-                                           const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
-                                           const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
-                                           const text = `Olá ${destName}! Segue o link para pagamento da fatura em aberto (${t.description} - R$ ${t.amount}): ${t.asaas_invoice_url}`;
-                                           handleSendWhatsapp(phoneToUse, text);
-                                        } else {
-                                           setNotification({ message: 'Telefone não cadastrado', type: 'error' });
-                                        }
-                                     }} className="text-[10px] uppercase font-black tracking-widest text-emerald-400 hover:text-emerald-300 flex items-center gap-1">Cobrar via Whats</button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                   <div className="bg-slate-950 rounded-2xl border border-slate-800 relative z-10 overflow-hidden w-full">
+                       {athleteTransactions.length === 0 ? (
+                         <div className="p-8 text-center text-slate-400 font-bold flex flex-col items-center">
+                           <p className="text-sm text-slate-500">{language === "pt" ? "Nenhuma transação no histórico." : "No transactions found."}</p>
+                         </div>
+                       ) : (
+                         <div className="overflow-x-auto custom-scrollbar w-full">
+                           <table className="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
+                             <thead>
+                               <tr className="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-800/50">
+                                 <th className="px-4 py-3 font-black">Descrição</th>
+                                 <th className="px-4 py-3 font-black">Forma/Metodo</th>
+                                 <th className="px-4 py-3 font-black">Data</th>
+                                 <th className="px-4 py-3 font-black text-center">Status</th>
+                                 <th className="px-4 py-3 font-black text-right">Valor</th>
+                                 <th className="px-4 py-3 font-black text-center">Ações</th>
+                               </tr>
+                             </thead>
+                             <tbody>
+                               {athleteTransactions.map(t => (
+                                 <tr key={t.id} className="border-b border-slate-800/50 last:border-0 hover:bg-slate-900/30 transition-colors group">
+                                   <td className="px-4 py-3">
+                                     <div className="flex items-center gap-3">
+                                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                         t.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                                       }`}>
+                                         {t.type === 'income' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                       </div>
+                                       <div>
+                                         <p className="text-sm font-bold text-white break-words whitespace-normal inline-flex items-center gap-2">
+                                           {t.description}
+                                           {t.receipt_filename && <Paperclip size={12} className="text-slate-500" title={`Anexo: ${t.receipt_filename}`} />}
+                                         </p>
+                                         <p className="text-[10px] uppercase tracking-widest text-slate-500 font-black mt-0.5">{t.category}</p>
+                                       </div>
+                                     </div>
+                                   </td>
+                                   <td className="px-4 py-3">
+                                      <div className="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
+                                        {t.account === 'Débito' && <CreditCard size={12} />}
+                                        {t.account === 'Crédito' && <CreditCard size={12} />}
+                                        {t.account === 'PIX' && <Wallet size={12} />}
+                                        {t.account === 'Dinheiro' && <Building2 size={12} />}
+                                        {t.account || 'PIX'}
+                                      </div>
+                                   </td>
+                                   <td className="px-4 py-3 text-xs font-medium text-slate-400">
+                                     {new Date(t.date).toLocaleDateString('pt-BR')}
+                                   </td>
+                                   <td className="px-4 py-3 text-center">
+                                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest ${
+                                        t.status === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 
+                                        t.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 
+                                        t.status === 'cancelled' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                                        'bg-red-500/10 text-red-500 border border-red-500/30'
+                                      }`}>
+                                        {t.status === 'paid' && <CheckCircle2 size={10} />}
+                                        {t.status === 'pending' && <Clock size={10} />}
+                                        {t.status === 'paid' ? 'Pago' : t.status === 'pending' ? 'Pendente' : t.status === 'cancelled' ? 'Cancelado' : 'Vencido'}
+                                      </span>
+                                   </td>
+                                   <td className={`px-4 py-3 text-right text-sm font-black tracking-tight ${t.type === 'income' ? 'text-emerald-400' : 'text-slate-300'}`}>
+                                     {t.type === 'income' ? '+' : '-'}R$ {parseFloat(t.amount || 0).toFixed(2).replace('.', ',')}
+                                   </td>
+                                   <td className="px-4 py-3">
+                                      <div className="flex items-center justify-center gap-2">
+                                        {t.status === 'paid' && (
+                                          <button 
+                                            onClick={() => setReceiptTransaction(t)}
+                                            className="bg-slate-800 hover:bg-slate-700 text-cyan-400 p-2 rounded-lg transition-colors tooltip"
+                                            title="Gerar Recibo"
+                                          >
+                                            <Printer size={14} />
+                                          </button>
+                                        )}
+                                        {t.status === 'pending' && t.asaas_invoice_url && (
+                                          <>
+                                            <button 
+                                              onClick={() => window.open(t.asaas_invoice_url, '_blank')} 
+                                              className="bg-slate-800 hover:bg-slate-700 text-blue-400 p-2 rounded-lg transition-colors flex items-center justify-center w-8 h-8 tooltip"
+                                              title="Fatura Asaas"
+                                            >
+                                              <span className="text-base leading-none block pt-0.5">🪽</span>
+                                            </button>
+                                            <button 
+                                              onClick={() => {
+                                                  if (athlete.phone) {
+                                                     const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
+                                                     const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
+                                                     const text = `Olá ${destName}! Segue o link para pagamento da fatura em aberto (${t.description} - R$ ${t.amount}): ${t.asaas_invoice_url}`;
+                                                     handleSendWhatsapp(phoneToUse, text);
+                                                  } else {
+                                                     setNotification({ message: 'Telefone não cadastrado', type: 'error' });
+                                                  }
+                                               }} 
+                                               className="bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] text-[10px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg transition-colors"
+                                            >
+                                               Cobrar
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                   </td>
+                                 </tr>
+                               ))}
+                             </tbody>
+                           </table>
+                         </div>
+                       )}
                    </div>
                </section>
             </div>
@@ -6375,6 +6441,105 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
       {/* Link Plan Modal Removed */}
 
+      {receiptTransaction && (
+        <ReceiptModal 
+          transaction={receiptTransaction} 
+          athlete={athlete}
+          onClose={() => setReceiptTransaction(null)} 
+        />
+      )}
+
     </div>
   );
 }
+
+function ReceiptModal({ transaction, athlete, onClose }: { transaction: any, athlete?: any, onClose: () => void }) {
+  const printRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = () => {
+    const printContent = printRef.current?.innerHTML;
+    if (printContent) {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Recibo - ${transaction.description || ''}</title>
+              <script src="https://cdn.tailwindcss.com"></script>
+              <style>
+                @media print {
+                  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+              </style>
+            </head>
+            <body class="p-8 flex justify-center bg-gray-100" onload="window.print();">
+              <div class="bg-white w-full max-w-3xl">
+                ${printContent}
+              </div>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white text-black w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+      >
+        <div className="p-4 border-b flex justify-between items-center bg-slate-50">
+          <h3 className="font-bold text-slate-800 uppercase tracking-widest text-sm flex items-center gap-2">
+            <Printer size={16} /> Gerador de Recibos
+          </h3>
+          <div className="flex gap-2">
+            <button onClick={onClose} className="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-100 transition-colors">
+              Fechar
+            </button>
+            <button onClick={handlePrint} className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-lg font-bold text-sm flex items-center gap-2 transition-colors">
+              <Printer size={16} /> Imprimir Recibo
+            </button>
+          </div>
+        </div>
+        
+        <div className="p-8 bg-slate-100 overflow-y-auto max-h-[70vh]">
+           <div ref={printRef} className="bg-white border-[2px] border-slate-300 p-10 rounded-xl relative shadow-sm">
+             <div className="text-center mb-10 pb-6 border-b border-slate-200">
+                <h1 className="text-4xl font-black uppercase tracking-widest text-slate-800">RECIBO</h1>
+                <div className="inline-block mt-4 px-6 py-2 bg-slate-100 border border-slate-200 rounded-lg">
+                  <p className="text-slate-800 font-bold text-xl tracking-tight">R$ {transaction.amount.toFixed(2).replace('.', ',')}</p>
+                </div>
+             </div>
+
+             <div className="space-y-6 text-lg text-slate-700 leading-relaxed max-w-xl mx-auto text-justify">
+                <p>Recebemos de <strong>{(athlete?.name || 'NÃO INFORMADO').toUpperCase()}</strong>, a quantia expressa de <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(transaction.amount)}</strong>.</p>
+                
+                <p>Referente a <strong>{(transaction.description || transaction.category || '').toUpperCase()}</strong>, pago via <strong>{transaction.account || 'PIX'}</strong>.</p>
+                
+                <div className="pt-6 text-slate-600 text-base italic">
+                  &quot;Para maior clareza, firmamos o presente recibo, declarando total quitação deste valor.&quot;
+                </div>
+             </div>
+
+             <div className="mt-20 pt-8 flex justify-between items-end">
+                <div className="text-slate-500 text-sm">
+                  <p className="font-bold text-slate-600 mb-1">Data da Emissão</p>
+                  <p>{new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <div className="w-64 border-b border-slate-800 mb-3"></div>
+                  <p className="font-bold text-slate-800">Assinatura / Responsável</p>
+                  <p className="text-xs text-slate-500 mt-1">CNPJ / CPF do Credor</p>
+                </div>
+             </div>
+           </div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
