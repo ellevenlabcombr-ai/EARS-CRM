@@ -24,7 +24,7 @@ export function WhatsAppDashboard() {
         return;
       }
 
-      setAthletes(athletesData.filter(a => a.phone));
+      setAthletes(athletesData.filter(a => String(a.phone || '').trim().length > 0));
       setIsLoading(false);
     };
 
@@ -38,7 +38,7 @@ export function WhatsAppDashboard() {
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
           <h2 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-green-500" />
-            Contatos (Atletas)
+            Contatos
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
@@ -48,7 +48,7 @@ export function WhatsAppDashboard() {
             </div>
           ) : athletes.length === 0 ? (
             <div className="p-8 text-center text-slate-500 text-sm">
-              Nenhum atleta com telefone cadastrado.
+              Nenhum atleta listado.
             </div>
           ) : (
             <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -60,10 +60,10 @@ export function WhatsAppDashboard() {
                     selectedAthlete?.id === athlete.id ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500' : 'border-l-4 border-transparent'
                   }`}
                 >
-                  <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{athlete.name}</div>
+                  <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{String(athlete.name || 'Sem nome')}</div>
                   <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
                     <Phone className="w-3 h-3" />
-                    {athlete.phone}
+                    {String(athlete.phone || '')}
                   </div>
                 </button>
               ))}
@@ -76,12 +76,11 @@ export function WhatsAppDashboard() {
       <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900">
         {selectedAthlete ? (
           <div className="flex-1 flex justify-center items-center p-8">
-            <div className="w-full max-w-lg h-full relative">
-               {/* We wrap ChatBox, making it act inline instead of floating */}
+            <div className="w-full h-full relative">
                <ChatBox 
                  athleteId={selectedAthlete.id} 
-                 athletePhone={selectedAthlete.phone} 
-                 athleteName={selectedAthlete.name} 
+                 athletePhone={String(selectedAthlete.phone || '')} 
+                 athleteName={String(selectedAthlete.name || 'Atleta')} 
                  inline={true} 
                />
             </div>
