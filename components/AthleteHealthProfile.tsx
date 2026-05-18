@@ -2436,7 +2436,6 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
        if (error) throw error;
        
        setAthleteTransactions([data[0], ...athleteTransactions]);
-       setShowAddTransaction(false);
        setTransAmount('');
        setTransDesc('');
        setNotification({ message: 'Transação adicionada com sucesso.', type: 'success' });
@@ -5170,12 +5169,37 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                      <div className="flex-1">
                        <h3 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{language === "pt" ? "Extrato e Timeline" : "Transactions"}</h3>
                        <p className="text-[10px] md:text-xs text-slate-500 font-medium">
-                         {language === "pt" ? "Histórico de recebimentos e ações rápidas." : "Receipts history and quick actions."}
+                         {language === "pt" ? "Lançamentos e histórico." : "Transactions and history."}
                        </p>
                      </div>
-                     <button onClick={() => setShowAddTransaction(true)} className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-xl md:rounded-2xl transition-colors flex items-center justify-center shrink-0">
-                       <Plus size={18} />
-                     </button>
+                   </div>
+
+                   {/* Add Transaction Inline Form ALWAYS VISIBLE */}
+                   <div className="mb-6 relative z-10 space-y-4">
+                      <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button onClick={(e) => { e.preventDefault(); setTransType('income'); }} className={`flex-1 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-colors ${transType === 'income' ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-500 hover:text-slate-300'}`}>Receita</button>
+                        <button onClick={(e) => { e.preventDefault(); setTransType('expense'); }} className={`flex-1 py-2 text-[10px] md:text-xs font-black uppercase tracking-widest rounded-lg transition-colors ${transType === 'expense' ? 'bg-rose-500/20 text-rose-400' : 'text-slate-500 hover:text-slate-300'}`}>Despesa</button>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                         <div className="col-span-2">
+                           <input type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none placeholder:text-slate-600" placeholder="Descrição (Ex: Mensalidade, Avaliação)" />
+                         </div>
+                         <div className="col-span-2 md:col-span-1">
+                           <input type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none placeholder:text-slate-600" placeholder="Valor (R$)" />
+                         </div>
+                         <div className="col-span-2 md:col-span-1 flex gap-2">
+                            <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-1/2 md:w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-3 text-xs md:text-sm font-medium text-slate-300 focus:border-cyan-500/50 outline-none">
+                              <option value="PIX">PIX</option>
+                              <option value="Dinheiro">Dinheiro</option>
+                              <option value="Boleto">Boleto</option>
+                              <option value="Crédito">Crédito</option>
+                            </select>
+                            <button onClick={handleAddTransactionSubmit} disabled={isAddingTrans} className={`w-1/2 md:w-full py-3 text-[#050B14] rounded-xl font-black flex items-center justify-center gap-2 ${transType === 'income' ? 'bg-emerald-500 hover:bg-emerald-400' : 'bg-rose-500 hover:bg-rose-400'}`}>
+                              {isAddingTrans ? '...' : <Plus size={18} />}
+                            </button>
+                         </div>
+                      </div>
                    </div>
                    
                    {/* Destaque Inadimplência */}
@@ -5245,57 +5269,6 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                         </div>
                       )}
                    </div>
-
-                   {/* Add Transaction Inline Form */}
-                   {showAddTransaction && (
-                     <div className="mt-4 p-5 bg-slate-900 border border-slate-800 rounded-2xl relative z-10 w-full animate-in fade-in slide-in-from-top-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="text-sm font-black text-white uppercase tracking-widest">Nova Transação / Cobrança</h4>
-                          <button onClick={() => setShowAddTransaction(false)} className="text-slate-500 hover:text-white transition-colors">
-                            <X size={16} />
-                          </button>
-                        </div>
-                        <form onSubmit={(e) => {
-                           e.preventDefault();
-                           handleAddTransactionSubmit(e);
-                           setShowAddTransaction(false);
-                        }} className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Valor (R$)</label>
-                              <input required type="text" value={transAmount} onChange={e => setTransAmount(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none" placeholder="0.00" />
-                            </div>
-                            <div>
-                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Descrição</label>
-                              <input required type="text" value={transDesc} onChange={e => setTransDesc(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none" placeholder="Mensalidade, Avaliação..." />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Tipo</label>
-                              <select value={transType} onChange={e => setTransType(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none">
-                                <option value="income">Receita</option>
-                                <option value="expense">Despesa</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="text-xxs font-black text-slate-500 uppercase tracking-widest">Método</label>
-                              <select value={transAccount} onChange={e => setTransAccount(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium text-white focus:border-cyan-500/50 outline-none">
-                                <option value="PIX">PIX</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                                <option value="Boleto">Boleto</option>
-                                <option value="Crédito">Crédito</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div className="pt-2">
-                             <Button type="submit" disabled={isAddingTrans} className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 uppercase tracking-widest text-xs font-black rounded-xl">
-                               {isAddingTrans ? 'Adicionando...' : 'Confirmar Lançamento'}
-                             </Button>
-                          </div>
-                        </form>
-                     </div>
-                   )}
                </section>
             </div>
           </div>
