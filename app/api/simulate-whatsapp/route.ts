@@ -9,7 +9,8 @@ export async function POST(req: Request) {
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
-    const endpoint = `${url}/message/sendText/${instanceId}`;
+    const baseUrl = url.replace(/\/+$/, "");
+    const endpoint = `${baseUrl}/message/sendText/${instanceId}`;
     
     const options = {
       method: "POST",
