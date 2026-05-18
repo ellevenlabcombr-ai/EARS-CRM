@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { ChatBox } from "./ChatBox";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -6061,7 +6062,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
       {/* Link Plan Modal Removed */}
 
-      
+      <ChatBox
+        athleteId={athlete.id}
+        athletePhone={athlete.phone}
+        athleteName={athlete.name}
+      />
 
     </div>
   );
