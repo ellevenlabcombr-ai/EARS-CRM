@@ -147,7 +147,7 @@ import {
 } from "recharts";
 import { SafeRender } from "@/components/SafeRender";
 import { QRCodeSVG } from "qrcode.react";
-import { createAsaasCustomer, createAsaasSubscription } from "@/app/actions/asaas";
+import { createAsaasCustomer, createAsaasSubscription, createAsaasPayment } from "@/app/actions/asaas";
 
 interface Athlete {
   id: string;
@@ -295,6 +295,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [transDesc, setTransDesc] = useState('');
   const [transType, setTransType] = useState('income');
   const [transAccount, setTransAccount] = useState('PIX');
+  const [transGenerateAsaas, setTransGenerateAsaas] = useState(false);
   const [isAddingTrans, setIsAddingTrans] = useState(false);
   
   const [isEditingPlan, setIsEditingPlan] = useState(false);
@@ -304,6 +305,18 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [planAsaasCpf, setPlanAsaasCpf] = useState('');
   const [planDiscount, setPlanDiscount] = useState('');
 
+  const isMinor = useMemo(() => {
+    if (!athlete || !athlete.birthDate) return false;
+    const today = new Date();
+    const birthDate = new Date(athlete.birthDate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age < 21;
+  }, [athlete]);
+
   useEffect(() => {
     if (athleteSubscription) {
       setSelectedProductId(athleteSubscription.product_id || '');
@@ -311,6 +324,14 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
       setPlanGenerateAsaas(!!athleteSubscription.asaas_subscription_id);
     }
   }, [athleteSubscription]);
+
+  useEffect(() => {
+    if (isMinor && athlete?.guardianCpf && !planAsaasCpf) {
+      setPlanAsaasCpf(athlete.guardianCpf);
+    } else if (!isMinor && athlete?.cpf && !planAsaasCpf) {
+      setPlanAsaasCpf(athlete.cpf);
+    }
+  }, [isMinor, athlete, planAsaasCpf]);
 
   // Auto-select first financial product if none is selected
   useEffect(() => {
@@ -2297,9 +2318,28 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             let customerId = athlete.asaas_customer_id;
 
             if (!customerId) {
+              const birthDate = athlete.birthDate ? new Date(athlete.birthDate) : undefined;
+              let isMinor = false;
+              if (birthDate) {
+                 const today = new Date();
+                 let age = today.getFullYear() - birthDate.getFullYear();
+                 const m = today.getMonth() - birthDate.getMonth();
+                 if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                 }
+                 isMinor = age < 21;
+              }
+
+              const cName = (isMinor && athlete.guardianName) ? athlete.guardianName : (athlete.name || 'Atleta');
+              const cCpf = planAsaasCpf.replace(/\D/g, '') || (isMinor && athlete.guardianCpf ? athlete.guardianCpf.replace(/\D/g, '') : '');
+              const cEmail = isMinor && athlete.guardianEmail ? athlete.guardianEmail : athlete.email;
+              const cPhone = isMinor && athlete.guardianPhone ? athlete.guardianPhone.replace(/\D/g, '') : athlete.phone?.replace(/\D/g, '');
+
               const customerRes = await createAsaasCustomer({ 
-                name: athlete.name || 'Atleta', 
-                cpfCnpj: planAsaasCpf.replace(/\D/g, '') 
+                name: cName, 
+                cpfCnpj: cCpf,
+                email: cEmail || undefined,
+                mobilePhone: cPhone || undefined
               });
               if (customerRes.error) throw new Error("Asaas Erro (Cliente): " + customerRes.error);
               customerId = customerRes.data.id;
@@ -2421,7 +2461,39 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     
     setIsAddingTrans(true);
     try {
-       const payload = {
+       let customerId = athlete.asaas_customer_id;
+       let invoiceUrl = null;
+
+       if (transGenerateAsaas && transType === 'income' && ['PIX', 'Boleto', 'Crédito'].includes(transAccount)) {
+         if (!customerId) {
+           throw new Error("Cliente não sincronizado com Asaas. Primeiro ative 'Renovação Autom. (Asaas)' no Plano Base para cadastrá-lo.");
+         }
+         
+         const tomorrow = new Date();
+         tomorrow.setDate(tomorrow.getDate() + 1);
+         const dueDateStr = tomorrow.toISOString().split('T')[0];
+         
+         const asaasTypeMap: any = {
+           'PIX': 'PIX',
+           'Boleto': 'BOLETO',
+           'Crédito': 'CREDIT_CARD'
+         };
+
+         const paymentRes = await createAsaasPayment({
+           customer: customerId,
+           billingType: asaasTypeMap[transAccount],
+           value: parseFloat(transAmount.replace(',','.')),
+           dueDate: dueDateStr,
+           description: transDesc || 'Cobrança Avulsa'
+         });
+
+         if (paymentRes.error) {
+           throw new Error("Erro Asaas: " + paymentRes.error);
+         }
+         invoiceUrl = paymentRes.data.invoiceUrl || paymentRes.data.bankSlipUrl;
+       }
+
+       const payload: any = {
           athlete_id: athlete.id,
           amount: parseFloat(transAmount.replace(',','.')),
           description: transDesc || 'Cobrança Avulsa',
@@ -2432,12 +2504,18 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
           category: 'Receitas/Mensalidades',
           created_at: new Date().toISOString()
        };
+
+       if (invoiceUrl) {
+          payload.asaas_invoice_url = invoiceUrl;
+       }
+
        const { data, error } = await supabase.from('financial_transactions').insert(payload).select();
        if (error) throw error;
        
        setAthleteTransactions([data[0], ...athleteTransactions]);
        setTransAmount('');
        setTransDesc('');
+       setTransGenerateAsaas(false);
        setNotification({ message: 'Transação adicionada com sucesso.', type: 'success' });
     } catch(err: any) {
        setNotification({ message: 'Erro: ' + err.message, type: 'error' });
@@ -5051,8 +5129,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                     {planGenerateAsaas && (
                                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden">
                                         <div className="pt-2">
-                                          <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ do Responsável (Exigido pelo Asaas)</label>
+                                          <label className="text-xxs font-black text-slate-500 uppercase tracking-widest block mb-2">CPF / CNPJ {isMinor ? 'do Responsável (Menor de Idade)' : 'do Responsável'} (Exigido pelo Asaas)</label>
                                           <input required type="text" value={planAsaasCpf} onChange={e=>setPlanAsaasCpf(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm font-medium focus:border-cyan-500/50 outline-none text-slate-300 transition-colors" placeholder="Obrigatório" />
+                                          {isMinor && (
+                                            <p className="text-[10px] md:text-xs text-amber-500 mt-2 font-medium">⚠️ Atleta menor de 21 anos. As cobranças e faturas serão geradas em nome do responsável: {athlete?.guardianName || 'Não preenchido'}.</p>
+                                          )}
                                         </div>
                                       </motion.div>
                                     )}
@@ -5134,8 +5215,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                     <div className="flex items-center gap-2">
                                       <span className="text-rose-400 font-bold">Sem Token</span>
                                       <button onClick={() => {
-                                          if (athlete.phone) {
-                                             handleSendWhatsapp(athlete.phone, `Olá! Para evitar interrupções no seu plano, por favor atualize os dados do seu cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
+                                          if (athlete.phone || athlete.guardianPhone) {
+                                             const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
+                                             const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
+                                             handleSendWhatsapp(phoneToUse || athlete.phone, `Olá ${destName}! Para evitar interrupções no plano, por favor atualize os dados do cartão de crédito neste link seguro do Asaas: https://www.asaas.com/c/atualizar-cartao`);
                                           }
                                       }} className="bg-slate-800 hover:bg-slate-700 text-white px-2 py-1 rounded">Solicitar</button>
                                     </div>
@@ -5200,6 +5283,17 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                             </button>
                          </div>
                       </div>
+                      
+                      {transType === 'income' && ['PIX', 'Boleto', 'Crédito'].includes(transAccount) && (
+                        <label className="flex items-center gap-3 cursor-pointer group w-max">
+                          <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${transGenerateAsaas ? 'bg-cyan-500 border-cyan-500' : 'bg-transparent border-slate-600 group-hover:border-slate-400'}`}>
+                            {transGenerateAsaas && <CheckCircle size={12} className="text-[#050B14]" />}
+                          </div>
+                          <input type="checkbox" checked={transGenerateAsaas} onChange={e => setTransGenerateAsaas(e.target.checked)} className="hidden" />
+                          <span className="text-xs font-bold text-slate-400 group-hover:text-cyan-400 transition-colors">Gerar link de pagamento (Asaas)</span>
+                        </label>
+                      )}
+                      
                    </div>
                    
                    {/* Destaque Inadimplência */}
@@ -5216,9 +5310,11 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                           <button 
                              onClick={() => {
                                const firstOverdue = athleteTransactions.find(t => t.status === 'overdue');
-                               if (firstOverdue && athlete.phone) {
-                                  const text = `Olá, notamos uma fatura em aberto no valor de R$ ${firstOverdue.amount}. Segue o link para pagamento: ${firstOverdue.asaas_invoice_url || 'Link não disponível'}`;
-                                  handleSendWhatsapp(athlete.phone, text);
+                               if (firstOverdue && (athlete.phone || athlete.guardianPhone)) {
+                                  const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
+                                  const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
+                                  const text = `Olá ${destName}! Notamos uma fatura em aberto no valor de R$ ${firstOverdue.amount}. Segue o link para pagamento: ${firstOverdue.asaas_invoice_url || 'Link não disponível'}`;
+                                  handleSendWhatsapp(phoneToUse || athlete.phone, text);
                                } else {
                                   setNotification({ message: 'Telefone não cadastrado', type: 'error' });
                                }
@@ -5256,12 +5352,24 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex justify-end gap-2 mt-1">
+                              <div className="flex justify-end gap-3 mt-1">
                                 {t.status === 'paid' && (
                                   <button className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Recibo</button>
                                 )}
                                 {t.status === 'pending' && t.asaas_invoice_url && (
-                                  <button onClick={() => window.open(t.asaas_invoice_url, '_blank')} className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Pagar (Asaas)</button>
+                                  <div className="flex items-center gap-3">
+                                    <button onClick={() => window.open(t.asaas_invoice_url, '_blank')} className="text-[10px] uppercase font-black tracking-widest text-cyan-400 hover:text-cyan-300">Pagar (Asaas)</button>
+                                    <button onClick={() => {
+                                        if (athlete.phone) {
+                                           const phoneToUse = isMinor && athlete.guardianPhone ? athlete.guardianPhone : athlete.phone;
+                                           const destName = isMinor && athlete.guardianName ? athlete.guardianName : athlete.name;
+                                           const text = `Olá ${destName}! Segue o link para pagamento da fatura em aberto (${t.description} - R$ ${t.amount}): ${t.asaas_invoice_url}`;
+                                           handleSendWhatsapp(phoneToUse, text);
+                                        } else {
+                                           setNotification({ message: 'Telefone não cadastrado', type: 'error' });
+                                        }
+                                     }} className="text-[10px] uppercase font-black tracking-widest text-emerald-400 hover:text-emerald-300 flex items-center gap-1">Cobrar via Whats</button>
+                                  </div>
                                 )}
                               </div>
                             </div>
