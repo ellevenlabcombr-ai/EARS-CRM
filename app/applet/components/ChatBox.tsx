@@ -26,7 +26,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     }
   }, [inline, athleteId]);
 
-  const cleanPhone = athletePhone ? String(athletePhone).replace(/\D/g, '') : '';
+  const cleanPhone = athletePhone ? athletePhone.replace(/\D/g, '') : '';
   const suffix = cleanPhone.slice(-8);
 
   useEffect(() => {
