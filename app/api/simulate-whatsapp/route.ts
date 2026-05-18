@@ -32,7 +32,17 @@ export async function POST(req: Request) {
     const data = await res.json();
     
     if (!res.ok) {
-       return NextResponse.json({ error: data.response?.message?.[1] || data.response?.message?.[0] || data.message || 'Erro na Evolution API', details: data }, { status: res.status });
+       let errorMsg = 'Erro na Evolution API§';
+       if (data.response?.message && Array.isArray(data.response.message)) {
+           errorMsg = data.response.message.map((m: any) => typeof m === 'string' ? m : JSON.stringify(m)).join(', ');
+       } else if (data.response?.message) {
+           errorMsg = typeof data.response.message === 'string' ? data.response.message : JSON.stringify(data.response.message);
+       } else if (data.message) {
+           errorMsg = typeof data.message === 'string' ? data.message : JSON.stringify(data.message);
+       } else if (data.error) {
+           errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+       }
+       return NextResponse.json({ error: errorMsg, details: data }, { status: res.status });
     }
 
     return NextResponse.json({ success: true, data });
