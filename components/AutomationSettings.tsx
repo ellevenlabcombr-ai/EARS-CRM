@@ -51,15 +51,17 @@ export function AutomationSettings() {
   const [isManagingInstance, setIsManagingInstance] = useState(false);
 
   const fetchInstanceStatus = async () => {
-    if (!evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId) return;
+    if (!evolutionApiUrl || !evolutionInstanceId) return;
     try {
       setIsManagingInstance(true);
-      const res = await fetch(`${evolutionApiUrl}/instance/connectionState/${evolutionInstanceId}`, {
-        headers: { 'apikey': evolutionApiKey }
+      const res = await fetch('/api/evolution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'status' })
       });
-      if (res.ok) {
-        const data = await res.json();
-        setInstanceStatus(data?.instance?.state || 'unknown');
+      const json = await res.json();
+      if (res.ok && json.data) {
+        setInstanceStatus(json.data?.instance?.state || 'unknown');
       } else {
         setInstanceStatus('not_found');
       }
@@ -80,26 +82,24 @@ export function AutomationSettings() {
     try {
       setIsManagingInstance(true);
       setQrCodeData(null);
-      const res = await fetch(`${evolutionApiUrl}/instance/create`, {
+      const res = await fetch('/api/evolution', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': evolutionApiKey
-        },
-        body: JSON.stringify({
-          instanceName: evolutionInstanceId,
-          number: '',
-          qrcode: true
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'create' })
       });
-      const data = await res.json();
+      const json = await res.json();
       
+      if (!res.ok) {
+         throw new Error(json.error || 'Erro desconhecido');
+      }
+      
+      const data = json.data;
       if (data.qrcode && data.qrcode.base64) {
          setQrCodeData(data.qrcode);
       } else if (data.hash && data.hash.base64) {
          setQrCodeData(data.hash);
       } else if (data.base64) {
-         setQrCodeData(data);
+         setQrCodeData({ base64: data.base64 });
       } else if (data?.instance?.state === 'open') {
          setInstanceStatus('open');
       }
@@ -121,10 +121,13 @@ export function AutomationSettings() {
     if (!evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId) return;
     try {
       setIsManagingInstance(true);
-      const res = await fetch(`${evolutionApiUrl}/instance/connect/${evolutionInstanceId}`, {
-        headers: { 'apikey': evolutionApiKey }
+      const res = await fetch('/api/evolution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'connect' })
       });
-      const data = await res.json();
+      const json = await res.json();
+      const data = json.data || {};
       if (data.base64) {
          setQrCodeData({ base64: data.base64 });
       }
@@ -138,13 +141,15 @@ export function AutomationSettings() {
     if (!evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId) return;
     try {
       setIsManagingInstance(true);
-      await fetch(`${evolutionApiUrl}/instance/logout/${evolutionInstanceId}`, {
-        method: 'DELETE',
-        headers: { 'apikey': evolutionApiKey }
+      await fetch('/api/evolution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'logout' })
       });
-      await fetch(`${evolutionApiUrl}/instance/delete/${evolutionInstanceId}`, {
-        method: 'DELETE',
-        headers: { 'apikey': evolutionApiKey }
+      await fetch('/api/evolution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'delete' })
       });
       setInstanceStatus('not_found');
       setQrCodeData(null);
