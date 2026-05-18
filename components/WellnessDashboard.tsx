@@ -560,13 +560,12 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
     }
   };
 
-  const handleWhatsAppNotify = (athlete: any) => {
+  const handleWhatsAppNotify = async (athlete: any) => {
     if (!athlete.phone) {
       alert(`O atleta ${athlete.name} não possui telefone cadastrado.`);
       return;
     }
 
-    // Clean phone number (remove non-digits)
     const cleanPhone = athlete.phone.replace(/\D/g, '');
     if (cleanPhone.length < 10) {
       alert(`O telefone cadastrado para ${athlete.name} parece inválido.`);
@@ -574,12 +573,20 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
     }
 
     const message = `Olá ${athlete.name}, notamos que você ainda não preencheu seu wellness hoje. Por favor, reserve 1 minuto para atualizar seus dados.`;
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone}?text=${encodedMessage}`;
-    
-    window.open(whatsappUrl, '_blank');
-  };
 
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: cleanPhone, message })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao enviar WhatsApp pela automação.');
+      }
+      alert(`Mensagem enviada para ${athlete.name} com sucesso via automação!`);
+    } catch (err: any) { alert("Erro ao enviar: " + (err.message || err)); }
+  };
   const handleNotifyAllPending = () => {
     const pendingAthletes = athletes.filter(a => a.status === 'pending');
     if (pendingAthletes.length === 0) {

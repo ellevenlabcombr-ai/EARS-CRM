@@ -2445,10 +2445,20 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
     }
   };
 
-  const handleSendWhatsapp = (phone: string, text: string) => {
+  const handleSendWhatsapp = async (phone: string, text: string) => {
     const cleaned = phone.replace(/\D/g, '');
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/55${cleaned}?text=${encoded}`, '_blank');
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({phone: cleaned, message: text})
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erro ma API');
+      alert('Mensagem enviada com sucesso!');
+    } catch (err: any) {
+      alert('Erro ao enviar: ' + err.message);
+    }
   };
 
   const handleGenerateAgreement = () => {
