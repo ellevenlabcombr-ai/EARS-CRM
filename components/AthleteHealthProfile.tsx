@@ -6062,11 +6062,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
 
       {/* Link Plan Modal Removed */}
 
-      <ChatBox
-        athleteId={athlete.id}
-        athletePhone={athlete.phone}
-        athleteName={athlete.name}
-      />
+      
 
     </div>
   );

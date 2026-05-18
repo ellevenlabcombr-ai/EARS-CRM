@@ -9,15 +9,22 @@ interface ChatBoxProps {
   athleteId: string;
   athletePhone: string;
   athleteName: string;
+  inline?: boolean;
 }
 
-export function ChatBox({ athleteId, athletePhone, athleteName }: ChatBoxProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }: ChatBoxProps) {
+  const [isOpen, setIsOpen] = useState(inline ? true : false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (inline) {
+      setIsOpen(true);
+    }
+  }, [inline, athleteId]);
 
   const cleanPhone = athletePhone ? athletePhone.replace(/\D/g, '') : '';
   const suffix = cleanPhone.slice(-8);
@@ -132,7 +139,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName }: ChatBoxProps) 
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-full max-w-[350px] h-[500px] bg-white dark:bg-[#050B14] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden">
+    <div className={inline ? "w-full h-full bg-white dark:bg-[#050B14] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col overflow-hidden" : "fixed bottom-6 right-6 w-full max-w-[350px] h-[500px] bg-white dark:bg-[#050B14] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"}>
       <div className="flex items-center justify-between p-4 bg-green-500 text-white">
         <div className="flex items-center space-x-3">
            <div className="bg-white/20 p-2 rounded-full">
@@ -143,9 +150,11 @@ export function ChatBox({ athleteId, athletePhone, athleteName }: ChatBoxProps) 
               <p className="text-xs text-green-100">{athletePhone}</p>
            </div>
         </div>
-        <button onClick={() => setIsOpen(false)} className="text-white hover:bg-green-600 p-1 rounded-md transition-colors cursor-pointer">
-          <X className="w-5 h-5" />
-        </button>
+        {!inline && (
+          <button onClick={() => setIsOpen(false)} className="text-white hover:bg-green-600 p-1 rounded-md transition-colors cursor-pointer">
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-[#050B14] custom-scrollbar">
