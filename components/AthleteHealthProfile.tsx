@@ -657,7 +657,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             weight: data.weight || initialAthlete.weight,
             height: data.height || initialAthlete.height,
             dominance: data.lado_dominante || initialAthlete.dominance,
-            phone: data.phone || initialAthlete.phone,
+            phone: data.phone ?? initialAthlete.phone,
             email: data.email || initialAthlete.email,
             address: {
               logradouro: data.address_street,

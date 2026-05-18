@@ -664,7 +664,7 @@ export function AthleteRegistration({
           athlete_code: finalAthleteCode,
           password: finalData.password,
           email: finalData.email || null,
-          phone: finalData.phone || null,
+          phone: finalData.phone || "",
           rg: finalData.rg || null,
           cpf: finalData.cpf || null,
           birth_date: finalData.birthDate || null,
