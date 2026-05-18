@@ -21,6 +21,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         number: cleanPhone,
         text: message,
+        textMessage: { text: message },
         options: {
           delay: 1200,
           presence: "composing",
