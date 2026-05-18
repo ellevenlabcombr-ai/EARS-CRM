@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { ChatBox } from "./ChatBox";
 import { motion, AnimatePresence } from "motion/react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";

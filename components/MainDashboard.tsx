@@ -55,6 +55,7 @@ import { SmartAgenda } from "./SmartAgenda";
 import { PendenciesDashboard } from "./PendenciesDashboard";
 import { ClinicalDashboard } from "./dashboard/ClinicalDashboard";
 import { DailyOperationsDashboard } from "./dashboard/DailyOperationsDashboard";
+import { WhatsAppDashboard } from "./WhatsAppDashboard";
 import { EaglesDashboard } from "./dashboard/EaglesDashboard";
 import { SettingsDashboard } from "./SettingsDashboard";
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,7 @@ import { ReportsDashboard } from "./ReportsDashboard";
 import { DataSafety } from "@/lib/dataSafety";
 import { SafeRender } from "./SafeRender";
 
-type View = 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance';
+type View = 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance' | 'whatsapp';
 
 interface MainDashboardProps {
   onLogout?: () => void;
@@ -264,6 +265,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
     { id: 'pendencies', label: 'Pendências', emoji: '🗄️' },
     { id: 'reports', label: 'Relatórios', emoji: '📈' },
     { id: 'finance', label: 'Financeiro', emoji: '💰' },
+    { id: 'whatsapp', label: 'Mensagens', emoji: '💬' },
     { id: 'settings', label: 'Configurações', emoji: '⚙️' },
   ] as const, []);
 
@@ -368,6 +370,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
       case 'reports': return "Central de Relatórios";
       case 'wellness': return "Wellness";
       case 'finance': return "Financeiro";
+      case 'whatsapp': return "Mensagens";
       case 'settings': return "Configurações";
       default: return "Dashboard";
     }
@@ -759,6 +762,8 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
               );
             case 'finance':
               return <FinanceDashboard />;
+            case 'whatsapp':
+              return <WhatsAppDashboard />;
             case 'settings':
               return <SettingsDashboard />;
             default:
