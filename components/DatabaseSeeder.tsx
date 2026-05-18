@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS athletes (
     gender TEXT,
     weight NUMERIC,
     height NUMERIC,
+    custom_fields_data JSONB DEFAULT '{}'::jsonb,
     avatar_url TEXT,
     xp INTEGER DEFAULT 0,
     coins INTEGER DEFAULT 0,
@@ -1025,6 +1026,9 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'athletes' AND column_name = 'is_menstruating') THEN
         ALTER TABLE public.athletes ADD COLUMN is_menstruating BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'athletes' AND column_name = 'custom_fields_data') THEN
+        ALTER TABLE public.athletes ADD COLUMN custom_fields_data JSONB DEFAULT '{}'::jsonb;
     END IF;
 
     -- Colunas na tabela wellness_records

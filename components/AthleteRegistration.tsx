@@ -347,7 +347,7 @@ export function AthleteRegistration({
               guardian_name, guardian_cpf, guardian_phone, guardian_email, 
               group_name, birth_date, modalidade, posicao, category, status, 
               alergia, avatar_url, address_zip, address_street, 
-              address_neighborhood, address_city, address_state
+              address_neighborhood, address_city, address_state, custom_fields_data
             `,
             )
             .eq("id", initialData.id)
