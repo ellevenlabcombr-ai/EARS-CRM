@@ -70,9 +70,17 @@ export async function POST(req: Request) {
         body.caption = message || "";
         body.mediatype = "image";
       } else if (mediaType === 'audio') {
-        endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
-        body.audio = finalMedia;
-        // audio doesn't need mediatype or maybe just for safety
+        if (mediaUrl.includes('audio/mp4')) {
+           // iOS / Safari audio records often result in mute voice notes via ffmpeg, send as normal audio file
+           endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
+           body.media = finalMedia;
+           body.mediatype = 'audio';
+           body.fileName = 'audio.m4a';
+        } else {
+           endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
+           body.audio = finalMedia;
+           body.encoding = true;
+        }
       } else if (mediaType === 'document' || mediaType === 'video') {
         endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
         body.media = finalMedia;

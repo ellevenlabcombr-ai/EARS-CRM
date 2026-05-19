@@ -627,10 +627,12 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         </div>
         
         {isRecording ? (
-          <div className="flex-1 flex items-center gap-3 px-4 h-[44px] rounded-lg bg-[#2a3942] border border-red-500/30 animate-pulse">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-            <span className="text-[#e9edef] text-sm flex-1">Gravando áudio...</span>
-            <span className="text-xs text-[#8696a0]">Toque no microfone para parar e enviar</span>
+          <div className="flex-1 flex items-center justify-between px-4 h-[44px] rounded-full bg-red-500/10 border border-red-500/50 animate-pulse">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500 animate-bounce" />
+              <span className="text-red-500 font-medium text-sm">Gravando...</span>
+            </div>
+            <span className="text-xs text-red-500 font-bold ml-2">Toque em X para enviar</span>
           </div>
         ) : (
           <textarea
@@ -648,18 +650,18 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
           />
         )}
         
-        {newMessage.trim() ? (
+        {newMessage.trim() && !isRecording ? (
           <Button
             onClick={handleSend}
             disabled={sending}
             size="icon"
-            className="rounded-full bg-[#00a884] hover:bg-[#06cf9c] text-white w-10 h-10 shrink-0 cursor-pointer border-none"
+            className="rounded-full bg-[#00a884] hover:bg-[#06cf9c] text-white w-10 h-10 shrink-0 cursor-pointer border-none shadow-lg"
           >
             {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
           </Button>
         ) : (
-          <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
-            <Mic className="w-5 h-5" />
+          <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center shadow-lg ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
+            {isRecording ? <X className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
         )}
       </div>
