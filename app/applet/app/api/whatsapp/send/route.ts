@@ -3,10 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   try {
-    const { phone, message } = await req.json();
+    const bodyPayload = await req.json();
+    const { phone, message, mediaUrl, mediaType, fileName } = bodyPayload;
 
-    if (!phone || !message) {
-      return NextResponse.json({ error: 'Faltam parâmetros: phone ou message' }, { status: 400 });
+    if (!phone || (message === undefined && !mediaUrl)) {
+      return NextResponse.json({ error: 'Faltam parametros: phone ou message/mediaUrl' }, { status: 400 });
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,15 +25,15 @@ export async function POST(req: Request) {
         .maybeSingle();
 
     if (settingsError || !settings) {
-        return NextResponse.json({ error: 'Automações não configuradas ou erro ao buscar.' }, { status: 400 });
+        return NextResponse.json({ error: 'Automacoes nao configuradas ou erro ao buscar.' }, { status: 400 });
     }
 
     if (!settings.whatsapp_enabled) {
-        return NextResponse.json({ error: 'WhatsApp está desativado nas configurações.' }, { status: 400 });
+        return NextResponse.json({ error: 'WhatsApp esta desativado nas configuracoes.' }, { status: 400 });
     }
 
     if (settings.whatsapp_provider !== 'evolution') {
-        return NextResponse.json({ error: `Provedor de WhatsApp '${settings.whatsapp_provider}' não suportado por esta rota.` }, { status: 400 });
+        return NextResponse.json({ error: 'Provedor de WhatsApp nao suportado por esta rota.' }, { status: 400 });
     }
 
     const url = settings.evolution_api_url;
@@ -40,14 +41,53 @@ export async function POST(req: Request) {
     const instanceId = settings.evolution_instance_id;
 
     if (!url || !instanceId) {
-        return NextResponse.json({ error: 'Credenciais da Evolution API estão incompletas nas configurações.' }, { status: 400 });
+        return NextResponse.json({ error: 'Credenciais da Evolution API estao incompletas nas configuracoes.' }, { status: 400 });
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
     const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
 
     const baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-    const endpoint = `${baseUrl}/message/sendText/${instanceId}`;
+    let endpoint = `${baseUrl}/message/sendText/${instanceId}`;
+    let body: any = {
+      number: finalPhone
+    };
+
+    // media params extracted above
+
+    let finalMedia = mediaUrl;
+    if (finalMedia && finalMedia.startsWith('data:')) {
+      const parts = finalMedia.split(',');
+      if (parts.length === 2) {
+         finalMedia = parts[1]; // Get just the base64 part
+      }
+    }
+
+    if (mediaUrl && mediaType) {
+      if (mediaType === 'image') {
+        endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
+        body.media = finalMedia;
+        body.caption = message || "";
+        body.mediatype = "image";
+      } else if (mediaType === 'audio') {
+        endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
+        body.audio = finalMedia;
+        body.encoding = true;
+      } else if (mediaType === 'document' || mediaType === 'video') {
+        endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
+        body.media = finalMedia;
+        body.caption = message || "";
+        body.mediatype = mediaType;
+        body.fileName = fileName || "arquivo";
+      }
+    } else {
+      body.text = message;
+      body.textMessage = { text: message };
+      body.options = {
+        delay: 1200,
+        presence: "composing"
+      };
+    }
     
     const options = {
       method: "POST",
@@ -55,15 +95,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
         "apikey": apiKey || "",
       },
-      body: JSON.stringify({
-        number: finalPhone,
-        text: message,
-        options: {
-          delay: 1200,
-          presence: 'composing',
-          linkPreview: true
-        }
-      })
+      body: JSON.stringify(body)
     };
 
     const res = await fetch(endpoint, options);

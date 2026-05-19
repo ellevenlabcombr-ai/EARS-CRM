@@ -167,7 +167,7 @@ export async function POST(req: Request) {
             .select('id, name, phone, whatsapp')
             .or(`phone.ilike.%${s8}%,whatsapp.ilike.%${s8}%,phone.ilike.%${s9}%,whatsapp.ilike.%${s9}%,phone.ilike.%${cleanPhoneNoCountry}%,whatsapp.ilike.%${cleanPhoneNoCountry}%`)
             .limit(5);
-          
+      
           if (athletes && athletes.length > 0) {
             // Priority to those that match s9 or exact
             const bestMatch = athletes.find(a => 
@@ -295,4 +295,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, error: error.message }, { status: 200 });
   }
 }
-
