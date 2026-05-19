@@ -53,10 +53,14 @@ export async function POST(req: Request) {
         mediaType = 'document';
       }
 
-      // If it's the sender, we might need the media URL.
-      // Evolution can be configured to send as base64 or link.
-      if (data.messageValues?.image?.url || data.messageValues?.base64) {
-         mediaUrl = data.messageValues?.image?.url || data.messageValues?.base64;
+      // Evolution API can send media in several ways. v2 usually sends base64 or a link in data.messageValues
+      if (data.messageValues?.base64) {
+        mediaUrl = data.messageValues.base64;
+      } else if (data.messageValues?.url) {
+        mediaUrl = data.messageValues.url;
+      } else if (data.message?.imageMessage?.url || data.message?.audioMessage?.url) {
+        // If it's a direct URL from WhatsApp (needs decryption usually, but Evolution often handles it)
+        mediaUrl = data.message?.imageMessage?.url || data.message?.audioMessage?.url;
       }
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -66,35 +70,45 @@ export async function POST(req: Request) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const cleanPhone = phoneRaw.replace(/\D/g, '');
-        // Last 8 digits match
-        const suffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : cleanPhone;
+        // Last 8 or 9 digits match (handling differences in 9th digit in Brazil)
+        const suffix8 = cleanPhone.slice(-8);
+        const suffix9 = cleanPhone.slice(-9);
 
         // Try to find athlete
         let athleteId = null;
-        if (suffix) {
-          const { data: athletes } = await supabase
-            .from('athletes')
-            .select('id')
-            .or(`phone.ilike.%${suffix}%,whatsapp.ilike.%${suffix}%,athlete_code.ilike.%${suffix}%`)
-            .limit(1);
-          
-          if (athletes && athletes.length > 0) {
-            athleteId = athletes[0].id;
-          }
+        const { data: athletes } = await supabase
+          .from('athletes')
+          .select('id, phone')
+          .or(`phone.ilike.%${suffix8}%,whatsapp.ilike.%${suffix8}%`)
+          .limit(1);
+        
+        if (athletes && athletes.length > 0) {
+          athleteId = athletes[0].id;
         }
 
-        // Check if message already exists
+        // If not found by suffix, try exact clean phone if matches
+        if (!athleteId) {
+           const { data: athletesExact } = await supabase
+            .from('athletes')
+            .select('id')
+            .eq('phone', cleanPhone)
+            .limit(1);
+           if (athletesExact && athletesExact.length > 0) athleteId = athletesExact[0].id;
+        }
+
+        // Check if message already exists (de-duplication)
         const { data: existing } = await supabase
           .from('whatsapp_messages')
           .select('id')
-          .eq('status', isFromMe ? 'sent' : 'received')
-          .eq('text', text || '')
+          .eq('direction', isFromMe ? 'outbound' : 'inbound')
           .eq('phone_number', cleanPhone)
-          .gte('created_at', new Date(Date.now() - 5000).toISOString()) // look back 5s
+          .eq('text', text || '')
+          .gte('created_at', new Date(Date.now() - 3000).toISOString())
           .limit(1);
 
         if (!existing || existing.length === 0) {
-          const { error: insertError } = await supabase.from('whatsapp_messages').insert({
+          console.log(`Inserting message for athlete: ${athleteId}, phone: ${cleanPhone}`);
+          await supabase.from('whatsapp_messages').insert({
             athlete_id: athleteId,
             phone_number: cleanPhone,
             direction: isFromMe ? 'outbound' : 'inbound',
@@ -103,8 +117,6 @@ export async function POST(req: Request) {
             media_type: mediaType,
             status: isFromMe ? 'sent' : 'received'
           });
-          
-          if (insertError) console.error('Supabase Insert Error:', insertError);
         }
       }
     }

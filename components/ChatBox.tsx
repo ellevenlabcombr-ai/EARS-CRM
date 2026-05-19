@@ -419,27 +419,36 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                     <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>
                     
                     {msg.media_type === 'image' && (
-                      <div className="mt-2 rounded-lg overflow-hidden border border-white/10">
+                      <div className="mt-2 rounded-lg overflow-hidden border border-white/10 group relative">
                         {msg.media_url ? (
-                          <img src={msg.media_url} alt="Media" className="max-w-full h-auto" />
+                          <img 
+                            src={msg.media_url} 
+                            alt="Media" 
+                            className="max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity" 
+                            onClick={() => window.open(msg.media_url, '_blank')}
+                          />
                         ) : (
                           <div className="bg-black/20 p-8 flex flex-col items-center justify-center gap-2">
                             <ImageIcon className="w-8 h-8 text-[#8696a0]" />
-                            <span className="text-[10px] text-[#8696a0]">Imagem recebida</span>
+                            <span className="text-[10px] text-[#8696a0]">Imagem (Carregando...)</span>
                           </div>
                         )}
                       </div>
                     )}
 
                     {msg.media_type === 'audio' && (
-                      <div className="mt-2 flex items-center gap-3 bg-black/10 p-2 rounded-lg min-w-[200px]">
-                        <div className="w-8 h-8 rounded-full bg-[#00a884] flex items-center justify-center shrink-0">
-                          <Play className="w-4 h-4 text-white fill-white" />
-                        </div>
-                        <div className="flex-1 h-1 bg-[#8696a0]/30 rounded-full relative">
-                          <div className="absolute left-0 top-0 h-full w-1/3 bg-[#00a884] rounded-full" />
-                        </div>
-                        <Music className="w-4 h-4 text-[#8696a0]" />
+                      <div className="mt-2 min-w-[240px]">
+                        {msg.media_url ? (
+                          <audio controls className="w-full h-8 accent-[#00a884]">
+                            <source src={msg.media_url} type="audio/mpeg" />
+                            Seu navegador não suporta áudio.
+                          </audio>
+                        ) : (
+                          <div className="flex items-center gap-3 bg-black/10 p-2 rounded-lg">
+                            <Music className="w-4 h-4 text-[#8696a0]" />
+                            <span className="text-[10px] text-[#8696a0]">Áudio recebido</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
