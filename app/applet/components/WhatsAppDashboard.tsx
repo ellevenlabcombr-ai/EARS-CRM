@@ -33,38 +33,38 @@ export function WhatsAppDashboard() {
 
   return (
     <div 
-      className="flex w-full rounded-2xl overflow-hidden bg-[#050B14] border border-slate-800/50"
+      className="flex w-full rounded-2xl overflow-hidden bg-[#0a1014] border border-[#222d34]"
       style={{ height: 'calc(100dvh - 180px)' }}
     >
       {/* Sidebar with Contacts */}
-      <div className="w-1/3 border-r border-slate-800/50 flex flex-col bg-[#0A1120]/50">
-        <div className="p-4 border-b border-slate-800/50">
-          <h2 className="font-semibold text-slate-200 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-green-500" />
+      <div className="w-1/3 border-r border-[#222d34] flex flex-col bg-[#111b21]">
+        <div className="p-4 border-b border-[#222d34] bg-[#202c33]">
+          <h2 className="font-semibold text-[#e9edef] flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-[#00a884]" />
             Contatos (Atletas)
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           {isLoading ? (
             <div className="p-8 flex justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#8696a0]" />
             </div>
           ) : athletes.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-sm">
+            <div className="p-8 text-center text-[#8696a0] text-sm">
               Nenhum atleta com telefone cadastrado.
             </div>
           ) : (
-            <div className="divide-y divide-slate-800/30">
+            <div className="divide-y divide-[#222d34]">
               {athletes.map(athlete => (
                 <button
                   key={athlete.id}
                   onClick={() => setSelectedAthlete(athlete)}
-                  className={`w-full text-left p-4 hover:bg-slate-800/30 transition-colors ${
-                    selectedAthlete?.id === athlete.id ? 'bg-slate-800/50 border-l-4 border-green-500' : 'border-l-4 border-transparent'
+                  className={`w-full text-left p-4 hover:bg-[#202c33] transition-colors ${
+                    selectedAthlete?.id === athlete.id ? 'bg-[#2a3942]' : ''
                   }`}
                 >
-                  <div className="font-medium text-sm text-slate-100">{athlete.name}</div>
-                  <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                  <div className="font-medium text-sm text-[#e9edef]">{athlete.name}</div>
+                  <div className="text-xs text-[#8696a0] flex items-center gap-1 mt-1">
                     <Phone className="w-3 h-3" />
                     {athlete.phone}
                   </div>
@@ -76,7 +76,7 @@ export function WhatsAppDashboard() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-[#050B14] overflow-hidden">
+      <div className="flex-1 flex flex-col bg-[#0b141a] overflow-hidden">
         {selectedAthlete ? (
           <ChatBox 
             athleteId={selectedAthlete.id} 
@@ -85,9 +85,9 @@ export function WhatsAppDashboard() {
             inline={true} 
           />
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-            <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-4">
-              <Users className="w-8 h-8 text-slate-500" />
+          <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0]">
+            <div className="w-16 h-16 bg-[#202c33] rounded-full flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-[#8696a0]" />
             </div>
             <p>Selecione um contato para iniciar o chat</p>
           </div>
