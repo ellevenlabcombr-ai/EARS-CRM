@@ -70,17 +70,9 @@ export async function POST(req: Request) {
         body.caption = message || "";
         body.mediatype = "image";
       } else if (mediaType === 'audio') {
-        // If it's recorded mp4 or we are unsure, sending via sendMedia is safer so it's not a broken voice note
-        if (mediaUrl.includes('audio/mp4') || mediaUrl.includes('audio/webm')) {
-           endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
-           body.media = finalMedia;
-           body.mediatype = "audio";
-           body.fileName = "audio.m4a"; 
-        } else {
-           endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
-           body.audio = finalMedia;
-           body.encoding = true;
-        }
+        endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
+        body.audio = finalMedia;
+        body.encoding = true;
       } else if (mediaType === 'document' || mediaType === 'video') {
         endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
         body.media = finalMedia;

@@ -181,22 +181,14 @@ export async function POST(req: Request) {
         }
 
         // Check if message already exists (de-duplication)
-        let dedupeQuery = supabase
+        const { data: existing } = await supabase
           .from('whatsapp_messages')
           .select('id')
           .eq('direction', isFromMe ? 'outbound' : 'inbound')
           .ilike('phone_number', `%${s8}`)
-          .gte('created_at', new Date(Date.now() - 15000).toISOString());
-        
-        if (text) {
-           dedupeQuery = dedupeQuery.eq('text', text);
-        } else if (mediaType) {
-           dedupeQuery = dedupeQuery.eq('media_type', mediaType);
-        } else {
-           dedupeQuery = dedupeQuery.eq('text', '');
-        }
-        
-        const { data: existing } = await dedupeQuery.limit(1);
+          .eq('text', text || '')
+          .gte('created_at', new Date(Date.now() - 15000).toISOString())
+          .limit(1);
 
         if (!existing || existing.length === 0) {
           console.log(`[RECEPTION] New message from ${cleanPhone}. Linking to athlete ${athleteId || 'NONE'} (text: ${text || mediaType})`);
