@@ -337,7 +337,15 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         };
 
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          if (audioChunksRef.current.length === 0) {
+            stream.getTracks().forEach(track => track.stop());
+            setSending(false);
+            alert("Não foi possível capturar o áudio. Se estiver no preview, por favor clique no botão de 'Abrir numa nova guia' (no canto superior direito) para testar o microfone.");
+            return;
+          }
+
+          const mimeType = mediaRecorder.mimeType || 'audio/webm';
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           // Stop all microphone tracks to release the hardware
           stream.getTracks().forEach(track => track.stop());
 

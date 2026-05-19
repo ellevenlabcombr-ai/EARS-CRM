@@ -87,18 +87,49 @@ export async function POST(req: Request) {
       const foundBase64 = findBase64(data) || data.base64 || data.message?.base64;
       if (foundBase64) {
         mediaUrl = foundBase64;
-      } else if (content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url) {
-        mediaUrl = content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url;
+      } else if (content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url || content.documentMessage?.url) {
+        mediaUrl = content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url || content.documentMessage?.url;
       }
 
-      // DEBUG: insert dummy message to see if we had base64
-      if (mediaType && supabaseUrl && supabaseKey) {
-          const supabaseDebug = createClient(supabaseUrl, supabaseKey);
-          await supabaseDebug.from('whatsapp_messages').insert([{
-             phone_number: 'DEBUG',
-             direction: 'inbound',
-             text: `Webhook received. base64 found? ${!!foundBase64}. data.message.base64? ${!!data.message?.base64}. URL: ${mediaUrl?.substring(0,30)}`
-          }]);
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      // If we only have the encrypted URL, try to fetch base64 from the API manually
+      if (mediaType && mediaUrl && mediaUrl.startsWith('http') && supabaseUrl && supabaseKey) {
+          try {
+              const supabaseBase64 = createClient(supabaseUrl, supabaseKey);
+              const { data: settings } = await supabaseBase64.from('automation_settings')
+                  .select('evolution_api_url, evolution_api_key, evolution_instance_id').single();
+              
+              if (settings && settings.evolution_api_url) {
+                  const baseUrl = settings.evolution_api_url.endsWith('/') ? settings.evolution_api_url.slice(0, -1) : settings.evolution_api_url;
+                  
+                  const base64Res = await fetch(`${baseUrl}/chat/getBase64FromMediaMessage/${settings.evolution_instance_id}`, {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'apikey': settings.evolution_api_key || ''
+                      },
+                      body: JSON.stringify({
+                          message: {
+                             key: key,
+                             message: content
+                          }
+                      })
+                  });
+
+                  if (base64Res.ok) {
+                      const resData = await base64Res.json();
+                      if (resData && resData.base64) {
+                          mediaUrl = resData.base64;
+                      }
+                  } else {
+                      console.log('Failed to fetch base64 manually', base64Res.status, await base64Res.text());
+                  }
+              }
+          } catch (e) {
+              console.error('Error fetching base64 manually', e);
+          }
       }
 
       // Ensure base64 can be rendered in the frontend
@@ -114,10 +145,6 @@ export async function POST(req: Request) {
            mediaUrl = null; // likely weird data
          }
       }
-
-
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
