@@ -9,8 +9,10 @@ export async function POST(req: Request) {
     // Evolution API sends events like "messages.upsert" or "MESSAGES_UPSERT"
     const event = body.event?.toLowerCase();
     
-    if (event === 'messages.upsert' || event === 'messages_upsert') {
+    if (event === 'messages.upsert' || event === 'messages_upsert' || event === 'messages.upsert_v2') {
       const data = body.data;
+      if (!data) return NextResponse.json({ success: true, warning: 'No data' });
+      
       const message = data.message;
       const key = data.key;
       const instance = body.instance;
@@ -20,7 +22,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, warning: 'Missing message or key' });
       }
 
-      const phoneRaw = key.remoteJid.split('@')[0];
+      const remoteJid = key.remoteJid;
+      const phoneRaw = remoteJid.split('@')[0];
       const isFromMe = key.fromMe;
       const messageId = key.id;
       
@@ -35,7 +38,6 @@ export async function POST(req: Request) {
       } else if (message.imageMessage) {
         text = message.imageMessage.caption || '';
         mediaType = 'image';
-        // Evolution API provides base64 if configured, but here we might just have the metadata
       } else if (message.audioMessage) {
         mediaType = 'audio';
       } else if (message.videoMessage) {
@@ -51,6 +53,12 @@ export async function POST(req: Request) {
         mediaType = 'document';
       }
 
+      // If it's the sender, we might need the media URL.
+      // Evolution can be configured to send as base64 or link.
+      if (data.messageValues?.image?.url || data.messageValues?.base64) {
+         mediaUrl = data.messageValues?.image?.url || data.messageValues?.base64;
+      }
+
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -58,25 +66,46 @@ export async function POST(req: Request) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const cleanPhone = phoneRaw.replace(/\D/g, '');
-        const suffix = cleanPhone.slice(-8);
+        // Last 8 digits match
+        const suffix = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : cleanPhone;
 
-        const { data: athletes } = await supabase
-          .from('athletes')
+        // Try to find athlete
+        let athleteId = null;
+        if (suffix) {
+          const { data: athletes } = await supabase
+            .from('athletes')
+            .select('id')
+            .or(`phone.ilike.%${suffix}%,whatsapp.ilike.%${suffix}%,athlete_code.ilike.%${suffix}%`)
+            .limit(1);
+          
+          if (athletes && athletes.length > 0) {
+            athleteId = athletes[0].id;
+          }
+        }
+
+        // Check if message already exists
+        const { data: existing } = await supabase
+          .from('whatsapp_messages')
           .select('id')
-          .or(`phone.ilike.%${suffix}%,athlete_code.ilike.%${suffix}%`)
+          .eq('status', isFromMe ? 'sent' : 'received')
+          .eq('text', text || '')
+          .eq('phone_number', cleanPhone)
+          .gte('created_at', new Date(Date.now() - 5000).toISOString()) // look back 5s
           .limit(1);
 
-        const athleteId = athletes && athletes.length > 0 ? athletes[0].id : null;
-
-        await supabase.from('whatsapp_messages').insert({
-          athlete_id: athleteId,
-          phone_number: cleanPhone,
-          direction: isFromMe ? 'outbound' : 'inbound',
-          text: text,
-          media_url: mediaUrl,
-          media_type: mediaType,
-          status: isFromMe ? 'sent' : 'received'
-        });
+        if (!existing || existing.length === 0) {
+          const { error: insertError } = await supabase.from('whatsapp_messages').insert({
+            athlete_id: athleteId,
+            phone_number: cleanPhone,
+            direction: isFromMe ? 'outbound' : 'inbound',
+            text: text,
+            media_url: mediaUrl,
+            media_type: mediaType,
+            status: isFromMe ? 'sent' : 'received'
+          });
+          
+          if (insertError) console.error('Supabase Insert Error:', insertError);
+        }
       }
     }
 

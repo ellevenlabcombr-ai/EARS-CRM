@@ -47,7 +47,38 @@ export async function POST(req: Request) {
     const finalPhone = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
 
     const baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-    const endpoint = `${baseUrl}/message/sendText/${instanceId}`;
+    let endpoint = `${baseUrl}/message/sendText/${instanceId}`;
+    let body: any = {
+      number: finalPhone,
+      options: {
+        delay: 1200,
+        presence: "composing",
+      }
+    };
+
+    const { mediaUrl, mediaType, fileName } = await req.json().catch(() => ({}));
+
+    if (mediaUrl && mediaType) {
+      if (mediaType === 'image') {
+        endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
+        body.image = mediaUrl;
+        body.caption = message || "";
+        body.mediaType = "image";
+      } else if (mediaType === 'audio') {
+        endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
+        body.audio = mediaUrl;
+        body.mediaType = "audio";
+      } else if (mediaType === 'document' || mediaType === 'video') {
+        endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
+        body.media = mediaUrl;
+        body.caption = message || "";
+        body.mediaType = mediaType;
+        body.fileName = fileName || "arquivo";
+      }
+    } else {
+      body.text = message;
+      body.textMessage = { text: message };
+    }
     
     const options = {
       method: "POST",
@@ -55,15 +86,7 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
         "apikey": apiKey || "",
       },
-      body: JSON.stringify({
-        number: finalPhone,
-        text: message,
-        textMessage: { text: message },
-        options: {
-          delay: 1200,
-          presence: "composing",
-        }
-      })
+      body: JSON.stringify(body)
     };
 
     const res = await fetch(endpoint, options);

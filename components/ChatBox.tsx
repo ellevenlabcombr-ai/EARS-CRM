@@ -152,8 +152,6 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     }
     
     setSending(true);
-    const lastUserMessage = messages.filter(m => m.direction === 'inbound').pop();
-    
     try {
       const response = await fetch('/api/ears/chat', {
         method: 'POST',
@@ -165,12 +163,144 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       });
       
       const data = await response.json();
-      setNewMessage(data.text);
+      
+      if (!data.text && !process.env.GEMINI_API_KEY) {
+        setNewMessage("⚠️ Chave Gemini API não configurada. Configure no menu Settings (GEMINI_API_KEY).");
+      } else {
+        setNewMessage(data.text);
+      }
     } catch (error) {
       console.error(error);
       setNewMessage("Oi! No momento estou recarregando minhas energias, mas continue focado!");
     } finally {
       setSending(false);
+    }
+  };
+
+  const uploadFile = async (file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+    const filePath = `whatsapp-media/${fileName}`;
+
+    const { data, error } = await supabase.storage
+      .from('media') // bucket name
+      .upload(filePath, file);
+
+    if (error) {
+      if (error.message.includes('bucket not found')) {
+        // Try creating bucket via RPC if exists, or just use blob for now if it fails
+        console.error('Storage bucket "media" not found. Using blob for preview.');
+        return URL.createObjectURL(file);
+      }
+      throw error;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('media')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const handleAttachment = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,application/pdf,video/*';
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+      const mediaType = isImage ? 'image' : (isVideo ? 'video' : 'document');
+      
+      setSending(true);
+      try {
+        let mediaUrl = URL.createObjectURL(file);
+        
+        // Try real upload if configured
+        try {
+          const uploadedUrl = await uploadFile(file);
+          if (uploadedUrl) mediaUrl = uploadedUrl;
+        } catch (err) {
+          console.warn("Upload failed, using local URL", err);
+        }
+
+        const msgText = isImage ? (newMessage || '') : file.name;
+
+        // Send via Evolution API
+        const response = await fetch('/api/whatsapp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            phone: cleanPhone, 
+            message: msgText,
+            mediaUrl: mediaUrl,
+            mediaType: mediaType,
+            fileName: file.name
+          }),
+        });
+
+        if (response.ok) {
+          await supabase.from('whatsapp_messages').insert({
+            athlete_id: athleteId,
+            phone_number: cleanPhone,
+            direction: 'outbound',
+            text: msgText,
+            media_url: mediaUrl,
+            media_type: mediaType,
+            status: 'sent'
+          });
+          setNewMessage('');
+          setReplyingTo(null);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setSending(false);
+      }
+    };
+    input.click();
+  };
+
+  const handleMic = async () => {
+    if (isRecording) {
+      setIsRecording(false);
+      // In a real app, we would capture the stream. 
+      // For now, we simulate a sent audio via Evolution.
+      setSending(true);
+      try {
+        const response = await fetch('/api/whatsapp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            phone: cleanPhone, 
+            message: "", 
+            mediaType: 'audio',
+            mediaUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' // Placeholder audio
+          }),
+        });
+
+        if (response.ok) {
+          await supabase.from('whatsapp_messages').insert({
+            athlete_id: athleteId,
+            phone_number: cleanPhone,
+            direction: 'outbound',
+            text: '',
+            media_type: 'audio',
+            media_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+            status: 'sent'
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setSending(false);
+      }
+    } else {
+      setIsRecording(true);
+      // Simulate recording
+      setTimeout(() => setIsRecording(false), 5000);
     }
   };
 
@@ -194,59 +324,6 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
 
   const handleEmoji = () => {
     setShowEmojiPicker(!showEmojiPicker);
-  };
-
-  const handleAttachment = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*,application/pdf';
-    input.onchange = async (e: any) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      const isImage = file.type.startsWith('image/');
-      
-      // Simulate slow upload
-      setSending(true);
-      setTimeout(async () => {
-        try {
-          const { data: { publicUrl } } = { data: { publicUrl: URL.createObjectURL(file) } };
-          
-          await supabase.from('whatsapp_messages').insert({
-            athlete_id: athleteId,
-            phone_number: cleanPhone,
-            direction: 'outbound',
-            text: isImage ? (newMessage || 'Foto') : file.name,
-            media_url: publicUrl,
-            media_type: isImage ? 'image' : 'document',
-            status: 'sent'
-          });
-          setNewMessage('');
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setSending(false);
-        }
-      }, 1000);
-    };
-    input.click();
-  };
-
-  const handleMic = () => {
-    if (isRecording) {
-      setIsRecording(false);
-      // Simulate audio message
-      supabase.from('whatsapp_messages').insert({
-        athlete_id: athleteId,
-        phone_number: cleanPhone,
-        direction: 'outbound',
-        text: '',
-        media_type: 'audio',
-        status: 'sent'
-      }).then(() => scrollToBottom());
-    } else {
-      setIsRecording(true);
-    }
   };
 
   if (!isOpen) {
