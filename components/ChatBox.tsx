@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard } from 'lucide-react';
+import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 interface ChatBoxProps {
   athleteId: string;
@@ -20,13 +21,25 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   const [isLoading, setIsLoading] = useState(false);
   const [replyingTo, setReplyingTo] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (inline) {
       setIsOpen(true);
     }
   }, [inline, athleteId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const cleanPhone = athletePhone ? athletePhone.replace(/\D/g, '') : '';
   const suffix = cleanPhone.slice(-8);
@@ -137,10 +150,28 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       setNewMessage("Ears: Aguarde o atleta enviar uma mensagem primeiro.");
       return;
     }
-    setNewMessage("Pensando como Ears...");
-    setTimeout(() => {
-      setNewMessage(`Oi! Sim, sugiro fazer compressa de gelo por 15 minutos e descansar hoje.`);
-    }, 1500);
+    
+    setSending(true);
+    const lastUserMessage = messages.filter(m => m.direction === 'inbound').pop();
+    
+    try {
+      const response = await fetch('/api/ears/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: messages.slice(-5), 
+          athleteName 
+        }),
+      });
+      
+      const data = await response.json();
+      setNewMessage(data.text);
+    } catch (error) {
+      console.error(error);
+      setNewMessage("Oi! No momento estou recarregando minhas energias, mas continue focado!");
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleSimulateAthleteResponse = async () => {
@@ -157,16 +188,46 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     }
   };
 
+  const onEmojiClick = (emojiObject: any) => {
+    setNewMessage(prev => prev + emojiObject.emoji);
+  };
+
   const handleEmoji = () => {
-    setNewMessage(prev => prev + "😀");
+    setShowEmojiPicker(!showEmojiPicker);
   };
 
   const handleAttachment = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*,application/pdf';
-    input.onchange = () => {
-      setNewMessage(prev => prev + " [Arquivo anexado]");
+    input.onchange = async (e: any) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const isImage = file.type.startsWith('image/');
+      
+      // Simulate slow upload
+      setSending(true);
+      setTimeout(async () => {
+        try {
+          const { data: { publicUrl } } = { data: { publicUrl: URL.createObjectURL(file) } };
+          
+          await supabase.from('whatsapp_messages').insert({
+            athlete_id: athleteId,
+            phone_number: cleanPhone,
+            direction: 'outbound',
+            text: isImage ? (newMessage || 'Foto') : file.name,
+            media_url: publicUrl,
+            media_type: isImage ? 'image' : 'document',
+            status: 'sent'
+          });
+          setNewMessage('');
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setSending(false);
+        }
+      }, 1000);
     };
     input.click();
   };
@@ -174,7 +235,15 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   const handleMic = () => {
     if (isRecording) {
       setIsRecording(false);
-      setNewMessage(prev => prev + " [Áudio gravado 0:05]");
+      // Simulate audio message
+      supabase.from('whatsapp_messages').insert({
+        athlete_id: athleteId,
+        phone_number: cleanPhone,
+        direction: 'outbound',
+        text: '',
+        media_type: 'audio',
+        status: 'sent'
+      }).then(() => scrollToBottom());
     } else {
       setIsRecording(true);
     }
@@ -204,6 +273,13 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
            </div>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={() => window.location.href = '/?view=home'} 
+            title="Voltar para Dashboard" 
+            className="text-[#8696a0] hover:text-[#e9edef] p-2 rounded-md transition-colors cursor-pointer"
+          >
+            <LayoutDashboard className="w-5 h-5" />
+          </button>
           <button onClick={handleSimulateAthleteResponse} title="Simular Atleta Respondendo" className="text-[#8696a0] hover:text-[#e9edef] p-2 rounded-md transition-colors cursor-pointer">
             <User className="w-5 h-5" />
           </button>
@@ -264,6 +340,47 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                       </div>
                     )}
                     <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                    
+                    {msg.media_type === 'image' && (
+                      <div className="mt-2 rounded-lg overflow-hidden border border-white/10">
+                        {msg.media_url ? (
+                          <img src={msg.media_url} alt="Media" className="max-w-full h-auto" />
+                        ) : (
+                          <div className="bg-black/20 p-8 flex flex-col items-center justify-center gap-2">
+                            <ImageIcon className="w-8 h-8 text-[#8696a0]" />
+                            <span className="text-[10px] text-[#8696a0]">Imagem recebida</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {msg.media_type === 'audio' && (
+                      <div className="mt-2 flex items-center gap-3 bg-black/10 p-2 rounded-lg min-w-[200px]">
+                        <div className="w-8 h-8 rounded-full bg-[#00a884] flex items-center justify-center shrink-0">
+                          <Play className="w-4 h-4 text-white fill-white" />
+                        </div>
+                        <div className="flex-1 h-1 bg-[#8696a0]/30 rounded-full relative">
+                          <div className="absolute left-0 top-0 h-full w-1/3 bg-[#00a884] rounded-full" />
+                        </div>
+                        <Music className="w-4 h-4 text-[#8696a0]" />
+                      </div>
+                    )}
+
+                    {msg.media_type === 'video' && (
+                      <div className="mt-2 aspect-video bg-black/40 rounded-lg flex items-center justify-center border border-white/10 px-4">
+                        <Play className="w-10 h-10 text-white/50" />
+                      </div>
+                    )}
+
+                    {msg.media_type === 'document' && (
+                      <div className="mt-2 flex items-center gap-3 bg-black/20 p-3 rounded-lg border border-white/5">
+                        <FileText className="w-6 h-6 text-[#53bdeb]" />
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-xs font-medium truncate">Documento.pdf</p>
+                          <p className="text-[10px] text-[#8696a0]">1.2 MB • PDF</p>
+                        </div>
+                      </div>
+                    )}
                     <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${isOutbound ? 'text-white/70' : 'text-[#8696a0]'}`}>
                       <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       {isOutbound && (
@@ -302,10 +419,23 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       )}
 
       <div className={`p-3 flex items-center gap-2 shrink-0 bg-[#202c33] border-transparent`}>
-        <div className="flex gap-1 shrink-0">
-          <button onClick={handleEmoji} className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
+        <div className="flex gap-1 shrink-0 relative">
+          <button onClick={handleEmoji} className={`p-2 rounded-md transition-colors cursor-pointer ${showEmojiPicker ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
             <Smile className="w-6 h-6" />
           </button>
+          
+          {showEmojiPicker && (
+            <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
+              <EmojiPicker 
+                onEmojiClick={onEmojiClick} 
+                theme={Theme.DARK}
+                width={300}
+                height={400}
+                lazyLoadEmojis={true}
+              />
+            </div>
+          )}
+
           <button onClick={handleAttachment} className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
             <Paperclip className="w-5 h-5" />
           </button>
