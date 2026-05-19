@@ -32,7 +32,10 @@ export function WhatsAppDashboard() {
   }, []);
 
   return (
-    <div className="flex h-[calc(100vh-120px)] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-[#050B14]">
+    <div 
+      className="flex border border-slate-200 dark:border-slate-800/50 rounded-2xl overflow-hidden bg-white dark:bg-[#050B14]"
+      style={{ height: 'calc(100dvh - 160px)' }}
+    >
       {/* Sidebar with Contacts */}
       <div className="w-1/3 border-r border-slate-200 dark:border-slate-800 flex flex-col">
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
@@ -73,19 +76,14 @@ export function WhatsAppDashboard() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900">
+      <div className="flex-1 flex flex-col bg-slate-50 dark:bg-[#050B14] overflow-hidden">
         {selectedAthlete ? (
-          <div className="flex-1 flex justify-center items-center p-8">
-            <div className="w-full max-w-lg h-full relative">
-               {/* We wrap ChatBox, making it act inline instead of floating */}
-               <ChatBox 
-                 athleteId={selectedAthlete.id} 
-                 athletePhone={selectedAthlete.phone} 
-                 athleteName={selectedAthlete.name} 
-                 inline={true} 
-               />
-            </div>
-          </div>
+          <ChatBox 
+            athleteId={selectedAthlete.id} 
+            athletePhone={selectedAthlete.phone} 
+            athleteName={selectedAthlete.name} 
+            inline={true} 
+          />
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">

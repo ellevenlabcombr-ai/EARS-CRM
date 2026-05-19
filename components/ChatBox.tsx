@@ -140,8 +140,8 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   }
 
   return (
-    <div className={inline ? "w-full h-full bg-white dark:bg-[#050B14] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm flex flex-col overflow-hidden" : "fixed bottom-6 right-6 w-[350px] h-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"}>
-      <div className="flex items-center justify-between p-4 bg-green-500 text-white">
+    <div className={inline ? "w-full h-full flex flex-col overflow-hidden bg-slate-50 dark:bg-[#050B14]" : "fixed bottom-6 right-6 w-[350px] h-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"}>
+      <div className="flex items-center justify-between p-4 bg-green-500 text-white shrink-0">
         <div className="flex items-center space-x-3">
            <div className="bg-white/20 p-2 rounded-full">
              <Phone className="w-4 h-4 text-white" />
@@ -158,7 +158,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-[#050B14]">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-[#050B14] custom-scrollbar">
         {isLoading && (
           <div className="flex justify-center p-4">
              <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
@@ -172,7 +172,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                 className={`max-w-[80%] p-3 rounded-2xl text-sm ${
                   isOutbound
                     ? 'bg-green-500 text-white rounded-tr-none'
-                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-tl-none shadow-sm'
+                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/50 rounded-tl-none shadow-sm'
                 }`}
               >
                 <p className="break-words whitespace-pre-wrap">{msg.text}</p>
@@ -186,7 +186,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2">
+      <div className={`p-3 border-t flex items-center gap-2 shrink-0 ${inline ? 'bg-slate-100 dark:bg-[#0A1120] border-slate-200 dark:border-slate-800/50' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
         <textarea
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
@@ -197,7 +197,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
             }
           }}
           placeholder="Mensagem..."
-          className="flex-1 bg-slate-100 dark:bg-slate-800 border-0 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 resize-none min-h-[40px] max-h-[100px] text-slate-900 dark:text-white"
+          className={`flex-1 border-0 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 resize-none min-h-[40px] max-h-[100px] outline-none ${inline ? 'bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white'}`}
           rows={1}
         />
         <Button
