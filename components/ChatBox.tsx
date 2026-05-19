@@ -626,19 +626,27 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
           </button>
         </div>
         
-        <textarea
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Mensagem"
-          className={`flex-1 border-0 rounded-lg px-4 py-2.5 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] bg-[#2a3942] text-[#e9edef] placeholder-[#8696a0] leading-snug`}
-          rows={1}
-        />
+        {isRecording ? (
+          <div className="flex-1 flex items-center gap-3 px-4 h-[44px] rounded-lg bg-[#2a3942] border border-red-500/30 animate-pulse">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+            <span className="text-[#e9edef] text-sm flex-1">Gravando áudio...</span>
+            <span className="text-xs text-[#8696a0]">Toque no microfone para parar e enviar</span>
+          </div>
+        ) : (
+          <textarea
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Mensagem"
+            className={`flex-1 border-0 rounded-lg px-4 py-2.5 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] bg-[#2a3942] text-[#e9edef] placeholder-[#8696a0] leading-snug`}
+            rows={1}
+          />
+        )}
         
         {newMessage.trim() ? (
           <Button
