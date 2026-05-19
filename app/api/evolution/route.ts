@@ -40,13 +40,18 @@ export async function POST(req: Request) {
     } else if (action === "set_webhook") {
       // Setup webhook logic
       let origin = req.headers.get("origin");
-      if (!origin && req.headers.get("host")) {
+      if (!origin && req.headers.get("x-forwarded-host")) {
+        const host = req.headers.get("x-forwarded-host");
+        const protocol = req.headers.get("x-forwarded-proto") || 'https';
+        origin = `${protocol}://${host}`;
+      } else if (!origin && req.headers.get("host")) {
         const host = req.headers.get("host");
         const protocol = host?.includes('localhost') ? 'http' : 'https';
         origin = `${protocol}://${host}`;
       }
       
       const webhookUrl = `${origin}/api/webhooks/evolution`;
+      console.log('Setting webhook URL to:', webhookUrl);
 
       endpoint = `${baseUrl}/webhook/set/${instanceId}`;
       options.method = "POST";
