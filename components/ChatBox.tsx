@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 interface ChatBoxProps {
@@ -42,30 +42,34 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   }, []);
 
   const cleanPhone = athletePhone ? athletePhone.replace(/\D/g, '') : '';
-  const suffix = cleanPhone.slice(-8);
+  const suffix8 = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : '';
+
+  const fetchMessages = async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    const { data, error } = await supabase
+      .from('whatsapp_messages')
+      .select('*')
+      .or(`athlete_id.eq.${athleteId},phone_number.ilike.%${suffix8}%`)
+      .order('created_at', { ascending: true });
+
+    if (!error && data) {
+      setMessages(data);
+    }
+    if (!silent) {
+       setIsLoading(false);
+       setTimeout(scrollToBottom, 300);
+    }
+  };
 
   useEffect(() => {
-    if (!isOpen || !cleanPhone || cleanPhone.length < 8) return;
-
-    const fetchMessages = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('whatsapp_messages')
-        .select('*')
-        .or(`athlete_id.eq.${athleteId},phone_number.like.%${suffix}%`)
-        .order('created_at', { ascending: true });
-
-      if (!error && data) {
-        setMessages(data);
-      }
-      setIsLoading(false);
-      scrollToBottom();
-    };
+    if (!isOpen || !athleteId) return;
 
     fetchMessages();
 
+    // Unique channel to avoid conflicts
+    const channelId = `chat-${athleteId}-${Date.now()}`;
     const subscription = supabase
-      .channel('public:whatsapp_messages')
+      .channel(channelId)
       .on(
         'postgres_changes',
         {
@@ -75,7 +79,11 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         },
         (payload) => {
           const newMsg = payload.new;
-          if (newMsg.athlete_id === athleteId || (newMsg.phone_number && newMsg.phone_number.includes(suffix))) {
+          const isRelevant = 
+            newMsg.athlete_id === athleteId || 
+            (newMsg.phone_number && suffix8 && newMsg.phone_number.includes(suffix8));
+
+          if (isRelevant) {
             setMessages((prev) => {
                if (prev.find(m => m.id === newMsg.id)) return prev;
                return [...prev, newMsg];
@@ -84,12 +92,14 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`Realtime status for ${athleteId}:`, status);
+      });
 
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [isOpen, athleteId, suffix, cleanPhone]);
+  }, [isOpen, athleteId, suffix8]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -350,6 +360,13 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
            </div>
         </div>
         <div className="flex items-center gap-2">
+          <button 
+            onClick={() => fetchMessages()} 
+            title="Sincronizar Mensagens" 
+            className={`text-[#8696a0] hover:text-[#e9edef] p-2 rounded-md transition-colors cursor-pointer ${isLoading ? 'animate-spin text-[#00a884]' : ''}`}
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
           <button 
             onClick={() => window.location.href = '/?view=home'} 
             title="Voltar para Dashboard" 

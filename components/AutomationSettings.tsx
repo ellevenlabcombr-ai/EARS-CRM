@@ -198,6 +198,16 @@ export function AutomationSettings() {
            const autoFixSql = `
             DO $$ 
             BEGIN
+                -- Enable Realtime for whatsapp_messages
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+                        CREATE PUBLICATION supabase_realtime;
+                    END IF;
+                    ALTER PUBLICATION supabase_realtime ADD TABLE whatsapp_messages;
+                EXCEPTION WHEN OTHERS THEN
+                    -- Ignore if already added or other issues
+                END;
+
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_auto_ears') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN whatsapp_auto_ears BOOLEAN DEFAULT false;
                 END IF;

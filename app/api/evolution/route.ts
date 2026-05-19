@@ -39,11 +39,14 @@ export async function POST(req: Request) {
       options.method = "DELETE";
     } else if (action === "set_webhook") {
       // Setup webhook logic
-      const reqUrl = req.headers.get("origin") || req.headers.get("host") || "";
-      const isLocalhost = reqUrl.includes("localhost");
-      const hostProtocol = reqUrl.includes("localhost") || reqUrl.includes("http://") ? "http://" : "https://";
-      const cleanHost = reqUrl.replace(/^https?:\/\//, '');
-      const webhookUrl = `${hostProtocol}${cleanHost}/api/webhooks/evolution`;
+      let origin = req.headers.get("origin");
+      if (!origin && req.headers.get("host")) {
+        const host = req.headers.get("host");
+        const protocol = host?.includes('localhost') ? 'http' : 'https';
+        origin = `${protocol}://${host}`;
+      }
+      
+      const webhookUrl = `${origin}/api/webhooks/evolution`;
 
       endpoint = `${baseUrl}/webhook/set/${instanceId}`;
       options.method = "POST";
