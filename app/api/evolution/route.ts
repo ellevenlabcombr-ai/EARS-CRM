@@ -59,7 +59,7 @@ export async function POST(req: Request) {
         webhook: {
           enabled: true,
           url: webhookUrl,
-          byEvents: true,
+          byEvents: false,
           base64: false,
           events: [
             "MESSAGES_UPSERT", 

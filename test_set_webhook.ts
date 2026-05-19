@@ -16,7 +16,7 @@ async function check() {
     body: JSON.stringify({
       webhook: {
         enabled: true,
-        url: "https://google.com/",
+        url: "https://www.ears.app.br/api/webhooks/evolution",
         byEvents: false,
         base64: false,
         events: ["MESSAGES_UPSERT", "SEND_MESSAGE", "MESSAGES_UPDATE"]
