@@ -64,9 +64,7 @@ export async function POST(req: Request) {
           events: [
             "MESSAGES_UPSERT", 
             "MESSAGES_UPDATE",
-            "SEND_MESSAGE",
-            "messages.upsert",
-            "messages.send"
+            "SEND_MESSAGE"
           ]
         }
       });

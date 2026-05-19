@@ -269,6 +269,28 @@ export function AutomationSettings() {
         if (data.evolution_api_url) setEvolutionApiUrl(data.evolution_api_url);
         if (data.evolution_api_key) setEvolutionApiKey(data.evolution_api_key);
         if (data.evolution_instance_id) setEvolutionInstanceId(data.evolution_instance_id);
+        
+        // Auto-check status right after loading if it's the evolution provider
+        if (data.whatsapp_provider === 'evolution' && data.evolution_api_url && data.evolution_instance_id) {
+           setTimeout(() => {
+              const fetchStatusInitial = async () => {
+                try {
+                  const res = await fetch('/api/evolution', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: data.evolution_api_url, apiKey: data.evolution_api_key, instanceId: data.evolution_instance_id, action: 'status' })
+                  });
+                  const json = await res.json();
+                  if (res.ok && json.data) {
+                    setInstanceStatus(json.data?.instance?.state || 'unknown');
+                  } else {
+                    setInstanceStatus('not_found');
+                  }
+                } catch(e) {}
+              };
+              fetchStatusInitial();
+           }, 500);
+        }
         if (data.whatsapp_reminder_template) setWhatsappReminderTemplate(data.whatsapp_reminder_template);
         if (data.whatsapp_followup_template) setWhatsappFollowupTemplate(data.whatsapp_followup_template);
         if (data.whatsapp_reminder_timing) setWhatsappReminderTiming(data.whatsapp_reminder_timing);
