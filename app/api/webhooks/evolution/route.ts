@@ -70,23 +70,30 @@ export async function POST(req: Request) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const cleanPhone = phoneRaw.replace(/\D/g, '');
-        // Last 8 or 9 digits match
-        const suffix8 = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : cleanPhone;
-        const suffix9 = cleanPhone.length >= 9 ? cleanPhone.slice(-9) : cleanPhone;
+        // Extract many possible suffixes
+        const s8 = cleanPhone.slice(-8);
+        const s9 = cleanPhone.slice(-9);
 
         // Try to find athlete
         let athleteId = null;
         let athleteName = "Atleta";
         
+        // Match by multiple possible versions of the suffix
         const { data: athletes } = await supabase
           .from('athletes')
-          .select('id, name')
-          .or(`phone.ilike.%${suffix8}%,whatsapp.ilike.%${suffix8}%,phone.ilike.%${suffix9}%,whatsapp.ilike.%${suffix9}%`)
-          .limit(1);
+          .select('id, name, phone, whatsapp')
+          .or(`phone.ilike.%${s8}%,whatsapp.ilike.%${s8}%,phone.ilike.%${s9}%,whatsapp.ilike.%${s9}%`)
+          .limit(5); // Get a few to filter manually if needed
         
         if (athletes && athletes.length > 0) {
-          athleteId = athletes[0].id;
-          athleteName = athletes[0].name;
+          // Priority to those that match s9 or exact
+          const bestMatch = athletes.find(a => 
+            (a.phone && a.phone.replace(/\D/g, '').endsWith(s9)) || 
+            (a.whatsapp && a.whatsapp.replace(/\D/g, '').endsWith(s9))
+          ) || athletes[0];
+
+          athleteId = bestMatch.id;
+          athleteName = bestMatch.name;
         }
 
         // Check if message already exists (de-duplication)

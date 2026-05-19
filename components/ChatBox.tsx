@@ -67,7 +67,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     fetchMessages();
 
     // Unique channel to avoid conflicts
-    const channelId = `chat-${athleteId}-${Date.now()}`;
+    const channelId = `chat-${athleteId}-${Math.random().toString(36).substr(2, 9)}`;
     const subscription = supabase
       .channel(channelId)
       .on(
@@ -86,18 +86,23 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
           if (isRelevant) {
             setMessages((prev) => {
                if (prev.find(m => m.id === newMsg.id)) return prev;
-               return [...prev, newMsg];
+               const next = [...prev, newMsg];
+               return next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
             });
-            setTimeout(scrollToBottom, 100);
+            setTimeout(scrollToBottom, 200);
           }
         }
       )
-      .subscribe((status) => {
-        console.log(`Realtime status for ${athleteId}:`, status);
-      });
+      .subscribe();
+
+    // Fallback polling every 8 seconds if realtime is flaky
+    const pollInterval = setInterval(() => {
+      fetchMessages(true);
+    }, 10000);
 
     return () => {
       supabase.removeChannel(subscription);
+      clearInterval(pollInterval);
     };
   }, [isOpen, athleteId, suffix8]);
 

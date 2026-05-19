@@ -598,6 +598,30 @@ export function AutomationSettings() {
         </div>
         
         <div className={`flex flex-col gap-8 pt-6 border-t border-slate-800/50 transition-opacity duration-300 ${whatsappEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+          {/* EARS AI CONTROLS */}
+          <div className="bg-cyan-500/10 border border-cyan-500/30 p-6 rounded-2xl">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
+                    <Brain className="w-6 h-6 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-white uppercase tracking-widest">Ears: Auto-Resposta IA</h3>
+                    <p className="text-[10px] text-slate-400 mt-1">O robô Ears responderá automaticamente todas as mensagens via WhatsApp usando o Gemini.</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={whatsappAutoEars}
+                    onChange={(e) => setWhatsappAutoEars(e.target.checked)}
+                  />
+                  <div className="w-14 h-7 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-cyan-500"></div>
+                </label>
+              </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="space-y-4">
@@ -852,24 +876,6 @@ export function AutomationSettings() {
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
                   />
                 </div>
-              </div>
-
-              <div className="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                 <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1 flex items-center gap-2">
-                       <Brain className="w-3 h-3" /> Resposta Automática (IA)
-                    </label>
-                    <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
-                      <input 
-                        type="checkbox" 
-                        className="sr-only peer" 
-                        checked={whatsappAutoEars}
-                        onChange={(e) => setWhatsappAutoEars(e.target.checked)}
-                      />
-                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
-                    </label>
-                 </div>
-                 <p className="text-[10px] text-slate-500 px-1">O robô Ears responderá automaticamente as mensagens recebidas via WhatsApp usando Inteligência Artificial.</p>
               </div>
 
               <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-2">
