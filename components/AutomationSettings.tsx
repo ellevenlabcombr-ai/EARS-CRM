@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MessageCircle, Smartphone, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
+import { MessageCircle, Smartphone, CheckCircle, AlertCircle, Loader2, Mail, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function AutomationSettings() {
   const [whatsappEnabled, setWhatsappEnabled] = useState(true);
+  const [whatsappAutoEars, setWhatsappAutoEars] = useState(false);
   const [whatsappProvider, setWhatsappProvider] = useState('evolution');
   const [evolutionApiUrl, setEvolutionApiUrl] = useState('');
   const [evolutionApiKey, setEvolutionApiKey] = useState('');
@@ -197,6 +198,10 @@ export function AutomationSettings() {
            const autoFixSql = `
             DO $$ 
             BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_auto_ears') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_auto_ears BOOLEAN DEFAULT false;
+                END IF;
+                -- ... existing columns ...
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
                 END IF;
@@ -241,6 +246,7 @@ export function AutomationSettings() {
       
       if (data) {
         if (data.whatsapp_enabled !== undefined) setWhatsappEnabled(data.whatsapp_enabled);
+        if (data.whatsapp_auto_ears !== undefined) setWhatsappAutoEars(data.whatsapp_auto_ears);
         if (data.whatsapp_provider) setWhatsappProvider(data.whatsapp_provider);
         if (data.evolution_api_url) setEvolutionApiUrl(data.evolution_api_url);
         if (data.evolution_api_key) setEvolutionApiKey(data.evolution_api_key);
@@ -292,6 +298,7 @@ export function AutomationSettings() {
 
       const payload = {
         whatsapp_enabled: whatsappEnabled,
+        whatsapp_auto_ears: whatsappAutoEars,
         whatsapp_provider: whatsappProvider,
         evolution_api_url: evolutionApiUrl,
         evolution_api_key: evolutionApiKey,
@@ -835,6 +842,24 @@ export function AutomationSettings() {
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
                   />
                 </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                 <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] md:text-xs font-black text-cyan-500 uppercase tracking-widest pl-1 flex items-center gap-2">
+                       <Brain className="w-3 h-3" /> Resposta Automática (IA)
+                    </label>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0 scale-90">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={whatsappAutoEars}
+                        onChange={(e) => setWhatsappAutoEars(e.target.checked)}
+                      />
+                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                    </label>
+                 </div>
+                 <p className="text-[10px] text-slate-500 px-1">O robô Ears responderá automaticamente as mensagens recebidas via WhatsApp usando Inteligência Artificial.</p>
               </div>
 
               <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-2">

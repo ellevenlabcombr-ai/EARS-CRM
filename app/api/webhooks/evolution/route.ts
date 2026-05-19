@@ -53,14 +53,13 @@ export async function POST(req: Request) {
         mediaType = 'document';
       }
 
-      // Evolution API can send media in several ways. v2 usually sends base64 or a link in data.messageValues
+      // Extraction of media URL
       if (data.messageValues?.base64) {
         mediaUrl = data.messageValues.base64;
       } else if (data.messageValues?.url) {
         mediaUrl = data.messageValues.url;
-      } else if (data.message?.imageMessage?.url || data.message?.audioMessage?.url) {
-        // If it's a direct URL from WhatsApp (needs decryption usually, but Evolution often handles it)
-        mediaUrl = data.message?.imageMessage?.url || data.message?.audioMessage?.url;
+      } else if (message.imageMessage?.url || message.audioMessage?.url) {
+        mediaUrl = message.imageMessage?.url || message.audioMessage?.url;
       }
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -70,40 +69,31 @@ export async function POST(req: Request) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const cleanPhone = phoneRaw.replace(/\D/g, '');
-        // Last 8 or 9 digits match (handling differences in 9th digit in Brazil)
         const suffix8 = cleanPhone.slice(-8);
-        const suffix9 = cleanPhone.slice(-9);
 
         // Try to find athlete
         let athleteId = null;
+        let athleteName = "Atleta";
+        
         const { data: athletes } = await supabase
           .from('athletes')
-          .select('id, phone')
+          .select('id, name')
           .or(`phone.ilike.%${suffix8}%,whatsapp.ilike.%${suffix8}%`)
           .limit(1);
         
         if (athletes && athletes.length > 0) {
           athleteId = athletes[0].id;
+          athleteName = athletes[0].name;
         }
 
-        // If not found by suffix, try exact clean phone if matches
-        if (!athleteId) {
-           const { data: athletesExact } = await supabase
-            .from('athletes')
-            .select('id')
-            .eq('phone', cleanPhone)
-            .limit(1);
-           if (athletesExact && athletesExact.length > 0) athleteId = athletesExact[0].id;
-        }
-
-        // Check if message already exists (de-duplication)
+        // De-duplication check
         const { data: existing } = await supabase
           .from('whatsapp_messages')
           .select('id')
           .eq('direction', isFromMe ? 'outbound' : 'inbound')
           .eq('phone_number', cleanPhone)
           .eq('text', text || '')
-          .gte('created_at', new Date(Date.now() - 3000).toISOString())
+          .gte('created_at', new Date(Date.now() - 4000).toISOString())
           .limit(1);
 
         if (!existing || existing.length === 0) {
@@ -117,6 +107,51 @@ export async function POST(req: Request) {
             media_type: mediaType,
             status: isFromMe ? 'sent' : 'received'
           });
+
+          // AUTO-AI RESPONSE
+          if (!isFromMe && process.env.GEMINI_API_KEY && athleteId && text) {
+            try {
+              const { data: settings } = await supabase
+                .from('automation_settings')
+                .select('whatsapp_auto_ears, evolution_api_url, evolution_api_key, evolution_instance_id')
+                .single();
+
+              if (settings?.whatsapp_auto_ears) {
+                 const chatRes = await fetch(`${req.url.split('/api/')[0]}/api/ears/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      messages: [{ direction: 'inbound', text: text }],
+                      athleteName: athleteName
+                    })
+                 });
+                 const aiData = await chatRes.json();
+                 const aiReply = aiData.text;
+
+                 if (aiReply && settings.evolution_api_url) {
+                    await fetch(`${req.url.split('/api/')[0]}/api/whatsapp/send`, {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({
+                          url: settings.evolution_api_url,
+                          apiKey: settings.evolution_api_key,
+                          instanceId: settings.evolution_instance_id,
+                          phone: cleanPhone,
+                          message: aiReply
+                       })
+                    });
+                    
+                    await supabase.from('whatsapp_messages').insert({
+                       athlete_id: athleteId,
+                       phone_number: cleanPhone,
+                       direction: 'outbound',
+                       text: aiReply,
+                       status: 'sent'
+                    });
+                 }
+              }
+            } catch (err) { console.error('Auto-AI error', err); }
+          }
         }
       }
     }
