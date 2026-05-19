@@ -85,7 +85,9 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
 
           if (isRelevant) {
             setMessages((prev) => {
-               if (prev.find(m => m.id === newMsg.id)) return prev;
+               // Robust de-duplication: check ID or identical text/timestamp
+               const exists = prev.some(m => m.id === newMsg.id || (m.text === newMsg.text && Math.abs(new Date(m.created_at).getTime() - new Date(newMsg.created_at).getTime()) < 2000));
+               if (exists) return prev;
                const next = [...prev, newMsg];
                return next.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
             });

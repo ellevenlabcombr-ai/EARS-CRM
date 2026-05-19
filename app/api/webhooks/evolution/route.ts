@@ -9,28 +9,32 @@ export async function POST(req: Request) {
     // Evolution API sends events like "messages.upsert" or "MESSAGES_UPSERT"
     const event = body.event?.toLowerCase();
     
-    if (event === 'messages.upsert' || event === 'messages_upsert' || event === 'messages.upsert_v2') {
+    if (event === 'messages.upsert' || event === 'messages_upsert' || event === 'messages.upsert_v2' || event === 'message.upsert') {
       const data = body.data;
       if (!data) return NextResponse.json({ success: true, warning: 'No data' });
       
-      const message = data.message;
-      const key = data.key;
-      const instance = body.instance;
+      const message = data.message || data;
+      const key = data.key || data.message?.key;
       
-      if (!message || !key) {
-        console.log('Missing message or key in data');
-        return NextResponse.json({ success: true, warning: 'Missing message or key' });
+      if (!key) {
+        console.log('Missing key in data');
+        return NextResponse.json({ success: true, warning: 'Missing key' });
       }
 
-      const remoteJid = key.remoteJid;
+      const remoteJid = key.remoteJid || data.remoteJid;
+      if (!remoteJid) {
+         console.log('Missing remoteJid');
+         return NextResponse.json({ success: true });
+      }
+
       const phoneRaw = remoteJid.split('@')[0];
       const isFromMe = key.fromMe;
-      const messageId = key.id;
       
       let text = '';
       let mediaUrl = null;
       let mediaType = null;
 
+      // Extract text from various possible fields
       if (message.conversation) {
         text = message.conversation;
       } else if (message.extendedTextMessage?.text) {
@@ -51,10 +55,13 @@ export async function POST(req: Request) {
       } else if (message.documentWithCaptionMessage?.message?.documentMessage) {
         text = message.documentWithCaptionMessage.message.documentMessage.caption || '';
         mediaType = 'document';
+      } else if (typeof message.text === 'string') {
+        text = message.text;
+      } else if (data.messageValues?.text) {
+        text = data.messageValues.text;
       }
 
       // Extraction of media URL
-      // Evolution API v2: media values are often in data.messageValues
       if (data.messageValues?.base64) {
         mediaUrl = data.messageValues.base64;
       } else if (data.messageValues?.url) {
@@ -70,20 +77,20 @@ export async function POST(req: Request) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         const cleanPhone = phoneRaw.replace(/\D/g, '');
-        // Extract many possible suffixes
-        const s8 = cleanPhone.slice(-8);
-        const s9 = cleanPhone.slice(-9);
-
         // Try to find athlete
         let athleteId = null;
         let athleteName = "Atleta";
         
-        // Match by multiple possible versions of the suffix
+        const cleanPhoneNoCountry = cleanPhone.startsWith('55') ? cleanPhone.slice(2) : cleanPhone;
+        const s8 = cleanPhone.slice(-8);
+        const s9 = cleanPhone.slice(-9);
+
+        // Match by multiple possible versions
         const { data: athletes } = await supabase
           .from('athletes')
           .select('id, name, phone, whatsapp')
-          .or(`phone.ilike.%${s8}%,whatsapp.ilike.%${s8}%,phone.ilike.%${s9}%,whatsapp.ilike.%${s9}%`)
-          .limit(5); // Get a few to filter manually if needed
+          .or(`phone.ilike.%${s8}%,whatsapp.ilike.%${s8}%,phone.ilike.%${s9}%,whatsapp.ilike.%${s9}%,phone.ilike.%${cleanPhoneNoCountry}%,whatsapp.ilike.%${cleanPhoneNoCountry}%`)
+          .limit(5);
         
         if (athletes && athletes.length > 0) {
           // Priority to those that match s9 or exact
@@ -127,7 +134,13 @@ export async function POST(req: Request) {
                 .single();
 
               if (settings?.whatsapp_auto_ears) {
-                 const chatRes = await fetch(`${req.url.split('/api/')[0]}/api/ears/chat`, {
+                 const protocol = req.headers.get('x-forwarded-proto') || 'http';
+                 const host = req.headers.get('host');
+                 const baseUrl = `${protocol}://${host}`;
+                 
+                 console.log(`[AI] Attempting auto-reply for ${athleteName} at ${baseUrl}`);
+
+                 const chatRes = await fetch(`${baseUrl}/api/ears/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
