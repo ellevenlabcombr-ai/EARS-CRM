@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User } from 'lucide-react';
 
 interface ChatBoxProps {
   athleteId: string;
@@ -134,11 +134,25 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   const handleAIResponse = async () => {
     // Placeholder para a feature do Ears (IA) responder à mensagem
     if (messages.length === 0) return;
-    const lastMsg = messages[messages.length - 1];
     setNewMessage("Pensando como Ears...");
     setTimeout(() => {
       setNewMessage(`[Ears Suggestion]: Baseado no histórico, sugerimos dizer para o atleta descansar e fazer liberação miofascial.`);
     }, 1500);
+  };
+
+  const handleSimulateAthleteResponse = async () => {
+    // Simula uma mensagem chegando do atleta (Inbound)
+    try {
+      await supabase.from('whatsapp_messages').insert({
+        athlete_id: athleteId,
+        phone_number: cleanPhone,
+        direction: 'inbound',
+        text: 'Oi! Tudo bem? Estou com uma dorzinha no joelho... o que faço?',
+        status: 'received'
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   if (!isOpen) {
@@ -165,6 +179,9 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
            </div>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={handleSimulateAthleteResponse} title="Simular Atleta Respondendo" className="text-[#8696a0] hover:text-[#e9edef] p-2 rounded-md transition-colors cursor-pointer">
+            <User className="w-5 h-5" />
+          </button>
           <button onClick={handleAIResponse} title="Responder com Ears (IA)" className="text-[#8696a0] hover:text-[#00a884] p-2 rounded-md transition-colors cursor-pointer mr-1">
             <Brain className="w-5 h-5" />
           </button>
@@ -176,61 +193,73 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#0b141a] custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#0b141a] custom-scrollbar relative">
+        {/* WhatsApp Background Pattern */}
+        <div 
+          className="absolute inset-0 z-0 opacity-[0.06] pointer-events-none mix-blend-overlay" 
+          style={{ 
+            backgroundImage: `url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")`, 
+            backgroundRepeat: 'repeat',
+            backgroundSize: '400px' 
+          }} 
+        />
+        
         {isLoading && (
-          <div className="flex justify-center p-4">
+          <div className="flex justify-center p-4 relative z-10">
              <Loader2 className="w-6 h-6 animate-spin text-[#8696a0]" />
           </div>
         )}
-        {messages.map((msg) => {
-          const isOutbound = msg.direction === 'outbound';
-          const isSending = msg.status === 'sending';
-          return (
-            <div key={msg.id} className={`flex flex-col ${isOutbound ? 'items-end' : 'items-start'} group`}>
-              <div
-                className={`flex items-center gap-2 max-w-[85%]`}
-              >
-                {!isOutbound && (
-                  <button 
-                    onClick={() => setReplyingTo(msg)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] rounded-full shrink-0"
-                  >
-                    <Reply className="w-3.5 h-3.5" />
-                  </button>
-                )}
+        <div className="relative z-10 flex flex-col space-y-3">
+          {messages.map((msg) => {
+            const isOutbound = msg.direction === 'outbound';
+            const isSending = msg.status === 'sending';
+            return (
+              <div key={msg.id} className={`flex flex-col ${isOutbound ? 'items-end' : 'items-start'} group`}>
                 <div
-                  className={`relative p-2 px-3 rounded-xl text-sm shadow-sm ${
-                    isOutbound
-                      ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none'
-                      : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
-                  }`}
+                  className={`flex items-center gap-2 max-w-[85%]`}
                 >
-                  {(msg.reply_to_id || msg.reply_to_text) && (
-                    <div className="mb-1 p-2 rounded bg-black/20 border-l-4 border-[#00a884] text-xs max-h-16 overflow-hidden text-ellipsis opacity-80">
-                      {msg.reply_to_text || 'Mensagem'}
-                    </div>
+                  {!isOutbound && (
+                    <button 
+                      onClick={() => setReplyingTo(msg)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] rounded-full shrink-0"
+                    >
+                      <Reply className="w-3.5 h-3.5" />
+                    </button>
                   )}
-                  <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>
-                  <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${isOutbound ? 'text-white/70' : 'text-[#8696a0]'}`}>
-                    <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {isOutbound && (
-                      isSending ? <Check className="w-3 h-3 opacity-70" /> : <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />
-                    )}
-                  </div>
-                </div>
-                {isOutbound && (
-                  <button 
-                    onClick={() => setReplyingTo(msg)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] rounded-full shrink-0"
+                  <div
+                    className={`relative p-2 px-3 rounded-xl text-sm shadow-sm ${
+                      isOutbound
+                        ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none'
+                        : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
+                    }`}
                   >
-                    <Reply className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                    {(msg.reply_to_id || msg.reply_to_text) && (
+                      <div className="mb-1 p-2 rounded bg-black/20 border-l-4 border-[#00a884] text-xs max-h-16 overflow-hidden text-ellipsis opacity-80">
+                        {msg.reply_to_text || 'Mensagem'}
+                      </div>
+                    )}
+                    <p className="break-words whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                    <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${isOutbound ? 'text-white/70' : 'text-[#8696a0]'}`}>
+                      <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      {isOutbound && (
+                        isSending ? <Check className="w-3 h-3 opacity-70" /> : <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />
+                      )}
+                    </div>
+                  </div>
+                  {isOutbound && (
+                    <button 
+                      onClick={() => setReplyingTo(msg)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] rounded-full shrink-0"
+                    >
+                      <Reply className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {replyingTo && (
