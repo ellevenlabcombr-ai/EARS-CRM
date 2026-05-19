@@ -60,7 +60,7 @@ export async function POST(req: Request) {
           enabled: true,
           url: webhookUrl,
           byEvents: false,
-          base64: false,
+          base64: true,
           events: [
             "MESSAGES_UPSERT", 
             "MESSAGES_UPDATE",

@@ -59,21 +59,29 @@ export async function POST(req: Request) {
 
     // media params extracted above
 
+    let finalMedia = mediaUrl;
+    if (finalMedia && finalMedia.startsWith('data:')) {
+      const parts = finalMedia.split(',');
+      if (parts.length === 2) {
+         finalMedia = parts[1]; // Get just the base64 part
+      }
+    }
+
     if (mediaUrl && mediaType) {
       if (mediaType === 'image') {
         endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
-        body.image = mediaUrl;
+        body.media = finalMedia;
         body.caption = message || "";
-        body.mediaType = "image";
+        body.mediatype = "image";
       } else if (mediaType === 'audio') {
         endpoint = `${baseUrl}/message/sendWhatsAppAudio/${instanceId}`;
-        body.audio = mediaUrl;
-        body.mediaType = "audio";
+        body.audio = finalMedia;
+        // audio doesn't need mediatype or maybe just for safety
       } else if (mediaType === 'document' || mediaType === 'video') {
         endpoint = `${baseUrl}/message/sendMedia/${instanceId}`;
-        body.media = mediaUrl;
+        body.media = finalMedia;
         body.caption = message || "";
-        body.mediaType = mediaType;
+        body.mediatype = mediaType;
         body.fileName = fileName || "arquivo";
       }
     } else {

@@ -73,12 +73,30 @@ export async function POST(req: Request) {
       }
 
       // Extraction of media URL
-      if (data.messageValues?.base64) {
+      if (data.message?.base64) {
+        mediaUrl = data.message.base64;
+      } else if (data.base64) {
+        mediaUrl = data.base64;
+      } else if (data.messageValues?.base64) {
         mediaUrl = data.messageValues.base64;
       } else if (data.messageValues?.url) {
         mediaUrl = data.messageValues.url;
       } else if (content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url) {
         mediaUrl = content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url;
+      }
+
+      // Ensure base64 can be rendered in the frontend
+      if (mediaUrl && !mediaUrl.startsWith('http') && !mediaUrl.startsWith('data:')) {
+         if (mediaUrl.length > 100) {
+           let type = 'application/octet-stream';
+           if (mediaType === 'image') type = 'image/jpeg';
+           else if (mediaType === 'audio') type = 'audio/mpeg';
+           else if (mediaType === 'video') type = 'video/mp4';
+           else if (mediaType === 'document') type = 'application/pdf';
+           mediaUrl = `data:${type};base64,${mediaUrl}`;
+         } else {
+           mediaUrl = null; // likely weird data
+         }
       }
 
 

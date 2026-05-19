@@ -204,11 +204,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       .upload(filePath, file);
 
     if (error) {
-      if (error.message.includes('bucket not found')) {
-        // Try creating bucket via RPC if exists, or just use blob for now if it fails
-        console.error('Storage bucket "media" not found. Using blob for preview.');
-        return URL.createObjectURL(file);
-      }
+      console.error('Storage upload error:', error);
       throw error;
     }
 
@@ -223,6 +219,15 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*,application/pdf,video/*';
+    const toBase64 = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+      });
+    };
+
     input.onchange = async (e: any) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -233,14 +238,14 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       
       setSending(true);
       try {
-        let mediaUrl = URL.createObjectURL(file);
+        let mediaUrl = await toBase64(file);
         
-        // Try real upload if configured
+        // Try real upload if configured, fallback to base64 which evolution supports
         try {
           const uploadedUrl = await uploadFile(file);
-          if (uploadedUrl) mediaUrl = uploadedUrl;
+          if (uploadedUrl && uploadedUrl.startsWith('http')) mediaUrl = uploadedUrl;
         } catch (err) {
-          console.warn("Upload failed, using local URL", err);
+          console.warn("Upload failed, using base64 fallback", err);
         }
 
         const msgText = isImage ? (newMessage || '') : file.name;

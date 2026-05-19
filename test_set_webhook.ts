@@ -18,7 +18,7 @@ async function check() {
         enabled: true,
         url: "https://www.ears.app.br/api/webhooks/evolution",
         byEvents: false,
-        base64: false,
+        base64: true,
         events: ["MESSAGES_UPSERT", "SEND_MESSAGE", "MESSAGES_UPDATE"]
       }
     })
