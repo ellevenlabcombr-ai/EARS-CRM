@@ -6,8 +6,8 @@ export async function POST(req: Request) {
     const bodyPayload = await req.json();
     const { phone, message, mediaUrl, mediaType, fileName } = bodyPayload;
 
-    if (!phone || !message) {
-      return NextResponse.json({ error: 'Faltam parametros: phone ou message' }, { status: 400 });
+    if (!phone || (message === undefined && !mediaUrl)) {
+      return NextResponse.json({ error: 'Faltam parametros: phone ou message/mediaUrl' }, { status: 400 });
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

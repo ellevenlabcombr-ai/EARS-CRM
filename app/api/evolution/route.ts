@@ -51,22 +51,10 @@ export async function POST(req: Request) {
       endpoint = `${baseUrl}/webhook/set/${instanceId}`;
       options.method = "POST";
       options.body = JSON.stringify({
-        enabled: true,
-        url: webhookUrl,
-        webhook_by_events: false, 
-        webhook_base64: false,
-        events: [
-          "MESSAGES_UPSERT", 
-          "MESSAGES_UPDATE",
-          "SEND_MESSAGE",
-          "messages.upsert",
-          "messages.update",
-          "messages.send"
-        ],
         webhook: {
           enabled: true,
           url: webhookUrl,
-          byEvents: false,
+          byEvents: true,
           base64: false,
           events: [
             "MESSAGES_UPSERT", 

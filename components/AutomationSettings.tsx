@@ -207,6 +207,14 @@ export function AutomationSettings() {
                 EXCEPTION WHEN OTHERS THEN
                     -- Ignore if already added or other issues
                 END;
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'whatsapp_messages' AND column_name = 'media_url') THEN
+                        ALTER TABLE public.whatsapp_messages ADD COLUMN media_url TEXT;
+                    END IF;
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'whatsapp_messages' AND column_name = 'media_type') THEN
+                        ALTER TABLE public.whatsapp_messages ADD COLUMN media_type TEXT;
+                    END IF;
+                EXCEPTION WHEN OTHERS THEN END;
 
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_auto_ears') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN whatsapp_auto_ears BOOLEAN DEFAULT false;
@@ -355,6 +363,15 @@ export function AutomationSettings() {
            const autoFixSql = `
             DO $$ 
             BEGIN
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'whatsapp_messages' AND column_name = 'media_url') THEN
+                        ALTER TABLE public.whatsapp_messages ADD COLUMN media_url TEXT;
+                    END IF;
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'whatsapp_messages' AND column_name = 'media_type') THEN
+                        ALTER TABLE public.whatsapp_messages ADD COLUMN media_type TEXT;
+                    END IF;
+                EXCEPTION WHEN OTHERS THEN END;
+
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_auto_ears') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN whatsapp_auto_ears BOOLEAN DEFAULT false;
                 END IF;
