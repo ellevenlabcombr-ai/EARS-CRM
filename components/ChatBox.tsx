@@ -221,10 +221,40 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     input.accept = 'image/*,application/pdf,video/*';
     const toBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
+        if (file.type.startsWith('image/')) {
+           const reader = new FileReader();
+           reader.onload = (e) => {
+             const img = new Image();
+             img.onload = () => {
+               const canvas = document.createElement('canvas');
+               let w = img.width;
+               let h = img.height;
+               const maxDim = 1200;
+               if (w > maxDim || h > maxDim) {
+                 if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                 else { w = Math.round((w * maxDim) / h); h = maxDim; }
+               }
+               canvas.width = w;
+               canvas.height = h;
+               const ctx = canvas.getContext('2d');
+               if (ctx) {
+                 ctx.drawImage(img, 0, 0, w, h);
+                 resolve(canvas.toDataURL('image/jpeg', 0.8));
+               } else {
+                 resolve(e.target?.result as string);
+               }
+             };
+             img.onerror = () => resolve(e.target?.result as string);
+             img.src = e.target?.result as string;
+           };
+           reader.onerror = reject;
+           reader.readAsDataURL(file);
+        } else {
+           const reader = new FileReader();
+           reader.readAsDataURL(file);
+           reader.onload = () => resolve(reader.result as string);
+           reader.onerror = reject;
+        }
       });
     };
 

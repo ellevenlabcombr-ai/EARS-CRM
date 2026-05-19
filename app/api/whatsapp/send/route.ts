@@ -50,11 +50,7 @@ export async function POST(req: Request) {
     const baseUrl = url.endsWith('/') ? url.slice(0, -1) : url;
     let endpoint = `${baseUrl}/message/sendText/${instanceId}`;
     let body: any = {
-      number: finalPhone,
-      options: {
-        delay: 1200,
-        presence: "composing",
-      }
+      number: finalPhone
     };
 
     // media params extracted above
@@ -87,6 +83,10 @@ export async function POST(req: Request) {
     } else {
       body.text = message;
       body.textMessage = { text: message };
+      body.options = {
+        delay: 1200,
+        presence: "composing"
+      };
     }
     
     const options = {

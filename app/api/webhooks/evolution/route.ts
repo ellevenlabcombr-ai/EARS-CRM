@@ -72,15 +72,21 @@ export async function POST(req: Request) {
         text = data.messages[0].message.conversation;
       }
 
+      // Helper to recursively find base64 string in payload
+      const findBase64 = (obj: any): string | null => {
+         if (!obj || typeof obj !== 'object') return null;
+         if (obj.base64 && typeof obj.base64 === 'string' && obj.base64.length > 50) return obj.base64;
+         for (const key of Object.keys(obj)) {
+             const res = findBase64(obj[key]);
+             if (res) return res;
+         }
+         return null;
+      };
+
       // Extraction of media URL
-      if (data.message?.base64) {
-        mediaUrl = data.message.base64;
-      } else if (data.base64) {
-        mediaUrl = data.base64;
-      } else if (data.messageValues?.base64) {
-        mediaUrl = data.messageValues.base64;
-      } else if (data.messageValues?.url) {
-        mediaUrl = data.messageValues.url;
+      const foundBase64 = findBase64(data);
+      if (foundBase64) {
+        mediaUrl = foundBase64;
       } else if (content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url) {
         mediaUrl = content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url;
       }
