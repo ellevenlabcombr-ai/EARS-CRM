@@ -57,8 +57,10 @@ export async function POST(req: Request) {
         webhook_base64: false,
         events: [
           "MESSAGES_UPSERT", 
+          "MESSAGES_UPDATE",
           "SEND_MESSAGE",
           "messages.upsert",
+          "messages.update",
           "messages.send"
         ],
         webhook: {
@@ -68,7 +70,10 @@ export async function POST(req: Request) {
           base64: false,
           events: [
             "MESSAGES_UPSERT", 
-            "SEND_MESSAGE"
+            "MESSAGES_UPDATE",
+            "SEND_MESSAGE",
+            "messages.upsert",
+            "messages.send"
           ]
         }
       });

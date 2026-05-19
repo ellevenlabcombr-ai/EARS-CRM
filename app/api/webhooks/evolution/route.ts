@@ -16,52 +16,60 @@ export async function POST(req: Request) {
       const data = body.data || body;
       if (!data) return NextResponse.json({ success: true, warning: 'No data' });
       
-      const message = data.message || data;
-      const key = data.key || data.message?.key;
+      const key = data.key || data.message?.key || data.messages?.[0]?.key;
+      const content = data.message?.message || data.messages?.[0]?.message || data.message || data;
       
       if (!key) {
         console.log('Missing key in data');
         return NextResponse.json({ success: true, warning: 'Missing key' });
       }
 
-      const remoteJid = key.remoteJid || data.remoteJid;
+      const remoteJid = key.remoteJid || data.remoteJid || data.messages?.[0]?.key?.remoteJid;
       if (!remoteJid) {
          console.log('Missing remoteJid');
          return NextResponse.json({ success: true });
       }
 
+      if (remoteJid.includes('@g.us') || remoteJid.includes('status@broadcast')) {
+         return NextResponse.json({ success: true, warning: 'Group or status message ignored' });
+      }
+
       const phoneRaw = remoteJid.split('@')[0];
-      const isFromMe = key.fromMe;
+      const isFromMe = key.fromMe || false;
       
       let text = '';
       let mediaUrl = null;
       let mediaType = null;
 
       // Extract text from various possible fields
-      if (message.conversation) {
-        text = message.conversation;
-      } else if (message.extendedTextMessage?.text) {
-        text = message.extendedTextMessage.text;
-      } else if (message.imageMessage) {
-        text = message.imageMessage.caption || '';
+      if (content.conversation) {
+        text = content.conversation;
+      } else if (content.extendedTextMessage?.text) {
+        text = content.extendedTextMessage.text;
+      } else if (content.imageMessage) {
+        text = content.imageMessage.caption || '';
         mediaType = 'image';
-      } else if (message.audioMessage) {
+      } else if (content.audioMessage) {
         mediaType = 'audio';
-      } else if (message.videoMessage) {
-        text = message.videoMessage.caption || '';
+      } else if (content.videoMessage) {
+        text = content.videoMessage.caption || '';
         mediaType = 'video';
-      } else if (message.stickerMessage) {
+      } else if (content.stickerMessage) {
         mediaType = 'sticker';
-      } else if (message.documentMessage) {
-        text = message.documentMessage.caption || message.documentMessage.title || '';
+      } else if (content.documentMessage) {
+        text = content.documentMessage.caption || content.documentMessage.title || '';
         mediaType = 'document';
-      } else if (message.documentWithCaptionMessage?.message?.documentMessage) {
-        text = message.documentWithCaptionMessage.message.documentMessage.caption || '';
+      } else if (content.documentWithCaptionMessage?.message?.documentMessage) {
+        text = content.documentWithCaptionMessage.message.documentMessage.caption || '';
         mediaType = 'document';
-      } else if (typeof message.text === 'string') {
-        text = message.text;
+      } else if (typeof content.text === 'string') {
+        text = content.text;
       } else if (data.messageValues?.text) {
         text = data.messageValues.text;
+      } else if (data.messages?.[0]?.message?.extendedTextMessage?.text) {
+        text = data.messages[0].message.extendedTextMessage.text;
+      } else if (data.messages?.[0]?.message?.conversation) {
+        text = data.messages[0].message.conversation;
       }
 
       // Extraction of media URL
@@ -69,9 +77,10 @@ export async function POST(req: Request) {
         mediaUrl = data.messageValues.base64;
       } else if (data.messageValues?.url) {
         mediaUrl = data.messageValues.url;
-      } else if (message.imageMessage?.url || message.audioMessage?.url || message.videoMessage?.url) {
-        mediaUrl = message.imageMessage?.url || message.audioMessage?.url || message.videoMessage?.url;
+      } else if (content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url) {
+        mediaUrl = content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url;
       }
+
 
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -84,26 +93,28 @@ export async function POST(req: Request) {
         let athleteId = null;
         let athleteName = "Atleta";
         
-        const cleanPhoneNoCountry = cleanPhone.startsWith('55') ? cleanPhone.slice(2) : cleanPhone;
-        const s8 = cleanPhone.slice(-8);
-        const s9 = cleanPhone.slice(-9);
+        if (cleanPhone && cleanPhone.length >= 8) {
+          const cleanPhoneNoCountry = cleanPhone.startsWith('55') ? cleanPhone.slice(2) : cleanPhone;
+          const s8 = cleanPhone.slice(-8);
+          const s9 = cleanPhone.slice(-9);
 
-        // Match by multiple possible versions
-        const { data: athletes } = await supabase
-          .from('athletes')
-          .select('id, name, phone, whatsapp')
-          .or(`phone.ilike.%${s8}%,whatsapp.ilike.%${s8}%,phone.ilike.%${s9}%,whatsapp.ilike.%${s9}%,phone.ilike.%${cleanPhoneNoCountry}%,whatsapp.ilike.%${cleanPhoneNoCountry}%`)
-          .limit(5);
-        
-        if (athletes && athletes.length > 0) {
-          // Priority to those that match s9 or exact
-          const bestMatch = athletes.find(a => 
-            (a.phone && a.phone.replace(/\D/g, '').endsWith(s9)) || 
-            (a.whatsapp && a.whatsapp.replace(/\D/g, '').endsWith(s9))
-          ) || athletes[0];
+          // Match by multiple possible versions
+          const { data: athletes } = await supabase
+            .from('athletes')
+            .select('id, name, phone, whatsapp')
+            .or(`phone.ilike.%${s8}%,whatsapp.ilike.%${s8}%,phone.ilike.%${s9}%,whatsapp.ilike.%${s9}%,phone.ilike.%${cleanPhoneNoCountry}%,whatsapp.ilike.%${cleanPhoneNoCountry}%`)
+            .limit(5);
+          
+          if (athletes && athletes.length > 0) {
+            // Priority to those that match s9 or exact
+            const bestMatch = athletes.find(a => 
+              (a.phone && a.phone.replace(/\D/g, '').endsWith(s9)) || 
+              (a.whatsapp && a.whatsapp.replace(/\D/g, '').endsWith(s9))
+            ) || athletes[0];
 
-          athleteId = bestMatch.id;
-          athleteName = bestMatch.name;
+            athleteId = bestMatch.id;
+            athleteName = bestMatch.name;
+          }
         }
 
         // Check if message already exists (de-duplication)
@@ -140,56 +151,75 @@ export async function POST(req: Request) {
              }
           }
 
-          // AUTO-AI RESPONSE
+          // AUTO-AI RESPONSE (BACKGROUND)
           if (!isFromMe && process.env.GEMINI_API_KEY && athleteId && text) {
-            try {
-              const { data: settings } = await supabase
-                .from('automation_settings')
-                .select('whatsapp_auto_ears, evolution_api_url, evolution_api_key, evolution_instance_id')
-                .single();
+            const runAi = async () => {
+              try {
+                const { data: settings } = await supabase
+                  .from('automation_settings')
+                  .select('whatsapp_auto_ears, evolution_api_url, evolution_api_key, evolution_instance_id')
+                  .single();
 
-              if (settings?.whatsapp_auto_ears) {
-                 console.log(`[AI] Attempting auto-reply for ${athleteName}`);
-                 
-                 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-                 const systemPrompt = `Você é o Ears, um assistente inteligente de performance esportiva. Você está conversando com o atleta ${athleteName}. Seu objetivo é ser empático, direto e técnico quando necessário. Suas respostas devem ser curtas (estilo WhatsApp). Sempre incentive o atleta.`;
-                 
-                 const aiResult = await ai.models.generateContent({
-                    model: "gemini-1.5-flash",
-                    contents: [
-                      { role: 'user', parts: [{ text: systemPrompt }] },
-                      { role: 'user', parts: [{ text: text }] }
-                    ],
-                    config: { maxOutputTokens: 200, temperature: 0.7 }
-                 });
+                if (settings?.whatsapp_auto_ears) {
+                   console.log(`[AI] Attempting auto-reply for ${athleteName}`);
+                   
+                   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+                   const systemPrompt = `Você é o Ears, um assistente inteligente de performance esportiva. Você está conversando com o atleta ${athleteName}. Seu objetivo é ajudar sem rodeios. Suas respostas devem ser curtas (estilo WhatsApp). Sempre incentive o atleta.`;
+                   
+                   // Fetch last 10 messages for context
+                   const { data: historyData } = await supabase
+                     .from('whatsapp_messages')
+                     .select('direction, text')
+                     .eq('athlete_id', athleteId)
+                     .order('created_at', { ascending: false })
+                     .limit(8);
 
-                 const aiReply = aiResult.text || "Continue focado no seu treino!";
+                   let contents = [{ role: 'user', parts: [{ text: "SYSTEM INSTRUCTIONS: " + systemPrompt }] }, { role: 'model', parts: [{ text: "Entendido." }] }];
+                   
+                   if (historyData && historyData.length > 0) {
+                      const chatHistory = historyData.reverse().filter(h => h.text).map(h => ({
+                          role: h.direction === 'inbound' ? 'user' : 'model',
+                          parts: [{ text: h.text }]
+                      }));
+                      contents = [...contents, ...chatHistory];
+                   } else {
+                      contents.push({ role: 'user', parts: [{ text: text }] });
+                   }
 
-                 console.log(`[AI] Response generated:`, aiReply);
+                   const aiResult = await ai.models.generateContent({
+                      model: "gemini-1.5-flash",
+                      contents: contents as any,
+                      config: { maxOutputTokens: 250, temperature: 0.7 }
+                   });
 
-                 if (aiReply && settings.evolution_api_url) {
-                    await fetch(`${req.url.split('/api/')[0]}/api/whatsapp/send`, {
-                       method: 'POST',
-                       headers: { 'Content-Type': 'application/json' },
-                       body: JSON.stringify({
-                          url: settings.evolution_api_url,
-                          apiKey: settings.evolution_api_key,
-                          instanceId: settings.evolution_instance_id,
-                          phone: cleanPhone,
-                          message: aiReply
-                       })
-                    });
-                    
-                    await supabase.from('whatsapp_messages').insert({
-                       athlete_id: athleteId,
-                       phone_number: cleanPhone,
-                       direction: 'outbound',
-                       text: aiReply,
-                       status: 'sent'
-                    });
-                 }
-              }
-            } catch (err) { console.error('Auto-AI error', err); }
+                   const aiReply = aiResult.text || "Continue focado no seu treino!";
+                   console.log(`[AI] Response generated:`, aiReply);
+
+                   if (aiReply && settings.evolution_api_url) {
+                      const sendProtocol = req.url.split('/api/')[0];
+                      await fetch(`${sendProtocol}/api/whatsapp/send`, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({
+                            phone: cleanPhone,
+                            message: aiReply
+                         })
+                      });
+                      
+                      await supabase.from('whatsapp_messages').insert({
+                         athlete_id: athleteId,
+                         phone_number: cleanPhone,
+                         direction: 'outbound',
+                         text: aiReply,
+                         status: 'sent'
+                      });
+                   }
+                }
+              } catch (err) { console.error('Auto-AI error', err); }
+            };
+
+            // Run in background to prevent webhook timeout
+            runAi();
           }
         }
       }
@@ -198,6 +228,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {
     console.error('Webhook evolution root error', error);
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    // Always return 200 to Evolution to prevent instance restarts / webhook loops
+    return NextResponse.json({ success: true, error: error.message }, { status: 200 });
   }
 }
+
