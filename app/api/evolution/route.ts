@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       });
     } else if (action === "connect") {
       endpoint = `${baseUrl}/instance/connect/${instanceId}`;
-      options.method = "GET"; // connect is usually GET in Evolution? wait, let's use the UI docs. evolution api connect is GET.
+      options.method = "GET"; 
     } else if (action === "status") {
       endpoint = `${baseUrl}/instance/connectionState/${instanceId}`;
       options.method = "GET";
@@ -37,6 +37,23 @@ export async function POST(req: Request) {
     } else if (action === "delete") {
       endpoint = `${baseUrl}/instance/delete/${instanceId}`;
       options.method = "DELETE";
+    } else if (action === "set_webhook") {
+      // Setup webhook logic
+      const reqUrl = req.headers.get("origin") || req.headers.get("host") || "";
+      const isLocalhost = reqUrl.includes("localhost");
+      const hostProtocol = reqUrl.includes("localhost") || reqUrl.includes("http://") ? "http://" : "https://";
+      const cleanHost = reqUrl.replace(/^https?:\/\//, '');
+      const webhookUrl = `${hostProtocol}${cleanHost}/api/webhooks/evolution`;
+
+      endpoint = `${baseUrl}/webhook/set/${instanceId}`;
+      options.method = "POST";
+      options.body = JSON.stringify({
+        webhook: {
+          url: webhookUrl,
+          webhook_by_events: false,
+          events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "MESSAGES_DELETE", "SEND_MESSAGE"]
+        }
+      });
     }
 
     const res = await fetch(endpoint, options);

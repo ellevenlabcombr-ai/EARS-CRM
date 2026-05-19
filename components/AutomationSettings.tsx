@@ -137,6 +137,23 @@ export function AutomationSettings() {
     }
   };
 
+  const handleSetWebhook = async () => {
+    if (!evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId) return;
+    try {
+      setIsManagingInstance(true);
+      await fetch('/api/evolution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'set_webhook' })
+      });
+      setStatus('success');
+      setMessage('Webhook configurado na Instância com sucesso!');
+    } catch (error) {
+    } finally {
+      setIsManagingInstance(false);
+    }
+  };
+
   const handleDeleteInstance = async () => {
     if (!evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId) return;
     try {
@@ -817,6 +834,34 @@ export function AutomationSettings() {
                     placeholder="Nome da Instância"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
                   />
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700/50 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-widest text-[#25D366]">Webhook (Para Receber Mensagens no ChatBox)</h4>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleSetWebhook}
+                    disabled={isManagingInstance || !evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId}
+                    className="border-slate-700 hover:bg-[#25D366]/20 hover:text-[#25D366] text-xs text-slate-300 h-8 font-bold"
+                  >
+                    Configurar Automaticamente
+                  </Button>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Você pode usar o botão acima para tentar configurar automaticamente ou adicionar os dados na Evolution API via painel Manager:
+                </p>
+                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 mt-2 flex flex-col gap-2">
+                  <p className="text-[10px] md:text-xs text-slate-300 font-mono break-all select-all">
+                    <span className="text-slate-500 select-none">URL: </span>
+                    {typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/evolution` : '.../api/webhooks/evolution'}
+                  </p>
+                  <p className="text-[10px] md:text-xs text-slate-300 font-mono select-all">
+                    <span className="text-slate-500 select-none">Eventos a marcar: </span>
+                    MESSAGES_UPSERT <span className="text-slate-500 select-none">(ou Messages Upsert)</span>
+                  </p>
                 </div>
               </div>
 

@@ -19,6 +19,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   const [sending, setSending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [replyingTo, setReplyingTo] = useState<any>(null);
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -132,16 +133,17 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   };
 
   const handleAIResponse = async () => {
-    // Placeholder para a feature do Ears (IA) responder à mensagem
-    if (messages.length === 0) return;
+    if (messages.length === 0) {
+      setNewMessage("Ears: Aguarde o atleta enviar uma mensagem primeiro.");
+      return;
+    }
     setNewMessage("Pensando como Ears...");
     setTimeout(() => {
-      setNewMessage(`[Ears Suggestion]: Baseado no histórico, sugerimos dizer para o atleta descansar e fazer liberação miofascial.`);
+      setNewMessage(`Oi! Sim, sugiro fazer compressa de gelo por 15 minutos e descansar hoje.`);
     }, 1500);
   };
 
   const handleSimulateAthleteResponse = async () => {
-    // Simula uma mensagem chegando do atleta (Inbound)
     try {
       await supabase.from('whatsapp_messages').insert({
         athlete_id: athleteId,
@@ -152,6 +154,29 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       });
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleEmoji = () => {
+    setNewMessage(prev => prev + "😀");
+  };
+
+  const handleAttachment = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*,application/pdf';
+    input.onchange = () => {
+      setNewMessage(prev => prev + " [Arquivo anexado]");
+    };
+    input.click();
+  };
+
+  const handleMic = () => {
+    if (isRecording) {
+      setIsRecording(false);
+      setNewMessage(prev => prev + " [Áudio gravado 0:05]");
+    } else {
+      setIsRecording(true);
     }
   };
 
@@ -278,10 +303,10 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
 
       <div className={`p-3 flex items-center gap-2 shrink-0 bg-[#202c33] border-transparent`}>
         <div className="flex gap-1 shrink-0">
-          <button className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
+          <button onClick={handleEmoji} className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
             <Smile className="w-6 h-6" />
           </button>
-          <button className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
+          <button onClick={handleAttachment} className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
             <Paperclip className="w-5 h-5" />
           </button>
         </div>
@@ -310,7 +335,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
             {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
           </Button>
         ) : (
-          <button className="p-3 bg-[#00a884] hover:bg-[#06cf9c] text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center">
+          <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center ${isRecording ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
             <Mic className="w-5 h-5" />
           </button>
         )}
