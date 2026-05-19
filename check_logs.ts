@@ -5,7 +5,7 @@ const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(url, key);
 
 async function check() {
-  const { data } = await supabase.from('test_logs').select('*').order('created_at', { ascending: false }).limit(2);
+  const { data } = await supabase.from('whatsapp_messages').select('*').order('created_at', { ascending: false }).limit(2);
   console.log(JSON.stringify(data, null, 2));
 }
 check();

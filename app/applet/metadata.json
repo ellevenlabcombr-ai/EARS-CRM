@@ -1,0 +1,12 @@
+{
+  "name": "Ears Dashboard",
+  "description": "WhatsApp sports performance tracker.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -84,11 +84,21 @@ export async function POST(req: Request) {
       };
 
       // Extraction of media URL
-      const foundBase64 = findBase64(data);
+      const foundBase64 = findBase64(data) || data.base64 || data.message?.base64;
       if (foundBase64) {
         mediaUrl = foundBase64;
       } else if (content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url) {
         mediaUrl = content.imageMessage?.url || content.audioMessage?.url || content.videoMessage?.url;
+      }
+
+      // DEBUG: insert dummy message to see if we had base64
+      if (mediaType && supabaseUrl && supabaseKey) {
+          const supabaseDebug = createClient(supabaseUrl, supabaseKey);
+          await supabaseDebug.from('whatsapp_messages').insert([{
+             phone_number: 'DEBUG',
+             direction: 'inbound',
+             text: `Webhook received. base64 found? ${!!foundBase64}. data.message.base64? ${!!data.message?.base64}. URL: ${mediaUrl?.substring(0,30)}`
+          }]);
       }
 
       // Ensure base64 can be rendered in the frontend

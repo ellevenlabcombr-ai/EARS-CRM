@@ -382,7 +382,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         setIsRecording(true);
       } catch (err) {
         console.error("Microphone error", err);
-        alert("Erro ao acessar o microfone. Verifique as permissões de gravação.");
+        alert("Erro ao acessar o microfone. Verifique as permissões de gravação. Se estiver em um celular ou no preview, clique no botão superior direito para abrir o app em uma NOVA GUIA e tente novamente.");
       }
     }
   };
@@ -516,6 +516,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                             alt="Media" 
                             className="max-w-full h-auto cursor-pointer hover:opacity-90 transition-opacity" 
                             onClick={() => window.open(msg.media_url, '_blank')}
+                            referrerPolicy="no-referrer"
                           />
                         ) : (
                           <div className="bg-black/20 p-8 flex flex-col items-center justify-center gap-2">
@@ -530,7 +531,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                       <div className="mt-2 min-w-[240px]">
                         {msg.media_url ? (
                           <audio controls className="w-full h-8 accent-[#00a884]">
-                            <source src={msg.media_url} type="audio/mpeg" />
+                            <source src={msg.media_url} />
                             Seu navegador não suporta áudio.
                           </audio>
                         ) : (
