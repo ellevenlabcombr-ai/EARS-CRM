@@ -185,7 +185,7 @@ export async function POST(req: Request) {
           .from('whatsapp_messages')
           .select('id')
           .eq('direction', isFromMe ? 'outbound' : 'inbound')
-          .eq('phone_number', cleanPhone)
+          .ilike('phone_number', `%${s8}`)
           .eq('text', text || '')
           .gte('created_at', new Date(Date.now() - 5000).toISOString())
           .limit(1);
