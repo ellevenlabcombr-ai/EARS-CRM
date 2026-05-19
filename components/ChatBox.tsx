@@ -24,6 +24,8 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     if (inline) {
@@ -317,42 +319,71 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
 
   const handleMic = async () => {
     if (isRecording) {
-      setIsRecording(false);
-      // In a real app, we would capture the stream. 
-      // For now, we simulate a sent audio via Evolution.
-      setSending(true);
-      try {
-        const response = await fetch('/api/whatsapp/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            phone: cleanPhone, 
-            message: "", 
-            mediaType: 'audio',
-            mediaUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' // Placeholder audio
-          }),
-        });
-
-        if (response.ok) {
-          await supabase.from('whatsapp_messages').insert({
-            athlete_id: athleteId,
-            phone_number: cleanPhone,
-            direction: 'outbound',
-            text: '',
-            media_type: 'audio',
-            media_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-            status: 'sent'
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setSending(false);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
       }
+      setIsRecording(false);
     } else {
-      setIsRecording(true);
-      // Simulate recording
-      setTimeout(() => setIsRecording(false), 5000);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          // Stop all microphone tracks to release the hardware
+          stream.getTracks().forEach(track => track.stop());
+
+          setSending(true);
+          try {
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+              const base64Audio = reader.result as string;
+
+              const response = await fetch('/api/whatsapp/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  phone: cleanPhone, 
+                  message: "", 
+                  mediaType: 'audio',
+                  mediaUrl: base64Audio
+                }),
+              });
+
+              if (response.ok) {
+                await supabase.from('whatsapp_messages').insert({
+                  athlete_id: athleteId,
+                  phone_number: cleanPhone,
+                  direction: 'outbound',
+                  text: '',
+                  media_type: 'audio',
+                  media_url: base64Audio,
+                  status: 'sent'
+                });
+              }
+              setSending(false);
+            };
+          } catch (e) {
+            console.error("Failed processing audio", e);
+            setSending(false);
+          }
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Microphone error", err);
+        alert("Erro ao acessar o microfone. Verifique as permissões de gravação.");
+      }
     }
   };
 

@@ -112,6 +112,8 @@ export async function POST(req: Request) {
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        await supabase.from('test_logs').insert([{ log_data: data }]);
+
         const cleanPhone = phoneRaw.replace(/\D/g, '');
         // Try to find athlete
         let athleteId = null;
