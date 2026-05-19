@@ -355,6 +355,9 @@ export function AutomationSettings() {
            const autoFixSql = `
             DO $$ 
             BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'whatsapp_auto_ears') THEN
+                    ALTER TABLE public.automation_settings ADD COLUMN whatsapp_auto_ears BOOLEAN DEFAULT false;
+                END IF;
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'email_enabled') THEN
                     ALTER TABLE public.automation_settings ADD COLUMN email_enabled BOOLEAN DEFAULT false;
                 END IF;
@@ -383,7 +386,7 @@ export function AutomationSettings() {
             NOTIFY pgrst, 'reload schema';
            `;
            await supabase.rpc('exec_sql', { sql: autoFixSql });
-           throw new Error('As tabelas do banco de dados foram atualizadas automaticamente para incluir o EMAIL_ENABLED. Por favor, tente salvar as configurações novamente agora ou recarregue a página.');
+           throw new Error('As tabelas do banco de dados precisaram ser atualizadas com novas colunas (incluindo o módulo Ears). Por favor, tente salvar novamente agora que o banco está corrigido.');
         }
         throw error;
       }
