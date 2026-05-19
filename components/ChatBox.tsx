@@ -97,10 +97,10 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       )
       .subscribe();
 
-    // Fallback polling every 8 seconds if realtime is flaky
+    // Fallback polling every 3 seconds if realtime is flaky
     const pollInterval = setInterval(() => {
       fetchMessages(true);
-    }, 10000);
+    }, 3000);
 
     return () => {
       supabase.removeChannel(subscription);

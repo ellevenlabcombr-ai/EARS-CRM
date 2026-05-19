@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   try {
-    const { phone, message } = await req.json();
+    const bodyPayload = await req.json();
+    const { phone, message, mediaUrl, mediaType, fileName } = bodyPayload;
 
     if (!phone || !message) {
       return NextResponse.json({ error: 'Faltam parametros: phone ou message' }, { status: 400 });
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
       }
     };
 
-    const { mediaUrl, mediaType, fileName } = await req.json().catch(() => ({}));
+    // media params extracted above
 
     if (mediaUrl && mediaType) {
       if (mediaType === 'image') {

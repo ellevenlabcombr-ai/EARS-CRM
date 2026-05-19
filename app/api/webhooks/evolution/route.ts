@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { GoogleGenAI } from "@google/genai";
 
 export async function POST(req: Request) {
   try {
@@ -7,10 +8,12 @@ export async function POST(req: Request) {
     console.log('Webhook body:', JSON.stringify(body, null, 2));
 
     // Evolution API sends events like "messages.upsert" or "MESSAGES_UPSERT"
-    const event = body.event?.toLowerCase();
+    const event = body.event?.toLowerCase() || '';
     
-    if (event === 'messages.upsert' || event === 'messages_upsert' || event === 'messages.upsert_v2' || event === 'message.upsert') {
-      const data = body.data;
+    const isMessageEvent = event.includes('message') || event.includes('upsert') || body.data?.message || body.message;
+
+    if (isMessageEvent) {
+      const data = body.data || body;
       if (!data) return NextResponse.json({ success: true, warning: 'No data' });
       
       const message = data.message || data;
@@ -114,8 +117,9 @@ export async function POST(req: Request) {
           .limit(1);
 
         if (!existing || existing.length === 0) {
-          console.log(`[RECEPTION] New message from ${cleanPhone}. Linking to athlete ${athleteId || 'NONE'}`);
-          await supabase.from('whatsapp_messages').insert({
+          console.log(`[RECEPTION] New message from ${cleanPhone}. Linking to athlete ${athleteId || 'NONE'} (text: ${text || mediaType})`);
+          
+          let insertData = {
             athlete_id: athleteId,
             phone_number: cleanPhone,
             direction: isFromMe ? 'outbound' : 'inbound',
@@ -123,7 +127,18 @@ export async function POST(req: Request) {
             media_url: mediaUrl,
             media_type: mediaType,
             status: isFromMe ? 'sent' : 'received'
-          });
+          };
+          
+          const { error: insertError } = await supabase.from('whatsapp_messages').insert(insertData);
+          
+          if (insertError) {
+             console.error('[RECEPTION] Insert Error:', insertError);
+             if (insertError.code === '23503' && athleteId) { // Foreign key violation
+                 console.log('Foreign key violation, trying to insert without athleteId...');
+                 insertData.athlete_id = null;
+                 await supabase.from('whatsapp_messages').insert(insertData);
+             }
+          }
 
           // AUTO-AI RESPONSE
           if (!isFromMe && process.env.GEMINI_API_KEY && athleteId && text) {
@@ -134,22 +149,23 @@ export async function POST(req: Request) {
                 .single();
 
               if (settings?.whatsapp_auto_ears) {
-                 const protocol = req.headers.get('x-forwarded-proto') || 'http';
-                 const host = req.headers.get('host');
-                 const baseUrl = `${protocol}://${host}`;
+                 console.log(`[AI] Attempting auto-reply for ${athleteName}`);
                  
-                 console.log(`[AI] Attempting auto-reply for ${athleteName} at ${baseUrl}`);
-
-                 const chatRes = await fetch(`${baseUrl}/api/ears/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      messages: [{ direction: 'inbound', text: text }],
-                      athleteName: athleteName
-                    })
+                 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+                 const systemPrompt = `Você é o Ears, um assistente inteligente de performance esportiva. Você está conversando com o atleta ${athleteName}. Seu objetivo é ser empático, direto e técnico quando necessário. Suas respostas devem ser curtas (estilo WhatsApp). Sempre incentive o atleta.`;
+                 
+                 const aiResult = await ai.models.generateContent({
+                    model: "gemini-1.5-flash",
+                    contents: [
+                      { role: 'user', parts: [{ text: systemPrompt }] },
+                      { role: 'user', parts: [{ text: text }] }
+                    ],
+                    config: { maxOutputTokens: 200, temperature: 0.7 }
                  });
-                 const aiData = await chatRes.json();
-                 const aiReply = aiData.text;
+
+                 const aiReply = aiResult.text || "Continue focado no seu treino!";
+
+                 console.log(`[AI] Response generated:`, aiReply);
 
                  if (aiReply && settings.evolution_api_url) {
                     await fetch(`${req.url.split('/api/')[0]}/api/whatsapp/send`, {

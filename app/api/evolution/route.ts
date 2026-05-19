@@ -53,17 +53,24 @@ export async function POST(req: Request) {
       options.body = JSON.stringify({
         enabled: true,
         url: webhookUrl,
-        webhook_by_events: true, // Set to true to use the specific events list below
+        webhook_by_events: false, 
+        webhook_base64: false,
         events: [
           "MESSAGES_UPSERT", 
-          "MESSAGES_UPDATE", 
-          "MESSAGES_DELETE", 
           "SEND_MESSAGE",
           "messages.upsert",
-          "messages.update",
-          "messages.delete",
           "messages.send"
-        ]
+        ],
+        webhook: {
+          enabled: true,
+          url: webhookUrl,
+          byEvents: false,
+          base64: false,
+          events: [
+            "MESSAGES_UPSERT", 
+            "SEND_MESSAGE"
+          ]
+        }
       });
     }
 
