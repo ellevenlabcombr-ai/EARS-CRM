@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 interface ChatBoxProps {
@@ -22,8 +22,11 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
   const [replyingTo, setReplyingTo] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isInternalNote, setIsInternalNote] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -37,6 +40,9 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     const handleClickOutside = (event: MouseEvent) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
         setShowEmojiPicker(false);
+      }
+      if (attachMenuRef.current && !attachMenuRef.current.contains(event.target as Node)) {
+        setShowAttachMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -119,13 +125,14 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
 
     setSending(true);
     try {
+      const isInternal = isInternalNote;
       const tempMsg = {
         id: 'temp-' + Date.now(),
         athlete_id: athleteId,
         phone_number: cleanPhone,
-        direction: 'outbound',
+        direction: isInternal ? 'internal' : 'outbound',
         text: newMessage,
-        status: 'sending',
+        status: isInternal ? 'sent' : 'sending',
         created_at: new Date().toISOString(),
         reply_to_id: replyingTo?.id || null,
         reply_to_text: replyingTo?.text || null
@@ -136,23 +143,26 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
       const msgToSend = newMessage;
       setNewMessage('');
       setReplyingTo(null);
+      setIsInternalNote(false);
 
-      const response = await fetch('/api/whatsapp/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone: cleanPhone, message: msgToSend }),
-      });
+      if (!isInternal) {
+        const response = await fetch('/api/whatsapp/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ phone: cleanPhone, message: msgToSend }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Falha ao enviar mensagem');
+        if (!response.ok) {
+          throw new Error('Falha ao enviar mensagem');
+        }
       }
 
       await supabase.from('whatsapp_messages').insert({
         athlete_id: athleteId,
         phone_number: cleanPhone,
-        direction: 'outbound',
+        direction: isInternal ? 'internal' : 'outbound',
         text: msgToSend,
         status: 'sent'
       });
@@ -217,10 +227,11 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
     return publicUrl;
   };
 
-  const handleAttachment = () => {
+  const handleAttachment = (type: 'image' | 'document') => {
+    setShowAttachMenu(false);
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*,application/pdf,video/*';
+    input.accept = type === 'image' ? 'image/*,video/*' : 'application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain';
     const toBase64 = (file: File): Promise<string> => {
       return new Promise((resolve, reject) => {
         if (file.type.startsWith('image/')) {
@@ -488,13 +499,14 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         <div className="relative z-10 flex flex-col space-y-3">
           {messages.map((msg) => {
             const isOutbound = msg.direction === 'outbound';
+            const isInternal = msg.direction === 'internal';
             const isSending = msg.status === 'sending';
             return (
-              <div key={msg.id} className={`flex flex-col ${isOutbound ? 'items-end' : 'items-start'} group`}>
+              <div key={msg.id} className={`flex flex-col ${isOutbound || isInternal ? 'items-end' : 'items-start'} group`}>
                 <div
                   className={`flex items-center gap-2 max-w-[85%]`}
                 >
-                  {!isOutbound && (
+                  {!isOutbound && !isInternal && (
                     <button 
                       onClick={() => setReplyingTo(msg)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] rounded-full shrink-0"
@@ -504,11 +516,19 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                   )}
                   <div
                     className={`relative p-2 px-3 rounded-xl text-sm shadow-sm ${
-                      isOutbound
+                      isInternal
+                        ? 'bg-[#ffeaa7] text-[#2d3436] border border-[#fdcb6e]'
+                        : isOutbound
                         ? 'bg-[#005c4b] text-[#e9edef] rounded-tr-none'
                         : 'bg-[#202c33] text-[#e9edef] rounded-tl-none'
                     }`}
                   >
+                    {isInternal && (
+                       <div className="flex items-center gap-1 mb-1 opacity-70">
+                         <StickyNote className="w-3 h-3" />
+                         <span className="text-[10px] font-bold uppercase tracking-wider">Nota Interna</span>
+                       </div>
+                    )}
                     {(msg.reply_to_id || msg.reply_to_text) && (
                       <div className="mb-1 p-2 rounded bg-black/20 border-l-4 border-[#00a884] text-xs max-h-16 overflow-hidden text-ellipsis opacity-80">
                         {msg.reply_to_text || 'Mensagem'}
@@ -566,14 +586,14 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
                         </div>
                       </div>
                     )}
-                    <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${isOutbound ? 'text-white/70' : 'text-[#8696a0]'}`}>
+                    <div className={`flex items-center justify-end gap-1 text-[10px] mt-1 ${isInternal ? 'text-[#2d3436]/70' : isOutbound ? 'text-white/70' : 'text-[#8696a0]'}`}>
                       <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      {isOutbound && (
+                      {isOutbound && !isInternal && (
                         isSending ? <Check className="w-3 h-3 opacity-70" /> : <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb]" />
                       )}
                     </div>
                   </div>
-                  {isOutbound && (
+                  {isOutbound && !isInternal && (
                     <button 
                       onClick={() => setReplyingTo(msg)}
                       className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-[#8696a0] hover:text-[#e9edef] bg-[#202c33] rounded-full shrink-0"
@@ -603,7 +623,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
         </div>
       )}
 
-      <div className={`p-3 flex items-center gap-2 shrink-0 bg-[#202c33] border-transparent`}>
+      <div className={`p-3 flex items-center gap-2 shrink-0 ${isInternalNote ? 'bg-[#fdcb6e]/10' : 'bg-[#202c33]'} border-t border-[#222d34] transition-colors duration-300`}>
         <div className="flex gap-1 shrink-0 relative">
           <button onClick={handleEmoji} className={`p-2 rounded-md transition-colors cursor-pointer ${showEmojiPicker ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
             <Smile className="w-6 h-6" />
@@ -621,9 +641,23 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
             </div>
           )}
 
-          <button onClick={handleAttachment} className="p-2 text-[#8696a0] hover:text-[#e9edef] rounded-md transition-colors cursor-pointer">
-            <Paperclip className="w-5 h-5" />
-          </button>
+          <div ref={attachMenuRef} className="relative">
+            <button onClick={() => setShowAttachMenu(!showAttachMenu)} className={`p-2 rounded-md transition-colors cursor-pointer ${showAttachMenu ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
+              <Paperclip className="w-5 h-5" />
+            </button>
+            {showAttachMenu && (
+              <div className="absolute bottom-14 left-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-56 p-2 z-50 flex flex-col gap-1">
+                <button onClick={() => handleAttachment('image')} className="flex items-center gap-3 w-full p-3 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm font-medium">
+                  <div className="bg-blue-500/20 p-2 rounded-full text-blue-400 shrink-0"><ImagePlus className="w-5 h-5"/></div>
+                  Fotos e Vídeos
+                </button>
+                <button onClick={() => handleAttachment('document')} className="flex items-center gap-3 w-full p-3 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm font-medium">
+                  <div className="bg-purple-500/20 p-2 rounded-full text-purple-400 shrink-0"><FileText className="w-5 h-5"/></div>
+                  Documento / PDF
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         
         {isRecording ? (
@@ -635,19 +669,28 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
             <span className="text-xs text-red-500 font-bold ml-2">Toque em X para enviar</span>
           </div>
         ) : (
-          <textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Mensagem"
-            className={`flex-1 border-0 rounded-lg px-4 py-2.5 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] bg-[#2a3942] text-[#e9edef] placeholder-[#8696a0] leading-snug`}
-            rows={1}
-          />
+          <div className="relative flex-1 flex items-center">
+            <textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder={isInternalNote ? "Adicionar nota interna..." : "Mensagem"}
+              className={`w-full border-0 rounded-lg pl-4 pr-12 py-2.5 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] transition-colors duration-300 leading-snug ${isInternalNote ? 'bg-[#fdcb6e]/20 text-[#ffeaa7] placeholder-[#ffeaa7]/50 focus:ring-1 focus:ring-[#fdcb6e]/50' : 'bg-[#2a3942] text-[#e9edef] placeholder-[#8696a0]'}`}
+              rows={1}
+            />
+            <button 
+              onClick={() => setIsInternalNote(!isInternalNote)}
+              title="Alternar para Nota Interna"
+              className={`absolute right-2 p-1.5 rounded-md transition-colors ${isInternalNote ? 'text-[#fdcb6e] bg-[#fdcb6e]/20' : 'text-[#8696a0] hover:bg-[#202c33]'}`}
+            >
+              <StickyNote className="w-4 h-4" />
+            </button>
+          </div>
         )}
         
         {newMessage.trim() && !isRecording ? (
@@ -655,7 +698,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
             onClick={handleSend}
             disabled={sending}
             size="icon"
-            className="rounded-full bg-[#00a884] hover:bg-[#06cf9c] text-white w-10 h-10 shrink-0 cursor-pointer border-none shadow-lg"
+            className={`rounded-full shadow-lg text-white w-10 h-10 shrink-0 cursor-pointer border-none transition-colors duration-300 ${isInternalNote ? 'bg-[#fdcb6e] hover:bg-[#eccc68] text-black' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}
           >
             {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
           </Button>
