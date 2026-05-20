@@ -47,6 +47,7 @@ export function WhatsAppDashboard() {
   
   const [connectionStatus, setConnectionStatus] = useState<string>('loading');
   const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
+  const [qrError, setQrError] = useState<string | null>(null);
   const [isFetchingQr, setIsFetchingQr] = useState(false);
   const channelRef = useRef<any>(null);
 
@@ -85,6 +86,7 @@ export function WhatsAppDashboard() {
   const fetchQR = async () => {
     setIsFetchingQr(true);
     setQrCodeBase64(null);
+    setQrError(null);
     try {
       const res = await fetch('/api/whatsapp/connect', {
         method: 'POST',
@@ -95,9 +97,19 @@ export function WhatsAppDashboard() {
         setQrCodeBase64(data.qrcode.base64);
       } else if (data?.qrcode) {
         setQrCodeBase64(data.qrcode);
+      } else if (data?.error) {
+        const errorDetail = data.details?.message || JSON.stringify(data.details || '');
+        if (errorDetail.toLowerCase().includes('application not found')) {
+           setQrError('Sua API Evolution (Railway) retornou "Application not found". Isso significa que o servidor pode estar offline, suspenso (sem saldo) ou a URL configurada está incorreta.');
+        } else {
+           setQrError(`${data.error} ${errorDetail ? `(${errorDetail})` : ''}`);
+        }
+      } else {
+        setQrError('Resposta inválida do servidor.');
       }
-    } catch(e) {
+    } catch(e: any) {
       console.error('Failed to fetch QR:', e);
+      setQrError('Erro na requisição. Verifique sua conexão.');
     }
     setIsFetchingQr(false);
   };
@@ -444,12 +456,20 @@ export function WhatsAppDashboard() {
                      </div>
                    </div>
                  ) : (
-                   <Button 
-                     onClick={fetchQR}
-                     className="bg-[#00a884] hover:bg-[#008f6f] text-white font-semibold py-6 w-full rounded-xl shadow-lg transition-transform hover:scale-105 text-base"
-                   >
-                     Gerar QR Code Agora
-                   </Button>
+                   <div className="w-full flex flex-col gap-4">
+                     {qrError && (
+                       <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm text-left">
+                         <span className="font-bold flex items-center gap-2 mb-1"><X className="w-4 h-4"/> Erro ao gerar QR</span>
+                         <span className="opacity-90">{qrError}</span>
+                       </div>
+                     )}
+                     <Button 
+                       onClick={fetchQR}
+                       className="bg-[#00a884] hover:bg-[#008f6f] text-white font-semibold py-6 w-full rounded-xl shadow-lg transition-transform hover:scale-105 text-base"
+                     >
+                       Tentar Novamente
+                     </Button>
+                   </div>
                  )}
                </div>
              </div>
