@@ -308,10 +308,14 @@ export function WhatsAppDashboard() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, 
         (payload) => {
           const newMsg = payload.new as any;
-          if (newMsg.phone_number) {
+          if (newMsg.athlete_id || newMsg.phone_number) {
             setChats(prev => {
-              const cleanMsgPhone = newMsg.phone_number.replace(/\D/g, '');
+              const cleanMsgPhone = newMsg.phone_number ? newMsg.phone_number.replace(/\D/g, '') : '';
               let matchedChat = prev.find(c => {
+                 if (newMsg.athlete_id && c.athleteId === newMsg.athlete_id) {
+                     if (!cleanMsgPhone || c.phone.replace(/\D/g, '').endsWith(cleanMsgPhone.slice(-8))) return true;
+                 }
+                 if (!cleanMsgPhone) return false;
                  const chatPhone = c.phone.replace(/\D/g, '');
                  return chatPhone === cleanMsgPhone || cleanMsgPhone.endsWith(chatPhone.slice(-8)) || chatPhone.endsWith(cleanMsgPhone.slice(-8));
               });

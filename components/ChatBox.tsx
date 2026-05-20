@@ -115,7 +115,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
           const newMsg = payload.new;
           const isRelevant = 
             newMsg.athlete_id === athleteId && 
-            (newMsg.phone_number && suffix8 && newMsg.phone_number.includes(suffix8));
+            (!suffix8 || (newMsg.phone_number && newMsg.phone_number.includes(suffix8)));
 
           if (isRelevant) {
             setMessages((prev) => {
@@ -208,31 +208,47 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
       setTimeout(scrollToBottom, 100);
 
       const msgToSend = newMessage;
+      const { data: insertedMsg, error: insertError } = await supabase.from('whatsapp_messages').insert({
+        athlete_id: athleteId,
+        phone_number: cleanPhone,
+        direction: isInternal ? 'internal' : 'outbound',
+        text: msgToSend,
+        status: isInternal ? 'sent' : 'sending',
+        created_at: new Date().toISOString()
+      }).select().single();
+
+      if (insertError) {
+         console.error('Error saving message locally', insertError);
+      }
+
       setNewMessage('');
       setReplyingTo(null);
       setIsInternalNote(false);
 
       if (!isInternal) {
-        const response = await fetch('/api/whatsapp/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ phone: cleanPhone, message: msgToSend }),
-        });
+        try {
+          const response = await fetch('/api/whatsapp/send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ phone: cleanPhone, message: msgToSend }),
+          });
 
-        if (!response.ok) {
-          throw new Error('Falha ao enviar mensagem');
+          if (!response.ok) {
+            throw new Error('Falha ao enviar mensagem via Evolution');
+          }
+          
+          if (insertedMsg) {
+             await supabase.from('whatsapp_messages').update({ status: 'sent' }).eq('id', insertedMsg.id);
+          }
+        } catch (e) {
+          console.error("Evolution sending error:", e);
+          if (insertedMsg) {
+             await supabase.from('whatsapp_messages').update({ status: 'failed', text: msgToSend + '\n[Falhou, mas salvo no app]' }).eq('id', insertedMsg.id);
+          }
         }
       }
-
-      await supabase.from('whatsapp_messages').insert({
-        athlete_id: athleteId,
-        phone_number: cleanPhone,
-        direction: isInternal ? 'internal' : 'outbound',
-        text: msgToSend,
-        status: 'sent'
-      });
 
     } catch (error) {
        console.error("Error sending", error);
@@ -360,31 +376,40 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
 
         const msgText = isImage ? (newMessage || '') : file.name;
 
-        // Send via Evolution API
-        const response = await fetch('/api/whatsapp/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            phone: cleanPhone, 
-            message: msgText,
-            mediaUrl: mediaUrl,
-            mediaType: mediaType,
-            fileName: file.name
-          }),
-        });
-
-        if (response.ok) {
-          await supabase.from('whatsapp_messages').insert({
+          const { data: insertedMsg } = await supabase.from('whatsapp_messages').insert({
             athlete_id: athleteId,
             phone_number: cleanPhone,
             direction: 'outbound',
             text: msgText,
             media_url: mediaUrl,
             media_type: mediaType,
-            status: 'sent'
-          });
+            status: 'sending'
+          }).select().single();
+
           setNewMessage('');
           setReplyingTo(null);
+
+        // Send via Evolution API
+        try {
+          const response = await fetch('/api/whatsapp/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              phone: cleanPhone, 
+              message: msgText,
+              mediaUrl: mediaUrl,
+              mediaType: mediaType,
+              fileName: file.name
+            }),
+          });
+
+          if (response.ok) {
+            if (insertedMsg) await supabase.from('whatsapp_messages').update({ status: 'sent' }).eq('id', insertedMsg.id);
+          } else {
+             if (insertedMsg) await supabase.from('whatsapp_messages').update({ status: 'failed', text: msgText + '\n[Falhou, mas salvo no app]' }).eq('id', insertedMsg.id);
+          }
+        } catch (e) {
+             if (insertedMsg) await supabase.from('whatsapp_messages').update({ status: 'failed', text: msgText + '\n[Falhou, mas salvo no app]' }).eq('id', insertedMsg.id);
         }
       } catch (err) {
         console.error(err);
@@ -434,27 +459,35 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
             reader.onloadend = async () => {
               const base64Audio = reader.result as string;
 
-              const response = await fetch('/api/whatsapp/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                  phone: cleanPhone, 
-                  message: "", 
-                  mediaType: 'audio',
-                  mediaUrl: base64Audio
-                }),
-              });
+              const { data: insertedMsg } = await supabase.from('whatsapp_messages').insert({
+                athlete_id: athleteId,
+                phone_number: cleanPhone,
+                direction: 'outbound',
+                text: '',
+                media_type: 'audio',
+                media_url: base64Audio,
+                status: 'sending'
+              }).select().single();
 
-              if (response.ok) {
-                await supabase.from('whatsapp_messages').insert({
-                  athlete_id: athleteId,
-                  phone_number: cleanPhone,
-                  direction: 'outbound',
-                  text: '',
-                  media_type: 'audio',
-                  media_url: base64Audio,
-                  status: 'sent'
+              try {
+                const response = await fetch('/api/whatsapp/send', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    phone: cleanPhone, 
+                    message: "", 
+                    mediaType: 'audio',
+                    mediaUrl: base64Audio
+                  }),
                 });
+
+                if (response.ok) {
+                  if (insertedMsg) await supabase.from('whatsapp_messages').update({ status: 'sent' }).eq('id', insertedMsg.id);
+                } else {
+                  if (insertedMsg) await supabase.from('whatsapp_messages').update({ status: 'failed' }).eq('id', insertedMsg.id);
+                }
+              } catch (e) {
+                if (insertedMsg) await supabase.from('whatsapp_messages').update({ status: 'failed' }).eq('id', insertedMsg.id);
               }
               setSending(false);
             };
