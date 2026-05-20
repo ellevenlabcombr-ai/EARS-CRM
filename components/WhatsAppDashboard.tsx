@@ -198,13 +198,18 @@ export function WhatsAppDashboard() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, 
         (payload) => {
           const newMsg = payload.new as any;
-          if (newMsg.athlete_id) {
+          if (newMsg.phone_number) {
             setChats(prev => {
-              const chatExists = prev.find(c => c.id === newMsg.athlete_id);
-              if (!chatExists) return prev; // If athlete not found, ignore
+              const cleanMsgPhone = newMsg.phone_number.replace(/\D/g, '');
+              let matchedChat = prev.find(c => {
+                 const chatPhone = c.phone.replace(/\D/g, '');
+                 return chatPhone === cleanMsgPhone || cleanMsgPhone.endsWith(chatPhone.slice(-8)) || chatPhone.endsWith(cleanMsgPhone.slice(-8));
+              });
+              
+              if (!matchedChat) return prev; // If not found, ignore
               
               let updated = prev.map(c => {
-                if (c.id === newMsg.athlete_id) {
+                if (c.id === matchedChat.id) {
                   let text = newMsg.text || (newMsg.media_type ? `[${newMsg.media_type}]` : 'Mensagem');
                   let newUnread = c.unreadCount;
                   
@@ -411,7 +416,7 @@ export function WhatsAppDashboard() {
         <div className="flex-1 flex flex-col bg-[#0b141a] overflow-hidden relative">
           {selectedAthlete ? (
             <ChatBox 
-              athleteId={selectedAthlete.id} 
+              athleteId={selectedAthlete.athleteId} 
               athletePhone={selectedAthlete.phone} 
               athleteName={selectedAthlete.name} 
               inline={true} 

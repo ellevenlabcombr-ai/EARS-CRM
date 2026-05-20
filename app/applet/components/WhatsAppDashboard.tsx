@@ -28,9 +28,11 @@ function playNotificationSound() {
 }
 
 interface Chat {
-  id: string; // athlete id
+  id: string; // unique string like athlete-uuid or guardian-uuid
+  athleteId: string; // the actual athlete DB id
   name: string;
   phone: string;
+  role: string;
   modalidade: string;
   category: string;
   lastMessageText: string;
@@ -129,11 +131,11 @@ export function WhatsAppDashboard() {
   const loadData = async () => {
     setIsLoading(true);
     
-    // 1. Fetch athletes
-    const { data: athletesData } = await supabase.from('athletes').select('id, name, phone, modalidade, category').not('phone', 'is', null);
+    // 1. Fetch athletes and guardians
+    const { data: athletesData } = await supabase.from('athletes').select('id, name, phone, modalidade, category, guardian_name, guardian_phone');
     
     // 2. Fetch last 1500 messages to build conversation list
-    const { data: msgsData } = await supabase.from('whatsapp_messages').select('athlete_id, text, media_type, direction, created_at').order('created_at', { ascending: false }).limit(1500);
+    const { data: msgsData } = await supabase.from('whatsapp_messages').select('athlete_id, phone_number, text, media_type, direction, created_at').order('created_at', { ascending: false }).limit(1500);
     
     const lastReadMap = JSON.parse(localStorage.getItem('wa_last_read') || '{}');
     
@@ -141,35 +143,67 @@ export function WhatsAppDashboard() {
     const chatMap = new Map<string, any>();
     if (athletesData) {
       for (const a of athletesData) {
-        chatMap.set(a.id, {
-          id: a.id,
-          name: a.name,
-          phone: a.phone,
-          modalidade: a.modalidade,
-          category: a.category,
-          lastMessageText: '',
-          lastMessageTime: null,
-          unreadCount: 0
-        });
+        if (a.phone) {
+          const phoneKey = a.phone.replace(/\\D/g, '');
+          chatMap.set(phoneKey, {
+            id: `athlete-${a.id}`,
+            athleteId: a.id,
+            name: a.name,
+            phone: a.phone,
+            role: 'Atleta',
+            modalidade: a.modalidade,
+            category: a.category,
+            lastMessageText: '',
+            lastMessageTime: null,
+            unreadCount: 0
+          });
+        }
+        if (a.guardian_phone) {
+          const gPhoneKey = a.guardian_phone.replace(/\\D/g, '');
+          chatMap.set(gPhoneKey, {
+            id: `guardian-${a.id}`,
+            athleteId: a.id,
+            name: a.guardian_name || `Resp. de ${a.name}`,
+            phone: a.guardian_phone,
+            role: 'Responsável',
+            modalidade: a.modalidade,
+            category: a.category,
+            lastMessageText: '',
+            lastMessageTime: null,
+            unreadCount: 0
+          });
+        }
       }
     }
 
     if (msgsData) {
       for (let i = msgsData.length - 1; i >= 0; i--) { // Process ascending
         const m = msgsData[i];
-        if (!m.athlete_id) continue;
-        const chat = chatMap.get(m.athlete_id);
-        if (chat) {
-          const isLatest = true; // since ascending, latest will overwrite
+        if (!m.phone_number) continue;
+        
+        const cleanMsgPhone = m.phone_number.replace(/\\D/g, '');
+        let matchedChatKey = chatMap.has(cleanMsgPhone) ? cleanMsgPhone : undefined;
+        
+        if (!matchedChatKey) {
+            for (const key of chatMap.keys()) {
+                if (cleanMsgPhone.endsWith(key.slice(-8)) || key.endsWith(cleanMsgPhone.slice(-8))) {
+                     matchedChatKey = key;
+                     break;
+                }
+            }
+        }
+
+        if (matchedChatKey) {
+          const chat = chatMap.get(matchedChatKey);
           chat.lastMessageText = m.text || (m.media_type ? `[${m.media_type}]` : 'Mensagem');
           chat.lastMessageTime = m.created_at;
           
           if (m.direction === 'inbound') {
-            const lastRead = lastReadMap[m.athlete_id];
+            const lastRead = lastReadMap[chat.id];
             if (!lastRead || new Date(m.created_at) > new Date(lastRead)) {
-              if (selectedAthlete?.id !== m.athlete_id) {
-                chat.unreadCount++;
-              }
+               if (selectedAthlete?.id !== chat.id) {
+                 chat.unreadCount++;
+               }
             }
           }
         }
@@ -188,13 +222,18 @@ export function WhatsAppDashboard() {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, 
         (payload) => {
           const newMsg = payload.new as any;
-          if (newMsg.athlete_id) {
+          if (newMsg.phone_number) {
             setChats(prev => {
-              const chatExists = prev.find(c => c.id === newMsg.athlete_id);
-              if (!chatExists) return prev; // If athlete not found, ignore
+              const cleanMsgPhone = newMsg.phone_number.replace(/\\D/g, '');
+              let matchedChat = prev.find(c => {
+                 const chatPhone = c.phone.replace(/\\D/g, '');
+                 return chatPhone === cleanMsgPhone || cleanMsgPhone.endsWith(chatPhone.slice(-8)) || chatPhone.endsWith(cleanMsgPhone.slice(-8));
+              });
+              
+              if (!matchedChat) return prev; // If not found, ignore
               
               let updated = prev.map(c => {
-                if (c.id === newMsg.athlete_id) {
+                if (c.id === matchedChat?.id) {
                   let text = newMsg.text || (newMsg.media_type ? `[${newMsg.media_type}]` : 'Mensagem');
                   let newUnread = c.unreadCount;
                   
@@ -347,7 +386,12 @@ export function WhatsAppDashboard() {
                     
                     <div className="flex-1 min-w-0 pr-2">
                       <div className="flex justify-between items-baseline mb-0.5">
-                        <span className="font-semibold text-[15px] text-[#e9edef] truncate block">{chat.name}</span>
+                        <div className="flex flex-col gap-0.5 w-[75%]">
+                           <span className="font-semibold text-[15px] text-[#e9edef] truncate block">{chat.name}</span>
+                           {chat.role === 'Responsável' && (
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-[#fdcb6e] bg-[#fdcb6e]/10 px-1.5 py-0.5 rounded-sm w-max self-start border border-[#fdcb6e]/20">Pai/Mãe</span>
+                           )}
+                        </div>
                         {chat.lastMessageTime && (
                            <span className={`text-[11px] ml-2 shrink-0 ${chat.unreadCount > 0 ? 'text-[#00a884] font-medium' : 'text-[#8696a0]'}`}>
                              {new Date(chat.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -401,10 +445,12 @@ export function WhatsAppDashboard() {
         <div className="flex-1 flex flex-col bg-[#0b141a] overflow-hidden relative">
           {selectedAthlete ? (
             <ChatBox 
-              athleteId={selectedAthlete.id} 
+              athleteId={selectedAthlete.athleteId} 
               athletePhone={selectedAthlete.phone} 
               athleteName={selectedAthlete.name} 
               inline={true} 
+              isArchived={archivedIds.includes(selectedAthlete.id)}
+              onToggleArchive={(e) => toggleArchive(e as any, selectedAthlete.id)}
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0] bg-[url('https://i.postimg.cc/85z1DkXX/wa-bg.png')] bg-cover bg-center">

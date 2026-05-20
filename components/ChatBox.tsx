@@ -59,7 +59,8 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false, 
     const { data, error } = await supabase
       .from('whatsapp_messages')
       .select('*')
-      .or(`athlete_id.eq.${athleteId},phone_number.ilike.%${suffix8}%`)
+      .eq('athlete_id', athleteId)
+      .ilike('phone_number', `%${suffix8}%`)
       .order('created_at', { ascending: true });
 
     if (!error && data) {
@@ -90,7 +91,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false, 
         (payload) => {
           const newMsg = payload.new;
           const isRelevant = 
-            newMsg.athlete_id === athleteId || 
+            newMsg.athlete_id === athleteId && 
             (newMsg.phone_number && suffix8 && newMsg.phone_number.includes(suffix8));
 
           if (isRelevant) {
