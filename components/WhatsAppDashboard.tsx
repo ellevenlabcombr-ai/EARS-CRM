@@ -415,6 +415,8 @@ export function WhatsAppDashboard() {
               athletePhone={selectedAthlete.phone} 
               athleteName={selectedAthlete.name} 
               inline={true} 
+              isArchived={archivedIds.includes(selectedAthlete.id)}
+              onToggleArchive={(e) => toggleArchive(e as any, selectedAthlete.id)}
             />
           ) : connectionStatus !== 'open' && connectionStatus !== 'loading' ? (
              <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0] bg-[#111b21] bg-[url('https://i.postimg.cc/85z1DkXX/wa-bg.png')] bg-cover bg-center">

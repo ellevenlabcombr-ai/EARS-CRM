@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus, Archive, ArchiveRestore } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 interface ChatBoxProps {
@@ -11,9 +11,11 @@ interface ChatBoxProps {
   athletePhone: string;
   athleteName: string;
   inline?: boolean;
+  isArchived?: boolean;
+  onToggleArchive?: (e: React.MouseEvent) => void;
 }
 
-export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }: ChatBoxProps) {
+export function ChatBox({ athleteId, athletePhone, athleteName, inline = false, isArchived, onToggleArchive }: ChatBoxProps) {
   const [isOpen, setIsOpen] = useState(inline ? true : false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -452,6 +454,15 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false }
            </div>
         </div>
         <div className="flex items-center gap-2">
+          {onToggleArchive && (
+            <button 
+              onClick={onToggleArchive} 
+              title={isArchived ? "Desarquivar" : "Arquivar"} 
+              className="text-[#8696a0] hover:text-[#e9edef] p-2 rounded-md transition-colors cursor-pointer"
+            >
+              {isArchived ? <ArchiveRestore className="w-5 h-5" /> : <Archive className="w-5 h-5" />}
+            </button>
+          )}
           <button 
             onClick={() => fetchMessages()} 
             title="Sincronizar Mensagens" 
