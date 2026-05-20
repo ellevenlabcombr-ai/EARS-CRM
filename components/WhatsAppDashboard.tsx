@@ -137,7 +137,7 @@ export function WhatsAppDashboard() {
       } else if (data?.error) {
         const errorDetail = data.details?.message || JSON.stringify(data.details || '');
         if (errorDetail.toLowerCase().includes('application not found')) {
-           setQrError('Sua API Evolution (Railway) retornou "Application not found". Isso significa que o servidor pode estar offline, suspenso (sem saldo) ou a URL configurada está incorreta.');
+           setQrError('Sua API Evolution (Render) retornou "Application not found". Isso significa que o servidor pode estar offline, suspenso ou a URL configurada está incorreta.');
         } else {
            setQrError(`${data.error} ${errorDetail ? `(${errorDetail})` : ''}`);
         }
