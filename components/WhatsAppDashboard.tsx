@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChatBox } from './ChatBox';
-import { MessageSquare, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff } from 'lucide-react';
+import { MessageSquare, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function playNotificationSound() {
@@ -46,7 +46,6 @@ export function WhatsAppDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const [connectionStatus, setConnectionStatus] = useState<string>('loading');
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
   const [isFetchingQr, setIsFetchingQr] = useState(false);
   const channelRef = useRef<any>(null);
@@ -85,20 +84,20 @@ export function WhatsAppDashboard() {
 
   const fetchQR = async () => {
     setIsFetchingQr(true);
+    setQrCodeBase64(null);
     try {
-      const res = await fetch('/api/evolution', {
+      const res = await fetch('/api/whatsapp/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'connect' })
       });
       const data = await res.json();
-      if (data?.data?.qrcode?.base64) {
-        setQrCodeBase64(data.data.qrcode.base64);
-      } else if (data?.data?.base64) {
-        setQrCodeBase64(data.data.base64);
+      if (data?.qrcode?.base64) {
+        setQrCodeBase64(data.qrcode.base64);
+      } else if (data?.qrcode) {
+        setQrCodeBase64(data.qrcode);
       }
     } catch(e) {
-      console.error(e);
+      console.error('Failed to fetch QR:', e);
     }
     setIsFetchingQr(false);
   };
@@ -273,7 +272,7 @@ export function WhatsAppDashboard() {
             size="sm" 
             className="bg-red-500 hover:bg-red-600 text-white h-7 px-3 text-xs rounded-full shadow"
             onClick={() => {
-              setIsQrModalOpen(true);
+              setSelectedAthlete(null);
               fetchQR();
             }}
           >
@@ -405,6 +404,55 @@ export function WhatsAppDashboard() {
               athleteName={selectedAthlete.name} 
               inline={true} 
             />
+          ) : connectionStatus !== 'open' && connectionStatus !== 'loading' ? (
+             <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0] bg-[#111b21] bg-[url('https://i.postimg.cc/85z1DkXX/wa-bg.png')] bg-cover bg-center">
+               <div className="absolute inset-0 bg-[#0b141a]/95"></div>
+               <div className="relative z-10 bg-[#202c33]/90 p-8 rounded-3xl flex flex-col items-center shadow-2xl border border-[#2a3942] max-w-[420px] w-full text-center backdrop-blur-sm">
+                 <div className="w-16 h-16 bg-[#00a884]/20 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                   <QrCode className="w-8 h-8 text-[#00a884]" />
+                 </div>
+                 <h2 className="text-2xl font-light text-[#e9edef] mb-3">Conecte o WhatsApp</h2>
+                 <p className="text-[#8696a0] mb-8 leading-relaxed">
+                   Seu dispositivo não está conectado.<br/>Pareie o WhatsApp para enviar e receber mensagens.
+                 </p>
+                 
+                 {isFetchingQr ? (
+                   <div className="flex flex-col items-center gap-3 py-4">
+                     <Loader2 className="w-8 h-8 animate-spin text-[#00a884]" />
+                     <p className="text-sm font-medium text-[#00a884]">Gerando QR Code e Instância...</p>
+                   </div>
+                 ) : qrCodeBase64 ? (
+                   <div className="flex flex-col items-center w-full">
+                     <div className="bg-white p-4 rounded-2xl shadow-xl mb-6 flex flex-col items-center justify-center gap-2">
+                       <img src={qrCodeBase64} alt="QR Code" className="w-[200px] h-[200px]" />
+                       <p className="text-[10px] text-black font-semibold text-center mt-2 leading-tight">WhatsApp &gt; Aparelhos Conectados &gt; Conectar<br/>Aponte a câmera para a tela.</p>
+                     </div>
+                     <div className="flex gap-3 w-full">
+                       <Button 
+                         onClick={fetchQR}
+                         variant="outline"
+                         className="flex-1 bg-transparent border-[#2a3942] text-[#8696a0] hover:bg-[#2a3942] hover:text-white h-11"
+                       >
+                         Gerar Novo
+                       </Button>
+                       <Button 
+                         onClick={checkConnection}
+                         className="flex-1 bg-[#00a884] hover:bg-[#008f6f] text-white shadow-lg h-11"
+                       >
+                         <RefreshCw className="w-4 h-4 mr-2" /> Atualizar
+                       </Button>
+                     </div>
+                   </div>
+                 ) : (
+                   <Button 
+                     onClick={fetchQR}
+                     className="bg-[#00a884] hover:bg-[#008f6f] text-white font-semibold py-6 w-full rounded-xl shadow-lg transition-transform hover:scale-105 text-base"
+                   >
+                     Gerar QR Code Agora
+                   </Button>
+                 )}
+               </div>
+             </div>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0] bg-[url('https://i.postimg.cc/85z1DkXX/wa-bg.png')] bg-cover bg-center">
               <div className="absolute inset-0 bg-[#0b141a]/95"></div>
@@ -419,47 +467,6 @@ export function WhatsAppDashboard() {
           )}
         </div>
       </div>
-
-      {/* QR Code Modal for Connecting */}
-      {isQrModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-[#111b21] border border-[#222d34] text-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-4 border-b border-[#222d34] flex items-center gap-2 font-semibold">
-              <QrCode className="w-5 h-5 text-[#00a884]" />
-              Conectar WhatsApp
-            </div>
-            <div className="flex flex-col items-center justify-center p-6">
-              {isFetchingQr ? (
-                 <div className="flex flex-col items-center gap-3">
-                   <Loader2 className="w-8 h-8 animate-spin text-[#00a884]" />
-                   <p className="text-sm text-[#8696a0]">Gerando QR Code...</p>
-                 </div>
-              ) : qrCodeBase64 ? (
-                 <div className="flex flex-col items-center bg-white p-4 rounded-xl border-4 border-[#00a884]">
-                   <img src={qrCodeBase64} alt="QR Code" className="w-56 h-56" />
-                   <p className="text-xs text-slate-800 font-bold mt-3 text-center">
-                     Acesse: WhatsApp {'>'} Configurações {'>'} Dispositivos Vinculados<br/>e aponte a câmera.
-                   </p>
-                 </div>
-              ) : (
-                 <p className="text-sm text-red-500 text-center">
-                   Não foi possível gerar o QR. Verifique as configurações da Evolution API.
-                 </p>
-              )}
-              
-              <Button 
-                 onClick={() => {
-                   checkConnection();
-                   setIsQrModalOpen(false);
-                 }} 
-                 className="mt-6 w-full bg-[#202c33] hover:bg-[#2a3942] text-white"
-              >
-                Fechar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
