@@ -8,6 +8,7 @@ import { parseDateString, getLocalDateString, getTagSuggestions } from "@/lib/ut
 import { evaluateSafeMode } from "@/lib/safe-mode-engine";
 import { SafeModeResult } from "@/lib/safe-mode-types";
 import { translateKey, translateValue } from "@/lib/translations";
+import { AthleteFinanceModule } from './AthleteFinanceModule';
 import { 
   ChevronLeft, 
   Activity, 
@@ -285,7 +286,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const [showSessionFinalizedUI, setShowSessionFinalizedUI] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'clinical' | 'prontuario' | 'history' | 'attachments' | 'agenda'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ficha' | 'finance' | 'clinical' | 'prontuario' | 'history' | 'attachments' | 'agenda'>('overview');
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -2821,6 +2822,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               { id: 'ficha', label: 'Cadastro', icon: User },
               { id: 'clinical', label: 'Avaliações', icon: Stethoscope },
               { id: 'prontuario', label: 'Prontuário', icon: FileText },
+              { id: 'finance', label: 'Financeiro', icon: DollarSign },
               { id: 'agenda', label: 'Calendário', icon: Calendar },
               { id: 'attachments', label: 'Anexos', icon: ClipboardList },
               { id: 'history', label: 'Histórico', icon: Clock },
@@ -4894,6 +4896,10 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'finance' && (
+          <AthleteFinanceModule athlete={athlete} />
         )}
 
         {activeTab === 'agenda' && (
