@@ -10,12 +10,13 @@ interface ChatBoxProps {
   athleteId: string;
   athletePhone: string;
   athleteName: string;
+  athleteAvatar?: string;
   inline?: boolean;
   isArchived?: boolean;
   onToggleArchive?: (e: React.MouseEvent) => void;
 }
 
-export function ChatBox({ athleteId, athletePhone, athleteName, inline = false, isArchived, onToggleArchive }: ChatBoxProps) {
+export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, inline = false, isArchived, onToggleArchive }: ChatBoxProps) {
   const [isOpen, setIsOpen] = useState(inline ? true : false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -446,8 +447,12 @@ export function ChatBox({ athleteId, athletePhone, athleteName, inline = false, 
     <div className={inline ? "w-full h-full flex flex-col overflow-hidden bg-[#0b141a]" : "fixed bottom-6 right-6 w-full max-w-[350px] h-[500px] bg-[#0b141a] border border-[#222d34] rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"}>
       <div className={`flex items-center justify-between p-4 shrink-0 ${inline ? 'bg-[#202c33]' : 'bg-[#202c33] text-[#e9edef]'}`}>
         <div className="flex items-center space-x-3">
-           <div className="bg-[#00a884]/20 p-2 rounded-full cursor-pointer hover:bg-[#00a884]/30 transition-colors">
-             <Phone className="w-4 h-4 text-[#00a884]" />
+           <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm relative bg-gradient-to-br from-[#00a884] to-[#047a61] flex items-center justify-center text-white font-bold uppercase cursor-pointer hover:opacity-80 transition-opacity">
+              {athleteAvatar ? (
+                 <img src={athleteAvatar} alt={athleteName} className="w-full h-full object-cover relative z-10" />
+              ) : (
+                 <span className="relative z-10">{athleteName.charAt(0)}</span>
+              )}
            </div>
            <div>
               <h3 className="font-semibold text-sm text-[#e9edef] cursor-pointer hover:underline">{athleteName}</h3>

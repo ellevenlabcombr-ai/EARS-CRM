@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChatBox } from './ChatBox';
-import { MessageSquare, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { MessageSquare, MessageSquarePlus, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function playNotificationSound() {
@@ -27,9 +27,12 @@ function playNotificationSound() {
 }
 
 interface Chat {
-  id: string; // athlete id
+  id: string; // unique contact string like athlete-uuid or guardian-uuid
+  athleteId: string; // actual athlete id
   name: string;
   phone: string;
+  role: string;
+  avatarUrl?: string; // Add avatarUrl
   modalidade: string;
   category: string;
   lastMessageText: string;
@@ -50,6 +53,7 @@ export function WhatsAppDashboard() {
   const [qrError, setQrError] = useState<string | null>(null);
   const [isFetchingQr, setIsFetchingQr] = useState(false);
   const channelRef = useRef<any>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Load archived
@@ -140,10 +144,10 @@ export function WhatsAppDashboard() {
     setIsLoading(true);
     
     // 1. Fetch athletes
-    const { data: athletesData } = await supabase.from('athletes').select('id, name, phone, modalidade, category').not('phone', 'is', null);
+    const { data: athletesData } = await supabase.from('athletes').select('id, name, phone, modalidade, category, guardian_name, guardian_phone, avatar_url');
     
     // 2. Fetch last 1500 messages to build conversation list
-    const { data: msgsData } = await supabase.from('whatsapp_messages').select('athlete_id, text, media_type, direction, created_at').order('created_at', { ascending: false }).limit(1500);
+    const { data: msgsData } = await supabase.from('whatsapp_messages').select('athlete_id, phone_number, text, media_type, direction, created_at').order('created_at', { ascending: false }).limit(1500);
     
     const lastReadMap = JSON.parse(localStorage.getItem('wa_last_read') || '{}');
     
@@ -151,33 +155,67 @@ export function WhatsAppDashboard() {
     const chatMap = new Map<string, any>();
     if (athletesData) {
       for (const a of athletesData) {
-        chatMap.set(a.id, {
-          id: a.id,
-          name: a.name,
-          phone: a.phone,
-          modalidade: a.modalidade,
-          category: a.category,
-          lastMessageText: '',
-          lastMessageTime: null,
-          unreadCount: 0
-        });
+        if (a.phone) {
+          const phoneKey = a.phone.replace(/\D/g, '');
+          chatMap.set(phoneKey, {
+            id: `athlete-${a.id}`,
+            athleteId: a.id,
+            name: a.name,
+            phone: a.phone,
+            role: 'Atleta',
+            avatarUrl: a.avatar_url,
+            modalidade: a.modalidade,
+            category: a.category,
+            lastMessageText: '',
+            lastMessageTime: null,
+            unreadCount: 0
+          });
+        }
+        if (a.guardian_phone) {
+          const gPhoneKey = a.guardian_phone.replace(/\D/g, '');
+          chatMap.set(gPhoneKey, {
+            id: `guardian-${a.id}`,
+            athleteId: a.id,
+            name: a.guardian_name ? `${a.guardian_name} (Resp. de ${a.name})` : `Resp. de ${a.name}`,
+            phone: a.guardian_phone,
+            role: 'Responsável',
+            avatarUrl: a.avatar_url,
+            modalidade: a.modalidade,
+            category: a.category,
+            lastMessageText: '',
+            lastMessageTime: null,
+            unreadCount: 0
+          });
+        }
       }
     }
 
     if (msgsData) {
       for (let i = msgsData.length - 1; i >= 0; i--) { // Process ascending
         const m = msgsData[i];
-        if (!m.athlete_id) continue;
-        const chat = chatMap.get(m.athlete_id);
-        if (chat) {
-          const isLatest = true; // since ascending, latest will overwrite
+        if (!m.phone_number) continue;
+        
+        const cleanMsgPhone = m.phone_number.replace(/\D/g, '');
+        let matchedChatKey = chatMap.has(cleanMsgPhone) ? cleanMsgPhone : undefined;
+        
+        if (!matchedChatKey) {
+            for (const key of chatMap.keys()) {
+                if (cleanMsgPhone.endsWith(key.slice(-8)) || key.endsWith(cleanMsgPhone.slice(-8))) {
+                     matchedChatKey = key;
+                     break;
+                }
+            }
+        }
+
+        if (matchedChatKey) {
+          const chat = chatMap.get(matchedChatKey);
           chat.lastMessageText = m.text || (m.media_type ? `[${m.media_type}]` : 'Mensagem');
           chat.lastMessageTime = m.created_at;
           
           if (m.direction === 'inbound') {
-            const lastRead = lastReadMap[m.athlete_id];
+            const lastRead = lastReadMap[chat.id];
             if (!lastRead || new Date(m.created_at) > new Date(lastRead)) {
-              if (selectedAthlete?.id !== m.athlete_id) {
+              if (selectedAthlete?.id !== chat.id) {
                 chat.unreadCount++;
               }
             }
@@ -315,8 +353,20 @@ export function WhatsAppDashboard() {
                   </div>
                 )}
                 <button 
+                  onClick={() => {
+                    setShowArchived(false);
+                    if (searchInputRef.current) {
+                      searchInputRef.current.focus();
+                    }
+                  }}
+                  className="p-1.5 rounded-md transition-colors text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]"
+                  title="Nova conversa"
+                >
+                  <MessageSquarePlus className="w-4 h-4" />
+                </button>
+                <button 
                   onClick={() => setShowArchived(!showArchived)}
-                  className={`p-1.5 rounded-md transition-colors ${showArchived ? 'bg-[#00a884]/20 text-[#00a884]' : 'text-[#8696a0] hover:bg-[#202c33]'}`}
+                  className={`p-1.5 rounded-md transition-colors ${showArchived ? 'bg-[#00a884]/20 text-[#00a884]' : 'text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]'}`}
                   title={showArchived ? "Voltar para principais" : "Ver arquivos"}
                 >
                   <Archive className="w-4 h-4" />
@@ -327,8 +377,9 @@ export function WhatsAppDashboard() {
             <div className="relative">
               <Search className="w-4 h-4 text-[#8696a0] absolute left-3 top-1/2 -translate-y-1/2" />
               <input 
+                ref={searchInputRef}
                 type="text" 
-                placeholder="Pesquisar conversa..." 
+                placeholder="Pesquisar contatos ou conversas..." 
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full bg-[#2a3942] border-none rounded-lg py-1.5 pl-9 pr-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
@@ -343,7 +394,7 @@ export function WhatsAppDashboard() {
               </div>
             ) : filteredChats.length === 0 ? (
               <div className="p-8 text-center text-[#8696a0] text-sm">
-                Nenhuma conversa encontrada.
+                Nenhum contato encontrado.
               </div>
             ) : (
               <div className="divide-y divide-[#222d34]">
@@ -355,14 +406,25 @@ export function WhatsAppDashboard() {
                       selectedAthlete?.id === chat.id ? 'bg-[#2a3942]' : ''
                     }`}
                   >
-                    {/* Avatar placeholder */}
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00a884] to-[#047a61] shrink-0 flex items-center justify-center shadow-lg uppercase font-bold text-white text-lg">
-                      {chat.name.charAt(0)}
+                    {/* Avatar */}
+                    <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 shadow-lg relative bg-gradient-to-br from-[#00a884] to-[#047a61]">
+                      {chat.avatarUrl ? (
+                         <img src={chat.avatarUrl} alt={chat.name} className="w-full h-full object-cover relative z-10" />
+                      ) : (
+                         <div className="w-full h-full flex items-center justify-center uppercase font-bold text-white text-lg relative z-10">
+                           {chat.name.charAt(0)}
+                         </div>
+                      )}
                     </div>
                     
                     <div className="flex-1 min-w-0 pr-2">
                       <div className="flex justify-between items-baseline mb-0.5">
-                        <span className="font-semibold text-[15px] text-[#e9edef] truncate block">{chat.name}</span>
+                        <div className="flex flex-col gap-0.5 w-[75%]">
+                          <span className="font-semibold text-[15px] text-[#e9edef] truncate block">{chat.name}</span>
+                          {chat.role === 'Responsável' && (
+                             <span className="text-[9px] font-bold uppercase tracking-wider text-[#fdcb6e] bg-[#fdcb6e]/10 px-1.5 py-0.5 rounded-sm w-max self-start border border-[#fdcb6e]/20">Responsável</span>
+                          )}
+                        </div>
                         {chat.lastMessageTime && (
                            <span className={`text-[11px] ml-2 shrink-0 ${chat.unreadCount > 0 ? 'text-[#00a884] font-medium' : 'text-[#8696a0]'}`}>
                              {new Date(chat.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -372,7 +434,7 @@ export function WhatsAppDashboard() {
                       
                       <div className="flex items-center justify-between">
                          <p className={`text-[13px] truncate pr-2 ${chat.unreadCount > 0 ? 'text-[#e9edef] font-medium' : 'text-[#8696a0]'}`}>
-                           {chat.lastMessageText || 'Nenhuma mensagem recente'}
+                           {chat.lastMessageText || 'Toque para iniciar a conversa'}
                          </p>
                          
                          <div className="flex items-center gap-2">
@@ -419,6 +481,7 @@ export function WhatsAppDashboard() {
               athleteId={selectedAthlete.athleteId} 
               athletePhone={selectedAthlete.phone} 
               athleteName={selectedAthlete.name} 
+              athleteAvatar={selectedAthlete.avatarUrl}
               inline={true} 
               isArchived={archivedIds.includes(selectedAthlete.id)}
               onToggleArchive={(e) => toggleArchive(e as any, selectedAthlete.id)}
