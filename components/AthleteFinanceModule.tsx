@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { t } from '@/lib/i18n';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { createAsaasCustomer, createAsaasPayment } from '@/app/actions/asaas';
+import { createAsaasCustomer, createAsaasPayment, createAsaasSubscription } from '@/app/actions/asaas';
 
 export function AthleteFinanceModule({ athlete }: { athlete: any }) {
   const { language } = useLanguage();
@@ -25,6 +25,9 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
   
   // Modals
   const [showChargeModal, setShowChargeModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [financialProducts, setFinancialProducts] = useState<any[]>([]);
+  
   const [newCharge, setNewCharge] = useState({ 
     description: '', 
     amount: '', 
@@ -33,6 +36,16 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
     billingType: 'PIX',
     notifyGuardian: true
   });
+
+  const [newSubscription, setNewSubscription] = useState({
+    productId: '',
+    amount: '',
+    billingCycle: 'MONTHLY',
+    billingType: 'PIX',
+    notifyGuardian: true,
+    startDate: ''
+  });
+  
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -44,7 +57,7 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
     try {
       // Fetch active subscription
       const { data: subData } = await supabase
-        .from('finance_subscriptions')
+        .from('financial_subscriptions')
         .select('*, product:product_id(*)')
         .eq('athlete_id', athlete.id)
         .eq('status', 'active')
@@ -54,12 +67,19 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
 
       // Fetch transactions
       const { data: txData } = await supabase
-        .from('finance_transactions')
+        .from('financial_transactions')
         .select('*')
         .eq('athlete_id', athlete.id)
         .order('date', { ascending: false });
         
       if (txData) setTransactions(txData);
+
+      // Fetch products
+      const { data: prodData } = await supabase
+        .from('financial_products')
+        .select('*')
+        .order('name');
+      if (prodData) setFinancialProducts(prodData);
     } catch (e) {
       console.error(e);
     }
@@ -115,16 +135,16 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
         transactionIdInAsaas = paymentRes.data.invoiceUrl;
       }
 
-      await supabase.from('finance_transactions').insert({
+      await supabase.from('financial_transactions').insert({
         athlete_id: athlete.id,
         description: newCharge.description,
         amount: parseFloat(newCharge.amount),
         type: 'income',
         status: 'pending',
         date: newCharge.dueDate || new Date().toISOString(),
-        payment_method: newCharge.billingType,
         category: newCharge.category,
-        external_reference: externalReference
+        asaas_payment_id: externalReference,
+        asaas_invoice_url: transactionIdInAsaas
       });
 
       if (newCharge.notifyGuardian) {
@@ -163,8 +183,102 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
   };
 
   const markAsPaid = async (txId: string) => {
-    await supabase.from('finance_transactions').update({ status: 'paid', date: new Date().toISOString() }).eq('id', txId);
+    await supabase.from('financial_transactions').update({ status: 'paid', date: new Date().toISOString() }).eq('id', txId);
     fetchData();
+  };
+
+  const handleCreateSubscription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSubscription.productId || !newSubscription.amount) return;
+    
+    setIsSaving(true);
+    
+    try {
+      const selectedProduct = financialProducts.find(p => p.id === newSubscription.productId);
+      
+      let externalReference = null;
+      let customerId = null;
+
+      if (newSubscription.billingType !== 'INTERNO') {
+        const cpf = athlete.guardian_cpf || athlete.cpf;
+        const name = athlete.guardian_name || athlete.name;
+
+        if (!cpf) {
+          alert('CPF do responsável ou do atleta é obrigatório para gerar via Asaas.');
+          setIsSaving(false);
+          return;
+        }
+
+        const customerRes = await createAsaasCustomer({
+           name: name || 'Cliente',
+           cpfCnpj: cpf.replace(/\D/g, '')
+        });
+
+        if (customerRes.error) {
+           alert('Erro ao criar cliente no Asaas: ' + customerRes.error);
+           setIsSaving(false);
+           return;
+        }
+        
+        customerId = customerRes.data.id;
+
+        const subRes = await createAsaasSubscription({
+           customer: customerId,
+           billingType: newSubscription.billingType as any,
+           value: parseFloat(newSubscription.amount),
+           nextDueDate: newSubscription.startDate || new Date().toISOString().split('T')[0],
+           cycle: newSubscription.billingCycle as any,
+           description: selectedProduct?.name || 'Assinatura Elleven',
+        });
+
+        if (subRes.error) {
+           alert('Erro ao criar assinatura no Asaas: ' + subRes.error);
+           setIsSaving(false);
+           return;
+        }
+
+        externalReference = subRes.data.id;
+      }
+
+      const { data: newSubData, error: insertError } = await supabase.from('financial_subscriptions').insert({
+        athlete_id: athlete.id,
+        product_id: newSubscription.productId,
+        amount: parseFloat(newSubscription.amount),
+        billing_cycle: newSubscription.billingCycle.toLowerCase(),
+        start_date: newSubscription.startDate || new Date().toISOString(),
+        gateway_provider: newSubscription.billingType !== 'INTERNO' ? 'asaas' : 'none',
+        asaas_subscription_id: externalReference,
+        asaas_customer_id: customerId,
+        status: 'active'
+      }).select().single();
+      
+      if (insertError) throw insertError;
+
+      if (newSubscription.notifyGuardian) {
+         const phone = athlete.guardian_phone || athlete.phone;
+         if (phone) {
+            let msg = `Olá! A assinatura *${selectedProduct?.name}* foi vinculada ao(à) atleta *${athlete.name}* com sucesso.\n*Valor:* R$ ${parseFloat(newSubscription.amount).toFixed(2)} por mês.`;
+            try {
+              await fetch('/api/whatsapp/send', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ phone, message: msg })
+              });
+            } catch (err) {
+              console.error("Failed to send WhatsApp message:", err);
+            }
+         }
+      }
+      
+      setShowSubscriptionModal(false);
+      setNewSubscription({ productId: '', amount: '', billingCycle: 'MONTHLY', billingType: 'PIX', notifyGuardian: true, startDate: '' });
+      fetchData();
+    } catch (e) {
+      console.error(e);
+      alert('Erro inesperado ao gerar assinatura.');
+    }
+    
+    setIsSaving(false);
   };
 
   if (loading) {
@@ -279,7 +393,7 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
                   <div className="flex flex-col items-center justify-center py-8 text-center bg-slate-900/50 rounded-xl border border-dashed border-slate-700">
                     <Ban className="w-10 h-10 text-slate-600 mb-3" />
                     <p className="text-slate-400 font-medium">Nenhum plano ativo</p>
-                    <button className="mt-4 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
+                    <button onClick={() => setShowSubscriptionModal(true)} className="mt-4 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 rounded-lg text-xs font-bold uppercase tracking-widest transition-all">
                       Vincular Plano
                     </button>
                   </div>
@@ -529,6 +643,146 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
                     className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black uppercase tracking-widest text-xs rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {isSaving ? <Loader2 size={16} className="animate-spin" /> : 'Gerar Cobrança'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* SUBSCRIPTION MODAL */}
+      <AnimatePresence>
+        {showSubscriptionModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-md bg-[#0A1120] border border-emerald-500/20 shadow-2xl rounded-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-emerald-500/20 bg-emerald-950/10">
+                <h2 className="text-xl font-black text-white uppercase tracking-wider flex items-center gap-3">
+                  <CreditCard className="text-emerald-400" />
+                  Vincular Plano
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">Configure um plano recorrente para {athlete.name}</p>
+              </div>
+
+              <form onSubmit={handleCreateSubscription} className="p-6 space-y-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Plano Base</label>
+                  <select 
+                    value={newSubscription.productId}
+                    onChange={e => {
+                      const selected = financialProducts.find(p => p.id === e.target.value);
+                      setNewSubscription({
+                        ...newSubscription, 
+                        productId: e.target.value,
+                        amount: selected ? selected.default_price?.toString() : newSubscription.amount
+                      })
+                    }}
+                    className="w-full bg-[#050B14] border border-slate-800 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-emerald-500 transition-colors font-medium"
+                    required
+                  >
+                    <option value="" disabled>Selecione um plano...</option>
+                    {financialProducts.map(fp => (
+                      <option key={fp.id} value={fp.id}>{fp.name} (R$ {Number(fp.default_price).toFixed(2)})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="space-y-2 flex-1">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Valor Cobrado (R$)</label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      value={newSubscription.amount}
+                      onChange={e => setNewSubscription({...newSubscription, amount: e.target.value})}
+                      placeholder="0.00"
+                      className="w-full bg-[#050B14] border border-slate-800 rounded-xl py-3 px-4 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors font-medium"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2 flex-1">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Data Início</label>
+                    <input 
+                      type="date"
+                      value={newSubscription.startDate}
+                      onChange={e => setNewSubscription({...newSubscription, startDate: e.target.value})}
+                      className="w-full bg-[#050B14] border border-slate-800 rounded-xl py-3 px-4 text-slate-300 focus:outline-none focus:border-emerald-500 transition-colors font-medium"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Ciclo</label>
+                  <select 
+                    value={newSubscription.billingCycle}
+                    onChange={e => setNewSubscription({...newSubscription, billingCycle: e.target.value})}
+                    className="w-full bg-[#050B14] border border-slate-800 rounded-xl py-3 px-4 text-slate-300 focus:outline-none focus:border-emerald-500 transition-colors font-medium"
+                  >
+                    <option value="MONTHLY">Mensal</option>
+                    <option value="QUARTERLY">Trimestral</option>
+                    <option value="SEMIANNUALLY">Semestral</option>
+                    <option value="YEARLY">Anual</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Método de Cobrança</label>
+                  <select 
+                    value={newSubscription.billingType}
+                    onChange={e => setNewSubscription({...newSubscription, billingType: e.target.value})}
+                    className="w-full bg-[#050B14] border border-slate-800 rounded-xl py-3 px-4 text-slate-300 focus:outline-none focus:border-emerald-500 transition-colors font-medium"
+                  >
+                    <option value="PIX">PIX (Asaas)</option>
+                    <option value="BOLETO">Boleto (Asaas)</option>
+                    <option value="CREDIT_CARD">Cartão de Crédito (Asaas)</option>
+                    <option value="INTERNO">Interno / Sem Asaas</option>
+                  </select>
+                  {newSubscription.billingType !== 'INTERNO' && (!athlete.guardian_cpf && !athlete.cpf) && (
+                    <p className="text-xs text-rose-500 flex items-center gap-1 mt-1">
+                      <AlertCircle size={12} />
+                      Atleta/Responsável precisa ter CPF cadastrado para usar o Asaas.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                  <input 
+                    type="checkbox" 
+                    id="notifyGuardianSub"
+                    checked={newSubscription.notifyGuardian}
+                    onChange={e => setNewSubscription({...newSubscription, notifyGuardian: e.target.checked})}
+                    className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-950"
+                  />
+                  <label htmlFor="notifyGuardianSub" className="text-sm font-medium text-slate-300 flex-1 cursor-pointer">
+                    Notificar responsável por WhatsApp
+                  </label>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowSubscriptionModal(false)}
+                    className="flex-1 py-3 text-slate-400 font-black uppercase tracking-widest text-xs hover:bg-slate-800 rounded-xl transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isSaving}
+                    className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black uppercase tracking-widest text-xs rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isSaving ? <Loader2 size={16} className="animate-spin" /> : 'Confirmar Plano'}
                   </button>
                 </div>
               </form>
