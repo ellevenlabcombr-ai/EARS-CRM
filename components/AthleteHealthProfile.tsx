@@ -90,7 +90,8 @@ import {
   Repeat,
   Paperclip,
   Building2,
-  Wallet
+  Wallet,
+  DollarSign
 } from "lucide-react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { Button } from "@/components/ui/button";
