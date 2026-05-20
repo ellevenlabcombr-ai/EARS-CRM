@@ -3,8 +3,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus, Archive, ArchiveRestore } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus, Archive, ArchiveRestore, Zap, Clock, CalendarClock, Bell, BellOff } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
+
+const QUICK_REPLIES = [
+  "O treino começará às 18h no ginásio principal.",
+  "Segue o nosso Pix para mensalidade: ears@pix.com.br",
+  "O uniforme deve ser retirado na secretaria.",
+  "O jogo do final de semana foi cancelado.",
+  "Estaremos em recesso durante o feriado."
+];
 
 interface ChatBoxProps {
   athleteId: string;
@@ -14,9 +22,12 @@ interface ChatBoxProps {
   inline?: boolean;
   isArchived?: boolean;
   onToggleArchive?: (e: React.MouseEvent) => void;
+  isSnoozed?: boolean;
+  onToggleSnooze?: (e: React.MouseEvent) => void;
+  onOpenProfile?: () => void;
 }
 
-export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, inline = false, isArchived, onToggleArchive }: ChatBoxProps) {
+export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, inline = false, isArchived, onToggleArchive, isSnoozed, onToggleSnooze, onOpenProfile }: ChatBoxProps) {
   const [isOpen, setIsOpen] = useState(inline ? true : false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -25,10 +36,15 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
   const [replyingTo, setReplyingTo] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showScheduleMenu, setShowScheduleMenu] = useState(false);
+  const [snoozed, setSnoozed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const quickRepliesRef = useRef<HTMLDivElement>(null);
+  const scheduleMenuRef = useRef<HTMLDivElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -43,6 +59,12 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
     const handleClickOutside = (event: MouseEvent) => {
       if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
         setShowEmojiPicker(false);
+      }
+      if (quickRepliesRef.current && !quickRepliesRef.current.contains(event.target as Node)) {
+        setShowQuickReplies(false);
+      }
+      if (scheduleMenuRef.current && !scheduleMenuRef.current.contains(event.target as Node)) {
+        setShowScheduleMenu(false);
       }
       if (attachMenuRef.current && !attachMenuRef.current.contains(event.target as Node)) {
         setShowAttachMenu(false);
@@ -122,6 +144,47 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleScheduleSend = async (dateLabel: string) => {
+    if (!newMessage.trim() || !athletePhone) return;
+
+    setSending(true);
+    try {
+      const isInternal = isInternalNote;
+      const msgToSend = `[Agendado: ${dateLabel}]\n${newMessage}`;
+      
+      const tempMsg = {
+        id: 'temp-' + Date.now(),
+        athlete_id: athleteId,
+        phone_number: cleanPhone,
+        direction: isInternal ? 'internal' : 'outbound',
+        text: msgToSend,
+        status: 'scheduled',
+        created_at: new Date().toISOString(),
+        reply_to_id: replyingTo?.id || null,
+        reply_to_text: replyingTo?.text || null
+      };
+      setMessages((prev) => [...prev, tempMsg]);
+      setTimeout(scrollToBottom, 100);
+
+      setNewMessage('');
+      setReplyingTo(null);
+      setIsInternalNote(false);
+      setShowScheduleMenu(false);
+
+      await supabase.from('whatsapp_messages').insert({
+        athlete_id: athleteId,
+        phone_number: cleanPhone,
+        direction: isInternal ? 'internal' : 'outbound',
+        text: msgToSend,
+        status: 'scheduled'
+      });
+    } catch (error) {
+       console.error("Error scheduling", error);
+    } finally {
+      setSending(false);
+    }
   };
 
   const handleSend = async () => {
@@ -446,7 +509,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
   return (
     <div className={inline ? "w-full h-full flex flex-col overflow-hidden bg-[#0b141a]" : "fixed bottom-6 right-6 w-full max-w-[350px] h-[500px] bg-[#0b141a] border border-[#222d34] rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"}>
       <div className={`flex items-center justify-between p-4 shrink-0 ${inline ? 'bg-[#202c33]' : 'bg-[#202c33] text-[#e9edef]'}`}>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3" onClick={() => onOpenProfile && onOpenProfile()}>
            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm relative bg-gradient-to-br from-[#00a884] to-[#047a61] flex items-center justify-center text-white font-bold uppercase cursor-pointer hover:opacity-80 transition-opacity">
               {athleteAvatar ? (
                  <img src={athleteAvatar} alt={athleteName} className="w-full h-full object-cover relative z-10" />
@@ -460,6 +523,15 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
            </div>
         </div>
         <div className="flex items-center gap-2">
+          {onToggleSnooze && (
+            <button 
+              onClick={onToggleSnooze} 
+              title={isSnoozed ? "Lembrete Ativo (Marcar como lido)" : "Lembrar-me Mais Tarde"} 
+              className={`p-2 rounded-md transition-colors cursor-pointer ${isSnoozed ? 'text-[#fdcb6e] bg-[#fdcb6e]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}
+            >
+              {isSnoozed ? <Bell className="w-5 h-5 fill-current" /> : <BellOff className="w-5 h-5" />}
+            </button>
+          )}
           {onToggleArchive && (
             <button 
               onClick={onToggleArchive} 
@@ -646,6 +718,29 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
             <Smile className="w-6 h-6" />
           </button>
           
+          <div ref={quickRepliesRef} className="relative">
+            <button onClick={() => setShowQuickReplies(!showQuickReplies)} className={`p-2 rounded-md transition-colors cursor-pointer ${showQuickReplies ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`} title="Respostas Rápidas">
+              <Zap className="w-5 h-5 fill-current" />
+            </button>
+            {showQuickReplies && (
+              <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-72 p-2 z-50 flex flex-col gap-1 max-h-60 overflow-y-auto custom-scrollbar">
+                <span className="text-xs font-bold text-[#8696a0] px-2 py-1 uppercase tracking-wider">Respostas Rápidas</span>
+                {QUICK_REPLIES.map((reply, idx) => (
+                  <button 
+                    key={idx} 
+                    onClick={() => {
+                      setNewMessage(newMessage + (newMessage ? ' ' : '') + reply);
+                      setShowQuickReplies(false);
+                    }}
+                    className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm"
+                  >
+                    {reply}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
           {showEmojiPicker && (
             <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
               <EmojiPicker 
@@ -710,20 +805,40 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
           </div>
         )}
         
-        {newMessage.trim() && !isRecording ? (
-          <Button
-            onClick={handleSend}
-            disabled={sending}
-            size="icon"
-            className={`rounded-full shadow-lg text-white w-10 h-10 shrink-0 cursor-pointer border-none transition-colors duration-300 ${isInternalNote ? 'bg-[#fdcb6e] hover:bg-[#eccc68] text-black' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}
-          >
-            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
-          </Button>
-        ) : (
-          <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center shadow-lg ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
-            {isRecording ? <X className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
-        )}
+        <div className="flex gap-2 shrink-0 relative items-center">
+          {newMessage.trim() && !isRecording && (
+            <div ref={scheduleMenuRef} className="relative">
+              <button onClick={() => setShowScheduleMenu(!showScheduleMenu)} className="p-2.5 rounded-full bg-[#202c33] text-[#8696a0] hover:text-[#e9edef] transition-colors cursor-pointer" title="Agendar Mensagem">
+                <CalendarClock className="w-5 h-5" />
+              </button>
+              {showScheduleMenu && (
+                <div className="absolute bottom-12 right-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-64 p-2 z-50 flex flex-col gap-1">
+                  <span className="text-xs font-bold text-[#8696a0] px-2 py-1 uppercase tracking-wider">Agendar para...</span>
+                  <button onClick={() => handleScheduleSend('Amanhã às 08h')} className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#00a884]" /> Amanhã às 08:00
+                  </button>
+                  <button onClick={() => handleScheduleSend('Hoje às 18h')} className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#00a884]" /> Hoje às 18:00
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {newMessage.trim() && !isRecording ? (
+            <Button
+              onClick={handleSend}
+              disabled={sending}
+              size="icon"
+              className={`rounded-full shadow-lg text-white w-10 h-10 shrink-0 cursor-pointer border-none transition-colors duration-300 ${isInternalNote ? 'bg-[#fdcb6e] hover:bg-[#eccc68] text-black' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}
+            >
+              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
+            </Button>
+          ) : (
+            <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center shadow-lg ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
+              {isRecording ? <X className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

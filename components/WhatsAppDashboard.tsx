@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChatBox } from './ChatBox';
-import { MessageSquare, MessageSquarePlus, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { MessageSquare, MessageSquarePlus, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw, Filter, Megaphone, Send, Check, Bot, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function playNotificationSound() {
@@ -43,7 +43,9 @@ interface Chat {
 export function WhatsAppDashboard() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [archivedIds, setArchivedIds] = useState<string[]>([]);
+  const [snoozedIds, setSnoozedIds] = useState<string[]>([]);
   const [showArchived, setShowArchived] = useState(false);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +54,17 @@ export function WhatsAppDashboard() {
   const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
   const [isFetchingQr, setIsFetchingQr] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [showAthleteProfile, setShowAthleteProfile] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [autoResponderEnabled, setAutoResponderEnabled] = useState(false);
+  const [autoResponderMessage, setAutoResponderMessage] = useState('Olá! Você falou com a academia EARS. Nosso horário de atendimento é das 08h às 18h. Responderemos em breve.');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [selectedBroadcastChats, setSelectedBroadcastChats] = useState<string[]>([]);
+  const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
+  const [contactSearchQuery, setContactSearchQuery] = useState('');
+  
   const channelRef = useRef<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,12 +73,23 @@ export function WhatsAppDashboard() {
     try {
       const stored = localStorage.getItem('wa_archived');
       if (stored) setArchivedIds(JSON.parse(stored));
+      const snoozed = localStorage.getItem('wa_snoozed');
+      if (snoozed) setSnoozedIds(JSON.parse(snoozed));
+      const autoRes = localStorage.getItem('wa_autoresponder_enabled');
+      if (autoRes) setAutoResponderEnabled(autoRes === 'true');
+      const autoResMsg = localStorage.getItem('wa_autoresponder_msg');
+      if (autoResMsg) setAutoResponderMessage(autoResMsg);
     } catch(e) {}
   }, []);
 
   const saveArchived = (ids: string[]) => {
     setArchivedIds(ids);
     localStorage.setItem('wa_archived', JSON.stringify(ids));
+  };
+  
+  const saveSnoozed = (ids: string[]) => {
+    setSnoozedIds(ids);
+    localStorage.setItem('wa_snoozed', JSON.stringify(ids));
   };
 
   const toggleArchive = (e: React.MouseEvent, id: string) => {
@@ -74,6 +98,15 @@ export function WhatsAppDashboard() {
       saveArchived(archivedIds.filter(aid => aid !== id));
     } else {
       saveArchived([...archivedIds, id]);
+    }
+  };
+  
+  const toggleSnooze = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (snoozedIds.includes(id)) {
+      saveSnoozed(snoozedIds.filter(sid => sid !== id));
+    } else {
+      saveSnoozed([...snoozedIds, id]);
     }
   };
 
@@ -139,6 +172,45 @@ export function WhatsAppDashboard() {
       markAsRead(selectedAthlete.id);
     }
   }, [selectedAthlete]);
+
+  const handleBroadcastSend = async () => {
+    if (!broadcastMessage.trim() || selectedBroadcastChats.length === 0) return;
+    setIsSendingBroadcast(true);
+    
+    let sentCount = 0;
+    for (const chatId of selectedBroadcastChats) {
+      const chat = chats.find(c => c.id === chatId);
+      if (!chat) continue;
+      
+      try {
+        await fetch('/api/ears/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ text: broadcastMessage, direction: 'outbound' }],
+            athleteName: chat.name,
+            broadcast: true
+          }),
+        });
+        
+        await supabase.from('whatsapp_messages').insert({
+          athlete_id: chat.athleteId,
+          phone_number: chat.phone,
+          text: broadcastMessage,
+          direction: 'outbound',
+        });
+        sentCount++;
+      } catch (e) {
+        console.error('Error sending broadcast to', chat.name, e);
+      }
+    }
+    
+    setIsSendingBroadcast(false);
+    setShowBroadcastModal(false);
+    setBroadcastMessage('');
+    setSelectedBroadcastChats([]);
+    alert(`Transmissão enviada para ${sentCount} contato(s).`);
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -286,6 +358,9 @@ export function WhatsAppDashboard() {
        if (chat && chat.unreadCount > 0) {
           markAsRead(selectedAthlete.id);
        }
+       if (snoozedIds.includes(selectedAthlete.id)) {
+          saveSnoozed(snoozedIds.filter(id => id !== selectedAthlete.id));
+       }
      }
   }, [chats, selectedAthlete]);
 
@@ -293,6 +368,7 @@ export function WhatsAppDashboard() {
   const filteredChats = useMemo(() => {
     let list = chats.filter(c => {
        if (showArchived) return archivedIds.includes(c.id);
+       if (showUnreadOnly) return !archivedIds.includes(c.id) && (c.unreadCount > 0 || snoozedIds.includes(c.id));
        return !archivedIds.includes(c.id);
     });
     
@@ -301,15 +377,26 @@ export function WhatsAppDashboard() {
        list = list.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
     }
     
-    // Sort by latest message first
     list.sort((a, b) => {
+      // Unread or snoozed first
+      const aNeedsAttention = a.unreadCount > 0 || snoozedIds.includes(a.id);
+      const bNeedsAttention = b.unreadCount > 0 || snoozedIds.includes(b.id);
+      if (aNeedsAttention && !bNeedsAttention) return -1;
+      if (!aNeedsAttention && bNeedsAttention) return 1;
+      
       const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
       const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
       return timeB - timeA;
     });
     
     return list;
-  }, [chats, archivedIds, showArchived, searchQuery]);
+  }, [chats, archivedIds, snoozedIds, showArchived, showUnreadOnly, searchQuery]);
+
+  const saveAutoResponder = () => {
+    localStorage.setItem('wa_autoresponder_enabled', autoResponderEnabled.toString());
+    localStorage.setItem('wa_autoresponder_msg', autoResponderMessage);
+    setShowSettingsModal(false);
+  };
 
 
   return (
@@ -353,12 +440,21 @@ export function WhatsAppDashboard() {
                   </div>
                 )}
                 <button 
-                  onClick={() => {
-                    setShowArchived(false);
-                    if (searchInputRef.current) {
-                      searchInputRef.current.focus();
-                    }
-                  }}
+                  onClick={() => setShowSettingsModal(true)}
+                  className="p-1.5 rounded-md transition-colors text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]"
+                  title="Autoatendimento"
+                >
+                  <Bot className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => setShowBroadcastModal(true)}
+                  className="p-1.5 rounded-md transition-colors text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]"
+                  title="Nova Transmissão"
+                >
+                  <Megaphone className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => setShowNewChatModal(true)}
                   className="p-1.5 rounded-md transition-colors text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]"
                   title="Nova conversa"
                 >
@@ -374,16 +470,25 @@ export function WhatsAppDashboard() {
               </div>
             </div>
             
-            <div className="relative">
-              <Search className="w-4 h-4 text-[#8696a0] absolute left-3 top-1/2 -translate-y-1/2" />
-              <input 
-                ref={searchInputRef}
-                type="text" 
-                placeholder="Pesquisar contatos ou conversas..." 
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-[#2a3942] border-none rounded-lg py-1.5 pl-9 pr-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
-              />
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[#8696a0] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input 
+                  ref={searchInputRef}
+                  type="text" 
+                  placeholder="Pesquisar ou começar uma nova conversa" 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#2a3942] border-none rounded-lg py-1.5 pl-9 pr-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
+                />
+              </div>
+              <button
+                onClick={() => setShowUnreadOnly(!showUnreadOnly)}
+                className={`p-1.5 rounded-full transition-colors ${showUnreadOnly ? 'bg-[#00a884] text-white' : 'text-[#8696a0] hover:bg-[#2a3942]'}`}
+                title={showUnreadOnly ? "Mostrar todas" : "Filtro de chats não lidos"}
+              >
+                <Filter className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -426,18 +531,21 @@ export function WhatsAppDashboard() {
                           )}
                         </div>
                         {chat.lastMessageTime && (
-                           <span className={`text-[11px] ml-2 shrink-0 ${chat.unreadCount > 0 ? 'text-[#00a884] font-medium' : 'text-[#8696a0]'}`}>
+                           <span className={`text-[11px] ml-2 shrink-0 ${chat.unreadCount > 0 || snoozedIds.includes(chat.id) ? 'text-[#00a884] font-medium' : 'text-[#8696a0]'}`}>
                              {new Date(chat.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                            </span>
                         )}
                       </div>
                       
                       <div className="flex items-center justify-between">
-                         <p className={`text-[13px] truncate pr-2 ${chat.unreadCount > 0 ? 'text-[#e9edef] font-medium' : 'text-[#8696a0]'}`}>
+                         <p className={`text-[13px] truncate pr-2 ${chat.unreadCount > 0 || snoozedIds.includes(chat.id) ? 'text-[#e9edef] font-medium' : 'text-[#8696a0]'}`}>
                            {chat.lastMessageText || 'Toque para iniciar a conversa'}
                          </p>
                          
                          <div className="flex items-center gap-2">
+                           {snoozedIds.includes(chat.id) && (
+                             <Bell className="w-4 h-4 text-[#fdcb6e] fill-[#fdcb6e]" />
+                           )}
                            {chat.unreadCount > 0 && (
                              <span className="bg-[#00a884] text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shrink-0">
                                {chat.unreadCount}
@@ -475,17 +583,80 @@ export function WhatsAppDashboard() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col bg-[#0b141a] overflow-hidden relative">
+        <div className="flex-1 flex bg-[#0b141a] overflow-hidden relative">
           {selectedAthlete ? (
-            <ChatBox 
-              athleteId={selectedAthlete.athleteId} 
-              athletePhone={selectedAthlete.phone} 
-              athleteName={selectedAthlete.name} 
-              athleteAvatar={selectedAthlete.avatarUrl}
-              inline={true} 
-              isArchived={archivedIds.includes(selectedAthlete.id)}
-              onToggleArchive={(e) => toggleArchive(e as any, selectedAthlete.id)}
-            />
+            <>
+              <div className="flex-1 flex flex-col h-full bg-[#0b141a] border-r border-[#222d34]">
+                <ChatBox 
+                  athleteId={selectedAthlete.athleteId} 
+                  athletePhone={selectedAthlete.phone} 
+                  athleteName={selectedAthlete.name} 
+                  athleteAvatar={selectedAthlete.avatarUrl}
+                  inline={true} 
+                  isArchived={archivedIds.includes(selectedAthlete.id)}
+                  onToggleArchive={(e) => toggleArchive(e as any, selectedAthlete.id)}
+                  isSnoozed={snoozedIds.includes(selectedAthlete.id)}
+                  onToggleSnooze={(e) => toggleSnooze(e as any, selectedAthlete.id)}
+                  onOpenProfile={() => setShowAthleteProfile(!showAthleteProfile)}
+                />
+              </div>
+              {showAthleteProfile && (
+                <div className="w-[320px] bg-[#111b21] flex flex-col shrink-0 overflow-y-auto">
+                  <div className="flex items-center gap-4 p-4 border-b border-[#222d34] bg-[#202c33]">
+                    <button onClick={() => setShowAthleteProfile(false)} className="text-[#8696a0] hover:text-[#e9edef] transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                    <h3 className="font-semibold text-[#e9edef]">Dados do Contato</h3>
+                  </div>
+                  
+                  <div className="flex flex-col items-center p-6 border-b border-[#222d34] bg-[#111b21] shadow-sm">
+                    <div className="w-40 h-40 rounded-full overflow-hidden shadow-2xl relative mb-4 bg-gradient-to-br from-[#00a884]/20 to-[#047a61]/20 flex items-center justify-center">
+                       {selectedAthlete.avatarUrl ? (
+                         <img src={selectedAthlete.avatarUrl} alt={selectedAthlete.name} className="w-full h-full object-cover" />
+                       ) : (
+                         <span className="text-[#00a884] text-5xl font-bold uppercase">{selectedAthlete.name.charAt(0)}</span>
+                       )}
+                    </div>
+                    <h2 className="text-xl font-medium text-[#e9edef] mt-2 text-center">{selectedAthlete.name}</h2>
+                    <p className="text-[#8696a0] text-sm mt-1">{selectedAthlete.phone}</p>
+                    
+                    {selectedAthlete.role === 'Responsável' && (
+                       <span className="mt-3 text-[10px] font-bold uppercase tracking-wider text-[#fdcb6e] bg-[#fdcb6e]/10 px-2 py-1 rounded-full border border-[#fdcb6e]/20">Responsável</span>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col p-4 bg-[#111b21]">
+                     <div className="bg-[#2a3942]/30 rounded-xl p-4 border border-[#222d34]">
+                        <h4 className="text-[#00a884] text-sm font-medium mb-3">Informações do Atleta</h4>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <span className="text-xs text-[#8696a0] block mb-1">Status</span>
+                            <span className="text-sm text-[#e9edef] flex items-center gap-2">
+                               <div className="w-2 h-2 rounded-full bg-[#00a884]"></div>
+                               Ativo
+                            </span>
+                          </div>
+                          
+                          {selectedAthlete.modalidade && (
+                            <div>
+                              <span className="text-xs text-[#8696a0] block mb-1">Modalidade</span>
+                              <span className="text-sm text-[#e9edef] capitalize">{selectedAthlete.modalidade}</span>
+                            </div>
+                          )}
+                          
+                          {selectedAthlete.category && (
+                            <div>
+                              <span className="text-xs text-[#8696a0] block mb-1">Categoria</span>
+                              <span className="text-sm text-[#e9edef]">{selectedAthlete.category}</span>
+                            </div>
+                          )}
+                        </div>
+                     </div>
+                  </div>
+                </div>
+              )}
+            </>
           ) : connectionStatus !== 'open' && connectionStatus !== 'loading' ? (
              <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0] bg-[#111b21] bg-[url('https://i.postimg.cc/85z1DkXX/wa-bg.png')] bg-cover bg-center">
                <div className="absolute inset-0 bg-[#0b141a]/95"></div>
@@ -557,6 +728,242 @@ export function WhatsAppDashboard() {
           )}
         </div>
       </div>
+      
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-[#111b21] border border-[#222d34] w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 bg-[#202c33] border-b border-[#222d34]">
+              <h3 className="font-semibold text-[#e9edef] text-lg">Nova Conversa</h3>
+              <button 
+                onClick={() => setShowNewChatModal(false)}
+                className="text-[#8696a0] hover:text-[#e9edef] transition-colors p-2 rounded-full hover:bg-[#2a3942]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 border-b border-[#222d34]">
+               <div className="relative">
+                 <Search className="w-4 h-4 text-[#8696a0] absolute left-3 top-1/2 -translate-y-1/2" />
+                 <input 
+                   type="text" 
+                   autoFocus
+                   placeholder="Pesquisar nome do contato..." 
+                   value={contactSearchQuery}
+                   onChange={e => setContactSearchQuery(e.target.value)}
+                   className="w-full bg-[#2a3942] border-none rounded-lg py-2 pl-9 pr-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
+                 />
+               </div>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+              {chats
+                 .filter(c => {
+                    if (!contactSearchQuery) return true;
+                    return c.name.toLowerCase().includes(contactSearchQuery.toLowerCase()) || c.phone.includes(contactSearchQuery);
+                 })
+                 .sort((a, b) => a.name.localeCompare(b.name))
+                 .map((chat) => (
+                <div
+                  key={chat.id}
+                  onClick={() => {
+                     setSelectedAthlete(chat);
+                     setShowNewChatModal(false);
+                     setContactSearchQuery('');
+                  }}
+                  className="w-full text-left p-3 hover:bg-[#202c33] rounded-lg transition-colors cursor-pointer group flex items-center gap-3 mb-1"
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm relative bg-gradient-to-br from-[#00a884] to-[#047a61]">
+                    {chat.avatarUrl ? (
+                       <img src={chat.avatarUrl} alt={chat.name} className="w-full h-full object-cover relative z-10" />
+                    ) : (
+                       <div className="w-full h-full flex items-center justify-center uppercase font-bold text-white text-[15px] relative z-10">
+                         {chat.name.charAt(0)}
+                       </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 pr-2 flex flex-col">
+                    <span className="font-semibold text-[15px] text-[#e9edef] truncate">{chat.name}</span>
+                    <span className="text-[12px] text-[#8696a0] truncate">{chat.phone}</span>
+                  </div>
+                  {chat.role === 'Responsável' && (
+                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#fdcb6e] bg-[#fdcb6e]/10 px-1.5 py-0.5 rounded-sm w-max shrink-0 border border-[#fdcb6e]/20">Responsável</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Broadcast Modal */}
+      {showBroadcastModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-[#111b21] border border-[#222d34] w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 bg-[#202c33] border-b border-[#222d34]">
+              <h3 className="font-semibold text-[#e9edef] text-lg flex items-center gap-2">
+                <Megaphone className="w-5 h-5 text-[#00a884]" />
+                Nova Transmissão
+              </h3>
+              <button 
+                onClick={() => setShowBroadcastModal(false)}
+                className="text-[#8696a0] hover:text-[#e9edef] transition-colors p-2 rounded-full hover:bg-[#2a3942]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex p-4 flex-col gap-4 border-b border-[#222d34]">
+              <div className="w-full">
+                <label className="block text-sm font-medium text-[#8696a0] mb-2">Mensagem ({broadcastMessage.length} caracteres)</label>
+                <textarea
+                   className="w-full bg-[#2a3942] border-[#202c33] rounded-lg p-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:ring-[#00a884] focus:border-[#00a884] resize-none h-[120px]"
+                   placeholder="Digite a mensagem para enviar a todos os selecionados..."
+                   value={broadcastMessage}
+                   onChange={e => setBroadcastMessage(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="flex flex-1 overflow-hidden">
+              <div className="w-full flex flex-col overflow-hidden">
+                <div className="p-3 border-b border-[#222d34] flex items-center justify-between bg-[#202c33]">
+                  <span className="text-sm font-medium text-[#e9edef]">
+                    {selectedBroadcastChats.length} selecionados
+                  </span>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setSelectedBroadcastChats(chats.map(c => c.id))}
+                      className="text-xs text-[#00a884] hover:underline"
+                    >
+                      Selecionar Todos
+                    </button>
+                    <span className="text-[#8696a0]">|</span>
+                    <button 
+                      onClick={() => setSelectedBroadcastChats([])}
+                      className="text-xs text-[#8696a0] hover:underline"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {chats.map(chat => (
+                      <div 
+                        key={chat.id}
+                        onClick={() => setSelectedBroadcastChats(prev => prev.includes(chat.id) ? prev.filter(id => id !== chat.id) : [...prev, chat.id])}
+                        className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${selectedBroadcastChats.includes(chat.id) ? 'bg-[#00a884]/10 border-[#00a884]/30' : 'bg-[#202c33] border-transparent hover:border-[#2a3942]'}`}
+                      >
+                         <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center shrink-0 ${selectedBroadcastChats.includes(chat.id) ? 'bg-[#00a884] border-[#00a884]' : 'bg-[#111b21] border-[#8696a0]'}`}>
+                           {selectedBroadcastChats.includes(chat.id) && <Check className="w-3 h-3 text-white" />}
+                         </div>
+                         <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-sm relative bg-gradient-to-br from-[#00a884] to-[#047a61] mr-3">
+                          {chat.avatarUrl ? (
+                             <img src={chat.avatarUrl} alt={chat.name} className="w-full h-full object-cover relative z-10" />
+                          ) : (
+                             <div className="w-full h-full flex items-center justify-center uppercase font-bold text-white text-[12px] relative z-10">
+                               {chat.name.charAt(0)}
+                             </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 pr-2 flex flex-col">
+                          <span className="font-medium text-[13px] text-[#e9edef] truncate">{chat.name}</span>
+                          <span className="text-[11px] text-[#8696a0] truncate">{chat.role}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-[#222d34] bg-[#202c33] flex justify-end gap-3">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowBroadcastModal(false)}
+                className="text-[#e9edef] hover:bg-[#2a3942]"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleBroadcastSend}
+                disabled={isSendingBroadcast || !broadcastMessage.trim() || selectedBroadcastChats.length === 0}
+                className="bg-[#00a884] hover:bg-[#008f6f] text-white px-6"
+              >
+                {isSendingBroadcast ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                Enviar Transmissão
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auto Responder Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-[#111b21] border border-[#222d34] w-full max-w-md rounded-2xl shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between p-4 bg-[#202c33] border-b border-[#222d34] rounded-t-2xl">
+              <h3 className="font-semibold text-[#e9edef] text-lg flex items-center gap-2">
+                <Bot className="w-5 h-5 text-[#00a884]" />
+                Bot de Autoatendimento
+              </h3>
+              <button 
+                onClick={() => setShowSettingsModal(false)}
+                className="text-[#8696a0] hover:text-[#e9edef] transition-colors p-2 rounded-full hover:bg-[#2a3942]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-5 flex flex-col gap-5">
+              <div className="flex items-center justify-between border border-[#222d34] bg-[#202c33] p-4 rounded-xl">
+                <div>
+                  <span className="block text-[#e9edef] font-medium text-sm">Respostas Automáticas</span>
+                  <span className="block text-[#8696a0] text-xs mt-1">Enviar mensagem fora do horário comercial ou pela primeira vez.</span>
+                </div>
+                <button 
+                  onClick={() => setAutoResponderEnabled(!autoResponderEnabled)}
+                  className={`w-11 h-6 rounded-full relative transition-colors ${autoResponderEnabled ? 'bg-[#00a884]' : 'bg-[#374045]'}`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${autoResponderEnabled ? 'translate-x-6' : 'translate-x-1'}`}></div>
+                </button>
+              </div>
+
+               <div className={`transition-opacity ${autoResponderEnabled ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                 <label className="block text-sm font-medium text-[#8696a0] mb-2">Mensagem do Bot</label>
+                 <textarea
+                   className="w-full bg-[#2a3942] border-[#202c33] rounded-lg p-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:ring-[#00a884] focus:border-[#00a884] resize-none h-[120px]"
+                   placeholder="Ex: Olá, você falou com a academia EARS! Nosso horário de atendimento é..."
+                   value={autoResponderMessage}
+                   onChange={e => setAutoResponderMessage(e.target.value)}
+                 />
+               </div>
+            </div>
+
+            <div className="p-4 border-t border-[#222d34] bg-[#202c33] flex justify-end gap-3 rounded-b-2xl">
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowSettingsModal(false)}
+                className="text-[#e9edef] hover:bg-[#2a3942]"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={saveAutoResponder}
+                className="bg-[#00a884] hover:bg-[#008f6f] text-white px-6"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Salvar Configurações
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

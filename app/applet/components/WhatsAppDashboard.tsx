@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChatBox } from './ChatBox';
-import { MessageSquare, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff } from 'lucide-react';
+import { MessageSquare, MessageSquarePlus, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -47,11 +47,13 @@ export function WhatsAppDashboard() {
   const [selectedAthlete, setSelectedAthlete] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [contactSearchQuery, setContactSearchQuery] = useState('');
   
   const [connectionStatus, setConnectionStatus] = useState<string>('loading');
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [qrCodeBase64, setQrCodeBase64] = useState<string | null>(null);
   const [isFetchingQr, setIsFetchingQr] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
   const channelRef = useRef<any>(null);
 
   useEffect(() => {
@@ -339,6 +341,13 @@ export function WhatsAppDashboard() {
                   </div>
                 )}
                 <button 
+                  onClick={() => setShowNewChatModal(true)}
+                  className="p-1.5 rounded-md transition-colors text-[#8696a0] hover:bg-[#202c33] hover:text-[#e9edef]"
+                  title="Nova conversa"
+                >
+                  <MessageSquarePlus className="w-4 h-4" />
+                </button>
+                <button 
                   onClick={() => setShowArchived(!showArchived)}
                   className={`p-1.5 rounded-md transition-colors ${showArchived ? 'bg-[#00a884]/20 text-[#00a884]' : 'text-[#8696a0] hover:bg-[#202c33]'}`}
                   title={showArchived ? "Voltar para principais" : "Ver arquivos"}
@@ -466,6 +475,72 @@ export function WhatsAppDashboard() {
           )}
         </div>
       </div>
+
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-[#111b21] border border-[#222d34] w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 bg-[#202c33] border-b border-[#222d34]">
+              <h3 className="font-semibold text-[#e9edef] text-lg">Nova Conversa</h3>
+              <button 
+                onClick={() => setShowNewChatModal(false)}
+                className="text-[#8696a0] hover:text-[#e9edef] transition-colors p-2 rounded-full hover:bg-[#2a3942]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 border-b border-[#222d34]">
+               <div className="relative">
+                 <Search className="w-4 h-4 text-[#8696a0] absolute left-3 top-1/2 -translate-y-1/2" />
+                 <input 
+                   type="text" 
+                   autoFocus
+                   placeholder="Pesquisar nome do contato..." 
+                   value={contactSearchQuery}
+                   onChange={e => setContactSearchQuery(e.target.value)}
+                   className="w-full bg-[#2a3942] border-none rounded-lg py-2 pl-9 pr-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
+                 />
+               </div>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+              {chats
+                 .filter(c => {
+                    if (!contactSearchQuery) return true;
+                    return c.name.toLowerCase().includes(contactSearchQuery.toLowerCase()) || c.phone.includes(contactSearchQuery);
+                 })
+                 .sort((a, b) => a.name.localeCompare(b.name))
+                 .map((chat) => (
+                <div
+                  key={chat.id}
+                  onClick={() => {
+                     setSelectedAthlete(chat);
+                     setShowNewChatModal(false);
+                     setContactSearchQuery('');
+                  }}
+                  className="w-full text-left p-3 hover:bg-[#202c33] rounded-lg transition-colors cursor-pointer group flex items-center gap-3 mb-1"
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm relative bg-gradient-to-br from-[#00a884] to-[#047a61]">
+                    {chat.avatarUrl ? (
+                       <img src={chat.avatarUrl} alt={chat.name} className="w-full h-full object-cover relative z-10" />
+                    ) : (
+                       <div className="w-full h-full flex items-center justify-center uppercase font-bold text-white text-[15px] relative z-10">
+                         {chat.name.charAt(0)}
+                       </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 pr-2 flex flex-col">
+                    <span className="font-semibold text-[15px] text-[#e9edef] truncate">{chat.name}</span>
+                    <span className="text-[12px] text-[#8696a0] truncate">{chat.phone}</span>
+                  </div>
+                  {chat.role === 'Responsável' && (
+                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#fdcb6e] bg-[#fdcb6e]/10 px-1.5 py-0.5 rounded-sm w-max shrink-0 border border-[#fdcb6e]/20">Responsável</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* QR Code Modal for Connecting */}
       <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
