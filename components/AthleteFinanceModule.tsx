@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { t } from '@/lib/i18n';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { createAsaasCustomer, createAsaasPayment } from '@/app/actions/asaas';
 
 export function AthleteFinanceModule({ athlete }: { athlete: any }) {
   const { language } = useLanguage();
@@ -24,7 +25,14 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
   
   // Modals
   const [showChargeModal, setShowChargeModal] = useState(false);
-  const [newCharge, setNewCharge] = useState({ description: '', amount: '', dueDate: '', category: 'custom' });
+  const [newCharge, setNewCharge] = useState({ 
+    description: '', 
+    amount: '', 
+    dueDate: '', 
+    category: 'custom',
+    billingType: 'PIX',
+    notifyGuardian: true
+  });
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -65,6 +73,48 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
     setIsSaving(true);
     
     try {
+      let externalReference = null;
+      let transactionIdInAsaas = null;
+
+      if (newCharge.billingType !== 'INTERNO') {
+        const cpf = athlete.guardian_cpf || athlete.cpf;
+        const name = athlete.guardian_name || athlete.name;
+
+        if (!cpf) {
+          alert('CPF do responsável ou do atleta é obrigatório para gerar via Asaas.');
+          setIsSaving(false);
+          return;
+        }
+
+        const customerRes = await createAsaasCustomer({
+           name: name || 'Cliente',
+           cpfCnpj: cpf.replace(/\D/g, '')
+        });
+
+        if (customerRes.error) {
+           alert('Erro ao criar cliente no Asaas: ' + customerRes.error);
+           setIsSaving(false);
+           return;
+        }
+
+        const paymentRes = await createAsaasPayment({
+           customer: customerRes.data.id,
+           billingType: newCharge.billingType as any,
+           value: parseFloat(newCharge.amount),
+           dueDate: newCharge.dueDate || new Date().toISOString().split('T')[0],
+           description: newCharge.description,
+        });
+
+        if (paymentRes.error) {
+           alert('Erro ao criar cobrança no Asaas: ' + paymentRes.error);
+           setIsSaving(false);
+           return;
+        }
+
+        externalReference = paymentRes.data.id;
+        transactionIdInAsaas = paymentRes.data.invoiceUrl;
+      }
+
       await supabase.from('finance_transactions').insert({
         athlete_id: athlete.id,
         description: newCharge.description,
@@ -72,15 +122,41 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
         type: 'income',
         status: 'pending',
         date: newCharge.dueDate || new Date().toISOString(),
-        payment_method: 'undefined',
-        category: newCharge.category
+        payment_method: newCharge.billingType,
+        category: newCharge.category,
+        external_reference: externalReference
       });
+
+      if (newCharge.notifyGuardian) {
+         const phone = athlete.guardian_phone || athlete.phone;
+         if (phone) {
+            let msg = `Olá! Segue cobrança referente a *${newCharge.description}* para o(a) atleta *${athlete.name}*.\n*Valor:* R$ ${parseFloat(newCharge.amount).toFixed(2)}`;
+            if (newCharge.dueDate) {
+               msg += `\n*Vencimento:* ${newCharge.dueDate.split('-').reverse().join('/')}`;
+            }
+            if (transactionIdInAsaas) {
+               msg += `\n\nLink para pagamento: ${transactionIdInAsaas}`;
+            }
+            try {
+              await fetch('/api/whatsapp/send', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ phone, message: msg })
+              });
+            } catch (err) {
+              console.error("Failed to send WhatsApp message:", err);
+            }
+         } else {
+            alert('Atenção: Não foi possível notificar via WhatsApp, celular não cadastrado.');
+         }
+      }
       
       setShowChargeModal(false);
-      setNewCharge({ description: '', amount: '', dueDate: '', category: 'custom' });
+      setNewCharge({ description: '', amount: '', dueDate: '', category: 'custom', billingType: 'PIX', notifyGuardian: true });
       fetchData();
     } catch (e) {
       console.error(e);
+      alert('Erro inesperado ao gerar cobrança.');
     }
     
     setIsSaving(false);
@@ -404,6 +480,39 @@ export function AthleteFinanceModule({ athlete }: { athlete: any }) {
                     <option value="sessao_extra">Sessão Avulsa</option>
                     <option value="custom">Outros</option>
                   </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Método de Cobrança</label>
+                  <select 
+                    value={newCharge.billingType}
+                    onChange={e => setNewCharge({...newCharge, billingType: e.target.value})}
+                    className="w-full bg-[#050B14] border border-slate-800 rounded-xl py-3 px-4 text-slate-300 focus:outline-none focus:border-cyan-500 transition-colors font-medium"
+                  >
+                    <option value="PIX">PIX (Asaas)</option>
+                    <option value="BOLETO">Boleto (Asaas)</option>
+                    <option value="CREDIT_CARD">Cartão de Crédito (Asaas)</option>
+                    <option value="INTERNO">Interno / Sem Asaas</option>
+                  </select>
+                  {newCharge.billingType !== 'INTERNO' && (!athlete.guardian_cpf && !athlete.cpf) && (
+                    <p className="text-xs text-rose-500 flex items-center gap-1 mt-1">
+                      <AlertCircle size={12} />
+                      Atleta ou Responsável precisa ter CPF cadastrado para usar o Asaas.
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                  <input 
+                    type="checkbox" 
+                    id="notifyGuardian"
+                    checked={newCharge.notifyGuardian}
+                    onChange={e => setNewCharge({...newCharge, notifyGuardian: e.target.checked})}
+                    className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-950"
+                  />
+                  <label htmlFor="notifyGuardian" className="text-sm font-medium text-slate-300 flex-1 cursor-pointer">
+                    Notificar responsável por WhatsApp
+                  </label>
                 </div>
 
                 <div className="pt-4 flex gap-3">
