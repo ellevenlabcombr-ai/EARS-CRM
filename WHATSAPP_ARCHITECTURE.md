@@ -1,6 +1,10 @@
 # WhatsApp System Architecture 🚀
 
-Arquitetura limpa e mínima para integração de WhatsApp usando **Evolution API**, hospedada no **Render**, utilizando exclusivamente o banco de dados **Supabase (PostgreSQL)**, sem Prisma e sem MongoDB.
+> 💡 **Nota sobre Hospedagem 100% Gratuita (Render + Supabase):**
+> O Koyeb e o Railway começaram a exigir cartão de crédito recentemente para novas contas (visando bloquear uso abusivo das plataformas). Como o objetivo é manter uma infraestrutura **100% gratuita**, voltamos à estratégia original no **Render**.
+> O erro `P1001` e `tenant/user not found` que tivemos anteriormente foi 100% causado por um detalhe de sintaxe/roteamento da URL IPv4 do Prisma no pooling do Supabase, que agora está corrigido.
+
+Arquitetura limpa e mínima para integração de WhatsApp usando **Evolution API**, hospedada no **Render**, utilizando exclusivamente o banco de dados **Supabase (PostgreSQL)**, sem Prisma e sem MongoDB na nuvem.
 
 ## 1. Visão Geral do Fluxo
 
@@ -77,20 +81,28 @@ NEXT_PUBLIC_GEMINI_API_KEY="AI..."
 # EVOLUTION_INSTANCE_ID="ears-whatsapp"
 ```
 
-## 5. Deploy da Evolution API no Render
+## 5. Deploy da Evolution API no Render (100% Grátis)
 
 ### Passo a Passo (Render "Web Service"):
-1. Crie um novo Web Service através do [Render Dashboard](https://dashboard.render.com).
-2. Utilize a imagem Docker oficial: `davidsonbrsilva/evolution-api:latest`.
-3. Defina as Variáveis de Ambiente apenas para rodar de forma síncrona, desativando dependências de banco e MongoDB:
-   - `AUTHENTICATION_TYPE=apikey`
-   - `AUTHENTICATION_API_KEY=SuaSenhaForteAqui123!`
-   - `PROVIDER=baileys`
-   - `DATABASE_ENABLED=false` 
-   - `DATABASE_PROVIDER=none`    *(Desativa exigência do Prisma/MongoDB)*
-   - `DATABASE_SAVE_DATA=false`  
-   - `WEBHOOK_GLOBAL_ENABLED=false` *(Vamos setar nosso webhook via API Connect Dashboard)*
-   - `REDIS_ENABLED=false`       *(Apenas para instâncias não-escaladas/Cluster)*
+1. Volte ao [Render Dashboard](https://dashboard.render.com).
+2. Crie um novo Web Service -> **Public Git Repository** ou cole a imagem do Docker (usaremos a imagem: `atendai/evolution-api:latest`).
+3. Em **Environment variables**, adicione EXATAMENTE estes valores (copie e cole, **NÃO USE ASPAS** em volta de nada):
+
+   - Key: `AUTHENTICATION_TYPE` | Value: `apikey`
+   - Key: `AUTHENTICATION_API_KEY` | Value: `SuaSenhaForteAqui123!`
+   - Key: `PROVIDER` | Value: `baileys`
+   - Key: `DATABASE_ENABLED` | Value: `true`
+   - Key: `DATABASE_PROVIDER` | Value: `postgresql`
+   
+   👉 **Copie inteira a URL abaixo para as DUAS variáveis** (Ela já contém a formatação correta do usuário Supavisor da sua conta, resolvendo o bug do tenent local e da porta IPv4):
+   - Key: `DATABASE_CONNECTION_URI` | Value: `postgresql://postgres.azuhpztijhfxcyesaaef:Cj%2346765821@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true`
+   - Key: `DATABASE_URL` | Value: `postgresql://postgres.azuhpztijhfxcyesaaef:Cj%2346765821@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true`
+
+   - Key: `DATABASE_SAVE_DATA` | Value: `false`
+   - Key: `WEBHOOK_GLOBAL_ENABLED` | Value: `false`
+   - Key: `REDIS_ENABLED` | Value: `false`
+
+4. Desça até o final e inicie o deploy! A sua API subirá e ficará pronta para gerar os QR Codes via API usando o Supabase perfeitamente.
 
 ### Configuração do Webhook Dinâmico
 
