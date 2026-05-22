@@ -1,26 +1,26 @@
 # WhatsApp System Architecture 🚀
 
-> 💡 **Nota sobre Hospedagem 100% Gratuita (Render + Supabase):**
-> O Koyeb e o Railway começaram a exigir cartão de crédito recentemente para novas contas (visando bloquear uso abusivo das plataformas). Como o objetivo é manter uma infraestrutura **100% gratuita**, voltamos à estratégia original no **Render**.
-> O erro `P1001` e `tenant/user not found` que tivemos anteriormente foi 100% causado por um detalhe de sintaxe/roteamento da URL IPv4 do Prisma no pooling do Supabase, que agora está corrigido.
+> 💡 **Nota sobre Hospedagem 100% Gratuita (Render + Neon Postgres):**
+> Devido aos contínuos problemas de roteamento (IPv4/IPv6, Prisma `P1001` e erros de `tenant/user not found` no pooling do Supabase) que ocorrem ao conectar aplicações do **Render** ao **Supabase**, estamos migrando a infraestrutura de banco de dados da Evolution API para o **Neon (neon.tech)**.
+> O Neon é um banco de dados PostgreSQL serverless **100% gratuito** que nasceu focado em resolver problemas modernos (funciona com IPv4 nativamente sem bugs de pgbouncer no Prisma). Nossa aplicação (Next.js) pode continuar conectando onde quiser, mas a Evolution API rodará perfeitamente usando Neon.
 
-Arquitetura limpa e mínima para integração de WhatsApp usando **Evolution API**, hospedada no **Render**, utilizando exclusivamente o banco de dados **Supabase (PostgreSQL)**, sem Prisma e sem MongoDB na nuvem.
+Arquitetura limpa e mínima para integração de WhatsApp usando **Evolution API**, hospedada no **Render**, utilizando o banco de dados **Neon (PostgreSQL)** para contornar problemas de IPv4/IPv6 no Render.
 
 ## 1. Visão Geral do Fluxo
 
 A comunicação acontece num modelo passivo/ativo utilizando Webhooks:
 
 ```
-[ WhatsApp ] <==> [ Evolution API (Render) ] ==> [ Webhook (Next.js) ] ==> [ Supabase PG ]
+[ WhatsApp ] <==> [ Evolution API (Render) ] <==> [ Neon Postgres ] ==> [ Webhook (Next.js) ]
 ```
 
 1. **Evolution API**: Servidor dedicado rodando no [Render](https://render.com). Não exige banco de dados local para persistência de chats se usarmos webhooks, ele é *stateless* e funciona como um proxy para o WhatsApp.
 2. **Next.js API**: Onde fica nossa lógica de negócio, exposta via `/api/webhooks/evolution` e `/api/whatsapp/*`.
-3. **Supabase**: Toda persistência (Mensagens, Configurações de Automação e Sessões) usa o banco de dados principal PG via `@supabase/supabase-js`.
+3. **Supabase/Neon**: Toda a persistência principal da aplicação fica onde você preferir (Next.js acessa o Supabase), enquanto as tabelas puras da Evolution API rodam izoladas no Neon.
 
-## 2. Requisitos de Banco Centralizado (PostgreSQL / Supabase)
+## 2. Requisitos de Banco Centralizado (PostgreSQL / Neon)
 
-Não utilizamos MongoDB para a Evolution API. Todos os chats são persistidos relacionalmente no Supabase por meio do nosso próprio Webhook.
+Não utilizamos MongoDB para a Evolution API. Todos os chats são persistidos relacionalmente no PostgreSQL.
 
 ### Estrutura de Tabelas SQL 
 
@@ -81,12 +81,19 @@ NEXT_PUBLIC_GEMINI_API_KEY="AI..."
 # EVOLUTION_INSTANCE_ID="ears-whatsapp"
 ```
 
-## 5. Deploy da Evolution API no Render (100% Grátis)
+## 5. Deploy da Evolution API no Render com Neon (100% Grátis)
+
+### Passo a Passo (Banco no Neon):
+1. Acesse [Neon.tech](https://neon.tech/) e crie uma conta gratuita (Sign up with GitHub/Google).
+2. Clique em **New Project** (escolha AWS - US East) e defina a versão do Postgres como 16.
+3. Após criar, na tela de "Connection Details", copie a **Connection String** da aba Prisma ou Postgres.
+   - O link vai ser algo perfeitamente limpo assim: `postgresql://neondb_owner:SENHA@ep-xxx-yyy.us-east-2.aws.neon.tech/neondb?sslmode=require`
 
 ### Passo a Passo (Render "Web Service"):
 1. Volte ao [Render Dashboard](https://dashboard.render.com).
-2. Crie um novo Web Service -> **Public Git Repository** ou cole a imagem do Docker (usaremos a imagem: `atendai/evolution-api:latest`).
-3. Em **Environment variables**, adicione EXATAMENTE estes valores (copie e cole, **NÃO USE ASPAS** em volta de nada):
+2. Crie um novo Web Service -> **Public Git Repository** ou **Deploy an existing image from a registry**.
+   - Digite no campo Image URL: `atendai/evolution-api:latest`.
+3. Em **Environment variables**, adicione EXATAMENTE estes valores:
 
    - Key: `AUTHENTICATION_TYPE` | Value: `apikey`
    - Key: `AUTHENTICATION_API_KEY` | Value: `SuaSenhaForteAqui123!`
@@ -94,15 +101,15 @@ NEXT_PUBLIC_GEMINI_API_KEY="AI..."
    - Key: `DATABASE_ENABLED` | Value: `true`
    - Key: `DATABASE_PROVIDER` | Value: `postgresql`
    
-   👉 **Copie inteira a URL abaixo para as DUAS variáveis** (Ela já contém a formatação correta do usuário Supavisor da sua conta, resolvendo o bug do tenent local e da porta IPv4):
-   - Key: `DATABASE_CONNECTION_URI` | Value: `postgresql://postgres.azuhpztijhfxcyesaaef:Cj%2346765821@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true`
-   - Key: `DATABASE_URL` | Value: `postgresql://postgres.azuhpztijhfxcyesaaef:Cj%2346765821@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?pgbouncer=true`
+   👉 **Cole o link gerado pelo Neon nas variáveis abaixo:**
+   - Key: `DATABASE_CONNECTION_URI` | Value: `postgresql://neondb_owner:[SENHA]@ep-...neon.tech/neondb?sslmode=require`
+   - Key: `DATABASE_URL` | Value: `postgresql://neondb_owner:[SENHA]@ep-...neon.tech/neondb?sslmode=require`
 
    - Key: `DATABASE_SAVE_DATA` | Value: `false`
    - Key: `WEBHOOK_GLOBAL_ENABLED` | Value: `false`
    - Key: `REDIS_ENABLED` | Value: `false`
 
-4. Desça até o final e inicie o deploy! A sua API subirá e ficará pronta para gerar os QR Codes via API usando o Supabase perfeitamente.
+4. Desça até o final e inicie o deploy! Sua API subirá sem **nenhum** erro do Prisma ou "Database Server Not Found", ficando pronta para gerar os QR Codes via API.
 
 ### Configuração do Webhook Dinâmico
 
