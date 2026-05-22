@@ -132,8 +132,10 @@ export function WhatsAppDashboard() {
       const data = await res.json();
       if (data?.qrcode?.base64) {
         setQrCodeBase64(data.qrcode.base64);
-      } else if (data?.qrcode) {
+      } else if (typeof data?.qrcode === 'string' && data.qrcode.startsWith('data:image')) {
         setQrCodeBase64(data.qrcode);
+      } else if (data?.qrcode?.count === 0 || (typeof data?.qrcode === 'object' && Object.keys(data.qrcode).includes('count'))) {
+        setQrError('A API está conectando ao WhatsApp mas ainda não gerou o QR Code (geralmente isso indica que a variável DATABASE_URL no Render está com a senha errada ou com asteriscos ********). Corrija no Render, faça Deploy de novo e tente novamente.');
       } else if (data?.error) {
         const errorDetail = data.details?.message || JSON.stringify(data.details || '');
         if (errorDetail.toLowerCase().includes('application not found')) {

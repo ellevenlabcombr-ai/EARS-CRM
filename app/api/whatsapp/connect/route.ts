@@ -83,7 +83,10 @@ export async function POST(req: Request) {
        return NextResponse.json({ error: 'Falha ao conectar instância.', details: data }, { status: res.status });
     }
 
-    return NextResponse.json({ success: true, qrcode: data?.qrcode || data?.hash || data });
+    // Se qrcode tiver { count: 0 }, o Baileys ainda não gerou ou falhou
+    const qrcodeReturn = data?.qrcode || data?.hash || data;
+
+    return NextResponse.json({ success: true, qrcode: qrcodeReturn });
 
   } catch (error: any) {
     console.error('Error fetching whatsapp qr:', error);
