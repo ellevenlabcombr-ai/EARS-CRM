@@ -441,9 +441,11 @@ export function WhatsAppDashboard() {
         </div>
       )}
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden bg-[#0b141a]">
         {/* Sidebar */}
-        <div className="w-[380px] border-r border-[#222d34] flex flex-col bg-[#111b21] shrink-0">
+        <div className={`border-r border-[#222d34] flex-col bg-[#111b21] shrink-0 ${
+          selectedAthlete ? 'hidden md:flex md:w-[380px]' : 'flex w-full md:w-[380px]'
+        }`}>
           <div className="p-4 border-b border-[#222d34] bg-[#202c33]">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-[#e9edef] flex items-center gap-2">
@@ -601,7 +603,9 @@ export function WhatsAppDashboard() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex bg-[#0b141a] overflow-hidden relative">
+        <div className={`overflow-hidden relative ${
+          selectedAthlete ? 'flex flex-1' : 'hidden md:flex md:flex-1'
+        } bg-[#0b141a]`}>
           {selectedAthlete ? (
             <>
               <div className="flex-1 flex flex-col h-full bg-[#0b141a] border-r border-[#222d34]">
@@ -616,10 +620,11 @@ export function WhatsAppDashboard() {
                   isSnoozed={snoozedIds.includes(selectedAthlete.id)}
                   onToggleSnooze={(e) => toggleSnooze(e as any, selectedAthlete.id)}
                   onOpenProfile={() => setShowAthleteProfile(!showAthleteProfile)}
+                  onBack={() => setSelectedAthlete(null)}
                 />
               </div>
               {showAthleteProfile && (
-                <div className="w-[320px] bg-[#111b21] flex flex-col shrink-0 overflow-y-auto">
+                <div className="fixed inset-y-0 right-0 z-50 md:relative md:inset-auto w-full max-w-[320px] bg-[#111b21] flex flex-col shrink-0 overflow-y-auto border-l border-[#222d34] h-full shadow-2xl">
                   <div className="flex items-center gap-4 p-4 border-b border-[#222d34] bg-[#202c33]">
                     <button onClick={() => setShowAthleteProfile(false)} className="text-[#8696a0] hover:text-[#e9edef] transition-colors">
                       <X className="w-5 h-5" />

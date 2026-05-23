@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus, Archive, ArchiveRestore, Zap, Clock, CalendarClock, Bell, BellOff } from 'lucide-react';
+import { Send, X, MessageSquare, Loader2, Phone, Smile, Paperclip, Mic, Check, CheckCheck, Brain, Reply, User, Image as ImageIcon, FileText, Play, Music, LayoutDashboard, RefreshCw, StickyNote, ImagePlus, Archive, ArchiveRestore, Zap, Clock, CalendarClock, Bell, BellOff, ArrowLeft } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 
 const QUICK_REPLIES = [
@@ -25,9 +25,10 @@ interface ChatBoxProps {
   isSnoozed?: boolean;
   onToggleSnooze?: (e: React.MouseEvent) => void;
   onOpenProfile?: () => void;
+  onBack?: () => void;
 }
 
-export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, inline = false, isArchived, onToggleArchive, isSnoozed, onToggleSnooze, onOpenProfile }: ChatBoxProps) {
+export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, inline = false, isArchived, onToggleArchive, isSnoozed, onToggleSnooze, onOpenProfile, onBack }: ChatBoxProps) {
   const [isOpen, setIsOpen] = useState(inline ? true : false);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -543,6 +544,18 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
     <div className={inline ? "w-full h-full flex flex-col overflow-hidden bg-[#0b141a]" : "fixed bottom-6 right-6 w-full max-w-[350px] h-[500px] bg-[#0b141a] border border-[#222d34] rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden"}>
       <div className={`flex items-center justify-between p-4 shrink-0 ${inline ? 'bg-[#202c33]' : 'bg-[#202c33] text-[#e9edef]'}`}>
         <div className="flex items-center space-x-3" onClick={() => onOpenProfile && onOpenProfile()}>
+           {onBack && (
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onBack();
+               }}
+               className="md:hidden p-1.5 -ml-1 text-[#8696a0] hover:text-[#e9edef] rounded-full hover:bg-[#2a3942] transition-colors cursor-pointer mr-1 shrink-0"
+               title="Voltar"
+             >
+               <ArrowLeft className="w-6 h-6" />
+             </button>
+           )}
            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm relative bg-gradient-to-br from-[#00a884] to-[#047a61] flex items-center justify-center text-white font-bold uppercase cursor-pointer hover:opacity-80 transition-opacity">
               {athleteAvatar ? (
                  <img src={athleteAvatar} alt={athleteName} className="w-full h-full object-cover relative z-10" />
