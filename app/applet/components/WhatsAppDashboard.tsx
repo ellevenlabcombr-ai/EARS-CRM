@@ -91,16 +91,18 @@ export function WhatsAppDashboard() {
   const fetchQR = async () => {
     setIsFetchingQr(true);
     try {
-      const res = await fetch('/api/evolution', {
+      const res = await fetch('/api/whatsapp/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'connect' })
+        body: JSON.stringify({})
       });
       const data = await res.json();
-      if (data?.data?.qrcode?.base64) {
-        setQrCodeBase64(data.data.qrcode.base64);
-      } else if (data?.data?.base64) {
-        setQrCodeBase64(data.data.base64);
+      if (data?.qrcode?.base64) {
+        setQrCodeBase64(data.qrcode.base64);
+      } else if (data?.base64) {
+        setQrCodeBase64(data.base64);
+      } else if (data?.qrcode) {
+        setQrCodeBase64(typeof data.qrcode === 'string' ? data.qrcode : JSON.stringify(data.qrcode));
       }
     } catch(e) {
       console.error(e);

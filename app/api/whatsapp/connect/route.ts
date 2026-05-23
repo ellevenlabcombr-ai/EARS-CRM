@@ -22,18 +22,14 @@ export async function POST(req: Request) {
 
     const baseUrl = settings.evolution_api_url.endsWith('/') ? settings.evolution_api_url.slice(0, -1) : settings.evolution_api_url;
     
-    // First try to Connect
-    let res = await fetch(`${baseUrl}/instance/connect/${settings.evolution_instance_id}`, {
+    // First check if the instance exists
+    let stateRes = await fetch(`${baseUrl}/instance/connectionState/${settings.evolution_instance_id}`, {
       method: 'GET',
       headers: { 'apikey': settings.evolution_api_key || '' }
     });
 
-    let resBody = await res.text();
-    let data;
-    try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
-
-    // If instance doesn't exist, Create it
-    if (!res.ok && (res.status === 404 || JSON.stringify(data).toLowerCase().includes('not found') || JSON.stringify(data).toLowerCase().includes('application not found'))) {
+    // If instance doesn't exist (404), Create it
+    if (stateRes.status === 404) {
       const createRes = await fetch(`${baseUrl}/instance/create`, {
         method: 'POST',
         headers: {
@@ -46,7 +42,8 @@ export async function POST(req: Request) {
           integration: "WHATSAPP-BAILEYS"
         })
       });
-      resBody = await createRes.text();
+      let resBody = await createRes.text();
+      let data;
       try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
 
       if (!createRes.ok) {
@@ -79,8 +76,25 @@ export async function POST(req: Request) {
             })
          }).catch(e => console.error("Webhook error: ", e));
       }
-    } else if (!res.ok) {
-       return NextResponse.json({ error: 'Falha ao conectar instância.', details: data }, { status: res.status });
+    } else if (!stateRes.ok) {
+       let resBody = await stateRes.text();
+       let data;
+       try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
+       return NextResponse.json({ error: 'Falha ao verificar instância.', details: data }, { status: stateRes.status });
+    }
+
+    // Now try to get the QR code
+    let res = await fetch(`${baseUrl}/instance/connect/${settings.evolution_instance_id}`, {
+      method: 'GET',
+      headers: { 'apikey': settings.evolution_api_key || '' }
+    });
+
+    let resBody = await res.text();
+    let data;
+    try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
+
+    if (!res.ok) {
+       return NextResponse.json({ error: 'Falha ao conectar/obter QR da instância.', details: data }, { status: res.status });
     }
 
     // Se qrcode tiver { count: 0 }, o Baileys ainda não gerou ou falhou
