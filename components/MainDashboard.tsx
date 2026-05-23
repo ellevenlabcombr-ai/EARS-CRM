@@ -57,6 +57,7 @@ import { ClinicalDashboard } from "./dashboard/ClinicalDashboard";
 import { DailyOperationsDashboard } from "./dashboard/DailyOperationsDashboard";
 import { WhatsAppDashboard } from "./WhatsAppDashboard";
 import { EaglesDashboard } from "./dashboard/EaglesDashboard";
+import EarsSystem from "./ears/EarsSystem";
 import { SettingsDashboard } from "./SettingsDashboard";
 import { Button } from "@/components/ui/button";
 import { SupabaseStatus } from "./SupabaseStatus";
@@ -69,7 +70,7 @@ import { ReportsDashboard } from "./ReportsDashboard";
 import { DataSafety } from "@/lib/dataSafety";
 import { SafeRender } from "./SafeRender";
 
-type View = 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance' | 'whatsapp';
+type View = 'home' | 'athletes' | 'new-athlete' | 'athlete-profile' | 'evaluations' | 'sleep-assessment' | 'orthopedic-assessment' | 'biomechanical-assessment' | 'neurological-assessment' | 'psychological-assessment' | 'nutritional-assessment' | 'reds-assessment' | 'anthropometric-assessment' | 'maturation-assessment' | 'menstrual-assessment' | 'hydration-assessment' | 'functional-assessment' | 'dynamometry-assessment' | 'physical-assessment' | 'wellness' | 'settings' | 'agenda' | 'pendencies' | 'clinical' | 'eagles' | 'reports' | 'finance' | 'whatsapp' | 'ears';
 
 interface MainDashboardProps {
   onLogout?: () => void;
@@ -88,7 +89,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedView = localStorage.getItem('elleven_latestView');
-      const topLevelViews = ['home', 'clinical', 'eagles', 'agenda', 'athletes', 'pendencies', 'reports', 'wellness', 'finance', 'settings'];
+      const topLevelViews = ['home', 'clinical', 'eagles', 'agenda', 'athletes', 'pendencies', 'reports', 'wellness', 'ears', 'finance', 'whatsapp', 'settings'];
       if (savedView && topLevelViews.includes(savedView)) {
         setCurrentView(savedView as View);
         if (['home', 'clinical', 'eagles'].includes(savedView)) {
@@ -262,6 +263,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
     { id: 'agenda', label: 'Agenda', emoji: '🗓️' },
     { id: 'athletes', label: 'Atletas', emoji: '👥' },
     { id: 'wellness', label: 'Wellness', emoji: '🩻' },
+    { id: 'ears', label: 'EARS', emoji: '⚡' },
     { id: 'pendencies', label: 'Pendências', emoji: '🗄️' },
     { id: 'reports', label: 'Relatórios', emoji: '📈' },
     { id: 'finance', label: 'Financeiro', emoji: '💰' },
@@ -332,7 +334,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
     } else {
       setCurrentView(action);
       if (typeof window !== 'undefined') {
-        const topLevelViews = ['home', 'clinical', 'eagles', 'agenda', 'athletes', 'pendencies', 'reports', 'wellness', 'finance', 'settings'];
+        const topLevelViews = ['home', 'clinical', 'eagles', 'agenda', 'athletes', 'pendencies', 'reports', 'wellness', 'ears', 'finance', 'whatsapp', 'settings'];
         if (topLevelViews.includes(action)) {
           localStorage.setItem('elleven_latestView', action);
         }
@@ -760,6 +762,8 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                   }} 
                 />
               );
+            case 'ears':
+              return <EarsSystem />;
             case 'finance':
               return <FinanceDashboard />;
             case 'whatsapp':
