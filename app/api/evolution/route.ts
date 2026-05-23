@@ -26,8 +26,64 @@ export async function POST(req: Request) {
         integration: "WHATSAPP-BAILEYS"
       });
     } else if (action === "connect") {
-      endpoint = `${baseUrl}/instance/connect/${instanceId}`;
-      options.method = "GET"; 
+      // First try standard connect
+      let cRes = await fetch(`${baseUrl}/instance/connect/${instanceId}`, {
+         method: "GET",
+         headers: options.headers
+      });
+      let cText = await cRes.text();
+      let cData;
+      try { cData = JSON.parse(cText); } catch(e) { cData = {}; }
+
+      if (cRes.ok && (cData?.base64 || cData?.qrcode?.base64 || cData?.hash?.base64)) {
+         return NextResponse.json({ success: true, data: cData });
+      }
+
+      // If failed or count: 0, it means it's stuck. Delete and recreate.
+      await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+      await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+
+      const createRes = await fetch(`${baseUrl}/instance/create`, {
+        method: "POST",
+        headers: options.headers,
+        body: JSON.stringify({
+          instanceName: instanceId,
+          qrcode: true,
+          integration: "WHATSAPP-BAILEYS"
+        })
+      });
+      const crText = await createRes.text();
+      let crData;
+      try { crData = JSON.parse(crText); } catch(e) { crData = {}; }
+      
+      // Auto-set webhook just in case
+      let origin = req.headers.get("origin");
+      if (!origin && req.headers.get("x-forwarded-host")) {
+        const host = req.headers.get("x-forwarded-host");
+        const protocol = req.headers.get("x-forwarded-proto") || 'https';
+        origin = `${protocol}://${host}`;
+      } else if (!origin && req.headers.get("host")) {
+        const host = req.headers.get("host");
+        const protocol = host?.includes('localhost') ? 'http' : 'https';
+        origin = `${protocol}://${host}`;
+      }
+      if (origin && crData?.instance) {
+         fetch(`${baseUrl}/webhook/set/${instanceId}`, {
+            method: 'POST',
+            headers: options.headers,
+            body: JSON.stringify({
+               webhook: {
+                 enabled: true,
+                 url: `${origin}/api/webhooks/evolution`,
+                 byEvents: false,
+                 base64: true,
+                 events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"]
+               }
+            })
+         }).catch(e => console.error("Webhook error: ", e));
+      }
+
+      return NextResponse.json({ success: createRes.ok, data: crData }, { status: createRes.status });
     } else if (action === "status") {
       endpoint = `${baseUrl}/instance/connectionState/${instanceId}`;
       options.method = "GET";
