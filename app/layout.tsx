@@ -5,6 +5,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { PWAUpdater } from '@/components/PWAUpdater';
 import { AgendaNotifier } from '@/components/AgendaNotifier';
 import { BrandingInjector } from '@/components/BrandingInjector';
 
@@ -66,6 +67,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
             <AgendaNotifier />
             <ScrollToTop />
             <InstallPrompt />
+            <PWAUpdater />
           </LanguageProvider>
         </ErrorBoundary>
       </body>

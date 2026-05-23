@@ -26,6 +26,15 @@ function playNotificationSound() {
   } catch (e) {}
 }
 
+const removeAccents = (str: string) => {
+  if (!str) return '';
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
+const cleanDigits = (str: string) => {
+  return str.replace(/\D/g, '');
+};
+
 interface Chat {
   id: string; // unique contact string like athlete-uuid or guardian-uuid
   athleteId: string; // actual athlete id
@@ -241,7 +250,10 @@ export function WhatsAppDashboard() {
     const chatMap = new Map<string, any>();
     if (athletesData) {
       for (const a of athletesData) {
-        if (a.phone) {
+        const hasPhone = !!a.phone;
+        const hasGPhone = !!a.guardian_phone;
+
+        if (hasPhone) {
           const phoneKey = a.phone.replace(/\D/g, '');
           chatMap.set(phoneKey, {
             id: `athlete-${a.id}`,
@@ -257,7 +269,7 @@ export function WhatsAppDashboard() {
             unreadCount: 0
           });
         }
-        if (a.guardian_phone) {
+        if (hasGPhone) {
           const gPhoneKey = a.guardian_phone.replace(/\D/g, '');
           chatMap.set(gPhoneKey, {
             id: `guardian-${a.id}`,
@@ -269,6 +281,21 @@ export function WhatsAppDashboard() {
             modalidade: a.modalidade,
             category: a.category,
             lastMessageText: '',
+            lastMessageTime: null,
+            unreadCount: 0
+          });
+        }
+        if (!hasPhone && !hasGPhone) {
+          chatMap.set(`empty-${a.id}`, {
+            id: `athlete-empty-${a.id}`,
+            athleteId: a.id,
+            name: a.name,
+            phone: '',
+            role: 'Atleta',
+            avatarUrl: a.avatar_url,
+            modalidade: a.modalidade,
+            category: a.category,
+            lastMessageText: 'Telefone não cadastrado',
             lastMessageTime: null,
             unreadCount: 0
           });
@@ -391,8 +418,20 @@ export function WhatsAppDashboard() {
     });
     
     if (searchQuery) {
-       const q = searchQuery.toLowerCase();
-       list = list.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+       const qNormal = removeAccents(searchQuery);
+       const qDigits = cleanDigits(searchQuery);
+       
+       list = list.filter(c => {
+         const nameNormal = removeAccents(c.name);
+         const phoneDigits = cleanDigits(c.phone || '');
+         
+         const nameMatch = nameNormal.includes(qNormal);
+         const phoneMatch = qDigits ? phoneDigits.includes(qDigits) : false;
+         const categoryMatch = c.category ? removeAccents(c.category).includes(qNormal) : false;
+         const modalidadeMatch = c.modalidade ? removeAccents(c.modalidade).includes(qNormal) : false;
+         
+         return nameMatch || phoneMatch || categoryMatch || modalidadeMatch;
+       });
     }
     
     list.sort((a, b) => {
@@ -499,6 +538,12 @@ export function WhatsAppDashboard() {
                   placeholder="Pesquisar ou começar uma nova conversa" 
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && filteredChats.length > 0) {
+                      setSelectedAthlete(filteredChats[0]);
+                      setSearchQuery('');
+                    }
+                  }}
                   className="w-full bg-[#2a3942] border-none rounded-lg py-1.5 pl-9 pr-3 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
                 />
               </div>
@@ -526,7 +571,10 @@ export function WhatsAppDashboard() {
                 {filteredChats.map(chat => (
                   <div
                     key={chat.id}
-                    onClick={() => setSelectedAthlete(chat)}
+                    onClick={() => {
+                      setSelectedAthlete(chat);
+                      setSearchQuery('');
+                    }}
                     className={`w-full text-left p-3 hover:bg-[#202c33] transition-colors cursor-pointer group flex gap-3 relative ${
                       selectedAthlete?.id === chat.id ? 'bg-[#2a3942]' : ''
                     }`}
@@ -779,10 +827,55 @@ export function WhatsAppDashboard() {
                </div>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+              {cleanDigits(contactSearchQuery).length >= 8 && (
+                <div
+                  onClick={() => {
+                     const digits = cleanDigits(contactSearchQuery);
+                     const namePart = contactSearchQuery.replace(/[\d\s()+-]/g, '').trim();
+                     const directChat: Chat = {
+                       id: `temp-${digits}`,
+                       athleteId: `temp-${digits}`,
+                       name: namePart || `Contato Direto (${digits})`,
+                       phone: digits,
+                       role: 'Manual',
+                       avatarUrl: undefined,
+                       modalidade: '',
+                       category: '',
+                       lastMessageText: 'Iniciar canal direto',
+                       lastMessageTime: null,
+                       unreadCount: 0
+                     };
+                     setSelectedAthlete(directChat);
+                     setShowNewChatModal(false);
+                     setContactSearchQuery('');
+                  }}
+                  className="w-full text-left p-3 hover:bg-[#202c33]/70 rounded-lg border border-dashed border-[#00a884]/40 transition-colors cursor-pointer flex items-center gap-3 mb-2 bg-[#00a884]/5"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#00a884] flex items-center justify-center shrink-0">
+                    <Send className="w-4 h-4 text-white" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col">
+                    <span className="font-semibold text-[15px] text-[#00a884]">Iniciar canal com número direto</span>
+                    <span className="text-[12px] text-[#8696a0] truncate">{cleanDigits(contactSearchQuery)}</span>
+                  </div>
+                </div>
+              )}
+
               {chats
                  .filter(c => {
                     if (!contactSearchQuery) return true;
-                    return c.name.toLowerCase().includes(contactSearchQuery.toLowerCase()) || c.phone.includes(contactSearchQuery);
+                    const qNormal = removeAccents(contactSearchQuery);
+                    const qDigits = cleanDigits(contactSearchQuery);
+                    
+                    const nameNormal = removeAccents(c.name);
+                    const phoneDigits = cleanDigits(c.phone || '');
+                    
+                    const nameMatch = nameNormal.includes(qNormal);
+                    const phoneMatch = qDigits ? phoneDigits.includes(qDigits) : false;
+                    const categoryMatch = c.category ? removeAccents(c.category).includes(qNormal) : false;
+                    const modalidadeMatch = c.modalidade ? removeAccents(c.modalidade).includes(qNormal) : false;
+                    
+                    return nameMatch || phoneMatch || categoryMatch || modalidadeMatch;
                  })
                  .sort((a, b) => a.name.localeCompare(b.name))
                  .map((chat) => (

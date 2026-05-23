@@ -31,6 +31,14 @@ interface ChatBoxProps {
 export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, inline = false, isArchived, onToggleArchive, isSnoozed, onToggleSnooze, onOpenProfile, onBack }: ChatBoxProps) {
   const [isOpen, setIsOpen] = useState(inline ? true : false);
   const [messages, setMessages] = useState<any[]>([]);
+  const [activePhone, setActivePhone] = useState(athletePhone);
+  const [tempPhoneInput, setTempPhoneInput] = useState('');
+  const [savingPhone, setSavingPhone] = useState(false);
+
+  useEffect(() => {
+    setActivePhone(athletePhone);
+    setTempPhoneInput('');
+  }, [athletePhone, athleteId]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +83,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const cleanPhone = athletePhone ? athletePhone.replace(/\D/g, '') : '';
+  const cleanPhone = activePhone ? activePhone.replace(/\D/g, '') : '';
   const suffix8 = cleanPhone.length >= 8 ? cleanPhone.slice(-8) : '';
 
   const fetchMessages = async (silent = false) => {
@@ -148,7 +156,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
   };
 
   const handleScheduleSend = async (dateLabel: string) => {
-    if (!newMessage.trim() || !athletePhone) return;
+    if (!newMessage.trim() || !activePhone) return;
 
     setSending(true);
     try {
@@ -189,7 +197,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !athletePhone) return;
+    if (!newMessage.trim() || !activePhone) return;
 
     setSending(true);
     try {
@@ -255,6 +263,30 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
        console.error("Error sending", error);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleSavePhone = async () => {
+    if (!tempPhoneInput.trim()) return;
+    setSavingPhone(true);
+    try {
+      const formatted = tempPhoneInput.trim();
+      
+      // Update the athlete phone number
+      const { error } = await supabase
+        .from('athletes')
+        .update({ phone: formatted })
+        .eq('id', athleteId);
+      
+      if (error) throw error;
+      
+      setActivePhone(formatted);
+      setTempPhoneInput('');
+    } catch (e) {
+      console.error('Error saving phone', e);
+      alert('Erro ao salvar telefone. Verifique a conexão e tente novamente.');
+    } finally {
+      setSavingPhone(false);
     }
   };
 
@@ -565,7 +597,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
            </div>
            <div>
               <h3 className="font-semibold text-sm text-[#e9edef] cursor-pointer hover:underline">{athleteName}</h3>
-              <p className="text-xs text-[#8696a0]">{athletePhone}</p>
+              <p className="text-xs text-[#8696a0]">{activePhone || 'Telefone não cadastrado'}</p>
            </div>
         </div>
         <div className="flex items-center gap-2">
@@ -758,134 +790,164 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
         </div>
       )}
 
-      <div className={`p-3 flex items-center gap-2 shrink-0 ${isInternalNote ? 'bg-[#fdcb6e]/10' : 'bg-[#202c33]'} border-t border-[#222d34] transition-colors duration-300`}>
-        <div className="flex gap-1 shrink-0 relative">
-          <button onClick={handleEmoji} className={`p-2 rounded-md transition-colors cursor-pointer ${showEmojiPicker ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
-            <Smile className="w-6 h-6" />
-          </button>
-          
-          <div ref={quickRepliesRef} className="relative">
-            <button onClick={() => setShowQuickReplies(!showQuickReplies)} className={`p-2 rounded-md transition-colors cursor-pointer ${showQuickReplies ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`} title="Respostas Rápidas">
-              <Zap className="w-5 h-5 fill-current" />
-            </button>
-            {showQuickReplies && (
-              <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-72 p-2 z-50 flex flex-col gap-1 max-h-60 overflow-y-auto custom-scrollbar">
-                <span className="text-xs font-bold text-[#8696a0] px-2 py-1 uppercase tracking-wider">Respostas Rápidas</span>
-                {QUICK_REPLIES.map((reply, idx) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => {
-                      setNewMessage(newMessage + (newMessage ? ' ' : '') + reply);
-                      setShowQuickReplies(false);
-                    }}
-                    className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm"
-                  >
-                    {reply}
-                  </button>
-                ))}
-              </div>
-            )}
+      {!activePhone ? (
+        <div className="p-5 bg-[#202c33] border-t border-[#222d34] flex flex-col items-center justify-center text-center gap-3">
+          <div className="p-3 bg-red-400/10 rounded-full text-[#ed4c67]">
+            <Phone className="w-6 h-6 animate-pulse" />
           </div>
-          
-          {showEmojiPicker && (
-            <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
-              <EmojiPicker 
-                onEmojiClick={onEmojiClick} 
-                theme={Theme.DARK}
-                width={300}
-                height={400}
-                lazyLoadEmojis={true}
-              />
-            </div>
-          )}
-
-          <div ref={attachMenuRef} className="relative">
-            <button onClick={() => setShowAttachMenu(!showAttachMenu)} className={`p-2 rounded-md transition-colors cursor-pointer ${showAttachMenu ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
-              <Paperclip className="w-5 h-5" />
-            </button>
-            {showAttachMenu && (
-              <div className="absolute bottom-14 left-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-56 p-2 z-50 flex flex-col gap-1">
-                <button onClick={() => handleAttachment('image')} className="flex items-center gap-3 w-full p-3 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm font-medium">
-                  <div className="bg-blue-500/20 p-2 rounded-full text-blue-400 shrink-0"><ImagePlus className="w-5 h-5"/></div>
-                  Fotos e Vídeos
-                </button>
-                <button onClick={() => handleAttachment('document')} className="flex items-center gap-3 w-full p-3 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm font-medium">
-                  <div className="bg-purple-500/20 p-2 rounded-full text-purple-400 shrink-0"><FileText className="w-5 h-5"/></div>
-                  Documento / PDF
-                </button>
-              </div>
-            )}
+          <div className="max-w-md">
+            <p className="text-[#e9edef] text-sm font-semibold">Telefone não cadastrado para {athleteName}</p>
+            <p className="text-[#8696a0] text-xs mt-1">
+              Não é possível enviar mensagens via WhatsApp sem um número de celular. Insira o contato abaixo para cadastrá-lo diretamente:
+            </p>
+          </div>
+          <div className="flex w-full max-w-sm gap-2 mt-1">
+            <input
+              type="text"
+              placeholder="Ex: (11) 99999-9999"
+              value={tempPhoneInput}
+              onChange={(e) => setTempPhoneInput(e.target.value)}
+              className="flex-1 bg-[#2a3942] border border-[#222d34] rounded-lg px-3 py-1.5 text-sm text-[#e9edef] placeholder-[#8696a0] focus:ring-1 focus:ring-[#00a884] focus:outline-none"
+            />
+            <Button
+              onClick={handleSavePhone}
+              disabled={savingPhone || !tempPhoneInput.trim()}
+              className="bg-[#00a884] hover:bg-[#06cf9c] text-white rounded-lg px-4 text-xs font-semibold shrink-0 cursor-pointer"
+            >
+              {savingPhone ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar e Iniciar'}
+            </Button>
           </div>
         </div>
-        
-        {isRecording ? (
-          <div className="flex-1 flex items-center justify-between px-4 h-[44px] rounded-full bg-red-500/10 border border-red-500/50 animate-pulse">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500 animate-bounce" />
-              <span className="text-red-500 font-medium text-sm">Gravando...</span>
-            </div>
-            <span className="text-xs text-red-500 font-bold ml-2">Toque em X para enviar</span>
-          </div>
-        ) : (
-          <div className="relative flex-1 flex items-center">
-            <textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder={isInternalNote ? "Adicionar nota interna..." : "Mensagem"}
-              className={`w-full border-0 rounded-lg pl-4 pr-12 py-2.5 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] transition-colors duration-300 leading-snug ${isInternalNote ? 'bg-[#fdcb6e]/20 text-[#ffeaa7] placeholder-[#ffeaa7]/50 focus:ring-1 focus:ring-[#fdcb6e]/50' : 'bg-[#2a3942] text-[#e9edef] placeholder-[#8696a0]'}`}
-              rows={1}
-            />
-            <button 
-              onClick={() => setIsInternalNote(!isInternalNote)}
-              title="Alternar para Nota Interna"
-              className={`absolute right-2 p-1.5 rounded-md transition-colors ${isInternalNote ? 'text-[#fdcb6e] bg-[#fdcb6e]/20' : 'text-[#8696a0] hover:bg-[#202c33]'}`}
-            >
-              <StickyNote className="w-4 h-4" />
+      ) : (
+        <div className={`p-3 flex items-center gap-2 shrink-0 ${isInternalNote ? 'bg-[#fdcb6e]/10' : 'bg-[#202c33]'} border-t border-[#222d34] transition-colors duration-300`}>
+          <div className="flex gap-1 shrink-0 relative">
+            <button onClick={handleEmoji} className={`p-2 rounded-md transition-colors cursor-pointer ${showEmojiPicker ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
+              <Smile className="w-6 h-6" />
             </button>
-          </div>
-        )}
-        
-        <div className="flex gap-2 shrink-0 relative items-center">
-          {newMessage.trim() && !isRecording && (
-            <div ref={scheduleMenuRef} className="relative">
-              <button onClick={() => setShowScheduleMenu(!showScheduleMenu)} className="p-2.5 rounded-full bg-[#202c33] text-[#8696a0] hover:text-[#e9edef] transition-colors cursor-pointer" title="Agendar Mensagem">
-                <CalendarClock className="w-5 h-5" />
+            
+            <div ref={quickRepliesRef} className="relative">
+              <button onClick={() => setShowQuickReplies(!showQuickReplies)} className={`p-2 rounded-md transition-colors cursor-pointer ${showQuickReplies ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`} title="Respostas Rápidas">
+                <Zap className="w-5 h-5 fill-current" />
               </button>
-              {showScheduleMenu && (
-                <div className="absolute bottom-12 right-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-64 p-2 z-50 flex flex-col gap-1">
-                  <span className="text-xs font-bold text-[#8696a0] px-2 py-1 uppercase tracking-wider">Agendar para...</span>
-                  <button onClick={() => handleScheduleSend('Amanhã às 08h')} className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#00a884]" /> Amanhã às 08:00
+              {showQuickReplies && (
+                <div className="absolute bottom-12 left-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-72 p-2 z-50 flex flex-col gap-1 max-h-60 overflow-y-auto custom-scrollbar">
+                  <span className="text-xs font-bold text-[#8696a0] px-2 py-1 uppercase tracking-wider">Respostas Rápidas</span>
+                  {QUICK_REPLIES.map((reply, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => {
+                        setNewMessage(newMessage + (newMessage ? ' ' : '') + reply);
+                        setShowQuickReplies(false);
+                      }}
+                      className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {showEmojiPicker && (
+              <div ref={emojiPickerRef} className="absolute bottom-12 left-0 z-50">
+                <EmojiPicker 
+                  onEmojiClick={onEmojiClick} 
+                  theme={Theme.DARK}
+                  width={300}
+                  height={400}
+                  lazyLoadEmojis={true}
+                />
+              </div>
+            )}
+
+            <div ref={attachMenuRef} className="relative">
+              <button onClick={() => setShowAttachMenu(!showAttachMenu)} className={`p-2 rounded-md transition-colors cursor-pointer ${showAttachMenu ? 'text-[#00a884] bg-[#00a884]/10' : 'text-[#8696a0] hover:text-[#e9edef]'}`}>
+                <Paperclip className="w-5 h-5" />
+              </button>
+              {showAttachMenu && (
+                <div className="absolute bottom-14 left-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-56 p-2 z-50 flex flex-col gap-1">
+                  <button onClick={() => handleAttachment('image')} className="flex items-center gap-3 w-full p-3 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm font-medium">
+                    <div className="bg-blue-500/20 p-2 rounded-full text-blue-400 shrink-0"><ImagePlus className="w-5 h-5"/></div>
+                    Fotos e Vídeos
                   </button>
-                  <button onClick={() => handleScheduleSend('Hoje às 18h')} className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#00a884]" /> Hoje às 18:00
+                  <button onClick={() => handleAttachment('document')} className="flex items-center gap-3 w-full p-3 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm font-medium">
+                    <div className="bg-purple-500/20 p-2 rounded-full text-purple-400 shrink-0"><FileText className="w-5 h-5"/></div>
+                    Documento / PDF
                   </button>
                 </div>
               )}
             </div>
-          )}
-          {newMessage.trim() && !isRecording ? (
-            <Button
-              onClick={handleSend}
-              disabled={sending}
-              size="icon"
-              className={`rounded-full shadow-lg text-white w-10 h-10 shrink-0 cursor-pointer border-none transition-colors duration-300 ${isInternalNote ? 'bg-[#fdcb6e] hover:bg-[#eccc68] text-black' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}
-            >
-              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
-            </Button>
+          </div>
+          
+          {isRecording ? (
+            <div className="flex-1 flex items-center justify-between px-4 h-[44px] rounded-full bg-red-500/10 border border-red-500/50 animate-pulse">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-bounce" />
+                <span className="text-red-500 font-medium text-sm">Gravando...</span>
+              </div>
+              <span className="text-xs text-red-500 font-bold ml-2">Toque em X para enviar</span>
+            </div>
           ) : (
-            <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center shadow-lg ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
-              {isRecording ? <X className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
+            <div className="relative flex-1 flex items-center">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder={isInternalNote ? "Adicionar nota interna..." : "Mensagem"}
+                className={`w-full border-0 rounded-lg pl-4 pr-12 py-2.5 text-sm focus:outline-none resize-none min-h-[44px] max-h-[120px] transition-colors duration-300 leading-snug ${isInternalNote ? 'bg-[#fdcb6e]/20 text-[#ffeaa7] placeholder-[#ffeaa7]/50 focus:ring-1 focus:ring-[#fdcb6e]/50' : 'bg-[#2a3942] text-[#e9edef] placeholder-[#8696a0]'}`}
+                rows={1}
+              />
+              <button 
+                onClick={() => setIsInternalNote(!isInternalNote)}
+                title="Alternar para Nota Interna"
+                className={`absolute right-2 p-1.5 rounded-md transition-colors ${isInternalNote ? 'text-[#fdcb6e] bg-[#fdcb6e]/20' : 'text-[#8696a0] hover:bg-[#202c33]'}`}
+              >
+                <StickyNote className="w-4 h-4" />
+              </button>
+            </div>
           )}
+          
+          <div className="flex gap-2 shrink-0 relative items-center">
+            {newMessage.trim() && !isRecording && (
+              <div ref={scheduleMenuRef} className="relative">
+                <button onClick={() => setShowScheduleMenu(!showScheduleMenu)} className="p-2.5 rounded-full bg-[#202c33] text-[#8696a0] hover:text-[#e9edef] transition-colors cursor-pointer" title="Agendar Mensagem">
+                  <CalendarClock className="w-5 h-5" />
+                </button>
+                {showScheduleMenu && (
+                  <div className="absolute bottom-12 right-0 bg-[#2a3942] border border-[#222d34] rounded-2xl shadow-xl w-64 p-2 z-50 flex flex-col gap-1">
+                    <span className="text-xs font-bold text-[#8696a0] px-2 py-1 uppercase tracking-wider">Agendar para...</span>
+                    <button onClick={() => handleScheduleSend('Amanhã às 08h')} className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#00a884]" /> Amanhã às 08:00
+                    </button>
+                    <button onClick={() => handleScheduleSend('Hoje às 18h')} className="text-left p-2 hover:bg-[#202c33] rounded-xl text-[#e9edef] transition-colors text-sm flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#00a884]" /> Hoje às 18:00
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            {newMessage.trim() && !isRecording ? (
+              <Button
+                onClick={handleSend}
+                disabled={sending}
+                size="icon"
+                className={`rounded-full shadow-lg text-white w-10 h-10 shrink-0 cursor-pointer border-none transition-colors duration-300 ${isInternalNote ? 'bg-[#fdcb6e] hover:bg-[#eccc68] text-black' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}
+              >
+                {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5 ml-1" />}
+              </Button>
+            ) : (
+              <button onClick={handleMic} className={`p-3 text-white rounded-full transition-colors cursor-pointer shrink-0 w-10 h-10 flex items-center justify-center shadow-lg ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00a884] hover:bg-[#06cf9c]'}`}>
+                {isRecording ? <X className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
