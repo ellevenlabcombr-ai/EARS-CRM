@@ -263,7 +263,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
     { id: 'agenda', label: 'Agenda', emoji: '🗓️' },
     { id: 'athletes', label: 'Atletas', emoji: '👥' },
     { id: 'wellness', label: 'Wellness', emoji: '🩻' },
-    { id: 'ears', label: 'EARS', emoji: '⚡' },
     { id: 'pendencies', label: 'Pendências', emoji: '🗄️' },
     { id: 'reports', label: 'Relatórios', emoji: '📈' },
     { id: 'finance', label: 'Financeiro', emoji: '💰' },
@@ -762,8 +761,6 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                   }} 
                 />
               );
-            case 'ears':
-              return <EarsSystem />;
             case 'finance':
               return <FinanceDashboard />;
             case 'whatsapp':
