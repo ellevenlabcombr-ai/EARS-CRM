@@ -22,4 +22,4 @@ async function check() {
       console.log('Status endpoint:', text);
   }
 }
-check();
+check(); 
