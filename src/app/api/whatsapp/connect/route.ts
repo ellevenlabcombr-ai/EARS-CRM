@@ -7,27 +7,36 @@ const INSTANCE_NAME = 'ears-1779728244110'
 
 export async function GET() {
   try {
+    const controller = new AbortController()
+
+    const timeout = setTimeout(() => {
+      controller.abort()
+    }, 8000)
+
     const response = await fetch(
-      `${EVOLUTION_URL}/instance/qrcode/${INSTANCE_NAME}`,
+      `${EVOLUTION_URL}/instance/connect/${INSTANCE_NAME}`,
       {
         method: 'GET',
         headers: {
           apikey: EVOLUTION_KEY || '',
         },
-        cache: 'no-store',
+        signal: controller.signal,
       }
     )
 
-    const data = await response.json()
+    clearTimeout(timeout)
 
-    return NextResponse.json(data)
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error: 'Failed to get QR code',
-        details: String(error),
+    const text = await response.text()
+
+    return new Response(text, {
+      headers: {
+        'Content-Type': 'application/json',
       },
-      { status: 500 }
-    )
+    })
+  } catch (error) {
+    return NextResponse.json({
+      success: false,
+      error: String(error),
+    })
   }
 }
