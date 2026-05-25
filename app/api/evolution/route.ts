@@ -37,17 +37,18 @@ export async function POST(req: Request) {
 
       if (cRes.ok) {
          // Append the QR code base64 from our database if it exists
-         const { createClient } = require('@supabase/supabase-js');
-         const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-         );
-         const { data: dbData } = await supabase.from('automation_settings')
-            .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
-            
-         if (dbData?.evolution_qr_base64 && (!cData.qrcode || !cData.qrcode.base64)) {
-             cData.qrcode = cData.qrcode || {};
-             cData.qrcode.base64 = dbData.evolution_qr_base64;
+         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+         if (supabaseUrl && supabaseKey) {
+             const { createClient } = require('@supabase/supabase-js');
+             const supabase = createClient(supabaseUrl, supabaseKey);
+             const { data: dbData } = await supabase.from('automation_settings')
+                .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
+                
+             if (dbData?.evolution_qr_base64 && (!cData.qrcode || !cData.qrcode.base64)) {
+                 cData.qrcode = cData.qrcode || {};
+                 cData.qrcode.base64 = dbData.evolution_qr_base64;
+             }
          }
          return NextResponse.json({ success: true, data: cData });
       }
@@ -156,14 +157,15 @@ export async function POST(req: Request) {
     }
     
     if (action === "create" && res.ok) {
-        const { createClient } = require('@supabase/supabase-js');
-        const supabase = createClient(
-           process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-           process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-        );
-        await supabase.from('automation_settings')
-           .update({ evolution_qr_base64: null })
-           .eq('evolution_instance_id', instanceId);
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        if (supabaseUrl && supabaseKey) {
+            const { createClient } = require('@supabase/supabase-js');
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            await supabase.from('automation_settings')
+               .update({ evolution_qr_base64: null })
+               .eq('evolution_instance_id', instanceId);
+        }
 
         // Auto-set webhook just in case
         let origin = req.headers.get("origin");
@@ -195,17 +197,18 @@ export async function POST(req: Request) {
 
     if (action === "status" || action === "connect") {
        // Append the QR code base64 from our database if it exists
-       const { createClient } = require('@supabase/supabase-js');
-       const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-          process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-       );
-       const { data: dbData } = await supabase.from('automation_settings')
-          .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
-          
-       if (dbData?.evolution_qr_base64 && res.ok && (!data.qrcode || !data.qrcode.base64)) {
-           data.qrcode = data.qrcode || {};
-           data.qrcode.base64 = dbData.evolution_qr_base64;
+       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+       const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+       if (supabaseUrl && supabaseKey) {
+           const { createClient } = require('@supabase/supabase-js');
+           const supabase = createClient(supabaseUrl, supabaseKey);
+           const { data: dbData } = await supabase.from('automation_settings')
+              .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
+              
+           if (dbData?.evolution_qr_base64 && res.ok && (!data.qrcode || !data.qrcode.base64)) {
+               data.qrcode = data.qrcode || {};
+               data.qrcode.base64 = dbData.evolution_qr_base64;
+           }
        }
     }
 

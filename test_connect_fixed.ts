@@ -1,0 +1,22 @@
+import { createClient } from '@supabase/supabase-js';
+
+async function run() {
+  const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data } = await supabase.from('automation_settings').select('*').single();
+  const headers = { apikey: data.evolution_api_key };
+  
+  const res = await fetch('http://localhost:3000/api/evolution', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+          url: data.evolution_api_url,
+          apiKey: data.evolution_api_key,
+          instanceId: data.evolution_instance_id,
+          action: 'connect'
+      })
+  });
+  console.log('connect result:', await res.text());
+}
+run();

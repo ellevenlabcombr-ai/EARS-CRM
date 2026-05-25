@@ -989,7 +989,7 @@ export function AutomationSettings() {
                   </p>
                   <p className="text-[10px] md:text-xs text-slate-300 font-mono select-all">
                     <span className="text-slate-500 select-none">Eventos a marcar: </span>
-                    MESSAGES_UPSERT <span className="text-slate-500 select-none">(ou Messages Upsert)</span>
+                    MESSAGES_UPSERT, QRCODE_UPDATED, CONNECTION_UPDATE
                   </p>
                 </div>
               </div>
