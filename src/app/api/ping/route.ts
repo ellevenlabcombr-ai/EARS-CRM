@@ -1,5 +1,3 @@
 export async function GET() {
-  return Response.json({
-    pong: true,
-  })
+  return Response.json({ ok: true });
 }
