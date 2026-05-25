@@ -5,9 +5,10 @@ async function run() {
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   const { data } = await supabase.from('automation_settings').select('*').single();
-  const headers = { apikey: data.evolution_api_key };
+  console.log('qr base64 length:', data.evolution_qr_base64?.length);
   
-  const req = await fetch(`${data.evolution_api_url}/instance/connectionState/${data.evolution_instance_id}`, { method: 'GET', headers });
-  console.log('state:', await req.text());
+  const headers = { apikey: data.evolution_api_key };
+  const req2 = await fetch(`${data.evolution_api_url}/instance/connect/${data.evolution_instance_id}`, { method: 'GET', headers });
+  console.log('connect req:', await req2.text());
 }
 run();

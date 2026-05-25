@@ -7,7 +7,7 @@ async function run() {
   const { data } = await supabase.from('automation_settings').select('*').single();
   const headers = { apikey: data.evolution_api_key };
   
-  const req = await fetch(`${data.evolution_api_url}/instance/connectionState/${data.evolution_instance_id}`, { method: 'GET', headers });
-  console.log('state:', await req.text());
+  const req = await fetch(`${data.evolution_api_url}/instance/fetchInstances?instanceName=${data.evolution_instance_id}`, { method: 'GET', headers });
+  console.log('instances:', await req.text());
 }
 run();

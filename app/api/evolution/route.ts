@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
-    const { url, apiKey, instanceId, action } = await req.json();
+    const { url, apiKey, instanceId, action, clientOrigin } = await req.json();
 
     if (!url || !instanceId || !action) {
       return NextResponse.json({ error: 'Faltam parâmetros obrigatórios. Verifique URL, Instância e Action.' }, { status: 400 });
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       try { crData = JSON.parse(crText); } catch(e) { crData = {}; }
       
       // Auto-set webhook just in case
-      let origin = req.headers.get("origin");
+      let origin = clientOrigin || req.headers.get("origin");
       if (!origin && req.headers.get("x-forwarded-host")) {
         const host = req.headers.get("x-forwarded-host");
         const protocol = req.headers.get("x-forwarded-proto") || 'https';
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
       options.method = "DELETE";
     } else if (action === "set_webhook") {
       // Setup webhook logic
-      let origin = req.headers.get("origin");
+      let origin = clientOrigin || req.headers.get("origin");
       if (!origin && req.headers.get("x-forwarded-host")) {
         const host = req.headers.get("x-forwarded-host");
         const protocol = req.headers.get("x-forwarded-proto") || 'https';
@@ -168,7 +168,7 @@ export async function POST(req: Request) {
         }
 
         // Auto-set webhook just in case
-        let origin = req.headers.get("origin");
+        let origin = clientOrigin || req.headers.get("origin");
         if (!origin && req.headers.get("x-forwarded-host")) {
           const host = req.headers.get("x-forwarded-host");
           const protocol = req.headers.get("x-forwarded-proto") || 'https';

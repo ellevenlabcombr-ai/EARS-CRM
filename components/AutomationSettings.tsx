@@ -86,7 +86,7 @@ export function AutomationSettings() {
       const res = await fetch('/api/evolution', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'create' })
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'create', clientOrigin: window.location.origin })
       });
       const json = await res.json();
       
@@ -136,7 +136,7 @@ export function AutomationSettings() {
       const res = await fetch('/api/evolution', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'connect' })
+          body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'connect', clientOrigin: window.location.origin })
       });
       const json = await res.json();
       const data = json.data || {};
@@ -179,7 +179,7 @@ export function AutomationSettings() {
       await fetch('/api/evolution', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'set_webhook' })
+        body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'set_webhook', clientOrigin: window.location.origin })
       });
       setStatus('success');
       setMessage('Webhook configurado na Instância com sucesso!');
