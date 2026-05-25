@@ -13,17 +13,24 @@ export async function GET() {
         method: 'GET',
         headers: {
           apikey: EVOLUTION_KEY || '',
+          'Content-Type': 'application/json',
         },
+        cache: 'no-store',
       }
     )
 
-    const data = await response.json()
+    const text = await response.text()
 
-    return NextResponse.json(data)
+    return new Response(text, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Failed to fetch QR code',
+        error: 'Failed to connect instance',
         details: String(error),
       },
       { status: 500 }
