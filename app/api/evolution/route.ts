@@ -148,6 +148,24 @@ export async function POST(req: Request) {
        } else if (data.error) {
            errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
        }
+       
+       if (action === "create" && errorMsg.toLowerCase().includes('already in use')) {
+           console.log('Instance already in use. Retrying with instance/connect...');
+           let cRes = await fetch(`${baseUrl}/instance/connect/${instanceId}`, {
+             method: "GET",
+             headers: options.headers
+           });
+           let cText = await cRes.text();
+           let cData;
+           try { cData = JSON.parse(cText); } catch(e) { cData = {}; }
+           
+           if (cRes.ok && (cData?.base64 || cData?.qrcode?.base64 || cData?.hash?.base64)) {
+             return NextResponse.json({ success: true, data: cData });
+           } else {
+             return NextResponse.json({ success: true, data: cData });
+           }
+       }
+       
        return NextResponse.json({ error: errorMsg, details: data }, { status: res.status });
     }
 

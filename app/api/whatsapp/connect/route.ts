@@ -47,10 +47,14 @@ export async function POST(req: Request) {
       try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
 
       if (!createRes.ok) {
-         return NextResponse.json({ error: 'Falha ao criar instância.', details: data }, { status: createRes.status });
+         if (createRes.status !== 400 && createRes.status !== 403 && !JSON.stringify(data).toLowerCase().includes('already in use')) {
+             return NextResponse.json({ error: 'Falha ao criar instância.', details: data }, { status: createRes.status });
+         } else {
+             console.log('Instance already exists or another error ignored during creation:', data);
+         }
       }
 
-      // Automatically try to set webhook after creation
+      // Automatically try to set webhook after creation (even if it already exists)
       let origin = req.headers.get("origin");
       if (!origin && req.headers.get("x-forwarded-host")) {
         const host = req.headers.get("x-forwarded-host");
