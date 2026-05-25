@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
 async function run() {
-  const fetch = (await import('node-fetch')).default || global.fetch;
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
   

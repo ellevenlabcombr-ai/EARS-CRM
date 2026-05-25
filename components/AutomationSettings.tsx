@@ -94,15 +94,26 @@ export function AutomationSettings() {
          throw new Error(json.error || 'Erro desconhecido');
       }
       
-      const data = json.data;
+      const data = json.data || {};
+      let gotQR = false;
       if (data.qrcode && data.qrcode.base64) {
          setQrCodeData(data.qrcode);
+         gotQR = true;
       } else if (data.hash && data.hash.base64) {
          setQrCodeData(data.hash);
+         gotQR = true;
       } else if (data.base64) {
          setQrCodeData({ base64: data.base64 });
+         gotQR = true;
       } else if (data?.instance?.state === 'open') {
          setInstanceStatus('open');
+         gotQR = true; // Technically not QR, but it's fully connected so we don't need to poll for QR
+      }
+      
+      if (!gotQR && data?.instance?.state !== 'open') {
+          // Poll for QR code
+          setTimeout(() => handleConnectInstance(0), 1000);
+          return;
       }
       
       setTimeout(fetchInstanceStatus, 3000);
@@ -118,10 +129,10 @@ export function AutomationSettings() {
     }
   };
 
-  const handleConnectInstance = async () => {
+  const handleConnectInstance = async (retryCount = 0) => {
     if (!evolutionApiUrl || !evolutionApiKey || !evolutionInstanceId) return;
     try {
-      setIsManagingInstance(true);
+      if (retryCount === 0) setIsManagingInstance(true);
       const res = await fetch('/api/evolution', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -129,10 +140,33 @@ export function AutomationSettings() {
       });
       const json = await res.json();
       const data = json.data || {};
-      if (data.base64) {
+      
+      let gotQR = false;
+      if (data.qrcode && data.qrcode.base64) {
+         setQrCodeData(data.qrcode);
+         gotQR = true;
+      } else if (data.hash && data.hash.base64) {
+         setQrCodeData(data.hash);
+         gotQR = true;
+      } else if (data.base64) {
          setQrCodeData({ base64: data.base64 });
+         gotQR = true;
       }
+      
+      if (!gotQR && (data.count === 0 || data.qrcode?.count === 0)) {
+         if (retryCount < 8) {
+           setTimeout(() => handleConnectInstance(retryCount + 1), 2500);
+           return; // prevent setting false early
+         }
+      }
+      
+      setTimeout(fetchInstanceStatus, 3000);
+      setStatus('success');
+      setMessage('Ação finalizada. Leia o QR Code ou verifique o estado.');
     } catch (error) {
+      console.error(error);
+      setStatus('error');
+      setMessage('Erro ao gerar QR Code: ' + String(error));
     } finally {
       setIsManagingInstance(false);
     }

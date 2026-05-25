@@ -162,7 +162,23 @@ export async function POST(req: Request) {
            if (cRes.ok && (cData?.base64 || cData?.qrcode?.base64 || cData?.hash?.base64)) {
              return NextResponse.json({ success: true, data: cData });
            } else {
-             return NextResponse.json({ success: true, data: cData });
+             // If count: 0 or no QR returned, delete and recreate
+             await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+             await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+             
+             const createRes = await fetch(`${baseUrl}/instance/create`, {
+               method: "POST",
+               headers: options.headers,
+               body: JSON.stringify({
+                 instanceName: instanceId,
+                 qrcode: true,
+                 integration: "WHATSAPP-BAILEYS"
+               })
+             });
+             let crText = await createRes.text();
+             let crData;
+             try { crData = JSON.parse(crText); } catch(e) { crData = {}; }
+             return NextResponse.json({ success: createRes.ok, data: crData }, { status: createRes.status });
            }
        }
        
