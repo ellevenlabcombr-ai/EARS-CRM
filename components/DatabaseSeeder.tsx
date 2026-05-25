@@ -1803,6 +1803,9 @@ END $storage$;`;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_api_key') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN evolution_api_key TEXT;
             END IF;
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_qr_base64') THEN
+                ALTER TABLE public.automation_settings ADD COLUMN evolution_qr_base64 TEXT;
+            END IF;
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'automation_settings' AND column_name = 'evolution_instance_id') THEN
                 ALTER TABLE public.automation_settings ADD COLUMN evolution_instance_id TEXT;
             END IF;

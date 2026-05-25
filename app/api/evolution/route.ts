@@ -35,13 +35,29 @@ export async function POST(req: Request) {
       let cData;
       try { cData = JSON.parse(cText); } catch(e) { cData = {}; }
 
-      if (cRes.ok && (cData?.base64 || cData?.qrcode?.base64 || cData?.hash?.base64)) {
+      if (cRes.ok) {
+         // Append the QR code base64 from our database if it exists
+         const { createClient } = require('@supabase/supabase-js');
+         const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+            process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+         );
+         const { data: dbData } = await supabase.from('automation_settings')
+            .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
+            
+         if (dbData?.evolution_qr_base64 && (!cData.qrcode || !cData.qrcode.base64)) {
+             cData.qrcode = cData.qrcode || {};
+             cData.qrcode.base64 = dbData.evolution_qr_base64;
+         }
          return NextResponse.json({ success: true, data: cData });
       }
 
-      // If failed or count: 0, it means it's stuck. Delete and recreate.
-      await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
-      await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+      // If instance doesn't exist, try recreating.
+      if (cRes.status === 404 || (cData?.response?.message && JSON.stringify(cData.response.message).includes('not found'))) {
+          // safe clean just in case
+          await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+          await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+      }
 
       const createRes = await fetch(`${baseUrl}/instance/create`, {
         method: "POST",
@@ -77,7 +93,7 @@ export async function POST(req: Request) {
                  url: `${origin}/api/webhooks/evolution`,
                  byEvents: false,
                  base64: true,
-                 events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"]
+                 events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE", "QRCODE_UPDATED", "CONNECTION_UPDATE"]
                }
             })
          }).catch(e => console.error("Webhook error: ", e));
@@ -120,7 +136,9 @@ export async function POST(req: Request) {
           events: [
             "MESSAGES_UPSERT", 
             "MESSAGES_UPDATE",
-            "SEND_MESSAGE"
+            "SEND_MESSAGE",
+            "QRCODE_UPDATED",
+            "CONNECTION_UPDATE"
           ]
         }
       });
@@ -135,6 +153,60 @@ export async function POST(req: Request) {
         data = text ? JSON.parse(text) : {};
     } catch(e) {
         data = { message: text };
+    }
+    
+    if (action === "create" && res.ok) {
+        const { createClient } = require('@supabase/supabase-js');
+        const supabase = createClient(
+           process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+           process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+        );
+        await supabase.from('automation_settings')
+           .update({ evolution_qr_base64: null })
+           .eq('evolution_instance_id', instanceId);
+
+        // Auto-set webhook just in case
+        let origin = req.headers.get("origin");
+        if (!origin && req.headers.get("x-forwarded-host")) {
+          const host = req.headers.get("x-forwarded-host");
+          const protocol = req.headers.get("x-forwarded-proto") || 'https';
+          origin = `${protocol}://${host}`;
+        } else if (!origin && req.headers.get("host")) {
+          const host = req.headers.get("host");
+          const protocol = host?.includes('localhost') ? 'http' : 'https';
+          origin = `${protocol}://${host}`;
+        }
+        if (origin) {
+           fetch(`${baseUrl}/webhook/set/${instanceId}`, {
+              method: 'POST',
+              headers: { "Content-Type": "application/json", "apikey": apiKey || "" },
+              body: JSON.stringify({
+                 webhook: {
+                   enabled: true,
+                   url: `${origin}/api/webhooks/evolution`,
+                   byEvents: false,
+                   base64: true,
+                   events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE", "QRCODE_UPDATED", "CONNECTION_UPDATE"]
+                 }
+              })
+           }).catch(e => console.error("Webhook error: ", e));
+        }
+    }
+
+    if (action === "status" || action === "connect") {
+       // Append the QR code base64 from our database if it exists
+       const { createClient } = require('@supabase/supabase-js');
+       const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+       );
+       const { data: dbData } = await supabase.from('automation_settings')
+          .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
+          
+       if (dbData?.evolution_qr_base64 && res.ok && (!data.qrcode || !data.qrcode.base64)) {
+           data.qrcode = data.qrcode || {};
+           data.qrcode.base64 = dbData.evolution_qr_base64;
+       }
     }
 
     if (!res.ok) {
@@ -159,10 +231,10 @@ export async function POST(req: Request) {
            let cData;
            try { cData = JSON.parse(cText); } catch(e) { cData = {}; }
            
-           if (cRes.ok && (cData?.base64 || cData?.qrcode?.base64 || cData?.hash?.base64)) {
+           if (cRes.ok) {
              return NextResponse.json({ success: true, data: cData });
            } else {
-             // If count: 0 or no QR returned, delete and recreate
+             // If completely failed, delete and recreate
              await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
              await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
              

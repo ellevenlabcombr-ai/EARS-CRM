@@ -944,13 +944,25 @@ export function AutomationSettings() {
                     placeholder="Global API Key"
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
                   />
-                  <input
-                    type="text"
-                    value={evolutionInstanceId}
-                    onChange={(e) => setEvolutionInstanceId(e.target.value)}
-                    placeholder="Nome da Instância"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={evolutionInstanceId}
+                      onChange={(e) => setEvolutionInstanceId(e.target.value)}
+                      placeholder="Nome da Instância"
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:border-[#25D366]/50 focus:ring-2 focus:ring-[#25D366]/10 outline-none text-sm transition-all"
+                    />
+                    <Button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setEvolutionInstanceId(`ears-${Date.now()}`);
+                      }}
+                      variant="outline"
+                      className="border-slate-800 text-slate-300 hover:text-white h-[46px] rounded-xl px-4"
+                    >
+                      Novo ID
+                    </Button>
+                  </div>
                 </div>
               </div>
 

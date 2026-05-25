@@ -10,6 +10,35 @@ export async function POST(req: Request) {
     // Evolution API sends events like "messages.upsert" or "MESSAGES_UPSERT"
     const event = body.event?.toLowerCase() || '';
     
+    // Handle QR code and connection updates
+    if (event === 'qrcode.updated' || event === 'connection.update') {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+        );
+        
+        let qrBase64 = null;
+        if (body.data?.qrcode?.base64) {
+            qrBase64 = body.data.qrcode.base64;
+        } else if (body.qrcode?.base64) {
+            qrBase64 = body.qrcode.base64;
+        } else if (body.base64) {
+            qrBase64 = body.base64;
+        }
+
+        if (qrBase64) {
+           await supabase.from('automation_settings')
+              .update({ evolution_qr_base64: qrBase64 })
+              .neq('id', 'INVALID');
+        } else if (body.data?.state === 'open' || body.instance?.state === 'open') {
+           // Connection established, clear the QR code
+           await supabase.from('automation_settings')
+              .update({ evolution_qr_base64: null })
+              .neq('id', 'INVALID');
+        }
+        return NextResponse.json({ success: true, warning: 'Connection updated' });
+    }
+
     const isMessageEvent = event.includes('message') || event.includes('upsert') || body.data?.message || body.message;
 
     if (isMessageEvent) {

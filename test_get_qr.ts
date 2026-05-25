@@ -9,18 +9,16 @@ async function run() {
   
   if (!data) return console.log('no settings');
 
-  const res = await fetch(`http://localhost:3000/api/evolution`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      url: data.evolution_api_url,
-      apiKey: data.evolution_api_key,
-      instanceId: data.evolution_instance_id,
-      action: 'create'
-    })
-  });
-  
-  const text = await res.text();
-  console.log('Result:', text);
+  const headers = { apikey: data.evolution_api_key };
+  for (let i = 0; i < 3; i++) {
+    const res = await fetch(`${data.evolution_api_url}/instance/connect/${data.evolution_instance_id}`, {
+      method: 'GET',
+      headers
+    });
+    
+    const text = await res.text();
+    console.log(`Poll ${i} Result:`, text.substring(0, 200));
+    await new Promise(r => setTimeout(r, 2000));
+  }
 }
 run();
