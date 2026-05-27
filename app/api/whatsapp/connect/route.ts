@@ -75,7 +75,7 @@ export async function POST(req: Request) {
                  url: `${origin}/api/webhooks/evolution`,
                  byEvents: false,
                  base64: true,
-                 events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE"]
+                 events: ["MESSAGES_UPSERT", "MESSAGES_UPDATE", "SEND_MESSAGE", "QRCODE_UPDATED", "CONNECTION_UPDATE"]
                }
             })
          }).catch(e => console.error("Webhook error: ", e));
@@ -100,9 +100,17 @@ export async function POST(req: Request) {
     if (!res.ok) {
        return NextResponse.json({ error: 'Falha ao conectar/obter QR da instância.', details: data }, { status: res.status });
     }
-
-    // Se qrcode tiver { count: 0 }, o Baileys ainda não gerou ou falhou
-    const qrcodeReturn = data?.qrcode || data?.hash || data;
+    
+    let qrcodeReturn = data?.qrcode || data?.hash || data || {};
+    try {
+       const { data: qs } = await supabase.from('whatsapp_messages').select('text').eq('phone_number', 'QR_CODE_TEMP').order('created_at', { ascending: false }).limit(1);
+       if (qs && qs.length > 0 && qs[0].text) {
+           const qr = qs[0].text;
+           if (qr && (!qrcodeReturn.base64)) {
+               qrcodeReturn.base64 = qr;
+           }
+       }
+    } catch(e) {}
 
     return NextResponse.json({ success: true, qrcode: qrcodeReturn });
 

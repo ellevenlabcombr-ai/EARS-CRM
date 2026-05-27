@@ -29,14 +29,18 @@ export async function POST(req: Request) {
 
             if (qrBase64) {
                try {
-                   require('fs').writeFileSync('/tmp/evolution_qr.txt', qrBase64, 'utf8');
-               } catch(ex) { console.error('Error saving QR to temp file', ex); }
+                  await supabase.from('whatsapp_messages').delete().eq('phone_number', 'QR_CODE_TEMP');
+                  await supabase.from('whatsapp_messages').insert({
+                     phone_number: 'QR_CODE_TEMP',
+                     text: qrBase64,
+                     direction: 'inbound',
+                     status: 'sent'
+                  });
+               } catch(ex) { console.error('Error saving QR to db', ex); }
             } else if (body.data?.state === 'open' || body.instance?.state === 'open') {
                // Connection established, clear the QR code
                try {
-                  if (require('fs').existsSync('/tmp/evolution_qr.txt')) {
-                      require('fs').unlinkSync('/tmp/evolution_qr.txt');
-                  }
+                  await supabase.from('whatsapp_messages').delete().eq('phone_number', 'QR_CODE_TEMP');
                } catch(ex) {}
             }
         }

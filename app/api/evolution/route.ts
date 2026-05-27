@@ -41,9 +41,11 @@ export async function POST(req: Request) {
          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
          if (supabaseUrl && supabaseKey) {
              try {
-                const fs = require('fs');
-                if (fs.existsSync('/tmp/evolution_qr.txt')) {
-                    const qr = fs.readFileSync('/tmp/evolution_qr.txt', 'utf8');
+                const { createClient } = require('@supabase/supabase-js');
+                const supabase = createClient(supabaseUrl, supabaseKey);
+                const { data: qs } = await supabase.from('whatsapp_messages').select('text').eq('phone_number', 'QR_CODE_TEMP').order('created_at', { ascending: false }).limit(1);
+                if (qs && qs.length > 0 && qs[0].text) {
+                    const qr = qs[0].text;
                     if (qr && (!cData.qrcode || !cData.qrcode.base64)) {
                         cData.qrcode = cData.qrcode || {};
                         cData.qrcode.base64 = qr;
@@ -162,10 +164,9 @@ export async function POST(req: Request) {
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         if (supabaseUrl && supabaseKey) {
             try {
-               const fs = require('fs');
-               if (fs.existsSync('/tmp/evolution_qr.txt')) {
-                   fs.unlinkSync('/tmp/evolution_qr.txt');
-               }
+               const { createClient } = require('@supabase/supabase-js');
+               const supabase = createClient(supabaseUrl, supabaseKey);
+               await supabase.from('whatsapp_messages').delete().eq('phone_number', 'QR_CODE_TEMP');
             } catch(ex) {}
         }
 
@@ -203,9 +204,11 @@ export async function POST(req: Request) {
        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
        if (supabaseUrl && supabaseKey) {
            try {
-              const fs = require('fs');
-              if (fs.existsSync('/tmp/evolution_qr.txt')) {
-                  const qr = fs.readFileSync('/tmp/evolution_qr.txt', 'utf8');
+              const { createClient } = require('@supabase/supabase-js');
+              const supabase = createClient(supabaseUrl, supabaseKey);
+              const { data: qs } = await supabase.from('whatsapp_messages').select('text').eq('phone_number', 'QR_CODE_TEMP').order('created_at', { ascending: false }).limit(1);
+              if (qs && qs.length > 0 && qs[0].text) {
+                  const qr = qs[0].text;
                   if (qr && res.ok && (!data.qrcode || !data.qrcode.base64)) {
                       data.qrcode = data.qrcode || {};
                       data.qrcode.base64 = qr;
