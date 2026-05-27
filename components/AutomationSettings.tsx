@@ -120,11 +120,11 @@ export function AutomationSettings() {
       
       setStatus('success');
       setMessage('Ação finalizada. Leia o QR Code ou verifique o estado da instância.');
+      setIsManagingInstance(false);
     } catch (error) {
       console.error(error);
       setStatus('error');
       setMessage('Erro ao criar instância: ' + String(error));
-    } finally {
       setIsManagingInstance(false);
     }
   };
@@ -163,11 +163,11 @@ export function AutomationSettings() {
       setTimeout(fetchInstanceStatus, 3000);
       setStatus('success');
       setMessage('Ação finalizada. Leia o QR Code ou verifique o estado.');
+      setIsManagingInstance(false);
     } catch (error) {
       console.error(error);
       setStatus('error');
       setMessage('Erro ao gerar QR Code: ' + String(error));
-    } finally {
       setIsManagingInstance(false);
     }
   };

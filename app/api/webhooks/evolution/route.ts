@@ -28,14 +28,16 @@ export async function POST(req: Request) {
             }
 
             if (qrBase64) {
-               await supabase.from('automation_settings')
-                  .update({ evolution_qr_base64: qrBase64 })
-                  .neq('id', 'INVALID');
+               try {
+                   require('fs').writeFileSync('/tmp/evolution_qr.txt', qrBase64, 'utf8');
+               } catch(ex) { console.error('Error saving QR to temp file', ex); }
             } else if (body.data?.state === 'open' || body.instance?.state === 'open') {
                // Connection established, clear the QR code
-               await supabase.from('automation_settings')
-                  .update({ evolution_qr_base64: null })
-                  .neq('id', 'INVALID');
+               try {
+                  if (require('fs').existsSync('/tmp/evolution_qr.txt')) {
+                      require('fs').unlinkSync('/tmp/evolution_qr.txt');
+                  }
+               } catch(ex) {}
             }
         }
         return NextResponse.json({ success: true, warning: 'Connection updated' });

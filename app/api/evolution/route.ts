@@ -40,15 +40,16 @@ export async function POST(req: Request) {
          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
          if (supabaseUrl && supabaseKey) {
-             const { createClient } = require('@supabase/supabase-js');
-             const supabase = createClient(supabaseUrl, supabaseKey);
-             const { data: dbData } = await supabase.from('automation_settings')
-                .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
-                
-             if (dbData?.evolution_qr_base64 && (!cData.qrcode || !cData.qrcode.base64)) {
-                 cData.qrcode = cData.qrcode || {};
-                 cData.qrcode.base64 = dbData.evolution_qr_base64;
-             }
+             try {
+                const fs = require('fs');
+                if (fs.existsSync('/tmp/evolution_qr.txt')) {
+                    const qr = fs.readFileSync('/tmp/evolution_qr.txt', 'utf8');
+                    if (qr && (!cData.qrcode || !cData.qrcode.base64)) {
+                        cData.qrcode = cData.qrcode || {};
+                        cData.qrcode.base64 = qr;
+                    }
+                }
+             } catch(e) {}
          }
          return NextResponse.json({ success: true, data: cData });
       }
@@ -160,11 +161,12 @@ export async function POST(req: Request) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         if (supabaseUrl && supabaseKey) {
-            const { createClient } = require('@supabase/supabase-js');
-            const supabase = createClient(supabaseUrl, supabaseKey);
-            await supabase.from('automation_settings')
-               .update({ evolution_qr_base64: null })
-               .eq('evolution_instance_id', instanceId);
+            try {
+               const fs = require('fs');
+               if (fs.existsSync('/tmp/evolution_qr.txt')) {
+                   fs.unlinkSync('/tmp/evolution_qr.txt');
+               }
+            } catch(ex) {}
         }
 
         // Auto-set webhook just in case
@@ -200,15 +202,16 @@ export async function POST(req: Request) {
        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
        if (supabaseUrl && supabaseKey) {
-           const { createClient } = require('@supabase/supabase-js');
-           const supabase = createClient(supabaseUrl, supabaseKey);
-           const { data: dbData } = await supabase.from('automation_settings')
-              .select('evolution_qr_base64').eq('evolution_instance_id', instanceId).maybeSingle();
-              
-           if (dbData?.evolution_qr_base64 && res.ok && (!data.qrcode || !data.qrcode.base64)) {
-               data.qrcode = data.qrcode || {};
-               data.qrcode.base64 = dbData.evolution_qr_base64;
-           }
+           try {
+              const fs = require('fs');
+              if (fs.existsSync('/tmp/evolution_qr.txt')) {
+                  const qr = fs.readFileSync('/tmp/evolution_qr.txt', 'utf8');
+                  if (qr && res.ok && (!data.qrcode || !data.qrcode.base64)) {
+                      data.qrcode = data.qrcode || {};
+                      data.qrcode.base64 = qr;
+                  }
+              }
+           } catch(e) {}
        }
     }
 
