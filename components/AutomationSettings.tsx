@@ -154,8 +154,8 @@ export function AutomationSettings() {
       }
       
       if (!gotQR && (data.count === 0 || data.qrcode?.count === 0)) {
-         if (retryCount < 8) {
-           setTimeout(() => handleConnectInstance(retryCount + 1), 2500);
+         if (retryCount < 15) {
+           setTimeout(() => handleConnectInstance(retryCount + 1), 3000);
            return; // prevent setting false early
          }
       }
