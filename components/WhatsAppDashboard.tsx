@@ -142,10 +142,18 @@ export function WhatsAppDashboard() {
       });
       const data = await res.json();
       if (data?.qrcode?.base64) {
-        setQrCodeBase64(data.qrcode.base64);
+        let b64 = data.qrcode.base64;
+        if (!b64.startsWith('data:image')) {
+            b64 = 'data:image/png;base64,' + b64.replace(/^data:image\/[a-z]+;base64,/, ""); 
+        }
+        setQrCodeBase64(b64);
         setIsFetchingQr(false);
-      } else if (typeof data?.qrcode === 'string' && data.qrcode.startsWith('data:image')) {
-        setQrCodeBase64(data.qrcode);
+      } else if (typeof data?.qrcode === 'string') {
+        let b64 = data.qrcode;
+        if (b64.length > 50 && !b64.startsWith('data:image')) {
+            b64 = 'data:image/png;base64,' + b64.replace(/^data:image\/[a-z]+;base64,/, ""); 
+        }
+        setQrCodeBase64(b64);
         setIsFetchingQr(false);
       } else if (data?.qrcode?.count === 0 || (typeof data?.qrcode === 'object' && Object.keys(data.qrcode).includes('count'))) {
         if (retryCount < 8) {
