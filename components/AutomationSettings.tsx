@@ -157,6 +157,11 @@ export function AutomationSettings() {
          if (retryCount < 15) {
            setTimeout(() => handleConnectInstance(retryCount + 1), 3000);
            return; // prevent setting false early
+         } else {
+           setStatus('error');
+           setMessage('A API está conectando, mas o QR Code não foi recebido. Verifique 2 coisas: 1) Se a variável REDIS_URI no Render está no formato correto (rediss://...). 2) Se você enviou (Deploy) o código mais recente do Frontend para produção (Vercel/Host), pois o Webhook foi atualizado para salvar no Banco de Dados em vez de arquivo temporário.');
+           setIsManagingInstance(false);
+           return;
          }
       }
       
