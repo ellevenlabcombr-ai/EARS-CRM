@@ -159,7 +159,7 @@ export function AutomationSettings() {
            return; // prevent setting false early
          } else {
            setStatus('error');
-           setMessage('A API está conectando, mas o QR Code não foi recebido. Retorno da API: ' + JSON.stringify(data).substring(0, 100));
+           setMessage('Ação pendente: Evolution não enviou QR Code pelo Webhook. Tente novamente, ou se você estiver no localhost, faça o deploy (Render não alcança localhost). Retorno: ' + JSON.stringify(data).substring(0, 100));
            setIsManagingInstance(false);
            return;
          }

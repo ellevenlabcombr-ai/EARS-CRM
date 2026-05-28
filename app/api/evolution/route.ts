@@ -58,6 +58,30 @@ export async function POST(req: Request) {
                 }
              } catch(e) {}
          }
+         
+         // Fallback: Try fetchInstances if we still don't have it
+         if ((!cData.qrcode || !cData.qrcode.base64) && cData.count === 0) {
+             try {
+                 let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
+                     method: 'GET',
+                     headers: options.headers
+                 });
+                 if (instancesRes.ok) {
+                     let instances = await instancesRes.json();
+                     if (Array.isArray(instances)) {
+                         let inst = instances.find((i: any) => i.instance?.instanceName === instanceId);
+                         if (inst && inst.qrcode && inst.qrcode.base64) {
+                             cData.qrcode = cData.qrcode || {};
+                             cData.qrcode.base64 = inst.qrcode.base64;
+                         } else if (inst && inst.base64) {
+                             cData.qrcode = cData.qrcode || {};
+                             cData.qrcode.base64 = inst.base64;
+                         }
+                     }
+                 }
+             } catch(e) {}
+         }
+         
          return NextResponse.json({ success: true, data: cData });
       }
 
@@ -246,7 +270,30 @@ export async function POST(req: Request) {
            try { cData = JSON.parse(cText); } catch(e) { cData = {}; }
            
            if (cRes.ok) {
-             return NextResponse.json({ success: true, data: cData });
+            // Fallback: Try fetchInstances if we still don't have it
+         if ((!cData.qrcode || !cData.qrcode.base64) && cData.count === 0) {
+             try {
+                 let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
+                     method: 'GET',
+                     headers: options.headers
+                 });
+                 if (instancesRes.ok) {
+                     let instances = await instancesRes.json();
+                     if (Array.isArray(instances)) {
+                         let inst = instances.find((i: any) => i.instance?.instanceName === instanceId);
+                         if (inst && inst.qrcode && inst.qrcode.base64) {
+                             cData.qrcode = cData.qrcode || {};
+                             cData.qrcode.base64 = inst.qrcode.base64;
+                         } else if (inst && inst.base64) {
+                             cData.qrcode = cData.qrcode || {};
+                             cData.qrcode.base64 = inst.base64;
+                         }
+                     }
+                 }
+             } catch(e) {}
+         }
+
+          return NextResponse.json({ success: true, data: cData });
            } else {
              // If completely failed, delete and recreate
              await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});

@@ -151,6 +151,29 @@ export async function POST(req: Request) {
        }
     } catch(e) {}
 
+    // Fallback: If no webhook delivered QR code and it's missing, try to fetch it from fetchInstances
+    if (!qrcodeReturn.base64 && qrcodeReturn.count === 0) {
+       try {
+           let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
+               method: 'GET',
+               headers: { 'apikey': settings.evolution_api_key || '' }
+           });
+           if (instancesRes.ok) {
+               let instances = await instancesRes.json();
+               if (Array.isArray(instances)) {
+                   let inst = instances.find((i: any) => i.instance?.instanceName === settings.evolution_instance_id);
+                   if (inst && inst.qrcode && inst.qrcode.base64) {
+                       qrcodeReturn.base64 = inst.qrcode.base64;
+                       return NextResponse.json({ success: true, qrcode: qrcodeReturn });
+                   } else if (inst && inst.base64) {
+                       qrcodeReturn.base64 = inst.base64;
+                       return NextResponse.json({ success: true, qrcode: qrcodeReturn });
+                   }
+               }
+           }
+       } catch(e) {}
+    }
+
     if (!res.ok) {
        return NextResponse.json({ error: 'Falha ao conectar/obter QR da instância.', details: data }, { status: res.status });
     }

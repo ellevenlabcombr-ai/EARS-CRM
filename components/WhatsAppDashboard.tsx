@@ -161,7 +161,7 @@ export function WhatsAppDashboard() {
           // Evolution API keeps connection pending while awaiting QR
           setTimeout(() => fetchQR(retryCount + 1), 2500);
         } else {
-          setQrError('A API está conectando, mas o QR Code não foi recebido. Verifique o REDIS e Logs. Retorno da API: ' + JSON.stringify(data).substring(0, 100));
+          setQrError('A API está conectando, mas o QR Code não foi recebido. DICAS: 1) O Render (Evolution) precisa de tempo para gerar o QR. 2) Se você está testando em LOCALHOST, o Render não consegue enviar o Webhook para sua máquina, faça o DEPLOY na Vercel e tente novamente (ou use Ngrok). 3) Se já está em produção, clique em Tentar Novamente ou limpe a Instância. Retorno bruto: ' + JSON.stringify(data).substring(0, 100));
           setIsFetchingQr(false);
         }
       } else if (data?.qrcode?.instance?.state === 'open' || data?.instance?.state === 'open' || data?.qrcode?.state === 'open') {
