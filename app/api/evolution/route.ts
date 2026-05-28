@@ -14,7 +14,8 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "application/json",
         "apikey": apiKey || "",
-      }
+      },
+      signal: AbortSignal.timeout(10000)
     };
 
     if (action === "create") {
@@ -29,7 +30,8 @@ export async function POST(req: Request) {
       // First try standard connect
       let cRes = await fetch(`${baseUrl}/instance/connect/${instanceId}`, {
          method: "GET",
-         headers: options.headers
+         headers: options.headers,
+         signal: AbortSignal.timeout(8000)
       });
       let cText = await cRes.text();
       let cData;
@@ -64,7 +66,8 @@ export async function POST(req: Request) {
              try {
                  let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
                      method: 'GET',
-                     headers: options.headers
+                     headers: options.headers,
+                     signal: AbortSignal.timeout(8000)
                  });
                  if (instancesRes.ok) {
                      let instances = await instancesRes.json();
@@ -88,13 +91,14 @@ export async function POST(req: Request) {
       // If instance doesn't exist, try recreating.
       if (cRes.status === 404 || (cData?.response?.message && JSON.stringify(cData.response.message).includes('not found'))) {
           // safe clean just in case
-          await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
-          await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+          await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers, signal: AbortSignal.timeout(5000) }).catch(() => {});
+          await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers, signal: AbortSignal.timeout(5000) }).catch(() => {});
       }
 
       const createRes = await fetch(`${baseUrl}/instance/create`, {
         method: "POST",
         headers: options.headers,
+        signal: AbortSignal.timeout(10000),
         body: JSON.stringify({
           instanceName: instanceId,
           qrcode: true,
@@ -263,7 +267,8 @@ export async function POST(req: Request) {
            console.log('Instance already in use. Retrying with instance/connect...');
            let cRes = await fetch(`${baseUrl}/instance/connect/${instanceId}`, {
              method: "GET",
-             headers: options.headers
+             headers: options.headers,
+             signal: AbortSignal.timeout(8000)
            });
            let cText = await cRes.text();
            let cData;
@@ -275,7 +280,8 @@ export async function POST(req: Request) {
              try {
                  let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
                      method: 'GET',
-                     headers: options.headers
+                     headers: options.headers,
+                     signal: AbortSignal.timeout(8000)
                  });
                  if (instancesRes.ok) {
                      let instances = await instancesRes.json();
@@ -296,12 +302,13 @@ export async function POST(req: Request) {
           return NextResponse.json({ success: true, data: cData });
            } else {
              // If completely failed, delete and recreate
-             await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
-             await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers }).catch(() => {});
+             await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers, signal: AbortSignal.timeout(5000) }).catch(() => {});
+             await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers, signal: AbortSignal.timeout(5000) }).catch(() => {});
              
              const createRes = await fetch(`${baseUrl}/instance/create`, {
                method: "POST",
                headers: options.headers,
+               signal: AbortSignal.timeout(8000),
                body: JSON.stringify({
                  instanceName: instanceId,
                  qrcode: true,

@@ -172,7 +172,9 @@ export function AutomationSettings() {
     } catch (error) {
       console.error(error);
       setStatus('error');
-      setMessage('Erro ao gerar QR Code: ' + String(error));
+      let msg = String(error);
+      if (msg.includes('JSON')) msg = 'Timeout ou erro 504 no servidor (Render Free)';
+      setMessage('Erro ao gerar QR Code: ' + msg);
       setIsManagingInstance(false);
     }
   };

@@ -31,14 +31,16 @@ export async function POST(req: Request) {
     // First check if the instance exists
     let stateRes = await fetch(`${baseUrl}/instance/connectionState/${settings.evolution_instance_id}`, {
       method: 'GET',
-      headers: { 'apikey': settings.evolution_api_key || '' }
+      headers: { 'apikey': settings.evolution_api_key || '' },
+      signal: AbortSignal.timeout(5000)
     });
 
     if (stateRes.ok && force) {
       await fetch(`${baseUrl}/instance/logout/${settings.evolution_instance_id}`, {
         method: 'DELETE',
-        headers: { 'apikey': settings.evolution_api_key || '' }
-      });
+        headers: { 'apikey': settings.evolution_api_key || '' },
+        signal: AbortSignal.timeout(5000)
+      }).catch(e => console.log('Logout ignore'));
       // Allow it some time to process the logout
       await new Promise(r => setTimeout(r, 500));
     }
@@ -51,6 +53,7 @@ export async function POST(req: Request) {
           'apikey': settings.evolution_api_key || '',
           'Content-Type': 'application/json'
         },
+        signal: AbortSignal.timeout(10000),
         body: JSON.stringify({
           instanceName: settings.evolution_instance_id,
           qrcode: true,
@@ -102,6 +105,7 @@ export async function POST(req: Request) {
          await fetch(`${baseUrl}/webhook/set/${settings.evolution_instance_id}`, {
             method: 'POST',
             headers: { 'apikey': settings.evolution_api_key || '', 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(5000),
             body: JSON.stringify({
                webhook: {
                  enabled: true,
@@ -123,7 +127,8 @@ export async function POST(req: Request) {
     // Now try to get the QR code
     let res = await fetch(`${baseUrl}/instance/connect/${settings.evolution_instance_id}`, {
       method: 'GET',
-      headers: { 'apikey': settings.evolution_api_key || '' }
+      headers: { 'apikey': settings.evolution_api_key || '' },
+      signal: AbortSignal.timeout(8000)
     });
 
     let resBody = await res.text();
@@ -156,7 +161,8 @@ export async function POST(req: Request) {
        try {
            let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
                method: 'GET',
-               headers: { 'apikey': settings.evolution_api_key || '' }
+               headers: { 'apikey': settings.evolution_api_key || '' },
+               signal: AbortSignal.timeout(8000)
            });
            if (instancesRes.ok) {
                let instances = await instancesRes.json();
