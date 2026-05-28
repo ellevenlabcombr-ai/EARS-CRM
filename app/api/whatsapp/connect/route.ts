@@ -22,11 +22,26 @@ export async function POST(req: Request) {
 
     const baseUrl = settings.evolution_api_url.endsWith('/') ? settings.evolution_api_url.slice(0, -1) : settings.evolution_api_url;
     
+    let force = false;
+    try {
+       const body = await req.json();
+       force = body.force === true;
+    } catch(e) {}
+    
     // First check if the instance exists
     let stateRes = await fetch(`${baseUrl}/instance/connectionState/${settings.evolution_instance_id}`, {
       method: 'GET',
       headers: { 'apikey': settings.evolution_api_key || '' }
     });
+
+    if (stateRes.ok && force) {
+      await fetch(`${baseUrl}/instance/logout/${settings.evolution_instance_id}`, {
+        method: 'DELETE',
+        headers: { 'apikey': settings.evolution_api_key || '' }
+      });
+      // Allow it some time to process the logout
+      await new Promise(r => setTimeout(r, 500));
+    }
 
     // If instance doesn't exist (404), Create it
     if (stateRes.status === 404) {
@@ -105,9 +120,14 @@ export async function POST(req: Request) {
     try {
        const { data: qs } = await supabase.from('whatsapp_messages').select('text').eq('phone_number', 'QR_CODE_TEMP').order('created_at', { ascending: false }).limit(1);
        if (qs && qs.length > 0 && qs[0].text) {
-           const qr = qs[0].text;
+           let qr = qs[0].text;
            if (qr && (!qrcodeReturn.base64)) {
-               qrcodeReturn.base64 = qr;
+               // Verify it is a valid base64 image (not FAKE_BASE64 or malformed)
+               if (qr.startsWith('data:image/png;base64,')) {
+                    qrcodeReturn.base64 = qr;
+               } else if (qr.length > 100) {
+                    qrcodeReturn.base64 = 'data:image/png;base64,' + qr.replace(/^data:image\/[a-z]+;base64,/, "");
+               }
            }
        }
     } catch(e) {}

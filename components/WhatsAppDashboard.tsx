@@ -129,7 +129,7 @@ export function WhatsAppDashboard() {
     }
   };
 
-  const fetchQR = async (retryCount = 0) => {
+  const fetchQR = async (retryCount = 0, isRefresh = false) => {
     if (retryCount === 0) {
       setIsFetchingQr(true);
       setQrCodeBase64(null);
@@ -139,6 +139,7 @@ export function WhatsAppDashboard() {
       const res = await fetch('/api/whatsapp/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: isRefresh }),
       });
       const data = await res.json();
       if (data?.qrcode?.base64) {
@@ -160,7 +161,7 @@ export function WhatsAppDashboard() {
           // Evolution API keeps connection pending while awaiting QR
           setTimeout(() => fetchQR(retryCount + 1), 2500);
         } else {
-          setQrError('A API está conectando, mas o QR Code não foi recebido. Verifique 2 coisas: 1) Se a variável REDIS_URI no Render está no formato correto (rediss://...). 2) Se você enviou (Deploy) o código mais recente do Frontend para produção (Vercel/Host), pois o Webhook foi atualizado para salvar no Banco de Dados em vez de arquivo temporário.');
+          setQrError('A API do WhatsApp está demorando mais do que o esperado para gerar o QR Code. Isso pode acontecer na primeira vez que a conexão é estabelecida. Aguarde alguns instantes e clique em "Tentar Novamente".');
           setIsFetchingQr(false);
         }
       } else if (data?.qrcode?.instance?.state === 'open' || data?.instance?.state === 'open' || data?.qrcode?.state === 'open') {
@@ -764,7 +765,7 @@ export function WhatsAppDashboard() {
                      </div>
                      <div className="flex gap-3 w-full">
                        <Button 
-                         onClick={fetchQR}
+                         onClick={() => fetchQR(0, true)}
                          variant="outline"
                          className="flex-1 bg-transparent border-[#2a3942] text-[#8696a0] hover:bg-[#2a3942] hover:text-white h-11"
                        >
@@ -787,7 +788,7 @@ export function WhatsAppDashboard() {
                        </div>
                      )}
                      <Button 
-                       onClick={fetchQR}
+                       onClick={() => fetchQR(0, true)}
                        className="bg-[#00a884] hover:bg-[#008f6f] text-white font-semibold py-6 w-full rounded-xl shadow-lg transition-transform hover:scale-105 text-base"
                      >
                        Tentar Novamente
