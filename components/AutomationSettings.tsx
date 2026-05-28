@@ -124,7 +124,11 @@ export function AutomationSettings() {
     } catch (error) {
       console.error(error);
       setStatus('error');
-      setMessage('Erro ao criar instância: ' + String(error));
+      let msg = String(error);
+      if (msg.includes('Timeout') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError')) {
+          msg = 'O servidor demorou muito para responder (Timeout). Se usar o Render Free, ele pode estar "acordando". Aguarde 1-2 minutos e clique em Tentar Novamente.';
+      }
+      setMessage('Erro ao criar instância: ' + msg);
       setIsManagingInstance(false);
     }
   };
