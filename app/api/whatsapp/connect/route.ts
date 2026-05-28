@@ -58,15 +58,33 @@ export async function POST(req: Request) {
         })
       });
       let resBody = await createRes.text();
-      let data;
-      try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
+      let crData;
+      try { crData = JSON.parse(resBody); } catch(e) { crData = { message: resBody }; }
 
       if (!createRes.ok) {
-         if (createRes.status !== 400 && createRes.status !== 403 && !JSON.stringify(data).toLowerCase().includes('already in use')) {
-             return NextResponse.json({ error: 'Falha ao criar instância.', details: data }, { status: createRes.status });
+         if (createRes.status !== 400 && createRes.status !== 403 && !JSON.stringify(crData).toLowerCase().includes('already in use')) {
+             return NextResponse.json({ error: 'Falha ao criar instância.', details: crData }, { status: createRes.status });
          } else {
-             console.log('Instance already exists or another error ignored during creation:', data);
+             console.log('Instance already exists or another error ignored during creation:', crData);
          }
+      }
+      
+      // If the backend returns QR code from create, fast-track it into db
+      if (crData?.qrcode?.base64 || crData?.base64) {
+          try {
+             let qrB64 = crData?.qrcode?.base64 || crData?.base64;
+             if (qrB64 && !qrB64.startsWith('data:image')) {
+                 qrB64 = 'data:image/png;base64,' + qrB64.replace(/^data:image\/[a-z]+;base64,/, "");
+             }
+             await supabase.from('whatsapp_messages').delete().eq('phone_number', 'QR_CODE_TEMP');
+             await supabase.from('whatsapp_messages').insert({
+                 phone_number: 'QR_CODE_TEMP',
+                 text: qrB64,
+                 direction: 'inbound',
+                 status: 'sent'
+             });
+             // We can also return explicitly but let execution continue so webhook gets set
+          } catch(e) {}
       }
 
       // Automatically try to set webhook after creation (even if it already exists)
@@ -112,26 +130,31 @@ export async function POST(req: Request) {
     let data;
     try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
 
-    if (!res.ok) {
-       return NextResponse.json({ error: 'Falha ao conectar/obter QR da instância.', details: data }, { status: res.status });
-    }
-    
     let qrcodeReturn = data?.qrcode || data?.hash || data || {};
+    if (data?.base64 && !qrcodeReturn.base64) {
+        qrcodeReturn.base64 = data.base64;
+    }
     try {
        const { data: qs } = await supabase.from('whatsapp_messages').select('text').eq('phone_number', 'QR_CODE_TEMP').order('created_at', { ascending: false }).limit(1);
        if (qs && qs.length > 0 && qs[0].text) {
            let qr = qs[0].text;
-           if (qr && (!qrcodeReturn.base64)) {
+           if (qr) {
                // Verify it is a valid base64 image (not FAKE_BASE64 or malformed)
                if (qr.startsWith('data:image/png;base64,')) {
                     qrcodeReturn.base64 = qr;
                } else if (qr.length > 100) {
                     qrcodeReturn.base64 = 'data:image/png;base64,' + qr.replace(/^data:image\/[a-z]+;base64,/, "");
                }
+               // Force success if we found a QR code in DB!
+               return NextResponse.json({ success: true, qrcode: qrcodeReturn });
            }
        }
     } catch(e) {}
 
+    if (!res.ok) {
+       return NextResponse.json({ error: 'Falha ao conectar/obter QR da instância.', details: data }, { status: res.status });
+    }
+    
     return NextResponse.json({ success: true, qrcode: qrcodeReturn });
 
   } catch (error: any) {

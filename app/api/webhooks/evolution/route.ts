@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const event = body.event?.toLowerCase() || '';
     
     // Handle QR code and connection updates
-    if (event === 'qrcode.updated' || event === 'connection.update') {
+    if (event.includes('qrcode') || event.includes('connection')) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
         
@@ -30,13 +30,15 @@ export async function POST(req: Request) {
             if (qrBase64) {
                try {
                   await supabase.from('whatsapp_messages').delete().eq('phone_number', 'QR_CODE_TEMP');
-                  await supabase.from('whatsapp_messages').insert({
+                  const { error: insertErr } = await supabase.from('whatsapp_messages').insert({
                      phone_number: 'QR_CODE_TEMP',
                      text: qrBase64,
                      direction: 'inbound',
                      status: 'sent'
                   });
-               } catch(ex) { console.error('Error saving QR to db', ex); }
+                  if (insertErr) console.error('Error saving QR_CODE_TEMP to db:', insertErr);
+                  else console.log('Successfully saved QR_CODE_TEMP to db');
+               } catch(ex) { console.error('Exception saving QR to db', ex); }
             } else if (body.data?.state === 'open' || body.instance?.state === 'open') {
                // Connection established, clear the QR code
                try {

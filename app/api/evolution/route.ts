@@ -35,7 +35,12 @@ export async function POST(req: Request) {
       let cData;
       try { cData = JSON.parse(cText); } catch(e) { cData = {}; }
 
-      if (cRes.ok) {
+         if (cRes.ok) {
+            // Map Evolution V2 direct base64 response
+            if (cData.base64 && (!cData.qrcode || !cData.qrcode.base64)) {
+                cData.qrcode = cData.qrcode || {};
+                cData.qrcode.base64 = cData.base64;
+            }
          // Append the QR code base64 from our database if it exists
          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
