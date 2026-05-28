@@ -161,7 +161,7 @@ export function WhatsAppDashboard() {
           // Evolution API keeps connection pending while awaiting QR
           setTimeout(() => fetchQR(retryCount + 1), 2500);
         } else {
-          setQrError('A API do WhatsApp está demorando mais do que o esperado para gerar o QR Code. Isso pode acontecer na primeira vez que a conexão é estabelecida. Aguarde alguns instantes e clique em "Tentar Novamente".');
+          setQrError('A API está conectando, mas o QR Code não foi recebido. Verifique 2 coisas: 1) Se a variável REDIS_URI no Render está no formato correto (rediss://...). 2) Se você enviou (Deploy) o código mais recente do Frontend para produção (Vercel/Host), pois o Webhook foi atualizado para salvar no Banco de Dados em vez de arquivo temporário.');
           setIsFetchingQr(false);
         }
       } else if (data?.qrcode?.instance?.state === 'open' || data?.instance?.state === 'open' || data?.qrcode?.state === 'open') {
