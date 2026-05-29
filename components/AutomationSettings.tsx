@@ -90,7 +90,7 @@ export function AutomationSettings() {
       });
       const json = await res.json();
       
-      if (!res.ok) {
+      if (!res.ok || json.error) {
          throw new Error(json.error || 'Erro desconhecido');
       }
       
@@ -143,6 +143,7 @@ export function AutomationSettings() {
           body: JSON.stringify({ url: evolutionApiUrl, apiKey: evolutionApiKey, instanceId: evolutionInstanceId, action: 'connect', clientOrigin: window.location.origin })
       });
       const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || "Erro na API.");
       const data = json.data || {};
       
       let gotQR = false;
@@ -157,8 +158,8 @@ export function AutomationSettings() {
          gotQR = true;
       }
       
-      if (!gotQR && (data.count === 0 || data.qrcode?.count === 0)) {
-         if (retryCount < 15) {
+      if (!gotQR && (data.count === 0 || data.qrcode?.count === 0 || data.qrcode?.code === 408 || (!data.base64 && !data.qrcode?.base64 && data.instance?.state !== 'open'))) {
+         if (retryCount < 30) {
            setTimeout(() => handleConnectInstance(retryCount + 1), 3000);
            return; // prevent setting false early
          } else {
@@ -177,7 +178,9 @@ export function AutomationSettings() {
       console.error(error);
       setStatus('error');
       let msg = String(error);
-      if (msg.includes('JSON')) msg = 'Timeout ou erro 504 no servidor (Render Free)';
+      if (msg.includes('JSON') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError')) {
+          msg = 'O servidor demorou muito para responder (Timeout/Render acordando). Tente novamente em 2 minutos.';
+      }
       setMessage('Erro ao gerar QR Code: ' + msg);
       setIsManagingInstance(false);
     }

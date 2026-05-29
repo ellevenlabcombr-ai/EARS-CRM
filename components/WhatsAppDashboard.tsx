@@ -156,8 +156,8 @@ export function WhatsAppDashboard() {
         }
         setQrCodeBase64(b64);
         setIsFetchingQr(false);
-      } else if (data?.qrcode?.count === 0 || (typeof data?.qrcode === 'object' && Object.keys(data.qrcode).includes('count'))) {
-        if (retryCount < 8) {
+      } else if (data?.qrcode?.count === 0 || (typeof data?.qrcode === 'object' && Object.keys(data.qrcode).includes('count')) || data?.qrcode?.code === 408 || (!data?.qrcode?.base64 && !data?.hash && data?.instance?.state !== 'open' && !data?.error)) {
+        if (retryCount < 20) {
           // Evolution API keeps connection pending while awaiting QR
           setTimeout(() => fetchQR(retryCount + 1), 2500);
         } else {

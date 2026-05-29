@@ -93,6 +93,8 @@ export async function POST(req: Request) {
           // safe clean just in case
           await fetch(`${baseUrl}/instance/logout/${instanceId}`, { method: "DELETE", headers: options.headers, signal: AbortSignal.timeout(45000) }).catch(() => {});
           await fetch(`${baseUrl}/instance/delete/${instanceId}`, { method: "DELETE", headers: options.headers, signal: AbortSignal.timeout(45000) }).catch(() => {});
+      } else {
+          return NextResponse.json({ error: 'Erro na Evolution API (Connect)', data: cData }, { status: cRes.status });
       }
 
       const createRes = await fetch(`${baseUrl}/instance/create`, {
