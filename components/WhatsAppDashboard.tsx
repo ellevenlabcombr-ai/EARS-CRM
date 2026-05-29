@@ -168,11 +168,16 @@ export function WhatsAppDashboard() {
         checkConnection();
         setIsFetchingQr(false);
       } else if (data?.error) {
-        const errorDetail = data.details?.message || JSON.stringify(data.details || '');
-        if (errorDetail.toLowerCase().includes('application not found')) {
+        let errorDetail = '';
+        if (data.details) {
+            errorDetail = typeof data.details === 'string' ? data.details : (data.details.message || JSON.stringify(data.details));
+        }
+        const errStr = typeof data.error === 'object' ? (data.error.message || JSON.stringify(data.error)) : String(data.error);
+        
+        if (errorDetail.toLowerCase().includes('application not found') || errStr.toLowerCase().includes('application not found')) {
            setQrError('Sua API Evolution (Render) retornou "Application not found". Isso significa que o servidor pode estar offline, suspenso ou a URL configurada está incorreta.');
         } else {
-           setQrError(`${data.error} ${errorDetail ? `(${errorDetail})` : ''}`);
+           setQrError(`${errStr} ${errorDetail && errorDetail !== errStr && errorDetail !== '"{}"' && errorDetail !== '{}' ? `(${errorDetail})` : ''}`);
         }
         setIsFetchingQr(false);
       } else {

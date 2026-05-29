@@ -121,10 +121,10 @@ export function AutomationSettings() {
       setStatus('success');
       setMessage('Ação finalizada. Leia o QR Code ou verifique o estado da instância.');
       setIsManagingInstance(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setStatus('error');
-      let msg = String(error);
+      let msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
       if (msg.includes('Timeout') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError')) {
           msg = 'O servidor demorou muito para responder (Timeout). Se usar o Render Free, ele pode estar "acordando". Aguarde 1-2 minutos e clique em Tentar Novamente.';
       }
@@ -174,10 +174,10 @@ export function AutomationSettings() {
       setStatus('success');
       setMessage('Ação finalizada. Leia o QR Code ou verifique o estado.');
       setIsManagingInstance(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setStatus('error');
-      let msg = String(error);
+      let msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
       if (msg.includes('JSON') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError')) {
           msg = 'O servidor demorou muito para responder (Timeout/Render acordando). Tente novamente em 2 minutos.';
       }
