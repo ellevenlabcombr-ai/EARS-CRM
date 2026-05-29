@@ -43,8 +43,16 @@ export async function POST(req: Request) {
         headers: { 'apikey': settings.evolution_api_key || '' },
         signal: AbortSignal.timeout(90000)
       }).catch(e => console.log('Logout ignore'));
-      // Allow it some time to process the logout
-      await new Promise(r => setTimeout(r, 500));
+      
+      await fetch(`${baseUrl}/instance/delete/${settings.evolution_instance_id}`, {
+        method: 'DELETE',
+        headers: { 'apikey': settings.evolution_api_key || '' },
+        signal: AbortSignal.timeout(90000)
+      }).catch(e => console.log('Delete ignore'));
+
+      // Allow it some time to process the deletion
+      await new Promise(r => setTimeout(r, 1000));
+      stateRes = { ok: false, status: 404, text: async () => "{}" } as any;
     }
 
     // If instance doesn't exist (404), Create it

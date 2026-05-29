@@ -159,12 +159,12 @@ export function AutomationSettings() {
       }
       
       if (!gotQR && (data.count === 0 || data.qrcode?.count === 0 || data.qrcode?.code === 408 || (!data.base64 && !data.qrcode?.base64 && data.instance?.state !== 'open'))) {
-         if (retryCount < 80) {
+         if (retryCount < 100) {
            setTimeout(() => handleConnectInstance(retryCount + 1), 3000);
            return; // prevent setting false early
          } else {
            setStatus('error');
-           setMessage('Ação pendente: O servidor na Evolution ainda está gerando o QR Code (Render Free pode demorar até 3 minutos). Clique em Tentar Novamente. Retorno: ' + JSON.stringify(data).substring(0, 100));
+           setMessage('Ação pendente: O servidor na Evolution ainda está gerando o QR Code (Render Free pode demorar até 4 minutos). Clique em Tentar Novamente. Retorno: ' + JSON.stringify(data).substring(0, 100));
            setIsManagingInstance(false);
            return;
          }

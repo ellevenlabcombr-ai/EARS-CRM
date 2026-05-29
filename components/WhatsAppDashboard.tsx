@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChatBox } from './ChatBox';
-import { MessageSquare, MessageSquarePlus, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw, Filter, Megaphone, Send, Check, Bot, Bell } from 'lucide-react';
+import { MessageSquare, MessageSquarePlus, Users, Loader2, Phone, Archive, ArchiveRestore, QrCode, X, Search, Wifi, WifiOff, RefreshCw, Filter, Megaphone, Send, Check, Bot, Bell, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function playNotificationSound() {
@@ -157,11 +157,11 @@ export function WhatsAppDashboard() {
         setQrCodeBase64(b64);
         setIsFetchingQr(false);
       } else if (data?.qrcode?.count === 0 || (typeof data?.qrcode === 'object' && Object.keys(data.qrcode).includes('count')) || data?.qrcode?.code === 408 || (!data?.qrcode?.base64 && !data?.hash && data?.instance?.state !== 'open' && !data?.error)) {
-        if (retryCount < 80) {
+        if (retryCount < 100) {
           // Evolution API keeps connection pending while awaiting QR
           setTimeout(() => fetchQR(retryCount + 1), 2500);
         } else {
-          setQrError('A inicialização da Evoluton no Render Free pode levar de 2 a 3 minutos para retornar o QR Code inicial. Aguarde e clique em Tentar Novamente. Retorno: ' + JSON.stringify(data).substring(0, 100));
+          setQrError('A evolução está demorando além do esperado (Render Free). Normalmente resolve depois de uns minutos após acordar o servidor. Aguarde mais um minuto e clique em Tentar Novamente. Retorno: ' + JSON.stringify(data).substring(0, 100));
           setIsFetchingQr(false);
         }
       } else if (data?.qrcode?.instance?.state === 'open' || data?.instance?.state === 'open' || data?.qrcode?.state === 'open') {
@@ -782,8 +782,11 @@ export function WhatsAppDashboard() {
                  ) : (
                    <div className="w-full flex flex-col gap-4">
                      {qrError && (
-                       <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm text-left">
-                         <span className="font-bold flex items-center gap-2 mb-1"><X className="w-4 h-4"/> Erro ao gerar QR</span>
+                       <div className={`${qrError.includes('Render') || qrError.includes('evolução') || qrError.includes('Timeout') ? 'bg-orange-500/10 border-orange-500/20 text-orange-500' : 'bg-red-500/10 border-red-500/20 text-red-500'} border p-3 rounded-lg text-sm text-left`}>
+                         <span className="font-bold flex items-center gap-2 mb-1">
+                           {(qrError.includes('Render') || qrError.includes('evolução') || qrError.includes('Timeout')) ? <Clock className="w-4 h-4"/> : <X className="w-4 h-4"/>} 
+                           {(qrError.includes('Render') || qrError.includes('evolução') || qrError.includes('Timeout')) ? 'Servidor Inicializando...' : 'Erro ao gerar QR'}
+                         </span>
                          <span className="opacity-90">{qrError}</span>
                        </div>
                      )}
