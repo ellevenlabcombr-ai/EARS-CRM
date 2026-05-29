@@ -23,9 +23,11 @@ export async function POST(req: Request) {
     const baseUrl = settings.evolution_api_url.endsWith('/') ? settings.evolution_api_url.slice(0, -1) : settings.evolution_api_url;
     
     let force = false;
+    let clientOrigin = null;
     try {
        const body = await req.json();
        force = body.force === true;
+       clientOrigin = body.clientOrigin;
     } catch(e) {}
     
     // First check if the instance exists
@@ -91,7 +93,7 @@ export async function POST(req: Request) {
       }
 
       // Automatically try to set webhook after creation (even if it already exists)
-      let origin = req.headers.get("origin");
+      let origin = clientOrigin || req.headers.get("origin");
       if (!origin && req.headers.get("x-forwarded-host")) {
         const host = req.headers.get("x-forwarded-host");
         const protocol = req.headers.get("x-forwarded-proto") || 'https';

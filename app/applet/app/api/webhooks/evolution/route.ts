@@ -9,6 +9,35 @@ export async function POST(req: Request) {
     // Evolution API sends events like "messages.upsert" or "MESSAGES_UPSERT"
     const event = body.event || body.event_type;
     
+    if (event === 'qrcode.updated' || event === 'QRCODE_UPDATED' || event === 'connection.update' || event === 'CONNECTION_UPDATE') {
+       const data = body.data || body;
+       let qrB64 = data.qrcode?.base64 || data.base64;
+       
+       if (data.state === 'open' || data.connection === 'open') {
+           // We could log that connection is open
+           return NextResponse.json({ success: true, message: 'Connection open' });
+       }
+       
+       if (qrB64) {
+           if (!qrB64.startsWith('data:image')) {
+               qrB64 = 'data:image/png;base64,' + qrB64.replace(/^data:image\/[a-z]+;base64,/, "");
+           }
+           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+           const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+           if (supabaseUrl && supabaseKey) {
+               const supabase = createClient(supabaseUrl, supabaseKey);
+               await supabase.from('whatsapp_messages').delete().eq('phone_number', 'QR_CODE_TEMP');
+               await supabase.from('whatsapp_messages').insert({
+                   phone_number: 'QR_CODE_TEMP',
+                   text: qrB64,
+                   direction: 'inbound',
+                   status: 'sent'
+               });
+           }
+       }
+       return NextResponse.json({ success: true });
+    }
+
     if (event === 'messages.upsert' || event === 'MESSAGES_UPSERT') {
       const data = body.data || body;
       const key = data.key || data.messages?.[0]?.key;
