@@ -75,8 +75,8 @@ export async function POST(req: Request) {
       try { crData = JSON.parse(resBody); } catch(e) { crData = { message: resBody }; }
 
       if (!createRes.ok) {
-         if (createRes.status !== 400 && createRes.status !== 403 && !JSON.stringify(crData).toLowerCase().includes('already in use')) {
-             return NextResponse.json({ error: 'Falha ao criar instância.', details: crData }, { status: createRes.status });
+         if (!JSON.stringify(crData).toLowerCase().includes('already in use') && !JSON.stringify(crData).toLowerCase().includes('already exists')) {
+             return NextResponse.json({ error: 'Falha ao criar instância (Evolution).', details: crData }, { status: createRes.status });
          } else {
              console.log('Instance already exists or another error ignored during creation:', crData);
          }
@@ -144,6 +144,42 @@ export async function POST(req: Request) {
     let resBody = await res.text();
     let data;
     try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
+
+    // If connect returns 404, the instance is corrupted or missing despite connectionState. Recreate it.
+    if (res.status === 404) {
+      console.log('Connect returned 404, recreating instance...');
+      await fetch(`${baseUrl}/instance/logout/${settings.evolution_instance_id}`, { method: 'DELETE', headers: { 'apikey': settings.evolution_api_key || '' }, signal: AbortSignal.timeout(90000) }).catch(e => console.log('Logout ignore'));
+      await fetch(`${baseUrl}/instance/delete/${settings.evolution_instance_id}`, { method: 'DELETE', headers: { 'apikey': settings.evolution_api_key || '' }, signal: AbortSignal.timeout(90000) }).catch(e => console.log('Delete ignore'));
+      
+      const createRes = await fetch(`${baseUrl}/instance/create`, {
+        method: 'POST',
+        headers: {
+          'apikey': settings.evolution_api_key || '',
+          'Content-Type': 'application/json'
+        },
+        signal: AbortSignal.timeout(90000),
+        body: JSON.stringify({
+          instanceName: settings.evolution_instance_id,
+          qrcode: true,
+          integration: "WHATSAPP-BAILEYS"
+        })
+      });
+      let crText = await createRes.text();
+      try { data = JSON.parse(crText); } catch(e) { data = { message: crText }; }
+      
+      if (!createRes.ok && !JSON.stringify(data).toLowerCase().includes('already in use') && !JSON.stringify(data).toLowerCase().includes('already exists')) {
+          return NextResponse.json({ error: 'Falha ao recriar instância após 404.', details: data }, { status: createRes.status });
+      }
+      
+      // Attempt connect again
+      res = await fetch(`${baseUrl}/instance/connect/${settings.evolution_instance_id}`, {
+        method: 'GET',
+        headers: { 'apikey': settings.evolution_api_key || '' },
+        signal: AbortSignal.timeout(90000)
+      });
+      resBody = await res.text();
+      try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
+    }
 
     let qrcodeReturn = data?.qrcode || data?.hash || data || {};
     if (data?.base64 && !qrcodeReturn.base64) {
