@@ -159,7 +159,7 @@ export function AutomationSettings() {
       }
       
       if (!gotQR && (data.count === 0 || data.qrcode?.count === 0 || data.qrcode?.code === 408 || (!data.base64 && !data.qrcode?.base64 && data.instance?.state !== 'open'))) {
-         if (retryCount < 30) {
+         if (retryCount < 80) {
            setTimeout(() => handleConnectInstance(retryCount + 1), 3000);
            return; // prevent setting false early
          } else {
