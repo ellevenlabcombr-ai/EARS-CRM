@@ -34,20 +34,20 @@ export async function POST(req: Request) {
     let stateRes = await fetch(`${baseUrl}/instance/connectionState/${settings.evolution_instance_id}`, {
       method: 'GET',
       headers: { 'apikey': settings.evolution_api_key || '' },
-      signal: AbortSignal.timeout(90000)
+      signal: AbortSignal.timeout(180000)
     });
 
     if (stateRes.ok && force) {
       await fetch(`${baseUrl}/instance/logout/${settings.evolution_instance_id}`, {
         method: 'DELETE',
         headers: { 'apikey': settings.evolution_api_key || '' },
-        signal: AbortSignal.timeout(90000)
+        signal: AbortSignal.timeout(180000)
       }).catch(e => console.log('Logout ignore'));
       
       await fetch(`${baseUrl}/instance/delete/${settings.evolution_instance_id}`, {
         method: 'DELETE',
         headers: { 'apikey': settings.evolution_api_key || '' },
-        signal: AbortSignal.timeout(90000)
+        signal: AbortSignal.timeout(180000)
       }).catch(e => console.log('Delete ignore'));
 
       // Allow it some time to process the deletion
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
           'apikey': settings.evolution_api_key || '',
           'Content-Type': 'application/json'
         },
-        signal: AbortSignal.timeout(90000),
+        signal: AbortSignal.timeout(180000),
         body: JSON.stringify({
           instanceName: settings.evolution_instance_id,
           qrcode: true,
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
          await fetch(`${baseUrl}/webhook/set/${settings.evolution_instance_id}`, {
             method: 'POST',
             headers: { 'apikey': settings.evolution_api_key || '', 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(90000),
+            signal: AbortSignal.timeout(180000),
             body: JSON.stringify({
                webhook: {
                  enabled: true,
@@ -138,7 +138,7 @@ export async function POST(req: Request) {
     let res = await fetch(`${baseUrl}/instance/connect/${settings.evolution_instance_id}`, {
       method: 'GET',
       headers: { 'apikey': settings.evolution_api_key || '' },
-      signal: AbortSignal.timeout(90000)
+      signal: AbortSignal.timeout(180000)
     });
 
     let resBody = await res.text();
@@ -148,8 +148,8 @@ export async function POST(req: Request) {
     // If connect returns 404, the instance is corrupted or missing despite connectionState. Recreate it.
     if (res.status === 404) {
       console.log('Connect returned 404, recreating instance...');
-      await fetch(`${baseUrl}/instance/logout/${settings.evolution_instance_id}`, { method: 'DELETE', headers: { 'apikey': settings.evolution_api_key || '' }, signal: AbortSignal.timeout(90000) }).catch(e => console.log('Logout ignore'));
-      await fetch(`${baseUrl}/instance/delete/${settings.evolution_instance_id}`, { method: 'DELETE', headers: { 'apikey': settings.evolution_api_key || '' }, signal: AbortSignal.timeout(90000) }).catch(e => console.log('Delete ignore'));
+      await fetch(`${baseUrl}/instance/logout/${settings.evolution_instance_id}`, { method: 'DELETE', headers: { 'apikey': settings.evolution_api_key || '' }, signal: AbortSignal.timeout(180000) }).catch(e => console.log('Logout ignore'));
+      await fetch(`${baseUrl}/instance/delete/${settings.evolution_instance_id}`, { method: 'DELETE', headers: { 'apikey': settings.evolution_api_key || '' }, signal: AbortSignal.timeout(180000) }).catch(e => console.log('Delete ignore'));
       
       const createRes = await fetch(`${baseUrl}/instance/create`, {
         method: 'POST',
@@ -157,7 +157,7 @@ export async function POST(req: Request) {
           'apikey': settings.evolution_api_key || '',
           'Content-Type': 'application/json'
         },
-        signal: AbortSignal.timeout(90000),
+        signal: AbortSignal.timeout(180000),
         body: JSON.stringify({
           instanceName: settings.evolution_instance_id,
           qrcode: true,
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
       res = await fetch(`${baseUrl}/instance/connect/${settings.evolution_instance_id}`, {
         method: 'GET',
         headers: { 'apikey': settings.evolution_api_key || '' },
-        signal: AbortSignal.timeout(90000)
+        signal: AbortSignal.timeout(180000)
       });
       resBody = await res.text();
       try { data = JSON.parse(resBody); } catch(e) { data = { message: resBody }; }
@@ -208,7 +208,7 @@ export async function POST(req: Request) {
            let instancesRes = await fetch(`${baseUrl}/instance/fetchInstances`, {
                method: 'GET',
                headers: { 'apikey': settings.evolution_api_key || '' },
-               signal: AbortSignal.timeout(90000)
+               signal: AbortSignal.timeout(180000)
            });
            if (instancesRes.ok) {
                let instances = await instancesRes.json();
@@ -234,6 +234,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Error fetching whatsapp qr:', error);
-    return NextResponse.json({ error: (error.message || '').toLowerCase().includes('timeout') || (error.message || '').includes('aborted') ? 'O servidor da Evolution demorou muito para responder (em plataformas de tier free, isso leva alguns minutos para acordar na primeira vez). Aguarde e tente novamente em breve.' : error.message }, { status: 500 });
+    return NextResponse.json({ error: (error.message || '').toLowerCase().includes('timeout') || (error.message || '').includes('aborted') ? 'O servidor demorou muito para responder (em plataformas free, leva alguns minutos para acordar na primeira vez). Aguarde e tente novamente em breve.' : error.message }, { status: 500 });
   }
 }

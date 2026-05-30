@@ -186,7 +186,7 @@ export function WhatsAppDashboard() {
       }
     } catch(e: any) {
       console.error('Failed to fetch QR:', e);
-      setQrError('A requisição demorou muito e foi interrompida (Timeout). Se estiver rodando no Render (Free), aguarde uns minutos e Tente Novamente.');
+      setQrError('O servidor está acordando (Render Free). É normal demorar no primeiro acesso. Aguarde 2 minutos e clique em Tentar Novamente.');
       setIsFetchingQr(false);
     }
   };

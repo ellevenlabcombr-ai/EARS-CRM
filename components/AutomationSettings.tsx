@@ -178,10 +178,10 @@ export function AutomationSettings() {
       console.error(error);
       setStatus('error');
       let msg = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-      if (msg.includes('JSON') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError')) {
-          msg = 'O servidor demorou muito para responder (Timeout/Render acordando). Tente novamente em 2 minutos.';
+      if (msg.includes('JSON') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError') || msg.includes('demorou muito')) {
+          msg = 'O servidor (Render) está acordando. Isso é normal no plano gratuito e leva cerca de 2 minutos. Aguarde um pouquinho e clique em Tentar Novamente.';
       }
-      setMessage('Erro ao gerar QR Code: ' + msg);
+      setMessage('Aviso: ' + msg);
       setIsManagingInstance(false);
     }
   };
