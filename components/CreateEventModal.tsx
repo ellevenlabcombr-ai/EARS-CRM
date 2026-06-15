@@ -60,7 +60,7 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
     meet_link: "",
     payment_status: 'pending' as 'pending' | 'paid' | 'partially_paid',
     event_value: "" as string | number,
-    status: 'scheduled' as 'scheduled' | 'confirmed' | 'cancelled' | 'attended' | 'no_show',
+    status: 'scheduled' as 'scheduled' | 'confirmed' | 'cancelled' | 'attended' | 'no_show' | 'excused_absence' | 'in_treatment',
     is_all_day: false,
     start_time: "",
     end_time: "",
@@ -405,9 +405,11 @@ export function CreateEventModal({ isOpen, onClose, onSave, initialEvent, fixedA
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-600 font-medium appearance-none [color-scheme:dark]"
                         >
                           <option value="scheduled">Agendado (sem confirmação)</option>
-                          <option value="confirmed">Presença Confirmada</option>
-                          <option value="attended">Atendido (Compareceu)</option>
-                          <option value="no_show">Faltou (Não Compareceu)</option>
+                          <option value="confirmed">Confirmado / Agendado</option>
+                          <option value="attended">Presente</option>
+                          <option value="excused_absence">Falta Justificada</option>
+                          <option value="no_show">Falta (Sem Justificativa)</option>
+                          <option value="in_treatment">Em Tratamento</option>
                           <option value="cancelled">Cancelado</option>
                         </select>
                       </div>

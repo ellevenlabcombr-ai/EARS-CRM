@@ -180,12 +180,16 @@ export function AthleteAgendaList({ athleteId, lang, onEventChanged, isBlocked =
                             event.status === 'confirmed' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' :
                             event.status === 'attended' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
                             event.status === 'no_show' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                            event.status === 'excused_absence' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            event.status === 'in_treatment' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
                             event.status === 'cancelled' ? 'bg-slate-500/10 text-slate-400 border border-slate-500/20' :
                             ''
                           }`}>
                             {event.status === 'confirmed' ? 'Confirmado' :
-                             event.status === 'attended' ? 'Compareceu' :
-                             event.status === 'no_show' ? 'Faltou' :
+                             event.status === 'attended' ? 'Presente' :
+                             event.status === 'no_show' ? 'Falta' :
+                             event.status === 'excused_absence' ? 'Falta Justificada' :
+                             event.status === 'in_treatment' ? 'Em Tratamento' :
                              'Cancelado'}
                           </span>
                         )}

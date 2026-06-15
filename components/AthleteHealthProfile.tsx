@@ -284,6 +284,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [loadData, setLoadData] = useState<any[]>([]);
   const [painReports, setPainReports] = useState<any[]>([]);
   const [athleteAlerts, setAthleteAlerts] = useState<ClinicalAlert[]>([]);
+  const [clinicalEvents, setClinicalEvents] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSessionMode, setIsSessionMode] = useState(initialSessionMode);
   const [showSessionFinalizedUI, setShowSessionFinalizedUI] = useState(false);
@@ -313,6 +314,34 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
   const [planGenerateAsaas, setPlanGenerateAsaas] = useState(false);
   const [planAsaasCpf, setPlanAsaasCpf] = useState('');
   const [planDiscount, setPlanDiscount] = useState('');
+
+  const getComplianceStats = useMemo(() => {
+    const now = new Date();
+    const completedOrMissed = clinicalEvents.filter(e => {
+      const isPast = new Date(e.start_time) < now;
+      return isPast || ['attended', 'no_show', 'excused_absence', 'in_treatment'].includes(e.status || '');
+    });
+    
+    const present = completedOrMissed.filter(e => e.status === 'attended').length;
+    const treating = completedOrMissed.filter(e => e.status === 'in_treatment').length;
+    const missed = completedOrMissed.filter(e => e.status === 'no_show').length;
+    const excused = completedOrMissed.filter(e => e.status === 'excused_absence').length;
+    const scheduled = completedOrMissed.filter(e => e.status === 'scheduled' || !e.status).length;
+    
+    const totalForRating = present + treating + missed;
+    const rating = totalForRating > 0 ? Math.round(((present + treating) / totalForRating) * 100) : 100;
+    
+    return {
+      present,
+      treating,
+      missed,
+      excused,
+      scheduled,
+      totalForRating,
+      rating,
+      totalCount: clinicalEvents.length
+    };
+  }, [clinicalEvents]);
 
   const isMinor = useMemo(() => {
     if (!athlete || !athlete.birthDate) return false;
@@ -1003,7 +1032,7 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
         console.log(`Fetching data for athlete: ${athlete.name} (ID: ${athlete.id})`);
 
         // Fetch all data in parallel
-        const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes, eventsRes, productsRes, subRes, transRes] = await Promise.all([
+        const [wellnessRes, notesRes, assessmentsRes, alertsRes, painRes, loadRes, eventsRes, productsRes, subRes, transRes, clinicalEventsRes] = await Promise.all([
           supabase
             .from('wellness_records')
             .select('record_date, readiness_score, fatigue_level, muscle_soreness, sleep_hours, sleep_quality, stress_level, fatigue_level, muscle_soreness, soreness_location, menstrual_cycle, menstrual_symptoms, hydration_perception, hydration_score, urine_color, symptoms, comments, created_at')
@@ -1045,12 +1074,20 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             .limit(30),
           supabase.from('financial_products').select('*').order('name'),
           supabase.from('financial_subscriptions').select('*, product:product_id(*)').eq('athlete_id', athlete.id).order('created_at', { ascending: false }).limit(1),
-          supabase.from('financial_transactions').select('*').eq('athlete_id', athlete.id).order('date', { ascending: false }).limit(50)
+          supabase.from('financial_transactions').select('*').eq('athlete_id', athlete.id).order('date', { ascending: false }).limit(50),
+          supabase
+            .from('agenda_events')
+            .select('id, start_time, end_time, title, category, status, result, feedback')
+            .eq('athlete_id', athlete.id)
+            .eq('category', 'clinical')
+            .order('start_time', { ascending: false })
+            .limit(200)
         ]);
 
         if (productsRes.data) setFinancialProducts(productsRes.data);
         if (subRes.data) setAthleteSubscription(subRes.data[0] || null);
         if (transRes.data) setAthleteTransactions(transRes.data);
+        if (clinicalEventsRes && clinicalEventsRes.data) setClinicalEvents(clinicalEventsRes.data);
 
         if (alertsRes.data) {
           setAthleteAlerts(alertsRes.data);
@@ -3213,6 +3250,73 @@ export function AthleteHealthProfile({ athlete: initialAthlete, onBack, onSave, 
             </Card>
 
             <div className="space-y-4">
+              <Card className="bg-slate-950 border-slate-800 shadow-xl overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-900 pb-2">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-cyan-500" />. Adesão ao Tratamento
+                    </p>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                      getComplianceStats.rating >= 85 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                      getComplianceStats.rating >= 70 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                      'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                    }`}>
+                      {getComplianceStats.rating >= 85 ? 'Adequado' : getComplianceStats.rating >= 70 ? 'Regular' : 'Atenção Clín.'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex items-center justify-center shrink-0">
+                      <svg className="w-16 h-16 transform -rotate-90">
+                        <circle cx="32" cy="32" r="28" stroke="currentColor" className="text-slate-800" strokeWidth="4" fill="transparent" />
+                        <circle 
+                          cx="32" 
+                          cy="32" 
+                          r="28" 
+                          stroke="currentColor" 
+                          className={
+                            getComplianceStats.rating >= 85 ? 'text-emerald-500' :
+                            getComplianceStats.rating >= 70 ? 'text-amber-500' :
+                            'text-rose-500'
+                          } 
+                          strokeWidth="4" 
+                          fill="transparent" 
+                          strokeDasharray={2 * Math.PI * 28} 
+                          strokeDashoffset={2 * Math.PI * 28 * (1 - getComplianceStats.rating / 100)} 
+                        />
+                      </svg>
+                      <span className="absolute text-sm font-black text-white">{getComplianceStats.rating}%</span>
+                    </div>
+                    
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-bold text-slate-300">Compliance Clínico</p>
+                      <p className="text-[10.5px] text-slate-500 font-medium leading-normal">
+                        Fatores de adesão ao plano de reabilitação física. Faltas justificadas são excluídas sem prejuízo à nota.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 gap-1.5 mt-4 pt-3 border-t border-slate-900 text-center">
+                    <div className="bg-slate-900 border border-slate-900 p-1.5 rounded-lg">
+                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-tight">Pres.</p>
+                      <p className="text-xs font-black text-emerald-400 mt-0.5">{getComplianceStats.present}</p>
+                    </div>
+                    <div className="bg-slate-900 border border-slate-900 p-1.5 rounded-lg">
+                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-tight">Trat.</p>
+                      <p className="text-xs font-black text-violet-400 mt-0.5">{getComplianceStats.treating}</p>
+                    </div>
+                    <div className="bg-slate-900 border border-slate-900 p-1.5 rounded-lg select-none cursor-help" title="Faltas justificadas">
+                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-tight">Falta J.</p>
+                      <p className="text-xs font-black text-amber-500 mt-0.5">{getComplianceStats.excused}</p>
+                    </div>
+                    <div className="bg-slate-900 border border-slate-900 p-1.5 rounded-lg">
+                      <p className="text-[8px] font-black text-slate-500 uppercase tracking-tight">Falta</p>
+                      <p className="text-xs font-black text-rose-500 mt-0.5">{getComplianceStats.missed}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="bg-slate-950 border-slate-800">
                 <CardContent className="p-4">
                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Últimas Decisões</p>

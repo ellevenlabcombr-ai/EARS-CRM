@@ -6,7 +6,7 @@ export interface AgendaEvent {
   description: string | null;
   start_time: string;
   end_time: string;
-  status?: 'scheduled' | 'confirmed' | 'cancelled' | 'attended' | 'no_show';
+  status?: 'scheduled' | 'confirmed' | 'cancelled' | 'attended' | 'no_show' | 'excused_absence' | 'in_treatment';
   category: AgendaCategory;
   subcategory: string | null;
   location?: string | null;
