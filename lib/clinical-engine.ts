@@ -28,8 +28,14 @@ export function calculateRiskClusters(input: EngineInput): EngineOutput {
   const { wellnessRecords, painReports, assessments, checkIns, alerts, clinicalTags = [], trendScore = 0, confidenceScore = 0.5 } = input;
   const clusters: RiskCluster[] = [];
 
-  const latestWellness = wellnessRecords[wellnessRecords.length - 1];
-  const last3DaysWellness = wellnessRecords.slice(-3);
+  const sortedWellness = [...wellnessRecords].sort((a, b) => {
+    const dateA = new Date(a.record_date || a.date || a.created_at || 0).getTime();
+    const dateB = new Date(b.record_date || b.date || b.created_at || 0).getTime();
+    return dateA - dateB;
+  });
+
+  const latestWellness = sortedWellness[sortedWellness.length - 1];
+  const last3DaysWellness = sortedWellness.slice(-3);
   
   // Tag Decay Logic
   const activeTags = clinicalTags.map(tag => {

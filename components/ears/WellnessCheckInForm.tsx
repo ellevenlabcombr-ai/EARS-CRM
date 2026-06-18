@@ -62,18 +62,25 @@ export const WellnessCheckInForm: React.FC<Props> = ({ athlete, history = [], on
 
   // PREDICTIVE ANALYSIS FLOW
   const analysis = useMemo(() => {
-    const decayed = DecayEngine.processHistory(history);
-    const trends = TrendEngine.analyze(history);
+    // Ensure history is sorted oldest to newest (ascending) for analysis
+    const sortedHistory = [...history].sort((a, b) => {
+      const dateA = new Date(a.date || a.record_date || a.created_at || 0).getTime();
+      const dateB = new Date(b.date || b.record_date || b.created_at || 0).getTime();
+      return dateA - dateB;
+    });
+
+    const decayed = DecayEngine.processHistory(sortedHistory);
+    const trends = TrendEngine.analyze(sortedHistory);
     const { score, level, breakdown } = EARSEngine.calculateFinalReadiness(
       answers, 
       athlete.age, 
-      history.slice(-3).map(h => h.sleep_hours),
+      sortedHistory.slice(-3).map(h => h.sleep_hours || 8),
       decayed,
       trends
     );
 
     const riskAnalysis = calculateRiskClusters({
-      wellnessRecords: history as any,
+      wellnessRecords: sortedHistory as any,
       painReports: [],
       assessments: [],
       checkIns: [],
@@ -83,7 +90,7 @@ export const WellnessCheckInForm: React.FC<Props> = ({ athlete, history = [], on
       confidenceScore: 0.8
     });
 
-    const confidence = ConfidenceEngine.calculate(history, answers);
+    const confidence = ConfidenceEngine.calculate(sortedHistory, answers);
     const clinicalDecision = DecisionLayer.analyze(
       score,
       riskAnalysis.clusters,

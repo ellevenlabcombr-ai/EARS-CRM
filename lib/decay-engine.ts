@@ -26,15 +26,21 @@ function calculateWeightedValue(values: number[], lambda: number = 0.5): number 
 }
 
 function processHistory(history: any[]): DecayedMetrics {
-    const painValues = history.map(h => {
+    const sortedHistory = [...history].sort((a, b) => {
+        const dateA = new Date(a.date || a.record_date || a.created_at || 0).getTime();
+        const dateB = new Date(b.date || b.record_date || b.created_at || 0).getTime();
+        return dateA - dateB;
+    });
+
+    const painValues = sortedHistory.map(h => {
         if (h.pain_map && Array.isArray(h.pain_map)) {
             return Math.max(...h.pain_map.map((p: any) => p.level), 0);
         }
         return h.muscle_soreness || 0;
     });
-    const sleepValues = history.map(h => h.sleep_hours || 8);
-    const loadValues = history.map(h => h.session_load || 0);
-    const readinessValues = history.map(h => h.readiness_score || 100);
+    const sleepValues = sortedHistory.map(h => h.sleep_hours || 8);
+    const loadValues = sortedHistory.map(h => h.session_load || 0);
+    const readinessValues = sortedHistory.map(h => h.readiness_score || 100);
 
     return {
       weightedPain: calculateWeightedValue(painValues),

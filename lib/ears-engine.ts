@@ -97,7 +97,7 @@ function calculateSymptomsDeduction(symptoms: string[]): number {
       'headache': 'moderate',
       'nausea': 'moderate',
       'dizziness': 'moderate',
-      'f fever': 'severe',
+      'fever': 'severe',
       'flu_symptoms': 'severe'
     };
 
