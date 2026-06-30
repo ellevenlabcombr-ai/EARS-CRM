@@ -287,21 +287,66 @@ export default function EarsSystem() {
 
         if (insertError) throw insertError;
 
-        if (inserted && inserted.length > 0 && data.pain_map && data.pain_map.length > 0) {
+        if (inserted && inserted.length > 0) {
           const checkInId = inserted[0].id;
-          const painInserts = data.pain_map.map(p => ({
-            check_in_id: checkInId,
+          
+          if (data.pain_map && data.pain_map.length > 0) {
+            const painInserts = data.pain_map.map(p => ({
+              check_in_id: checkInId,
+              athlete_id: selectedAthlete.id,
+              body_part_id: p.region,
+              pain_level: p.level,
+              pain_type: p.type
+            }));
+
+            const { error: painError } = await supabase
+              .from('pain_reports')
+              .insert(painInserts);
+
+            if (painError) console.error("Error inserting pain reports:", painError);
+          }
+
+          // Insert into wellness_records to sync with main Athlete Dashboard
+          const compiledSorenessLocation = data.pain_map && data.pain_map.length > 0
+            ? JSON.stringify(data.pain_map.map(p => ({
+                region: p.region,
+                level: p.level,
+                type: p.type
+              })))
+            : null;
+
+          const maxPain = data.pain_map && data.pain_map.length > 0
+            ? Math.max(...data.pain_map.map(p => p.level))
+            : 0;
+
+          const wellnessRecordObj = {
+            id: checkInId,
             athlete_id: selectedAthlete.id,
-            body_part_id: p.region,
-            pain_level: p.level,
-            pain_type: p.type
-          }));
+            record_date: new Date().toISOString().split('T')[0],
+            sleep_hours: data.sleep_hours,
+            sleep_quality: data.sleep_quality,
+            fatigue_level: data.energy,
+            muscle_soreness: maxPain > 0 ? maxPain : data.leg_heaviness,
+            soreness_location: compiledSorenessLocation,
+            stress_level: data.stress,
+            readiness_score: data.readiness_score,
+            comments: "",
+            hydration_perception: 3,
+            hydration_score: 3,
+            urine_color: 3,
+            nutrition: 3,
+            mood: data.mood,
+            pre_training_meal: 3,
+            training_recovery: data.recovery,
+            confidence: data.confidence,
+            overall_wellbeing: data.overall_readiness,
+            menstrual_cycle: data.menstrual_cycle || 'none'
+          };
 
-          const { error: painError } = await supabase
-            .from('pain_reports')
-            .insert(painInserts);
-
-          if (painError) console.error("Error inserting pain reports:", painError);
+          const { error: wellnessError } = await supabase
+            .from("wellness_records")
+            .insert([wellnessRecordObj]);
+          if (wellnessError) console.error("Could not sync to wellness_records:", wellnessError);
         }
 
         // Update athlete readiness score

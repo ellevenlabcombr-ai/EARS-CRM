@@ -406,7 +406,7 @@ export const WellnessCheckInForm: React.FC<Props> = ({ athlete, history = [], on
           </Button>
         )}
         <Button 
-          onClick={step === 4 ? () => onSubmit(answers as WellnessCheckIn) : nextStep}
+          onClick={step === 4 ? () => onSubmit({ ...answers, readiness_score: score } as WellnessCheckIn) : nextStep}
           className={`flex-[2] py-6 rounded-2xl text-white font-black uppercase tracking-widest shadow-lg ${step === 4 ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
         >
           {step === 4 ? (

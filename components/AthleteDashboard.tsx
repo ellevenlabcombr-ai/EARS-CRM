@@ -2199,7 +2199,7 @@ export function AthleteDashboard({
             </Card>
           )}
 
-          <FinanceWidget />
+          {/* Ocultado para atletas: <FinanceWidget /> */}
         </div>
       );
     };
