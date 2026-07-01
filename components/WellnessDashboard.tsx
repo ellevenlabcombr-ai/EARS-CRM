@@ -358,6 +358,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
           threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
           const threeDaysAgoStr = threeDaysAgo.toISOString().split('T')[0];
 
+          let dataToUse: any[] = [];
           const { data, error: wellnessError } = await supabase
             .from('wellness_records')
             .select('athlete_id, record_date, created_at, readiness_score, sleep_hours, sleep_quality, muscle_soreness, soreness_location, fatigue_level, stress_level, mood, nutrition, pre_training_meal, training_recovery, confidence, overall_wellbeing, comments, menstrual_cycle, menstrual_symptoms, urine_color, symptoms, hydration_perception, hydration_score')
@@ -366,8 +367,24 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
             .in('athlete_id', athleteIds)
             .abortSignal(controller.signal);
             
-          if (wellnessError) throw wellnessError;
-          historicalWellnessData = data || [];
+          if (wellnessError) {
+            console.warn('Erro ao buscar todos os campos do wellness, tentando fallback seguro:', wellnessError);
+            const { data: fallbackData, error: fallbackError } = await supabase
+              .from('wellness_records')
+              .select('athlete_id, record_date, created_at, readiness_score, sleep_hours, sleep_quality, muscle_soreness, soreness_location, fatigue_level, stress_level, comments, menstrual_cycle, hydration_perception, hydration_score')
+              .gte('record_date', threeDaysAgoStr)
+              .lte('record_date', today)
+              .in('athlete_id', athleteIds)
+              .abortSignal(controller.signal);
+
+            if (fallbackError) {
+              throw fallbackError;
+            }
+            dataToUse = fallbackData || [];
+          } else {
+            dataToUse = data || [];
+          }
+          historicalWellnessData = dataToUse;
           wellnessData = historicalWellnessData.filter(r => {
             if (!r.record_date) return false;
             // record_date is DATE, so it might come as 'YYYY-MM-DD' or 'YYYY-MM-DDT00:00...' 

@@ -1604,8 +1604,31 @@ export function AthleteDashboard({
             pre_competition_anxiety: answers["pre_competition_anxiety"] || null
           }
         };
-        const { error: wellnessError } = await supabase.from("wellness_records").insert([finalWellnessData]);
-        if (wellnessError) console.error("Could not sync to wellness_records:", wellnessError);
+        let { error: wellnessError } = await supabase.from("wellness_records").insert([finalWellnessData]);
+        if (wellnessError) {
+          console.error("Could not sync to wellness_records with all columns, trying safe/basic fallback insert:", wellnessError);
+          // Safe fallback with guaranteed columns
+          const safeWellnessData = {
+            id: checkInId,
+            athlete_id: athleteId,
+            record_date: localDateStr,
+            sleep_hours: answers["sleep_hours"],
+            sleep_quality: answers["sleep"] ? (typeof answers["sleep"] === 'number' ? answers["sleep"] : 3) : 3,
+            fatigue_level: answers["energy"] ? (typeof answers["energy"] === 'number' ? answers["energy"] : 3) : 3,
+            muscle_soreness: maxPain > 0 ? maxPain : (answers["leg_heaviness"] || 0),
+            soreness_location: compiledSorenessLocation,
+            stress_level: answers["stress"] ? (typeof answers["stress"] === 'number' ? answers["stress"] : 3) : 3,
+            readiness_score: readiness,
+            comments: finalNotes
+          };
+          const { error: fallbackError } = await supabase.from("wellness_records").insert([safeWellnessData]);
+          if (fallbackError) {
+            console.error("Fallback insert also failed:", fallbackError);
+          } else {
+            console.log("Safe fallback insert succeeded!");
+            wellnessError = null; // Mark as resolved
+          }
+        }
 
         // Update athlete risk level on athletes table
         let calculatedRisk: "Baixo" | "Médio" | "Alto" | "Crítico" = "Baixo";
@@ -3102,47 +3125,53 @@ export function AthleteDashboard({
               })}
             </div>
 
-            {Object.keys(painMap).length > 0 && (
-              <div className="space-y-4 pt-6 border-t border-slate-800/50 mt-6">
-                <div className="flex items-center gap-3">
-                  <ActivitySquare className="w-5 h-5 text-rose-400" />
-                  <h4 className="text-sm font-black text-white uppercase tracking-widest">
-                    {lang === 'pt' ? 'Mapa de Dor Enviado' : 'Submitted Pain Map'}
-                  </h4>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-center">
-                  <div className="w-full shrink-0 max-w-[280px] mx-auto">
-                    <PainMap 
-                      value={painMap}
-                      readOnly={true} 
-                    />
+            {(() => {
+              const activePainMap = Object.keys(painMap).length > 0 ? painMap : finalPainMap;
+              if (Object.keys(activePainMap).length === 0) return null;
+              
+              const maxPainVal = Math.max(...Object.values(activePainMap).map(p => p.level));
+              return (
+                <div className="space-y-4 pt-6 border-t border-slate-800/50 mt-6">
+                  <div className="flex items-center gap-3">
+                    <ActivitySquare className="w-5 h-5 text-rose-400" />
+                    <h4 className="text-sm font-black text-white uppercase tracking-widest">
+                      {lang === 'pt' ? 'Mapa de Dor Enviado' : 'Submitted Pain Map'}
+                    </h4>
                   </div>
-                  <div className="space-y-4 w-full">
-                    <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 space-y-2">
-                      <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">
-                        {lang === 'pt' ? 'Intensidade Geral de Dor' : 'Overall Pain Intensity'}
-                      </p>
-                      <p className={`text-2xl font-black ${Math.max(...Object.values(painMap).map(p => p.level)) > 4 ? 'text-rose-400' : 'text-emerald-400'}`}>
-                        {Math.max(...Object.values(painMap).map(p => p.level))}/10
-                      </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-center">
+                    <div className="w-full shrink-0 max-w-[280px] mx-auto">
+                      <PainMap 
+                        value={activePainMap}
+                        readOnly={true} 
+                      />
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">
-                        {lang === 'pt' ? 'Locais Detalhados' : 'Detailed Locations'}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(painMap).map(([region, data]) => (
-                          <span key={region} className="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xxs font-bold uppercase tracking-widest border border-slate-700">
-                            {getPainLocationLabel(region)} (Nível {data.level}) {data.type ? `• ${getPainTypeLabel(data.type, lang)}` : ''}
-                          </span>
-                        ))}
+                    <div className="space-y-4 w-full">
+                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 space-y-2">
+                        <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">
+                          {lang === 'pt' ? 'Intensidade Geral de Dor' : 'Overall Pain Intensity'}
+                        </p>
+                        <p className={`text-2xl font-black ${maxPainVal > 4 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                          {maxPainVal}/10
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">
+                          {lang === 'pt' ? 'Locais Detalhados' : 'Detailed Locations'}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(activePainMap).map(([region, data]) => (
+                            <span key={region} className="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xxs font-bold uppercase tracking-widest border border-slate-700">
+                              {getPainLocationLabel(region)} (Nível {data.level}) {data.type ? `• ${getPainTypeLabel(data.type, lang)}` : ''}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </CardContent>
         </Card>
 
