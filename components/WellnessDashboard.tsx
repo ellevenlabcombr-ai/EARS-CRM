@@ -1594,11 +1594,11 @@ ANALYZE check_ins;`}
                     <div className="flex justify-between items-end">
                       <p className="text-sm text-slate-500">Atividade</p>
                       <p className="text-sm font-bold text-white text-right">
-                        {Number(selectedAnswers.symptoms?.previous_activity) === 1 ? 'Musculação' :
-                         Number(selectedAnswers.symptoms?.previous_activity) === 2 ? 'Treino Tático' :
-                         Number(selectedAnswers.symptoms?.previous_activity) === 3 ? 'Recuperação' :
-                         Number(selectedAnswers.symptoms?.previous_activity) === 4 ? 'Jogo/Competição' :
-                         Number(selectedAnswers.symptoms?.previous_activity) === 5 ? 'Day Off' : '-'}
+                        {Number(selectedAnswers.symptoms?.previous_activity) === 1 ? 'Jogo Oficial' :
+                         Number(selectedAnswers.symptoms?.previous_activity) === 2 ? 'Amistoso' :
+                         Number(selectedAnswers.symptoms?.previous_activity) === 3 ? 'Treino Tático/Técnico' :
+                         Number(selectedAnswers.symptoms?.previous_activity) === 4 ? 'Físico / Academia' :
+                         Number(selectedAnswers.symptoms?.previous_activity) === 5 ? 'Descanso Total' : '-'}
                       </p>
                     </div>
                     <div className="flex justify-between items-end">

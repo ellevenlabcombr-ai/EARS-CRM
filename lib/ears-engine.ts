@@ -17,6 +17,15 @@ function calculateBaseScore(checkin: Partial<WellnessCheckIn>, decayed?: Decayed
       if (!val) return 0;
       // If val is already potentially a percentage (> 10), assume it's 0-100 and just return it clamped
       if (val > 10) return Math.max(0, Math.min(100, val));
+      
+      // Use premium non-linear scale where 'Normal' (3/5) represents a healthy 80% baseline
+      const valRound = Math.round(val);
+      if (valRound === 5) return 100;
+      if (valRound === 4) return 90;
+      if (valRound === 3) return 80;
+      if (valRound === 2) return 50;
+      if (valRound === 1) return 20;
+
       return Math.max(0, Math.min(100, (val / max) * 100));
     };
 
@@ -31,7 +40,7 @@ function calculateBaseScore(checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     const stressValue = Math.min(5, Math.max(1, stressVal));
 
     const scores = {
-      sleep: decayed ? (decayed.weightedReadiness) : normalize(sleepQuality), 
+      sleep: normalize(sleepQuality), 
       energy: normalize(checkin.energy),
       soreness: normalize(legHeavinessValue),
       stress: normalize(stressValue),
@@ -205,7 +214,8 @@ export const EARSEngine = {
 
     const totalDeductions = (painDeduction + symptomDeduction + sleepDeduction + menstrualDeduction + multipliers) * ageMultiplier * synergyMultiplier * trendFactor;
     
-    const finalScore = Math.max(0, Math.min(100, Math.round((decayed ? (baseScore * 0.8 + decayed.weightedReadiness * 0.2) : baseScore) - totalDeductions)));
+    // baseScore already blends decayed.weightedReadiness if decayed is present, so we don't double-blend here
+    const finalScore = Math.max(0, Math.min(100, Math.round(baseScore - totalDeductions)));
     
     let level: ReadinessLevel = 'ready';
     if (finalScore < 60) level = 'risk';

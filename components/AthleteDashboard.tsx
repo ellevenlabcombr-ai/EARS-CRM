@@ -1264,7 +1264,24 @@ export function AthleteDashboard({
         scoreValue = 6 - value; 
       }
 
-      totalScore += scoreValue;
+      // Non-linear mapping to prevent 'Normal' (3/5) from penalizing down to 60%:
+      // 5 -> 5.0 (100%)
+      // 4 -> 4.5 (90%)
+      // 3 -> 4.0 (80%)
+      // 2 -> 2.5 (50%)
+      // 1 -> 1.0 (20%)
+      let mappedPoints = 3.0;
+      const vRound = Math.round(scoreValue);
+      if (vRound === 5) mappedPoints = 5.0;
+      else if (vRound === 4) mappedPoints = 4.5;
+      else if (vRound === 3) mappedPoints = 4.0;
+      else if (vRound === 2) mappedPoints = 2.5;
+      else if (vRound === 1) mappedPoints = 1.0;
+      else {
+        mappedPoints = (scoreValue / 5) * 5;
+      }
+
+      totalScore += mappedPoints;
       maxScore += 5;
     });
 
@@ -1385,6 +1402,27 @@ export function AthleteDashboard({
       tips.push(lang === 'pt' ? 'Recuperação ativa obrigatória: execute 15min de mobilidade e trabalho regenerativo hoje.' : 'Mandatory active recovery: execute 15min of mobility and regenerative work today.');
     } else {
       tips.push(lang === 'pt' ? 'Recuperação passiva obrigatória: descanso total. Comunique imediatamente o departamento físico sobre qualquer dor.' : 'Mandatory passive recovery: total rest. Immediately notify the physical department of any pain.');
+    }
+
+    const prevActivity = record 
+      ? (record.symptoms?.previous_activity || (record.wellness_records && record.wellness_records[0]?.symptoms?.previous_activity) || record.previous_activity)
+      : answers["previous_activity"];
+    const duration = record
+      ? (record.symptoms?.duration_minutes || (record.wellness_records && record.wellness_records[0]?.symptoms?.duration_minutes) || record.duration_minutes)
+      : answers["duration_minutes"];
+
+    if (prevActivity === 1) {
+      const durText = duration ? ` (${duration} min)` : "";
+      tips.push(lang === 'pt'
+        ? `📉 Queda de prontidão esperada e programada devido ao desgaste físico extremo da partida de ontem (Jogo Oficial${durText}). Seu foco principal hoje deve ser regeneração total.`
+        : `📉 Readiness drop is expected and planned due to extreme physical exertion from yesterday's match (Official Match${durText}). Your main focus today should be full regeneration.`
+      );
+    } else if (prevActivity === 2) {
+      const durText = duration ? ` (${duration} min)` : "";
+      tips.push(lang === 'pt'
+        ? `📉 Desgaste físico relevante decorrente da partida de ontem (Amistoso${durText}), justificando a redução temporária e planejada na sua prontidão física.`
+        : `📉 Relevant physical exertion from yesterday's game (Friendly Match${durText}), justifying the temporary and planned reduction in physical readiness.`
+      );
     }
 
     if (hasLowHydration) tips.push(adv.hydrationLow);
@@ -2953,12 +2991,21 @@ export function AthleteDashboard({
                   ? t[lang].moderateAttention
                   : t[lang].lowBattery}
             </CardTitle>
-            <div className="text-slate-400 mt-4 text-base max-w-lg mx-auto text-center">
-              {readiness >= 75
-                ? t[lang].goodRecovery
-                : readiness >= 50
-                  ? t[lang].moderateFatigue
-                  : t[lang].highRisk}
+            <div className="text-slate-400 mt-4 text-base max-w-lg mx-auto text-center space-y-3">
+              <p>
+                {readiness >= 75
+                  ? t[lang].goodRecovery
+                  : readiness >= 50
+                    ? t[lang].moderateFatigue
+                    : t[lang].highRisk}
+              </p>
+              {(answers["previous_activity"] === 1 || answers["previous_activity"] === 2) && (
+                <div className="text-amber-400 font-bold text-sm bg-amber-500/10 border border-amber-500/20 rounded-xl p-3.5 mt-3 text-center">
+                  {lang === 'pt' 
+                    ? `⚠️ Queda de prontidão esperada em função da partida de ontem (${answers["previous_activity"] === 1 ? 'Jogo Oficial' : 'Amistoso'}${answers["duration_minutes"] ? ` - ${answers["duration_minutes"]} min` : ''}). Sua "Bateria" se recuperará com o descanso programado.`
+                    : `⚠️ Expected readiness drop due to yesterday's match (${answers["previous_activity"] === 1 ? 'Official Match' : 'Friendly Match'}${answers["duration_minutes"] ? ` - ${answers["duration_minutes"]} min` : ''}). Your "Battery" will restore with scheduled rest.`}
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent className="pt-6">
