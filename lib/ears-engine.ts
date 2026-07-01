@@ -24,11 +24,11 @@ function calculateBaseScore(checkin: Partial<WellnessCheckIn>, decayed?: Decayed
     // Simple heuristic to bridge 10h scope to 1-5 scale if it's hours, or just pass if it's quality
     const sleepQuality = checkin.sleep_quality || (checkin.sleep_hours ? (checkin.sleep_hours >= 8 ? 5 : checkin.sleep_hours >= 6 ? 3 : 1) : 3);
     
-    // Invert negative metrics (Stress & Leg Heaviness)
+    // Since 5 is 'Excelente' (best/healthiest state) and 1 is 'Muito Ruim' (worst/unhealthiest state)
     const legVal = checkin.leg_heaviness || 3;
     const stressVal = checkin.stress || 3;
-    const legHeavinessValue = 6 - Math.min(5, Math.max(1, legVal));
-    const stressValue = 6 - Math.min(5, Math.max(1, stressVal));
+    const legHeavinessValue = Math.min(5, Math.max(1, legVal));
+    const stressValue = Math.min(5, Math.max(1, stressVal));
 
     const scores = {
       sleep: decayed ? (decayed.weightedReadiness) : normalize(sleepQuality), 
@@ -116,8 +116,8 @@ function calculateSymptomsDeduction(symptoms: string[]): number {
 function calculateMultipliers(checkin: Partial<WellnessCheckIn>): number {
     let multiplierDeduction = 0;
 
-    // Sleep <= 2 AND stress >= 4: -10%
-    if ((checkin.sleep_quality || 0) <= 2 && (checkin.stress || 0) >= 4) {
+    // Sleep <= 2 AND stress <= 2: -10% (stress is 1-5, so <= 2 means high stress / bad state)
+    if ((checkin.sleep_quality || 0) <= 2 && (checkin.stress || 0) <= 2) {
       multiplierDeduction += 10;
     }
 
@@ -131,12 +131,11 @@ function calculateMultipliers(checkin: Partial<WellnessCheckIn>): number {
       multiplierDeduction += 6;
     }
 
-    // NEW: If pain >= 5 AND previous training RPE >= 7: -12%
-    // Note: We'll check max pain in the checkin.pain_map
+    // If pain >= 5 AND previous training RPE >= 7 (mapped_rpe >= 7 or rpe_simple >= 4): -12%
     const validPainMap = Array.isArray(checkin.pain_map) ? checkin.pain_map : [];
     const maxPain = validPainMap.length > 0 ? Math.max(...validPainMap.map(p => p.level), 0) : 0;
-    if (maxPain >= 5) {
-      // Assuming 7+ if not provided for safety in high performance context or if it was high yesterday
+    const hasHighRPE = (checkin.rpe_simple && checkin.rpe_simple >= 4) || (checkin.mapped_rpe && checkin.mapped_rpe >= 7);
+    if (maxPain >= 5 && hasHighRPE) {
       multiplierDeduction += 12;
     }
 
