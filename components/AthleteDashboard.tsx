@@ -1288,9 +1288,8 @@ export function AthleteDashboard({
     const painValues = Object.values(painMap).map((p) => p.level);
     const maxPain = painValues.length > 0 ? Math.max(...painValues) : 0;
     
-    // Pain deduction: Mild pain (1-3) should deduct softly. Severe pain (7-10) should deduct heavily.
-    // Curve: Level 1: 0.25%, Level 3: 2.25%, Level 5: 6.25%, Level 7: 12.25%, Level 10: 25% max deduction
-    const painDeduction = maxPain > 0 ? (maxPain * maxPain) * 0.25 : 0; 
+    // Exclude localized pain map from general metabolic readiness score to handle youth athlete subjectivity & impact sports
+    const painDeduction = 0; 
     
     // Clinical Signs Deduction Nuance
     let signsDeduction = 0;
@@ -1344,7 +1343,15 @@ export function AthleteDashboard({
     );
   };
 
+  const calculatePhysicalIntegrity = () => {
+    const painValues = Object.values(painMap).map((p) => p.level);
+    const maxPain = painValues.length > 0 ? Math.max(...painValues) : 0;
+    const painDeduction = maxPain > 0 ? (maxPain * maxPain) * 0.25 : 0; 
+    return Math.max(0, Math.round(100 - (painDeduction * 4)));
+  };
+
   const readiness = calculateReadiness();
+  const physicalIntegrity = calculatePhysicalIntegrity();
 
   const calculateStreak = () => {
     if (!checkins || checkins.length === 0) return 0;
@@ -1391,7 +1398,7 @@ export function AthleteDashboard({
     const hasLowHydration = record ? record.hydration_perception <= 2 : (answers["hydration"] && answers["hydration"] <= 2);
     const hasLowSleep = record ? record.sleep_hours <= 6 : (answers["sleep_hours"] && answers["sleep_hours"] <= 6);
     const hasLowNutrition = record ? record.nutrition <= 2 : (answers["nutrition"] && answers["nutrition"] <= 2);
-    const hasHighStress = record ? record.stress_level <= 2 : (answers["stress"] && answers["stress"] <= 2);
+    const hasHighStress = record ? record.stress_level <= 1 : (answers["stress"] && answers["stress"] <= 1);
     const hasLowEnergy = record ? record.fatigue_level <= 2 : (answers["energy"] && answers["energy"] <= 2);
     const hasLowRecovery = record ? record.training_recovery <= 2 : (answers["training_recovery"] && answers["training_recovery"] <= 2);
 
@@ -2977,12 +2984,34 @@ export function AthleteDashboard({
 
         <Card className={`bg-[#0A1120] ${theme.borderAlpha} shadow-[0_0_30px_rgba(0,0,0,0.5)] overflow-hidden`}>
           <CardHeader className={`bg-gradient-to-r ${theme.gradientFrom} to-transparent pb-6 border-b ${theme.borderAlpha} text-center`}>
-            <div className="w-48 h-48 mx-auto bg-slate-900 rounded-full flex items-center justify-center border-4 border-slate-800 mb-4 relative shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-              <span
-                className={`text-6xl font-black ${readiness >= 75 ? "text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]" : readiness >= 50 ? "text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" : "text-red-400 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]"}`}
-              >
-                {readiness}%
-              </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-lg mx-auto mb-6 items-center justify-center pt-2">
+              {/* General Readiness Gauge */}
+              <div className="text-center space-y-2">
+                <div className="w-40 h-40 mx-auto bg-slate-900 rounded-full flex items-center justify-center border-4 border-slate-800 relative shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                  <span
+                    className={`text-4xl font-black ${readiness >= 75 ? "text-emerald-400 drop-shadow-[0_0_20px_rgba(16,185,129,0.5)]" : readiness >= 50 ? "text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" : "text-red-400 drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]"}`}
+                  >
+                    {readiness}%
+                  </span>
+                </div>
+                <div className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-1">
+                  <span>🔋</span> {lang === 'pt' ? 'Prontidão Geral' : 'General Readiness'}
+                </div>
+              </div>
+
+              {/* Physical Integrity Gauge */}
+              <div className="text-center space-y-2">
+                <div className="w-40 h-40 mx-auto bg-slate-900 rounded-full flex items-center justify-center border-4 border-slate-800 relative shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                  <span
+                    className={`text-4xl font-black ${physicalIntegrity >= 80 ? "text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]" : physicalIntegrity >= 60 ? "text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" : "text-rose-400 drop-shadow-[0_0_20px_rgba(244,63,94,0.5)]"}`}
+                  >
+                    {physicalIntegrity}%
+                  </span>
+                </div>
+                <div className="text-xxs font-black text-slate-400 uppercase tracking-widest flex items-center justify-center gap-1">
+                  <span>🛡️</span> {lang === 'pt' ? 'Integridade Física' : 'Physical Integrity'}
+                </div>
+              </div>
             </div>
             <CardTitle className="text-2xl text-white uppercase tracking-wider font-black">
               {readiness >= 75
@@ -3072,6 +3101,48 @@ export function AthleteDashboard({
                 );
               })}
             </div>
+
+            {Object.keys(painMap).length > 0 && (
+              <div className="space-y-4 pt-6 border-t border-slate-800/50 mt-6">
+                <div className="flex items-center gap-3">
+                  <ActivitySquare className="w-5 h-5 text-rose-400" />
+                  <h4 className="text-sm font-black text-white uppercase tracking-widest">
+                    {lang === 'pt' ? 'Mapa de Dor Enviado' : 'Submitted Pain Map'}
+                  </h4>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-center">
+                  <div className="w-full shrink-0 max-w-[280px] mx-auto">
+                    <PainMap 
+                      value={painMap}
+                      readOnly={true} 
+                    />
+                  </div>
+                  <div className="space-y-4 w-full">
+                    <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 space-y-2">
+                      <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">
+                        {lang === 'pt' ? 'Intensidade Geral de Dor' : 'Overall Pain Intensity'}
+                      </p>
+                      <p className={`text-2xl font-black ${Math.max(...Object.values(painMap).map(p => p.level)) > 4 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {Math.max(...Object.values(painMap).map(p => p.level))}/10
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xxs font-black text-slate-500 uppercase tracking-widest">
+                        {lang === 'pt' ? 'Locais Detalhados' : 'Detailed Locations'}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(painMap).map(([region, data]) => (
+                          <span key={region} className="px-3 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-xxs font-bold uppercase tracking-widest border border-slate-700">
+                            {getPainLocationLabel(region)} (Nível {data.level}) {data.type ? `• ${getPainTypeLabel(data.type, lang)}` : ''}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -202,7 +202,6 @@ export const EARSEngine = {
 
     // Multi-domain Penalty: If 2 or more areas have significant deductions (>8)
     let domainCounts = 0;
-    if (painDeduction > 8) domainCounts++;
     if (symptomDeduction > 8) domainCounts++;
     if (sleepDeduction > 8) domainCounts++;
     if (multipliers > 8) domainCounts++;
@@ -212,7 +211,8 @@ export const EARSEngine = {
     let ageMultiplier = 1 + ((age - 25) * 0.01);
     ageMultiplier = Math.max(0.85, Math.min(1.15, ageMultiplier));
 
-    const totalDeductions = (painDeduction + symptomDeduction + sleepDeduction + menstrualDeduction + multipliers) * ageMultiplier * synergyMultiplier * trendFactor;
+    // Exclude painDeduction from general metabolic/mental readiness score to handle impact sports and subjective overestimation in youth athletes
+    const totalDeductions = (symptomDeduction + sleepDeduction + menstrualDeduction + multipliers) * ageMultiplier * synergyMultiplier * trendFactor;
     
     // baseScore already blends decayed.weightedReadiness if decayed is present, so we don't double-blend here
     const finalScore = Math.max(0, Math.min(100, Math.round(baseScore - totalDeductions)));
@@ -220,6 +220,8 @@ export const EARSEngine = {
     let level: ReadinessLevel = 'ready';
     if (finalScore < 60) level = 'risk';
     else if (finalScore < 80) level = 'attention';
+
+    const integrityScore = Math.max(0, Math.round(100 - (painDeduction * (100 / 90))));
 
     return { 
       score: finalScore, 
@@ -231,7 +233,8 @@ export const EARSEngine = {
         sleepDeduction,
         synergy: synergyMultiplier > 1,
         trendFactor
-      }
+      },
+      integrityScore
     };
   }
 };
