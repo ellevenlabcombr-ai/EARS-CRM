@@ -364,7 +364,7 @@ export function WhatsAppDashboard() {
     // Subscribe to new messages
     const channel = supabase.channel('whatsapp_inbound_dash')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, 
-        (payload) => {
+        (payload: any) => {
           const newMsg = payload.new as any;
           if (newMsg.athlete_id || newMsg.phone_number) {
             setChats(prev => {

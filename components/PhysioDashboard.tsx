@@ -159,7 +159,7 @@ export function PhysioDashboard({ onBack }: PhysioDashboardProps) {
           const latestRecord = wellnessData?.find(w => w.athlete_id === athlete.id);
           
           // Find latest pain report for this athlete
-          const latestPain = painData?.find(p => p.athlete_id === athlete.id);
+          const latestPain = painData?.find((p: any) => p.athlete_id === athlete.id);
           
           let pain = null;
           if (latestPain) {

@@ -58,7 +58,7 @@ export const ReportsDashboard: React.FC<ReportsDashboardProps> = ({ athletes = [
             setAssessments(data);
             if (data.length > 0) {
               // Only auto-select if empty or old id not in new list
-              if (!selectedAssessmentId || !data.find(a => a.id === selectedAssessmentId)) {
+              if (!selectedAssessmentId || !data.find((a: any) => a.id === selectedAssessmentId)) {
                  setSelectedAssessmentId(data[0].id);
               }
             }

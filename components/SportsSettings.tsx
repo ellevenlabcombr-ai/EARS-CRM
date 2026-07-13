@@ -81,13 +81,13 @@ export const SportsSettings = () => {
       if (athletesError) console.error("Error fetching athlete counts:", athletesError);
 
       const countsMap: Record<string, number> = {};
-      athletesData?.forEach(a => { 
+      athletesData?.forEach((a: any) => { 
         if (a.modalidade) {
           countsMap[a.modalidade] = (countsMap[a.modalidade] || 0) + 1; 
         }
       });
 
-      setSports((data || []).map(s => ({ ...s, athleteCount: countsMap[s.name] || 0 })));
+      setSports((data || []).map((s: any) => ({ ...s, athleteCount: countsMap[s.name] || 0 })));
     } catch (error) {
       console.error("Error fetching sports:", error);
     } finally {

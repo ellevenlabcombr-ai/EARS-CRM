@@ -65,8 +65,8 @@ export function PendenciesDashboard() {
       const realPendencies: Pendency[] = [];
 
       // 1. Pain Pendencies (High pain reports)
-      painData.forEach((pain, idx) => {
-        const athlete = athletesData.find(a => a.id === pain.athlete_id);
+      painData.forEach((pain: any, idx: any) => {
+        const athlete = athletesData.find((a: any) => a.id === pain.athlete_id);
         if (athlete) {
           realPendencies.push({
             id: `pain-${idx}-${pain.athlete_id}`,
@@ -83,7 +83,7 @@ export function PendenciesDashboard() {
       });
 
       // 2. Daily Tasks
-      tasksData.forEach(task => {
+      tasksData.forEach((task: any) => {
          realPendencies.push({
             id: `task-${task.id}`,
             type: 'document',

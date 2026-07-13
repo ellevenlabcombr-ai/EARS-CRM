@@ -345,7 +345,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
         if (athletesError) throw athletesError;
         
         const athletes = athletesData || [];
-        const athleteIds = athletes.map(a => a.id);
+        const athleteIds = athletes.map((a: any) => a.id);
         
         console.log('Athletes fetched:', athletes.length);
 
@@ -398,7 +398,7 @@ export function WellnessDashboard({ onViewAthlete }: WellnessDashboardProps) {
         console.log('Wellness records fetched:', wellnessData.length);
 
         // Map data
-        const mappedAthletes = athletes.map(athlete => {
+        const mappedAthletes = athletes.map((athlete: any) => {
           const record = wellnessData.find(r => r.athlete_id === athlete.id);
           const readiness = record ? record.readiness_score : null;
           

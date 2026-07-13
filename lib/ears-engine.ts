@@ -185,7 +185,7 @@ export const EARSEngine = {
     sleepHistory: number[] = [],
     decayed?: DecayedMetrics,
     trends?: TrendAnalysis
-  ): { score: number, level: ReadinessLevel, breakdown: any } => {
+  ): { score: number; level: ReadinessLevel; breakdown: any; integrityScore: number } => {
     const baseScore = calculateBaseScore(checkin, decayed);
     const painDeduction = calculatePainDeduction(checkin.pain_map || [], decayed?.weightedPain);
     const symptomDeduction = calculateSymptomsDeduction(checkin.clinical_symptoms || []);

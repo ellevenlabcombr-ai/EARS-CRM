@@ -1055,7 +1055,7 @@ export function AutomationSettings() {
                       ) : null}
                       
                       {instanceStatus === 'close' || instanceStatus === 'connecting' || (instanceStatus !== 'not_found' && !qrCodeData?.base64 && instanceStatus !== 'open' && instanceStatus !== '') ? (
-                         <Button onClick={handleConnectInstance} disabled={isManagingInstance} className="bg-[#25D366] text-black hover:bg-[#20bd5a] text-xs font-bold h-8">
+                         <Button onClick={() => handleConnectInstance()} disabled={isManagingInstance} className="bg-[#25D366] text-black hover:bg-[#20bd5a] text-xs font-bold h-8">
                            Gerar QR Code
                          </Button>
                       ) : null}

@@ -14,7 +14,7 @@ import { evaluateSafeMode } from "@/lib/safe-mode-engine";
 import { calculateRiskClusters } from "@/lib/clinical-engine";
 
 interface ClinicalDashboardProps {
-  onViewAthlete: (id: string) => void;
+  onViewAthlete: (id: string, startSession?: boolean) => void;
 }
 
 const getPainLocationLabel = (id: string): string => {
@@ -125,7 +125,7 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
 
       // Process data
       const wellnessByAthlete = new Map<string, any[]>();
-      wellnessData?.forEach(record => {
+      wellnessData?.forEach((record: any) => {
         if (!wellnessByAthlete.has(record.athlete_id)) {
           wellnessByAthlete.set(record.athlete_id, []);
         }
@@ -133,14 +133,14 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
       });
 
       const assessmentsByAthlete = new Map<string, any>();
-      assessmentsData?.forEach(record => {
+      assessmentsData?.forEach((record: any) => {
         if (!assessmentsByAthlete.has(record.athlete_id)) {
           assessmentsByAthlete.set(record.athlete_id, record); // Since it's ordered by date desc, the first one is the latest
         }
       });
 
       const painByPart = new Map<string, Set<string>>();
-      painData?.forEach(record => {
+      painData?.forEach((record: any) => {
         if (record.pain_level >= 4) {
           if (!painByPart.has(record.body_part_id)) {
             painByPart.set(record.body_part_id, new Set());
@@ -161,7 +161,7 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
 
       const sAlerts: any[] = [];
 
-      const prioritizedList: PrioritizedAthlete[] = (athletesData || []).map(athlete => {
+      const prioritizedList: PrioritizedAthlete[] = (athletesData || []).map((athlete: any) => {
         const records = wellnessByAthlete.get(athlete.id) || [];
         const todayRecord = records.find(r => r.record_date.startsWith(today));
         
@@ -230,8 +230,8 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
         const hasCriticalTrend = trendAlerts.some(a => a.includes('Queda de sono') || a.includes('Prontidão em queda') || a.includes('Aumento de dor') || a.includes('Queda brusca'));
 
         // Check for active alerts in clinical_alerts table for this athlete
-        const athleteActiveAlerts = alertsData.filter(a => a.athlete_id === athlete.id && a.status === 'active');
-        const highestSeverity = athleteActiveAlerts.reduce((acc, curr) => {
+        const athleteActiveAlerts = alertsData.filter((a: any) => a.athlete_id === athlete.id && a.status === 'active');
+        const highestSeverity = athleteActiveAlerts.reduce((acc: any, curr: any) => {
           if (curr.severity === 'high') return 'high';
           if (curr.severity === 'medium' && acc !== 'high') return 'medium';
           return acc;
@@ -240,10 +240,10 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
         if (highestSeverity === 'high') {
           riskLevel = 'high';
           isHighPriority = true;
-          mainReason = athleteActiveAlerts.find(a => a.severity === 'high')?.message || "Alerta crítico ativo";
+          mainReason = athleteActiveAlerts.find((a: any) => a.severity === 'high')?.message || "Alerta crítico ativo";
         } else if (highestSeverity === 'medium') {
           riskLevel = 'attention';
-          mainReason = athleteActiveAlerts.find(a => a.severity === 'medium')?.message || "Atenção clínica";
+          mainReason = athleteActiveAlerts.find((a: any) => a.severity === 'medium')?.message || "Atenção clínica";
         }
 
         if (riskLevel === "none") {
@@ -325,8 +325,8 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
           });
         }
 
-        const athletePain = painData?.filter(p => p.athlete_id === athlete.id) || [];
-        const recentPain = athletePain.filter(p => p.pain_level >= 7);
+        const athletePain = painData?.filter((p: any) => p.athlete_id === athlete.id) || [];
+        const recentPain = athletePain.filter((p: any) => p.pain_level >= 7);
         if (recentPain.length >= 2) {
           sAlerts.push({
             id: `alert-pain-${athlete.id}`,
@@ -337,8 +337,8 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
           });
         }
 
-        const athleteAlerts = alertsData.filter(a => a.athlete_id === athlete.id);
-        const athleteLoad = loadData.filter(l => l.athlete_id === athlete.id);
+        const athleteAlerts = alertsData.filter((a: any) => a.athlete_id === athlete.id);
+        const athleteLoad = loadData.filter((l: any) => l.athlete_id === athlete.id);
 
         // Mocking dynamic clinical tags for the architecture demonstration
         // Normally this would be a fetched table `clinical_tags`
@@ -351,8 +351,8 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
         const clinicalInputs = {
           wellnessHistory: records,
           painReports: athletePain,
-          clinicalAssessments: assessmentsData.filter(a => a.athlete_id === athlete.id),
-          loadData: athleteLoad.map(l => ({
+          clinicalAssessments: assessmentsData.filter((a: any) => a.athlete_id === athlete.id),
+          loadData: athleteLoad.map((l: any) => ({
             intensity: l.intensity || (l.raw_data && l.raw_data.rpe) || l.rpe || 5,
             duration_minutes: l.duration || (l.raw_data && l.raw_data.duration) || 60,
           })),
@@ -422,7 +422,7 @@ export function ClinicalDashboard({ onViewAthlete }: ClinicalDashboardProps) {
         highRisk: highRiskCount,
         attention: attentionCount,
         stable: stableCount,
-        criticalAlerts: alertsData.filter(a => a.status === 'active' && a.severity === 'high').length,
+        criticalAlerts: alertsData.filter((a: any) => a.status === 'active' && a.severity === 'high').length,
       });
 
     } catch (error: any) {

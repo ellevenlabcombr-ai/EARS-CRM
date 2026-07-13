@@ -47,7 +47,7 @@ export interface PrioritizedAthlete {
 
 interface PriorityQueueProps {
   athletes: PrioritizedAthlete[];
-  onViewAthlete: (id: string) => void;
+  onViewAthlete: (id: string, startSession?: boolean) => void;
   section?: 'all' | 'immediate' | 'clinical';
 }
 

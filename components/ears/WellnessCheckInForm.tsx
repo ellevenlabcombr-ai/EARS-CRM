@@ -64,8 +64,8 @@ export const WellnessCheckInForm: React.FC<Props> = ({ athlete, history = [], on
   const analysis = useMemo(() => {
     // Ensure history is sorted oldest to newest (ascending) for analysis
     const sortedHistory = [...history].sort((a, b) => {
-      const dateA = new Date(a.date || a.record_date || a.created_at || 0).getTime();
-      const dateB = new Date(b.date || b.record_date || b.created_at || 0).getTime();
+      const dateA = new Date(a.date || (a as any).record_date || (a as any).created_at || 0).getTime();
+      const dateB = new Date(b.date || (b as any).record_date || (b as any).created_at || 0).getTime();
       return dateA - dateB;
     });
 

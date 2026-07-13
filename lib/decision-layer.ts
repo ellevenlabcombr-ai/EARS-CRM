@@ -1,5 +1,5 @@
 
-import { RiskCluster, ClinicalInsight } from './clinical-engine';
+import { RiskCluster, ClinicalInsight } from '../types/clinical-engine';
 import { TrendAnalysis } from './trend-engine';
 import { ConfidenceResult } from './confidence-engine';
 

@@ -120,7 +120,7 @@ export function ChatBox({ athleteId, athletePhone, athleteName, athleteAvatar, i
           schema: 'public',
           table: 'whatsapp_messages',
         },
-        (payload) => {
+        (payload: any) => {
           const newMsg = payload.new;
           const isRelevant = 
             newMsg.athlete_id === athleteId && 

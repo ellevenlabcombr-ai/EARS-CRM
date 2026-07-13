@@ -695,7 +695,7 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
             case 'anthropometric-assessment':
               return (
                 <AnthropometricAssessment 
-                  athleteId={selectedAthleteForEval?.id}
+                  athlete={selectedAthleteForEval}
                   onCancel={() => handleNavigation('evaluations')}
                   onSave={async (data) => {
                     try {
@@ -772,10 +772,10 @@ export function MainDashboard({ onLogout }: MainDashboardProps) {
                 <div className="flex-1 flex items-center justify-center h-full text-slate-400">
                   <div className="text-center space-y-4">
                     <div className="w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center mx-auto text-3xl">
-                      {menuItems.find(m => m.id === currentView)?.emoji}
+                      {menuItems.find(m => m.id === (currentView as any))?.emoji}
                     </div>
                     <h2 className="text-xl font-bold text-white uppercase tracking-widest">
-                      {menuItems.find(m => m.id === currentView)?.label}
+                      {menuItems.find(m => m.id === (currentView as any))?.label}
                     </h2>
                     <p>Módulo em desenvolvimento...</p>
                   </div>

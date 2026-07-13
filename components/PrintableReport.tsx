@@ -7,7 +7,17 @@ interface PrintableReportProps {
   athlete: any;
   reportType: string;
   reportTypes: any[];
-  branding?: { logo_url: string | null; company_name: string };
+  branding?: { 
+    logo_url: string | null; 
+    company_name: string;
+    background_url?: string;
+    cnpj?: string;
+    address?: string;
+    phone?: string;
+    instagram?: string;
+    website?: string;
+    linkedin?: string;
+  };
 }
 
 const readinessData = [

@@ -23,7 +23,7 @@ import { getLocalDateString } from "@/lib/utils";
 
 interface DailyOperationsProps {
   onNavigate: (view: any) => void;
-  onViewAthlete: (id: string) => void;
+  onViewAthlete: (id: string, startSession?: boolean) => void;
 }
 
 interface ClinicalSettings {
@@ -173,8 +173,8 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
 
       // Combine both sources
       const allEvents = [
-        ...apptData.map(a => ({ ...a, source: 'appointment' })),
-        ...agendaData.map(e => ({ 
+        ...apptData.map((a: any) => ({ ...a, source: 'appointment' })),
+        ...agendaData.map((e: any) => ({ 
           ...e, 
           source: 'smart_agenda',
           date: dateStr,
@@ -190,10 +190,10 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
       const todayEvents = allEvents?.filter(a => a.type === 'competition' || a.type === 'event') || [];
 
       const wellnessMap = new Map();
-      wellnessData.forEach(w => wellnessMap.set(w.athlete_id, w));
+      wellnessData.forEach((w: any) => wellnessMap.set(w.athlete_id, w));
 
       const painMap = new Map();
-      painData.forEach(p => {
+      painData.forEach((p: any) => {
         const current = painMap.get(p.athlete_id) || 0;
         if (p.pain_level > current) painMap.set(p.athlete_id, p.pain_level);
       });
@@ -201,7 +201,7 @@ export function DailyOperationsDashboard({ onNavigate, onViewAthlete }: DailyOpe
       const newRiskAlerts: any[] = [];
       const newAttentionAlerts: any[] = [];
 
-      athletesData.forEach(athlete => {
+      athletesData.forEach((athlete: any) => {
         const w = wellnessMap.get(athlete.id);
         const p = painMap.get(athlete.id) || 0;
         

@@ -131,7 +131,7 @@ export default function EarsSystem() {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          const mapped: AthleteProfile[] = data.map(a => ({
+          const mapped: AthleteProfile[] = data.map((a: any) => ({
             id: a.id,
             name: a.name,
             nickname: a.nickname || a.name.split(' ')[0],
@@ -198,16 +198,16 @@ export default function EarsSystem() {
           .select('*');
 
         if (allCheckins) {
-          const mappedTeam = currentAthletes.map(a => {
-            const athleteCheckins = allCheckins.filter(c => c.athlete_id === a.id);
+          const mappedTeam = currentAthletes.map((a: any) => {
+            const athleteCheckins = allCheckins.filter((c: any) => c.athlete_id === a.id);
             const latestDb = athleteCheckins[0];
             const latest = latestDb ? mapCheckInToWellness(latestDb, allPain || []) : generateMockHistory(a.id)[0];
             
             let trend = 0;
             if (athleteCheckins.length > 1) {
-              const prevScores = athleteCheckins.slice(1, 5).map(c => Number(c.readiness_score || 100));
+              const prevScores = athleteCheckins.slice(1, 5).map((c: any) => Number(c.readiness_score || 100));
               if (prevScores.length > 0) {
-                const avgPrev = prevScores.reduce((sum, s) => sum + s, 0) / prevScores.length;
+                const avgPrev = prevScores.reduce((sum: any, s: any) => sum + s, 0) / prevScores.length;
                 trend = Math.round(Number(latest.readiness_score) - avgPrev);
                }
             }

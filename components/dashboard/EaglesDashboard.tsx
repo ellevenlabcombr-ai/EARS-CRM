@@ -46,7 +46,7 @@ export function EaglesDashboard({ onViewAthlete }: EaglesDashboardProps) {
 
       if (athletesError) throw athletesError;
       const eagleAthletes = athletesData || [];
-      const athleteIds = eagleAthletes.map(a => a.id);
+      const athleteIds = eagleAthletes.map((a: any) => a.id);
 
       if (athleteIds.length === 0) {
         setAthletes([]);
