@@ -796,6 +796,12 @@ export function AthleteRegistration({
 
     setDeleting(true);
     try {
+      // Deletar os eventos do atleta da agenda_events primeiro para evitar erro de restrição de chave estrangeira (foreign key constraint)
+      await supabase
+        .from("agenda_events")
+        .delete()
+        .eq("athlete_id", initialData.id);
+
       const { error } = await supabase
         .from("athletes")
         .delete()
